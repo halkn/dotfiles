@@ -1,4 +1,8 @@
 
+#####################################################################
+# General Setting
+#####################################################################
+umask 022
 
 #####################################################################
 # history
@@ -16,15 +20,18 @@ setopt share_history
 ####################################################################
 # auto complete
 ####################################################################
+# load command completion function
+autoload -Uz compinit
+# load compinit
+compinit
+
 # 補完侯補をメニューから選択する。
 # select=2: 補完候補を一覧から選択する。
 #           ただし、補完候補が2つ以上なければすぐに補完する。
 zstyle ':completion:*:default' menu select=2
 
-# 補完候補に色を付ける。
-# "": 空文字列はデフォルト値を使うという意味。
-zstyle ':completion:*:default' list-colors ""
-
+# 補完候補にLS_COLORSと同じ色を付ける。 
+zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
 
 #####################################################################                                                                                                                                   
 # plugin manager
@@ -38,10 +45,10 @@ zplug "mafredri/zsh-async"
 zplug "sindresorhus/pure"
 
 ## set install plugins
-# 構文のハイライト(https://github.com/zsh-users/zsh-syntax-highlighting)
-zplug "zsh-users/zsh-syntax-highlighting"
 # history関係
-zplug "zsh-users/zsh-history-substring-search"
+zplug "zsh-users/zsh-history-substring-search", defer:3
+# 構文のハイライト(https://github.com/zsh-users/zsh-syntax-highlighting)
+zplug "zsh-users/zsh-syntax-highlighting", defer:2
 # タイプ補完
 zplug "zsh-users/zsh-autosuggestions"
 zplug "zsh-users/zsh-completions"

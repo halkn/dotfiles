@@ -1,0 +1,25 @@
+[[plugins]]
+repo = 'Shougo/dein.vim'
+
+[[plugins]]
+repo = 'vim-airline/vim-airline'
+depends = ['vim-airline-themes']
+hook_add = '''
+    let g:airline_powerline_fonts = 1
+    let g:airline_theme = 'badwolf'
+    let g:airline#extensions#virtualenv#enabled = 1
+    set laststatus=2
+'''
+
+[[plugins]]
+repo = 'vim-airline/vim-airline-themes'
+
+[[plugins]]
+repo = 'scrooloose/nerdtree'
+hook_add = '''
+    map <C-t> :<C-u>NERDTreeToggle<CR>
+    let NERDTreeIgnore = ['\.pyc$']
+'''
+
+[[plugins]]
+repo = 'cocopon/iceberg.vim'

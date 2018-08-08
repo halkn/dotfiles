@@ -1,5 +1,5 @@
 "##############################################################################
-"Setiing
+" Setiing
 "##############################################################################
 " setting
 "文字コードをUFT-8に設定
@@ -15,7 +15,7 @@ set hidden
 " 入力中のコマンドをステータスに表示する
 set showcmd
 
-" 見た目系
+" View
 " 行番号を表示
 set number
 " 現在の行を強調表示
@@ -42,7 +42,7 @@ nnoremap k gk
 " カーソルの位置をつねに表示
 set ruler
 
-" Tab系
+" Tab
 " 不可視文字を可視化(タブが「▸-」と表示される)
 set list listchars=tab:\▸\-
 " Tab文字を半角スペースにする
@@ -52,7 +52,7 @@ set tabstop=4
 " 行頭でのTab文字の表示幅
 set shiftwidth=4
 
-" 検索系
+" Search
 " 検索文字列が小文字の場合は大文字小文字を区別なく検索する
 set ignorecase
 " 検索文字列に大文字が含まれている場合は区別して検索する
@@ -66,40 +66,54 @@ set hlsearch
 " ESC連打でハイライト解除
 nmap <Esc><Esc> :nohlsearch<CR><Esc>
 
-" 編集系
+" Edit
 " バックスペースを、空白、行末、行頭でも使えるようにする
 set backspace=indent,eol,start
 
+" Share clipborad with system
+set clipboard+=unnamedplus
 
 "##############################################################################
 "Dein.vim、プラグイン設定
 "##############################################################################
+" CACHE define
+let $CACHE = expand('~/.cache')
+if !isdirectory(expand($CACHE))
+  call mkdir(expand($CACHE), 'p')
+endif
+
 if &compatible
  set nocompatible
 endif
 " Add the dein installation directory into runtimepath
 set runtimepath+=~/.cache/dein/repos/github.com/Shougo/dein.vim
 
-if dein#load_state('~/.cache/dein')
- call dein#begin('~/.cache/dein')
+" Load dein
+let s:dein_dir = expand('$CACHE/dein')
+if dein#load_state(s:dein_dir)
+ call dein#begin(s:dein_dir)
+ call dein#load_toml('~/.vim/rc/dein.toml',          {'lazy': 0})
+ call dein#load_toml('~/.vim/rc/dein_lazy.toml',     {'lazy': 1})
+ call dein#load_toml('~/.vim/rc/dein_neo.toml',      {'lazy': 1})
+ call dein#load_toml('~/.vim/rc/dein_python.toml',   {'lazy': 1})
 
- call dein#add('~/.cache/dein')
- call dein#add('Shougo/deoplete.nvim')
- if !has('nvim')
-   call dein#add('roxma/nvim-yarp')
-   call dein#add('roxma/vim-hug-neovim-rpc')
- endif
+ "call dein#add('$CACHE/dein')
+ "call dein#add('Shougo/deoplete.nvim')
+ "if !has('nvim')
+ "  call dein#add('roxma/nvim-yarp')
+ "  call dein#add('roxma/vim-hug-neovim-rpc')
+ "endif
 
  "VIM内でシェル実行
- call dein#add('Shougo/vimshell')	
+ "call dein#add('Shougo/vimshell')
 
  "vim-quickrun
- call dein#add('thinca/vim-quickrun')
+ "call dein#add('thinca/vim-quickrun')
 
  "python
- call dein#add('davidhalter/jedi-vim')
+ "call dein#add('davidhalter/jedi-vim')
 
- call dein#add('scrooloose/nerdtree')
+ "call dein#add('scrooloose/nerdtree')
 
  call dein#end()
  call dein#save_state()
@@ -112,3 +126,6 @@ endif
 
 filetype plugin indent on
 syntax enable
+
+" colorscheme 
+colorscheme iceberg

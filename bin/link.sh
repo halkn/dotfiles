@@ -5,8 +5,8 @@ if ! [ -e $NVIM_CONF_DIR ]; then
     mkdir -p $NVIM_CONF_DIR
 fi
 
-#rm ~/.vim
-#ln -s $ROOT_DIR/vim ~/.vim
+rm ~/.vim
+ln -s $ROOT_DIR/vim ~/.vim
 
 rm ~/.vimrc
 ln -s $ROOT_DIR/vim/.vimrc ~/.vimrc
@@ -29,5 +29,5 @@ ln -s $ROOT_DIR/.zshenv ~/.zshenv
 rm $NVIM_CONF_DIR/init.vim
 ln -s ~/.vimrc $NVIM_CONF_DIR/init.vim
 
-#rm $NVIM_CONF_DIR/vim
-#ln -s ~/.vim $NVIM_CONF_DIR/vim
+rm $NVIM_CONF_DIR/vim
+ln -s ~/.vim $NVIM_CONF_DIR/vim
