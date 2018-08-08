@@ -92,28 +92,11 @@ set runtimepath+=~/.cache/dein/repos/github.com/Shougo/dein.vim
 let s:dein_dir = expand('$CACHE/dein')
 if dein#load_state(s:dein_dir)
  call dein#begin(s:dein_dir)
+
  call dein#load_toml('~/.vim/rc/dein.toml',          {'lazy': 0})
  call dein#load_toml('~/.vim/rc/dein_lazy.toml',     {'lazy': 1})
  call dein#load_toml('~/.vim/rc/dein_neo.toml',      {'lazy': 1})
  call dein#load_toml('~/.vim/rc/dein_python.toml',   {'lazy': 1})
-
- "call dein#add('$CACHE/dein')
- "call dein#add('Shougo/deoplete.nvim')
- "if !has('nvim')
- "  call dein#add('roxma/nvim-yarp')
- "  call dein#add('roxma/vim-hug-neovim-rpc')
- "endif
-
- "VIM内でシェル実行
- "call dein#add('Shougo/vimshell')
-
- "vim-quickrun
- "call dein#add('thinca/vim-quickrun')
-
- "python
- "call dein#add('davidhalter/jedi-vim')
-
- "call dein#add('scrooloose/nerdtree')
 
  call dein#end()
  call dein#save_state()
