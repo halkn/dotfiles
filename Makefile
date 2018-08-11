@@ -4,7 +4,7 @@ EXCLUSIONS    := .git
 DOTFILES      := $(filter-out $(EXCLUSIONS), $(CANDIDATES))
 NVIM_CONF_DIR := ~/.config/nvim
 
-list: ## Show dotfiles in this repo
+list: 
 	@echo '==> Show Target dotfiles.'
 	@echo ''
 	@$(foreach val, $(DOTFILES), /bin/ls -dF $(val);)
