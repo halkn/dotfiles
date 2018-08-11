@@ -1,6 +1,42 @@
 "##############################################################################
-" Setiing
+"Dein.vim Plugin Manager Load
 "##############################################################################
+" CACHE define
+let $CACHE = expand('~/.cache')
+if !isdirectory(expand($CACHE))
+  call mkdir(expand($CACHE), 'p')
+endif
+
+if &compatible
+ set nocompatible
+endif
+
+" Add the dein installation directory into runtimepath
+set runtimepath+=~/.cache/dein/repos/github.com/Shougo/dein.vim
+
+" Load dein
+let s:dein_dir = expand('$CACHE/dein')
+if dein#load_state(s:dein_dir)
+ call dein#begin(s:dein_dir)
+ call dein#load_toml('~/.vim/rc/dein.toml',          {'lazy': 0})
+ call dein#load_toml('~/.vim/rc/dein_lazy.toml',     {'lazy': 1})
+ call dein#load_toml('~/.vim/rc/dein_neo.toml',      {'lazy': 1})
+ call dein#load_toml('~/.vim/rc/dein_python.toml',   {'lazy': 1})
+ call dein#end()
+ call dein#save_state()
+endif
+
+" auto install
+if dein#check_install()
+  call dein#install()
+endif
+
+filetype plugin indent on
+syntax enable
+
+" ##############################################################################
+" Setiing
+" ##############################################################################
 " setting
 "文字コードをUFT-8に設定
 set fenc=utf-8
@@ -73,42 +109,6 @@ set backspace=indent,eol,start
 " Share clipborad with system
 set clipboard+=unnamedplus
 
-"##############################################################################
-"Dein.vim、プラグイン設定
-"##############################################################################
-" CACHE define
-let $CACHE = expand('~/.cache')
-if !isdirectory(expand($CACHE))
-  call mkdir(expand($CACHE), 'p')
-endif
-
-if &compatible
- set nocompatible
-endif
-" Add the dein installation directory into runtimepath
-set runtimepath+=~/.cache/dein/repos/github.com/Shougo/dein.vim
-
-" Load dein
-let s:dein_dir = expand('$CACHE/dein')
-if dein#load_state(s:dein_dir)
- call dein#begin(s:dein_dir)
-
- call dein#load_toml('~/.vim/rc/dein.toml',          {'lazy': 0})
- call dein#load_toml('~/.vim/rc/dein_lazy.toml',     {'lazy': 1})
- call dein#load_toml('~/.vim/rc/dein_neo.toml',      {'lazy': 1})
- call dein#load_toml('~/.vim/rc/dein_python.toml',   {'lazy': 1})
-
- call dein#end()
- call dein#save_state()
-endif
-
-" 未インストールのplug-inがあれば自動でインストール
-if dein#check_install()
-  call dein#install()
-endif
-
-filetype plugin indent on
-syntax enable
-
 " colorscheme 
 colorscheme iceberg
+set termguicolors
