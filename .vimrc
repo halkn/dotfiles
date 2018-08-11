@@ -110,5 +110,6 @@ set backspace=indent,eol,start
 set clipboard+=unnamedplus
 
 " colorscheme 
+set t_Co=256
+set background=dark
 colorscheme iceberg
-set termguicolors

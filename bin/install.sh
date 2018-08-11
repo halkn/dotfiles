@@ -5,11 +5,12 @@ if ! [ -e $NVIM_CONF_DIR ]; then
     mkdir -p $NVIM_CONF_DIR
 fi
 
+# vim
 rm ~/.vim
-ln -s $ROOT_DIR/vim ~/.vim
+ln -s $ROOT_DIR/.vim ~/.vim
 
 rm ~/.vimrc
-ln -s $ROOT_DIR/vim/.vimrc ~/.vimrc
+ln -s $ROOT_DIR/.vim/.vimrc ~/.vimrc
 
 rm ~/.zshrc
 ln -s $ROOT_DIR/.zshrc ~/.zshrc
