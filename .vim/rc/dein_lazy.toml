@@ -1,6 +1,6 @@
 [[plugins]]
 repo = 'thinca/vim-quickrun'
-depends = ['vimproc.vim', 'shabadou.vim']
+depends = ['vimproc.vim']
 on_ft = ['python']
 hook_source = '''
   source ~/.vim/rc/plugins/vimquickrun.rc.vim
@@ -13,3 +13,29 @@ on_ft = ['md']
 [[plugins]]
 repo = 'cespare/vim-toml'
 on_ft = ['toml']
+
+[[plugins]]
+repo = 'Shougo/vimproc.vim'
+build = 'make'
+
+[[plugins]]
+repo = 'scrooloose/nerdtree'
+on_cmd = ['NERDTreeToggle']
+on_map = ['<plug>NERDTreeTabsToggle', '<plug>NERDTreeTabsFind']
+depends = ['nerdtree-git-plugin', 'vim-nerdtree-tabs']
+hook_add = '''
+    let NERDTreeShowHidden=1
+    let NERDTreeIgnore=['\.pyc$', '__pycache__']
+    nmap <Leader>t <plug>NERDTreeTabsToggle<CR>
+'''
+
+[[plugins]]
+repo = 'jistr/vim-nerdtree-tabs'
+hook_add = '''
+    let g:nerdtree_tabs_autofind = 0
+    nmap <Leader>f <plug>NERDTreeTabsFind<CR>
+'''
+
+[[plugins]]
+repo = 'Xuyuanp/nerdtree-git-plugin'
+depends = ['vim-fugitive']

@@ -1,3 +1,21 @@
+#####################################################################
+# OS Type
+#####################################################################
+case ${OSTYPE} in
+    darwin*)
+        [[ -f ~/.zsh/mac.zsh ]] && source ~/.zsh/mac.zsh
+        ;;
+    linux-gnu*)
+        [[ -f ~/.zsh/linux.zsh ]] && source ~/.zsh/linux.zsh
+        ;;
+esac
+
+#####################################################################
+# Load Setting
+#####################################################################
+source ~/.zsh/alias.zsh
+source ~/.zsh/setopt.zsh
+source ~/.zsh/completion.zsh
 
 #####################################################################
 # General Setting
@@ -5,35 +23,6 @@
 umask 022
 
 #####################################################################
-# history
-#####################################################################
-
-## Limit of history
-HISTFILE=~/.zsh_history
-HISTSIZE=10000
-SAVEHIST=10000
-
-# Share history
-setopt hist_ignore_dups
-setopt share_history
-
-####################################################################
-# auto complete
-####################################################################
-# load command completion function
-autoload -Uz compinit
-# load compinit
-compinit
-
-# 補完侯補をメニューから選択する。
-# select=2: 補完候補を一覧から選択する。
-#           ただし、補完候補が2つ以上なければすぐに補完する。
-zstyle ':completion:*:default' menu select=2
-
-# 補完候補にLS_COLORSと同じ色を付ける。 
-zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
-
-#####################################################################                                                                                                                                   
 # plugin manager
 #####################################################################
 ## zplug settings
