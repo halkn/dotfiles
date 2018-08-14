@@ -31,6 +31,9 @@ nnoremap <silent> ts2 :<C-u>setl shiftwidth=2 softtabstop=2<CR>
 nnoremap <silent> ts4 :<C-u>setl shiftwidth=4 softtabstop=4<CR>
 nnoremap <silent> ts8 :<C-u>setl shiftwidth=8 softtabstop=8<CR>
 
+" HightLight cancel
+nmap <Esc><Esc> :nohlsearch<CR><Esc>
+
 " " The prefix key of tab.
 " nnoremap [tab] <Nop>
 " nmap t [tab]
