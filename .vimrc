@@ -70,9 +70,8 @@ if system('uname -a | grep Microsoft') != ""
 endif
 
 " colorscheme 
-set t_Co=256
-set background=dark
-colorscheme iceberg
 filetype plugin indent on
-syntax on
+syntax enable
+colorscheme iceberg
+set termguicolors
 

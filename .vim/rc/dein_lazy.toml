@@ -2,6 +2,28 @@
 # Edit util
 #####################################################################
 [[plugins]]
+repo = 'junegunn/vim-easy-align'
+on_map = ['<Plug>(EasyAlign)']
+hook_add = '''
+    vmap <Enter> <Plug>(EasyAlign)
+'''
+
+[[plugins]]
+repo = 'haya14busa/vim-asterisk'
+on_map = [
+    '<Plug>(asterisk-z*)',
+    '<Plug>(asterisk-z#)',
+    '<Plug>(asterisk-gz*)',
+    '<Plug>(asterisk-gz#)',
+]
+hook_add = '''
+    map *  <Plug>(asterisk-z*)
+    map #  <Plug>(asterisk-z#)
+    map g* <Plug>(asterisk-gz*)
+    map g# <Plug>(asterisk-gz#)
+'''
+
+[[plugins]]
 repo = 'Yggdroot/indentLine'
 on_cmd = ['IndentLinesToggle']
 hook_add = '''
@@ -29,6 +51,7 @@ depends = ['open-browser.vim']
 on_ft = ['markdown']
 hook_add = '''
     nnoremap <leader>p :PrevimOpen<CR>
+    let g:previm_open_cmd="open -a Safari"
 '''
 
 [[plugins]]
