@@ -8,18 +8,6 @@ if [ ! -f ~/.zshrc.zwc -o ~/.zshrc -nt ~/.zshrc.zwc ]; then
 fi
 
 #####################################################################
-# OS Type
-#####################################################################
-case ${OSTYPE} in
-    darwin*)
-        [[ -f ~/.zsh/mac.zsh ]] && source ~/.zsh/mac.zsh
-        ;;
-    linux-gnu*)
-        [[ -f ~/.zsh/linux.zsh ]] && source ~/.zsh/linux.zsh
-        ;;
-esac
-
-#####################################################################
 # zplug
 #####################################################################
 # init
@@ -54,13 +42,6 @@ zplug load
 if (which zprof > /dev/null) ;then
   zprof | less
 fi
-
-#####################################################################
-# Load Setting
-#####################################################################
-#source ~/.zsh/alias.zsh
-#source ~/.zsh/setopt.zsh
-#source ~/.zsh/completion.zsh
 
 #####################################################################
 # General Setting
@@ -99,6 +80,7 @@ alias cp='nocorrect cp'
 alias mkdir='nocorrect mkdir'
 
 # Util
+alias ls="ls -G"
 alias ll="ls -lh"
 alias la="ll -a"
 alias vim="nvim"
