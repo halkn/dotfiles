@@ -17,8 +17,6 @@ deploy:
 	@echo ''
 	@$(foreach val, $(DOTFILES), ln -sfnv $(abspath $(val)) $(HOME)/$(val);)
 	@mkdir -p $(NVIM_CONF_DIR)
-	@ln -sfnv ~/.vimrc $(NVIM_CONF_DIR)/init.vim 
-	@ln -sfnv ~/.vim $(NVIM_CONF_DIR)/vim
 	@echo ''
 	@echo '==> End to deploy dotfiles to home directory.'
 

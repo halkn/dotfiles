@@ -4,7 +4,7 @@ if = "has('nvim')"
 on_i = 1
 hook_source = '''
     let g:deoplete#enable_at_startup = 1
-    source ~/.vim/rc/plugins/deoplete.rc.vim
+    source ~/.config/nvim/rc/plugins/deoplete.rc.vim
 '''
 
 [[plugins]]
@@ -12,7 +12,7 @@ repo = 'Shougo/denite.nvim'
 if = "has('nvim')"
 on_cmd = 'Denite'
 depends = ['neomru.vim']
-hook_source = 'source ~/.vim/rc/plugins/denite.rc.vim'
+hook_source = 'source ~/.config/nvim/rc/plugins/denite.rc.vim'
 hook_add = '''
     " Prefix key
     nnoremap [denite] <Nop>

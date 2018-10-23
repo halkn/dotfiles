@@ -1,0 +1,202 @@
+###############################################################################
+# FileType
+###############################################################################
+# For zsh
+[[plugins]]
+repo = 'zchee/deoplete-zsh'
+on_ft = ['zsh']
+
+# For markdown
+[[plugins]]
+repo = 'kannokanno/previm'
+depends = ['open-browser.vim']
+on_ft = ['markdown']
+hook_add = '''
+    nnoremap <leader>p :PrevimOpen<CR>
+    let g:previm_open_cmd="open -a Safari"
+'''
+
+[[plugins]]
+repo = 'plasticboy/vim-markdown'
+on_ft = ['markdown']
+hook_add = '''
+let g:vim_markdown_folding_disabled = 0
+let g:vim_markdown_folding_level = 6
+let g:vim_markdown_no_default_key_mappings = 0
+let g:vim_markdown_toc_autofit = 1
+let g:vim_markdown_conceal = 0
+let g:vim_markdown_math = 1
+let g:vim_markdown_autowrite = 0
+let g:vim_markdown_edit_url_in = 'hsplit'
+augroup MarkdownCommands
+    autocmd!
+    autocmd FileType markdown nnoremap <silent><LocalLeader>o :<C-u>Toc<CR>
+augroup END
+'''
+
+[[plugins]]
+repo = 'dhruvasagar/vim-table-mode'
+on_ft = ['markdown']
+hook_add = '''
+    let g:table_mode_corner = '|'
+    let g:table_mode_always_active = 1
+    let g:table_mode_syntax = 1
+    let g:table_mode_auto_align = 1
+    augroup TableCommands
+        autocmd!
+        autocmd FileType markdown nnoremap <silent><LocalLeader>a :<C-u>TableModeRealign<CR>
+        autocmd FileType markdown nnoremap <silent><LocalLeader>t :<C-u>Tableize<CR>
+        autocmd FileType markdown vnoremap <silent><LocalLeader>t :<C-u>'<,'>Tableize<CR>
+    augroup END
+'''
+
+# For python
+[[plugins]]
+repo = 'thinca/vim-quickrun'
+depends = ['vimproc.vim']
+on_ft = ['python']
+hook_source = '''
+    " Running vimproc
+    " Showing success is buffer and error is quickfix
+    let g:quickrun_config = {
+        \ '_' : {
+            \ 'runner' : 'vimproc',
+            \ 'runner/vimproc/updatetime' : 40,
+            \ 'outputter' : 'error',
+            \ 'outputter/error/success' : 'buffer',
+            \ 'outputter/error/error'   : 'quickfix',
+            \ 'outputter/buffer/split' : ':botright 8sp',
+        \ }
+    \}
+
+    " Close quickfix is [q]
+
+    augroup MyQuickFixClose
+        au FileType qf nnoremap <silent><buffer>q :quit<CR>
+    augroup END
+
+    " Keymap
+    let g:quickrun_no_default_key_mappings = 1
+    " Running with close quickfix and save file
+    nnoremap <Leader>r :<C-U>QuickRun<CR>
+    xnoremap <Leader>r gv:<C-U>QuickRun<CR>
+
+    " Stop quickrun is [C-c]
+    nnoremap <expr><silent> <C-c> quickrun#is_running() ? quickrun#sweep_sessions() : "\<C-c>"
+'''
+
+[[plugins]]
+repo = 'zchee/deoplete-jedi'
+depends = ['deoplete.nvim']
+on_ft = ['python']
+
+[[plugins]]
+repo = 'lambdalisue/vim-django-support'
+on_ft = ['python', 'djangohtml']
+
+[[plugins]]
+repo = 'jmcantrell/vim-virtualenv'
+on_ft = ['python']
+
+# For others
+[[plugins]]
+repo = 'cespare/vim-toml'
+on_ft = ['toml']
+
+[[plugins]]
+repo = 'IN3D/vim-raml'
+on_ft = ['raml']
+
+[[plugins]]
+repo = 'elzr/vim-json'
+on_ft = ['json']
+hook_source = '''
+    let g:vim_json_syntax_conceal = 0
+    let g:indentLine_noConcealCursor = ""
+'''
+
+[[plugins]]
+repo = 'osyo-manga/vim-precious'
+depends = ['context_filetype.vim']
+on_ft = ['markdown', 'toml', 'help']
+
+[[plugins]]
+repo = 'Shougo/context_filetype.vim'
+
+#####################################################################
+# Utility
+#####################################################################
+[[plugins]]
+repo = 'junegunn/vim-easy-align'
+on_map = ['<Plug>(EasyAlign)']
+hook_add = '''
+    vmap <Enter> <Plug>(EasyAlign)
+'''
+
+[[plugins]]
+repo = 'haya14busa/vim-asterisk'
+on_map = [
+    '<Plug>(asterisk-z*)',
+    '<Plug>(asterisk-z#)',
+    '<Plug>(asterisk-gz*)',
+    '<Plug>(asterisk-gz#)',
+]
+hook_add = '''
+    map *  <Plug>(asterisk-z*)
+    map #  <Plug>(asterisk-z#)
+    map g* <Plug>(asterisk-gz*)
+    map g# <Plug>(asterisk-gz#)
+'''
+
+[[plugins]]
+repo = 'Yggdroot/indentLine'
+on_cmd = ['IndentLinesToggle']
+hook_add = '''
+    let g:loaded_indentLine = 1
+    nnoremap <Space>i <C-u>:IndentLinesToggle<CR>
+'''
+
+[[plugins]]
+repo = 'Shougo/vimproc.vim'
+build = 'make'
+
+[[plugins]]
+repo = 'scrooloose/nerdtree'
+on_cmd = ['NERDTreeToggle']
+on_map = ['<plug>NERDTreeTabsToggle', '<plug>NERDTreeTabsFind']
+depends = ['nerdtree-git-plugin', 'vim-nerdtree-tabs']
+hook_add = '''
+    let NERDTreeShowHidden=1
+    let NERDTreeIgnore=['\.pyc$', '__pycache__']
+    nmap <Leader>t <plug>NERDTreeTabsToggle<CR>
+'''
+
+[[plugins]]
+repo = 'jistr/vim-nerdtree-tabs'
+hook_add = '''
+    let g:nerdtree_tabs_autofind = 0
+    nmap <Leader>f <plug>NERDTreeTabsFind<CR>
+'''
+
+[[plugins]]
+repo = 'Xuyuanp/nerdtree-git-plugin'
+depends = ['vim-fugitive']
+
+[[plugins]]
+repo = 'tpope/vim-fugitive'
+on_cmd = [
+  'Git',
+  'Gcommit',
+  'Gstatus',
+  'Gdiff',
+  'Gblame',
+  'Glog'
+]
+hook_add = '''
+    nmap [figitive] <Nop>
+    map <Leader>g [figitive]
+    nnoremap <silent> [figitive]c :<C-u>Gcommit<CR>
+    nnoremap <silent> [figitive]d :<C-u>Gdiff<CR>
+    nnoremap <silent> [figitive]b :<C-u>Gblame<CR>
+    nnoremap <silent> [figitive]l :<C-u>Glog<CR>
+'''
