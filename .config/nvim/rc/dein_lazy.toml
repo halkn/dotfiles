@@ -6,11 +6,14 @@
 repo = 'zchee/deoplete-zsh'
 on_ft = ['zsh']
 
+[[plugins]]
+repo = 'dahu/vim-asciidoc'
+
 # For markdown
 [[plugins]]
 repo = 'kannokanno/previm'
 depends = ['open-browser.vim']
-on_ft = ['markdown']
+on_ft = ['markdown','asciidoc']
 hook_add = '''
     nnoremap <leader>p :PrevimOpen<CR>
     let g:previm_open_cmd="open -a Safari"
