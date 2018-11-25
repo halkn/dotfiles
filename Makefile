@@ -22,6 +22,8 @@ deploy:
 
 init:
 	@echo '==> Start to Initialize'
-	@echo '$(NVIM_CONF_DIR)'
+	@echo ''
+	@DOTPATH=$(ROOT_PATH) bash $(ROOT_PATH)/etc/install.sh
+	@echo ''
 	@echo '==> End to Initialize'
 
