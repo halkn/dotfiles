@@ -7,5 +7,6 @@ brew install tig
 brew install tmux
 brew install reattach-to-user-namespace
 brew install vim
+brew install fzf
 
 exit 0
