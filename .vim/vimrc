@@ -1,0 +1,112 @@
+" Encoding {{{
+set encoding=utf-8
+scriptencoding utf-8
+"}}}
+
+" Plugin Manager {{{
+call plug#begin('~/.vim/plugged')
+
+Plug 'itchyny/lightline.vim'
+
+" Util
+Plug 'scrooloose/nerdtree', { 'on':  'NERDTreeToggle' }
+Plug 'vim-jp/vimdoc-ja'
+Plug 'shougo/denite.nvim'
+
+" coloscheme
+Plug 'w0ng/vim-hybrid'
+Plug 'nightsense/snow'
+
+call plug#end()
+" }}}
+
+" File types {{{
+augroup vimrc_filetype
+	autocmd!
+    autocmd FileType text      setlocal textwidth=0
+	autocmd FileType vim       setlocal foldmethod=marker
+augroup END
+" }}}
+
+" mapping {{{
+" reload vimrc
+nnoremap <Space>s :source $HOME/.vim/vimrc<CR>
+" }}}
+
+" options {{{
+set completeopt=menu,menuone,noinsert,noselect
+
+" Don't creat swap files
+set nobackup
+set noswapfile
+set noundofile
+
+" Appearance
+set wildmenu
+set display=lastline
+set laststatus=2
+set cursorline
+set number
+set relativenumber
+set wrap
+set list
+set listchars=tab:»-,trail:-,eol:↲,extends:»,precedes:«,nbsp:%
+set scrolloff=8
+set showtabline=2
+set synmaxcol=512
+set showcmd
+
+" buffer
+set hidden
+set switchbuf=useopen
+
+" edit
+set smarttab
+set expandtab
+set autoindent
+set shiftwidth=4
+set shiftround
+set tabstop=4
+set virtualedit=block
+set virtualedit=onemore
+set whichwrap=b,s,[,],<,>
+set backspace=indent,eol,start
+
+" window
+set splitbelow
+set splitright
+set winwidth=30
+set winheight=1
+set cmdwinheight=5
+set noequalalways
+
+" search
+set ignorecase
+set smartcase
+set incsearch
+set hlsearch
+
+" clipborad
+set clipboard=unnamed
+
+" }}}
+
+" Plugin setting {{{
+" lightline
+let g:lightline = {
+    \ 'colorscheme': 'wombat',
+    \ }
+
+" help {{{
+set helplang=ja,en
+" }}}
+
+" }}}
+
+" color {{{
+filetype plugin indent on
+syntax on
+set background=dark
+colorscheme hybrid
+"}}}
+
