@@ -26,7 +26,7 @@ zplug "zsh-users/zsh-syntax-highlighting", defer:2
 zplug "zsh-users/zsh-autosuggestions"
 zplug "zsh-users/zsh-completions"
 # interactive filter
-zplug "junegunn/fzf-bin", as:command, from:gh-r, rename-to:fzf
+# zplug "junegunn/fzf-bin", as:command, from:gh-r, rename-to:fzf
 
 ## Install plugins if there are plugins that have not been installed
 if ! zplug check --verbose; then
@@ -42,9 +42,6 @@ zplug load
 if (which zprof > /dev/null) ;then
   zprof | less
 fi
-
-# zsh起動時にtmux起動
-[[ -z "$TMUX" && ! -z "$PS1" ]] && exec tmux
 
 #####################################################################
 # General Setting
@@ -86,7 +83,7 @@ alias mkdir='nocorrect mkdir'
 alias ls="ls -G"
 alias ll="ls -lh"
 alias la="ll -a"
-alias vim="nvim"
+#alias vim="nvim"
 
 # human readable for du and df
 alias du="du -h"
@@ -148,4 +145,10 @@ HISTSIZE=10000
 SAVEHIST=10000
 setopt hist_ignore_dups
 setopt share_history
+
+#####################################################################
+# Shell StartUp
+#####################################################################
+# Start tmux
+[[ -z "$TMUX" && ! -z "$PS1" ]] && exec tmux
 
