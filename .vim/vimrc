@@ -29,8 +29,12 @@ augroup END
 " }}}
 
 " mapping {{{
+" set reader
+let mapleader = "\<Space>"
+
 " reload vimrc
 nnoremap <Space>s :source $HOME/.vim/vimrc<CR>
+
 " }}}
 
 " options {{{
@@ -92,10 +96,59 @@ set clipboard=unnamed
 " }}}
 
 " Plugin setting {{{
-" lightline
+
+" lightline {{{
 let g:lightline = {
     \ 'colorscheme': 'wombat',
     \ }
+" }}}
+
+" denite {{{
+
+" Prefix key
+nnoremap [denite] <Nop>
+nmap <C-j> [denite]
+
+" Keymap
+" Current direcotry files
+nnoremap <silent> [denite]<C-p> :<C-u>Denite file_rec<CR>
+" Buffer files
+nnoremap <silent> [denite]<C-b> :<C-u>Denite buffer<CR>
+" Grep files
+nnoremap <silent> [denite]<C-g> :<C-u>Denite -auto_preview grep<CR>
+" Grep cursor word
+nnoremap <silent> [denite]<C-w> :<C-u>DeniteCursorWord grep<CR>
+" Recent files
+nnoremap <silent> [denite]<C-r> :<C-u>Denite file_mru<CR>
+" Outline
+nnoremap <silent> [denite]<C-o> :<C-u>Denite outline<CR>
+
+call denite#custom#map('normal', '<C-n>', '<denite:move_to_next_line>', 'noremap')
+call denite#custom#map('normal', '<C-p>', '<denite:move_to_previous_line>', 'noremap')
+call denite#custom#map('insert', '<C-n>', '<denite:move_to_next_line>', 'noremap')
+call denite#custom#map('insert', '<C-p>', '<denite:move_to_previous_line>', 'noremap')
+call denite#custom#map('insert', '<C-f>', '<denite:assign_next_text>', 'noremap')
+call denite#custom#map('insert', '<C-b>', '<denite:assign_previous_text>', 'noremap')
+call denite#custom#map('insert', '<C-s>', '<denite:do_action:split>', 'noremap')
+call denite#custom#map('insert', '<C-v>', '<denite:do_action:vsplit>', 'noremap')
+call denite#custom#map('insert', '<C-o>', '<denite:do_action:tabopen>', 'noremap')
+
+" customize ignore globs
+call denite#custom#source('file_rec', 'matchers', ['matcher_fuzzy','matcher_ignore_globs'])
+call denite#custom#filter('matcher_ignore_globs', 'ignore_globs',
+      \ [
+      \ '.git/', 'build/', '__pycache__/',
+      \ 'images/', '*.o', '*.make',
+      \ '*.min.*',
+      \ 'img/', 'fonts/'])
+
+" }}}
+
+" nerdtree {{{
+let NERDTreeShowHidden=1
+nmap <Leader>t :NERDTreeToggle<CR>
+'
+"}}}
 
 " help {{{
 set helplang=ja,en
