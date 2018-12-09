@@ -1,6 +1,6 @@
 ROOT_PATH     := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 CANDIDATES    := $(wildcard .??*)
-EXCLUSIONS    := .git 
+EXCLUSIONS    := .git .gitignore
 DOTFILES      := $(filter-out $(EXCLUSIONS), $(CANDIDATES))
 NVIM_CONF_DIR := ~/.config/nvim
 
