@@ -14,3 +14,6 @@ export LESSOPEN='| /usr/local/bin/src-hilite-lesspipe.sh %s'
 # for Neovim
 export XDG_CONGIG_HOME=~/.config
 
+# for fzf
+export FZF_DEFAULT_COMMAND='find . -type f'
+export FZF_DEFAULT_OPTS='--height 50% --layout=reverse --border'
