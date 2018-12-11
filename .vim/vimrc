@@ -10,9 +10,6 @@ silent! source $VIMRUNTIME/defaults.vim
 " ============================================================================
 call plug#begin('~/.vim/plugged')
 
-" Dork Powered Plugin
-Plug 'shougo/denite.nvim'
-
 " Util
 Plug 'itchyny/lightline.vim'
 Plug 'scrooloose/nerdtree', { 'on':  'NERDTreeToggle' }
@@ -53,8 +50,8 @@ let mapleader = "\<Space>"
 " reload vimrc
 nnoremap <Space>s :source $HOME/.vim/vimrc<CR>
 
-" Clear search hi
-nnoremap <silent> <Space>h :noh<CR>
+" Clear search highlight
+nnoremap <Esc><Esc> :nohlsearch<CR><Esc>
 
 " Multi line move
 noremap k gk
@@ -70,6 +67,7 @@ inoremap <C-f> <Right>
 inoremap <C-a> <C-o>^
 inoremap <C-e> <End>
 inoremap <C-d> <Del>
+
 " }}}
 " ============================================================================
 " options {{{
@@ -144,47 +142,6 @@ set helplang=ja,en
 " Plugin setting {{{
 " ============================================================================
 
-" Dark Powered Plugin {{{
-
-" denite 
-" Prefix key
-nnoremap [denite] <Nop>
-nmap <C-j> [denite]
-
-" Keymap
-" Current direcotry files
-nnoremap <silent> [denite]<C-p> :<C-u>Denite file_rec<CR>
-" Buffer files
-nnoremap <silent> [denite]<C-b> :<C-u>Denite buffer<CR>
-" Grep files
-nnoremap <silent> [denite]<C-g> :<C-u>Denite -auto_preview grep<CR>
-" Grep cursor word
-nnoremap <silent> [denite]<C-w> :<C-u>DeniteCursorWord grep<CR>
-" Recent files
-nnoremap <silent> [denite]<C-r> :<C-u>Denite file_mru<CR>
-" Outline
-nnoremap <silent> [denite]<C-o> :<C-u>Denite outline<CR>
-
-call denite#custom#map('normal', '<C-n>', '<denite:move_to_next_line>', 'noremap')
-call denite#custom#map('normal', '<C-p>', '<denite:move_to_previous_line>', 'noremap')
-call denite#custom#map('insert', '<C-n>', '<denite:move_to_next_line>', 'noremap')
-call denite#custom#map('insert', '<C-p>', '<denite:move_to_previous_line>', 'noremap')
-call denite#custom#map('insert', '<C-f>', '<denite:assign_next_text>', 'noremap')
-call denite#custom#map('insert', '<C-b>', '<denite:assign_previous_text>', 'noremap')
-call denite#custom#map('insert', '<C-s>', '<denite:do_action:split>', 'noremap')
-call denite#custom#map('insert', '<C-v>', '<denite:do_action:vsplit>', 'noremap')
-call denite#custom#map('insert', '<C-o>', '<denite:do_action:tabopen>', 'noremap')
-
-" customize ignore globs
-call denite#custom#source('file_rec', 'matchers', ['matcher_fuzzy','matcher_ignore_globs'])
-call denite#custom#filter('matcher_ignore_globs', 'ignore_globs',
-      \ [
-      \ '.git/', 'build/', '__pycache__/',
-      \ 'images/', '*.o', '*.make',
-      \ '*.min.*',
-      \ 'img/', 'fonts/'])
-" }}}
-
 " Util {{{
 " lightline 
 let g:lightline = {
@@ -207,31 +164,23 @@ nnoremap <silent> <Leader>      :WhichKey '<Leader>'<CR>
 " }}}
 
 " fzf {{{
+" mapping
+nnoremap <silent> <Leader>f :<C-u>Files<CR>
+nnoremap <silent> <Leader>G :<C-u>GFiles?<CR>
+nnoremap <silent> <Leader>b :<C-u>Buffers<CR>
+nnoremap <silent> <Leader>rg :<C-u>Rg<CR>
 
-let g:fzf_colors =
-\ { 'fg':      ['fg', 'Normal'],
-  \ 'bg':      ['bg', 'Normal'],
-  \ 'hl':      ['fg', 'Comment'],
-  \ 'fg+':     ['fg', 'CursorLine', 'CursorColumn', 'Normal'],
-  \ 'bg+':     ['bg', 'CursorLine', 'CursorColumn'],
-  \ 'hl+':     ['fg', 'Statement'],
-  \ 'info':    ['fg', 'PreProc'],
-  \ 'border':  ['fg', 'Ignore'],
-  \ 'prompt':  ['fg', 'Conditional'],
-  \ 'pointer': ['fg', 'Exception'],
-  \ 'marker':  ['fg', 'Keyword'],
-  \ 'spinner': ['fg', 'Label'],
-  \ 'header':  ['fg', 'Comment'] }
-
+" Likewise, Files command with preview window
 command! -bang -nargs=? -complete=dir Files
   \ call fzf#vim#files(<q-args>, fzf#vim#with_preview(), <bang>0)
-
+" Rg
 command! -bang -nargs=* Rg
-  \ call fzf#vim#grep(
-  \   'rg --column --line-number --no-heading --color=always --smart-case '.shellescape(<q-args>), 1,
-  \   <bang>0 ? fzf#vim#with_preview('up:60%')
-  \           : fzf#vim#with_preview('right:50%:hidden', '?'),
-  \   <bang>0)
+\ call fzf#vim#grep(
+\ 'rg --column --line-number --hidden --ignore-case --no-heading --color=always '.shellescape(<q-args>), 1,
+\ <bang>0 ? fzf#vim#with_preview({'options': '--delimiter : --nth 4..'}, 'up:60%')
+\ : fzf#vim#with_preview({'options': '--delimiter : --nth 4..'}, 'right:50%:hidden', 'p'),
+\ <bang>0)
+
 " }}}
 
 " color {{{
