@@ -3,8 +3,8 @@
 # init
 #####################################################################
 # zmodload zsh/zprof
-if [ ! -f ~/.zshrc.zwc -o ~/.zshrc -nt ~/.zshrc.zwc ]; then
-    zcompile $ZDORDIR/.zshrc
+if [ ! -f $ZDOTDIR/.zshrc.zwc -o $ZDOTDIR/.zshrc -nt $ZDOTDIR/.zshrc.zwc ]; then
+    zcompile $ZDOTDIR/.zshrc
 fi
 
 #####################################################################

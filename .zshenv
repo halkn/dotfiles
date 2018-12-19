@@ -8,6 +8,7 @@ export LSCOLORS=gxfxcxdxbxegedabagacad
 export SHELL=zsh
 export LESS='-g -i -M -R -S -W -z-4 -x4'
 export LESSOPEN='| /usr/local/bin/src-hilite-lesspipe.sh %s'
+export LESSHISTFILE=-
 
 # XDG Base Directory
 export XDG_CONFIG_HOME=~/.config
