@@ -2,45 +2,9 @@
 #####################################################################
 # init
 #####################################################################
-# zmodload zsh/zprof
+# auto zcompile
 if [ ! -f $ZDOTDIR/.zshrc.zwc -o $ZDOTDIR/.zshrc -nt $ZDOTDIR/.zshrc.zwc ]; then
     zcompile $ZDOTDIR/.zshrc
-fi
-
-#####################################################################
-# zplug
-#####################################################################
-# init
-source ~/.zplug/init.zsh
-
-# self-manage
-zplug 'zplug/zplug', hook-build:'zplug --self-manage'
-# theme
-zplug "mafredri/zsh-async"
-zplug "sindresorhus/pure"
-# history
-zplug "zsh-users/zsh-history-substring-search", defer:3
-# highlight
-zplug "zsh-users/zsh-syntax-highlighting", defer:2
-# completions
-zplug "zsh-users/zsh-autosuggestions"
-zplug "zsh-users/zsh-completions"
-# interactive filter
-# zplug "junegunn/fzf-bin", as:command, from:gh-r, rename-to:fzf
-
-## Install plugins if there are plugins that have not been installed
-if ! zplug check --verbose; then
-  printf "Install? [y/N]: "
-    if read -q; then
-        echo; zplug install
-    fi
-fi
-
-# Then, source plugins and add commands to $PATH
-zplug load
-
-if (which zprof > /dev/null) ;then
-  zprof | less
 fi
 
 #####################################################################
@@ -172,10 +136,42 @@ function cd() {
     done
 }
 
+#####################################################################
+# zplugin
+#####################################################################
+# Instaling zplugin
+if [ ! -e $HOME/.zplugin ]; then
+    git clone https://github.com/zdharma/zplugin.git ~/.zplugin/bin
+fi
+
+# Initialize
+source $HOME/.zplugin/bin/zplugin.zsh
+autoload -Uz _zplugin
+(( ${+_comps} )) && _comps[zplugin]=_zplugin
+
+# Theme
+zplugin ice pick"async.zsh" src"pure.zsh"
+zplugin light sindresorhus/pure
+
+# Load zsh plugins
+zplugin light zsh-users/zsh-syntax-highlighting
+zplugin light zsh-users/zsh-autosuggestions
+
+# Lazy load zsh plugins
+zplugin ice wait'!1'; zplugin light greymd/tmux-xpanes
+zplugin ice wait'!1'; zplugin light mollifier/cd-gitroot
+
+# Load completions
+zplugin ice blockf; zplugin light zsh-users/zsh-completions
+zplugin ice blockf; zplugin light felixr/docker-zsh-completion
 
 #####################################################################
 # Shell StartUp
 #####################################################################
 # Start tmux
 [[ -z "$TMUX" && ! -z "$PS1" ]] && exec tmux
+
+#if (which zprof > /dev/null) ;then
+#  zprof | less
+#fi
 
