@@ -2,7 +2,6 @@ ROOT_PATH     := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 CANDIDATES    := $(wildcard .??*)
 EXCLUSIONS    := .git .gitignore
 DOTFILES      := $(filter-out $(EXCLUSIONS), $(CANDIDATES))
-NVIM_CONF_DIR := ~/.config/nvim
 
 list: 
 	@echo '==> Show Target dotfiles.'
@@ -16,7 +15,6 @@ deploy:
 	@echo '==> Start to deploy dotfiles to home directory.'
 	@echo ''
 	@$(foreach val, $(DOTFILES), ln -sfnv $(abspath $(val)) $(HOME)/$(val);)
-	@mkdir -p $(NVIM_CONF_DIR)
 	@echo ''
 	@echo '==> End to deploy dotfiles to home directory.'
 
