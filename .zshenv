@@ -16,6 +16,7 @@ if [ -z $TMUX ]; then
     # XDG Base Directory
     export XDG_CONFIG_HOME=~/.config
     export XDG_DATA_HOME=~/.local/share
+    export XDG_CACHE_HOME=~/.cache
 
     # fzf
     export FZF_DEFAULT_COMMAND='rg --files --hidden --glob "!.git"'
