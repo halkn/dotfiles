@@ -169,9 +169,9 @@ zplugin ice blockf; zplugin light felixr/docker-zsh-completion
 # Shell StartUp
 #####################################################################
 # Start tmux
-#[[ -z "$TMUX" && ! -z "$PS1" ]] && exec tmux
+[[ -z "$TMUX" && ! -z "$PS1" ]] && exec tmux
 
-if (which zprof > /dev/null) ;then
-  zprof | less
-fi
+#if (which zprof > /dev/null) ;then
+#  zprof | less
+#fi
 
