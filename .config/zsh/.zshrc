@@ -20,21 +20,56 @@ autoload -Uz compinit
 # load compinit
 compinit
 
-# 補完侯補をメニューから選択する。
-# select=2: 補完候補を一覧から選択する。
-#           ただし、補完候補が2つ以上なければすぐに補完する。
+# Choose a complementary candidate from the menu.
+# select=2: Complement immediately
+#           as soon as there are two or more completion candidates
 zstyle ':completion:*:default' menu select=2
 
-# 補完候補にLS_COLORSと同じ色を付ける。 
-# zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
-zstyle ':completion:*' list-colors $LSCOLORS
+# ambiguous search when no match found
+#   m:{a-z}={A-Z} : Ignore UperCace and LowerCase
+#   r:|[._-]=*    : Complement it as having a wild card "*" before "." , "_" , "-"
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z} r:|[._-]=*'
 
+# complection format
+zstyle ':completion:*' format "--- %d ---"
+
+# grouping for completion list
 zstyle ':completion:*' group-name ''
-zstyle ':completion:*:messages' format '%d'
-zstyle ':completion:*:descriptions' format '%d'
-zstyle ':completion:*:options' verbose yes
-zstyle ':completion:*:values' verbose yes
-zstyle ':completion:*:options' prefix-needed yes
+
+# use cache
+zstyle ':completion:*' use-cache yes
+
+# use detailed completion
+zstyle ':completion:*' verbose yes
+
+# how to find the completion list?
+# - _complete:      complete
+# - _oldlist:       complete from previous result
+# - _match:         complete from the suggestin without expand glob
+# - _history:       complete from history
+# - _ignored:       complete from ignored
+# - _approximate:   complete from approximate suggestions
+# - _prefix:        complete without caring the characters after carret
+zstyle ':completion:*' completer \
+    _complete \
+    _match \
+    _approximate \
+    _oldlist \
+    _history \
+    _ignored \
+    _prefix
+
+#####################################################################
+# ls setting
+#####################################################################
+if [ -n "${LS_COLORS}" ]; then
+    alias ls="ls --color=auto"
+    zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
+elif [ -n "{$LSCOLORS}" ]; then
+    alias ls="ls -G"
+    zstyle ':completion:*' list-colors $LSCOLORS
+fi
+
 #####################################################################
 # alias
 #####################################################################
@@ -44,7 +79,6 @@ alias cp='nocorrect cp'
 alias mkdir='nocorrect mkdir'
 
 # Util
-alias ls="ls -G"
 alias ll="ls -lh"
 alias la="ll -a"
 #alias vim="nvim"
@@ -109,7 +143,6 @@ HISTSIZE=10000
 SAVEHIST=10000
 setopt hist_ignore_dups
 setopt share_history
-
 
 #####################################################################
 # function
