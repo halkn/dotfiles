@@ -2,4 +2,5 @@
 .vim/plugged
 .config/zsh/.zcompdump
 .config/zsh/.zshrc.zwc
+.config/zsh/.zcompcache
 
