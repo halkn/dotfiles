@@ -12,10 +12,13 @@ call plug#begin('~/.vim/plugged')
 
 " Util
 Plug 'itchyny/lightline.vim'
-Plug 'scrooloose/nerdtree', { 'on':  'NERDTreeToggle' }
-Plug 'airblade/vim-gitgutter'
 Plug 'liuchengxu/vim-which-key'
 Plug 'vim-jp/vimdoc-ja'
+Plug 'scrooloose/nerdtree', { 'on':  'NERDTreeToggle' }
+
+" Git
+Plug 'airblade/vim-gitgutter'
+Plug 'tpope/vim-fugitive', { 'on': ['Git', 'Gcommit', 'Gstatus', 'Gdiff', 'Gblame', 'Glog'] }
 
 " Fuzzy Finder
 Plug 'junegunn/fzf'
@@ -23,6 +26,14 @@ Plug 'junegunn/fzf.vim'
 
 " edit
 Plug 'machakann/vim-sandwich'
+Plug 'Yggdroot/indentLine', { 'on': 'IndentLinesToggle' }
+Plug 'junegunn/vim-easy-align', { 'on': '<Plug>(EasyAlign)' }
+
+" LSP
+Plug 'prabirshrestha/async.vim'
+Plug 'prabirshrestha/vim-lsp'
+Plug 'prabirshrestha/asyncomplete.vim'
+Plug 'prabirshrestha/asyncomplete-lsp.vim'
 
 " coloscheme
 Plug 'w0ng/vim-hybrid'
@@ -67,6 +78,15 @@ inoremap <C-f> <Right>
 inoremap <C-a> <C-o>^
 inoremap <C-e> <End>
 inoremap <C-d> <Del>
+
+" Resize window
+noremap <C-w>> 10<C-w>>
+noremap <C-w>< 10<C-w><
+noremap <C-w>+ 10<C-w>+
+noremap <C-w>- 10<C-w>-
+
+" Not yank is delete operation
+nnoremap x "_x
 
 " }}}
 " ============================================================================
@@ -137,6 +157,9 @@ set completeopt=menu,menuone,noinsert,noselect
 " help
 set helplang=ja,en
 
+" vimfinfo
+set viminfo+='1000,n$XDG_CACHE_HOME/vim/viminfo
+
 " }}}
 " ============================================================================
 " Plugin setting {{{
@@ -152,14 +175,33 @@ let g:lightline = {
 let NERDTreeShowHidden=1
 nmap <Leader>t :NERDTreeToggle<CR>
 
+" vim-which-key
+set timeoutlen=750
+nnoremap <silent> <Leader>      :WhichKey '<Leader>'<CR>
+
+" indentLine
+let g:loaded_indentLine = 1
+nnoremap <Space>i <C-u>:IndentLinesToggle<CR>
+
+" vim-easy-align
+vmap <Enter> <Plug>(EasyAlign)
+
+" }}}
+
+" Git {{{
+
 " vim-gitgutter
 let g:gitgutter_map_keys = 0
 map [g <Plug>GitGutterPrevHunk
 nmap ]g <Plug>GitGutterNextHunk
 
-" vim-which-key
-set timeoutlen=750
-nnoremap <silent> <Leader>      :WhichKey '<Leader>'<CR>
+" fugitive
+nmap [fugitive] <Nop>
+map <Leader>g [fugitive]
+nnoremap <silent> [fugitive]c :<C-u>Gcommit<CR>
+nnoremap <silent> [fugitive]d :<C-u>Gdiff<CR>
+nnoremap <silent> [fugitive]b :<C-u>Gblame<CR>
+nnoremap <silent> [fugitive]l :<C-u>Glog<CR>
 
 " }}}
 
@@ -181,6 +223,16 @@ command! -bang -nargs=* Rg
 \ : fzf#vim#with_preview({'options': '--delimiter : --nth 4..'}, 'right:50%:hidden', 'p'),
 \ <bang>0)
 
+" }}}
+
+" LSP {{{
+if executable('pyls')
+    au User lsp_setup call lsp#register_server({
+        \ 'name': 'pyls',
+        \ 'cmd': {server_info->['pyls']},
+        \ 'whitelist': ['python'],
+        \ })
+endif
 " }}}
 
 " color {{{
