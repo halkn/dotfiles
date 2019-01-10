@@ -47,6 +47,6 @@ export LESS='-g -i -M -R -S -W -z-4 -x4'
 export LESSHISTFILE=-
 
 # fzf
-export FZF_DEFAULT_COMMAND='rg --files --hidden --glob "!.git"'
+export FZF_DEFAULT_COMMAND='rg --files --hidden --glob "!{.git,.svn}"'
 export FZF_DEFAULT_OPTS='--height 50% --layout=reverse --border'
 
