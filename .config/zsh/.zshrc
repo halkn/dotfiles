@@ -174,7 +174,7 @@ function cd() {
 #####################################################################
 # Instaling zplugin
 if [ ! -e $HOME/.zplugin ]; then
-    git clone https://github.com/zdharma/zplugin.git ~/.zplugin/bin
+    git clone https://github.com/zdharma/zplugin.git $HOME/.zplugin/bin
 fi
 
 # Initialize
