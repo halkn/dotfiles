@@ -148,6 +148,48 @@ setopt share_history
 # function
 #####################################################################
 
+
+# Open the selected file
+#   - CTRL-O to open with `open` command,
+#   - CTRL-E or Enter key to open with the $EDITOR
+fo() {
+  local out file key
+  IFS=$'\n' out=($(fzf-tmux --query="$1" --exit-0 --expect=ctrl-o,ctrl-e))
+  key=$(head -1 <<< "$out")
+  file=$(head -2 <<< "$out" | tail -1)
+  if [ -n "$file" ]; then
+    [ "$key" = ctrl-o ] && open "$file" || ${EDITOR:-vim} "$file"
+  fi
+}
+
+# fda - including hidden directories
+fda() {
+  local dir
+#  dir=$(find ${1:-.} -type d 2> /dev/null | fzf +m) && cd "$dir"
+  dir=$(fd --hidden --type d --follow --exclude ".git" 2> /dev/null | fzf +m) && cd "$dir"
+
+}
+
+# fdr - cd to selected parent directory
+fdr() {
+  local declare dirs=()
+  get_parent_dirs() {
+    if [[ -d "${1}" ]]; then dirs+=("$1"); else return; fi
+    if [[ "${1}" == '/' ]]; then
+      for _dir in "${dirs[@]}"; do echo $_dir; done
+    else
+      get_parent_dirs $(dirname "$1")
+    fi
+  }
+  local DIR=$(get_parent_dirs $(realpath "${1:-$PWD}") | fzf-tmux --tac)
+  cd "$DIR"
+}
+
+# fh - repeat history
+fh() {
+  print -z $( ([ -n "$ZSH_NAME" ] && fc -l 1 || history) | fzf +s --tac | sed 's/ *[0-9]* *//')
+}
+
 # interactive cd
 function cd() {
     if [[ "$#" != 0 ]]; then
@@ -155,18 +197,29 @@ function cd() {
         return
     fi
     while true; do
-        local lsd=$(echo ".." && ls -ap | grep '/$' | sed 's;/$;;')
+        local lsd=$(ls -ap | grep '/$' | sed 's;/$;;')
         local dir="$(printf '%s\n' "${lsd[@]}" |
             fzf --reverse --preview '
                 __cd_nxt="$(echo {})";
                 __cd_path="$(echo $(pwd)/${__cd_nxt} | sed "s;//;/;")";
                 echo $__cd_path;
                 echo;
-                ls -p -FG "${__cd_path}";
+                ls -ap -FG "${__cd_path}";
         ')"
         [[ ${#dir} != 0 ]] || return 0
         builtin cd "$dir" &> /dev/null
     done
+}
+
+# interactice ssh
+function ssh() {
+    if [[ "$#" != 0 ]];then
+        /usr/bin/ssh "$@";
+        return
+    fi
+    local host=$(rg '^Host' ~/.ssh/config | awk '{print $2}' | fzf )
+    [[ ${#host} != 0 ]] || return 0
+    /usr/bin/ssh "$host" $> /dev/null
 }
 
 #####################################################################
