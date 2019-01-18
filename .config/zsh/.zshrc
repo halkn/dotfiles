@@ -219,7 +219,7 @@ function ssh() {
     fi
     local host=$(rg '^Host' ~/.ssh/config | awk '{print $2}' | fzf )
     [[ ${#host} != 0 ]] || return 0
-    /usr/bin/ssh "$host" $> /dev/null
+    /usr/bin/ssh "$host"
 }
 
 #####################################################################
