@@ -35,6 +35,12 @@ Plug 'prabirshrestha/vim-lsp'
 Plug 'prabirshrestha/asyncomplete.vim'
 Plug 'prabirshrestha/asyncomplete-lsp.vim'
 
+" ALE
+Plug 'w0rp/ale'
+
+" Language
+Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' }
+
 " coloscheme
 Plug 'w0ng/vim-hybrid'
 Plug 'arcticicestudio/nord-vim'
@@ -226,13 +232,52 @@ command! -bang -nargs=* Rg
 " }}}
 
 " LSP {{{
+let g:lsp_async_completion = 1
+"let g:lsp_log_verbose = 1
+"let g:lsp_log_file = expand('~/vim-lsp.log')
+
 if executable('pyls')
-    au User lsp_setup call lsp#register_server({
+    augroup LspPython
+    au!
+    autocmd User lsp_setup call lsp#register_server({
         \ 'name': 'pyls',
         \ 'cmd': {server_info->['pyls']},
         \ 'whitelist': ['python'],
         \ })
+    autocmd Filetype python setlocal omnifunc=lsp#complete
+    autocmd FileType python nmap gd <plug>(lsp-definition)
 endif
+
+if executable('gopls')
+    augroup LspGo
+    au!
+    autocmd User lsp_setup call lsp#register_server({
+        \ 'name': 'gopls',
+        \ 'cmd': {server_info->['gopls', '-mode', 'stdio']},
+        \ 'whitelist': ['go'],
+        \ })
+    autocmd FileType go setlocal omnifunc=lsp#complete
+    autocmd FileType go nmap gd <plug>(lsp-definition)
+    augroup END
+endif
+
+" }}}
+
+" vim-go {{{
+
+let g:go_def_mapping_enabled = 0
+let g:go_metalinter_autosave = 1
+let g:go_fmt_command = "goimports"
+
+let g:go_highlight_build_constraints = 1
+let g:go_highlight_extra_types = 1
+let g:go_highlight_fields = 1
+let g:go_highlight_functions = 1
+let g:go_highlight_methods = 1
+let g:go_highlight_operators = 1
+let g:go_highlight_structs = 1
+let g:go_highlight_types = 1
+
 " }}}
 
 " color {{{

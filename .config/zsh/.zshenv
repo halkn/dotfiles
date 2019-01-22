@@ -21,6 +21,9 @@ export XDG_CACHE_HOME=~/.cache
 # zsh
 export ZDOTDIR=$XDG_CONFIG_HOME/zsh
 
+# golang
+export GOPATH=$HOME/dev/go
+
 # PATH
 typeset -U path MANPATH
 path=(
@@ -30,6 +33,7 @@ path=(
     /bin
     /usr/sbin
     /sbin
+    $GOPATH/bin(N-/)
     $path
 )
 
