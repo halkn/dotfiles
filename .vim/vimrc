@@ -42,8 +42,7 @@ Plug 'w0rp/ale'
 Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' }
 
 " coloscheme
-Plug 'w0ng/vim-hybrid'
-Plug 'arcticicestudio/nord-vim'
+Plug 'jacoborus/tender.vim'
 
 call plug#end()
 
@@ -174,7 +173,7 @@ set viminfo+='1000,n$XDG_CACHE_HOME/vim/viminfo
 " Util {{{
 " lightline 
 let g:lightline = {
-    \ 'colorscheme': 'nord',
+    \ 'colorscheme': 'tender',
     \ }
 
 " nerdtree 
@@ -316,13 +315,6 @@ let g:go_highlight_types = 1
 
 " }}}
 
-" color {{{
-"
-" nord
-let g:nord_comment_brightness = 15
-let g:nord_uniform_diff_background = 1
-" }}}
-
 " }}}
 " ============================================================================
 " color {{{
@@ -330,7 +322,7 @@ let g:nord_uniform_diff_background = 1
 filetype plugin indent on
 syntax on
 set background=dark
-colorscheme nord
+colorscheme tender
 
 if exists('&termguicolors')
     set termguicolors
@@ -339,3 +331,4 @@ if exists('&termguicolors')
 endif
 "}}}
 " ============================================================================
+

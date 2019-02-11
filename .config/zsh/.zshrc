@@ -25,6 +25,10 @@ compinit
 #           as soon as there are two or more completion candidates
 zstyle ':completion:*:default' menu select=2
 
+# Color a completion candidate 
+# '' : default colors
+zstyle ':completion:*:default' list-colors ''
+
 # ambiguous search when no match found
 #   m:{a-z}={A-Z} : Ignore UperCace and LowerCase
 #   r:|[._-]=*    : Complement it as having a wild card "*" before "." , "_" , "-"
@@ -62,13 +66,18 @@ zstyle ':completion:*' completer \
 #####################################################################
 # ls setting
 #####################################################################
-if [ -n "${LS_COLORS}" ]; then
-    alias ls="ls --color=auto"
-    zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
-elif [ -n "{$LSCOLORS}" ]; then
-    alias ls="ls -G"
-    zstyle ':completion:*' list-colors $LSCOLORS
-fi
+case ${OSTYPE} in
+    darwin* ) 
+        if [[ -x `which gls` ]]; then
+            alias ls="gls --color=auto"
+        else
+            alias ls="ls -G"
+        fi
+        ;;
+    linux* )
+        alias ls="ls --color=always"
+        ;;
+esac
 
 #####################################################################
 # alias
@@ -79,9 +88,8 @@ alias cp='nocorrect cp'
 alias mkdir='nocorrect mkdir'
 
 # Util
-alias ll="ls -lh"
-alias la="ll -a"
-#alias vim="nvim"
+alias ll="ls -lhF"
+alias la="ls -lhAF"
 
 # human readable for du and df
 alias du="du -h"

@@ -39,13 +39,6 @@ path=(
 
 export MANPATH=/usr/local/opt/coreutils/libexec/gnuman:$MANPATH
 
-# ls
-if [[ -f $XDG_CONFIG_HOME/dircolors/dir_colors && -x `which dircolors` ]]; then
-    eval $(dircolors $XDG_CONFIG_HOME/dircolors/dir_colors)
-else
-    export LSCOLORS=gxfxcxdxbxegedabagacad
-fi
-
 # less
 export LESS='-g -i -M -R -S -W -z-4 -x4'
 export LESSHISTFILE=-
