@@ -15,6 +15,10 @@ Plug 'itchyny/lightline.vim'
 Plug 'liuchengxu/vim-which-key'
 Plug 'vim-jp/vimdoc-ja'
 Plug 'scrooloose/nerdtree', { 'on':  'NERDTreeToggle' }
+Plug 'tpope/vim-surround'
+Plug 'tpope/vim-repeat'
+Plug 'Yggdroot/indentLine', { 'on': 'IndentLinesToggle' }
+Plug 'junegunn/vim-easy-align', { 'on': '<Plug>(EasyAlign)' }
 
 " Git
 Plug 'airblade/vim-gitgutter'
@@ -24,11 +28,6 @@ Plug 'tpope/vim-fugitive', { 'on': ['Git', 'Gcommit', 'Gstatus', 'Gdiff', 'Gblam
 Plug 'junegunn/fzf'
 Plug 'junegunn/fzf.vim'
 
-" edit
-Plug 'machakann/vim-sandwich'
-Plug 'Yggdroot/indentLine', { 'on': 'IndentLinesToggle' }
-Plug 'junegunn/vim-easy-align', { 'on': '<Plug>(EasyAlign)' }
-
 " LSP
 Plug 'prabirshrestha/async.vim'
 Plug 'prabirshrestha/vim-lsp'
@@ -36,10 +35,13 @@ Plug 'prabirshrestha/asyncomplete.vim'
 Plug 'prabirshrestha/asyncomplete-lsp.vim'
 
 " ALE
-Plug 'w0rp/ale'
+Plug 'w0rp/ale', { 'for': ['go','sh'] }
 
 " Language
-Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' }
+Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' , 'for' : 'go' }
+
+" syntax
+Plug 'cespare/vim-toml', { 'for': 'toml' }
 
 " coloscheme
 Plug 'jacoborus/tender.vim'
@@ -267,7 +269,7 @@ endif
 " Linter
 let g:ale_linters = {
     \ 'go': ['gometalinter'],
-    \ 'shell': ['shellcheck'],
+    \ 'shell': ['shfmt'],
     \ }
 
 " Sign
