@@ -25,7 +25,7 @@ export ZDOTDIR=$XDG_CONFIG_HOME/zsh
 export GOPATH=$HOME/dev/go
 
 # PATH
-typeset -U path MANPATH
+typeset -U path
 path=(
     /usr/local/opt/coreutils/libexec/gnubin(N-/)
     /usr/local/bin
@@ -36,8 +36,6 @@ path=(
     $GOPATH/bin(N-/)
     $path
 )
-
-export MANPATH=/usr/local/opt/coreutils/libexec/gnuman:$MANPATH
 
 # less
 export LESS='-g -i -M -R -S -W -z-4 -x4'
