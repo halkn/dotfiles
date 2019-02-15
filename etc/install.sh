@@ -11,6 +11,7 @@ brew install vim
 brew install fzf
 brew install ripgrep
 brew install fd
+brew install p7zip
 echo "finished !"
 
 # except XDG_CONFIG_HOME because it is maked by dotdiles deploy
