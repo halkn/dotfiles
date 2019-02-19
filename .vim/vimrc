@@ -19,6 +19,7 @@ Plug 'tpope/vim-surround'
 Plug 'tpope/vim-repeat'
 Plug 'Yggdroot/indentLine', { 'on': 'IndentLinesToggle' }
 Plug 'junegunn/vim-easy-align', { 'on': '<Plug>(EasyAlign)' }
+Plug 'tyru/caw.vim', { 'on': ['<Plug>(caw:hatpos:toggle)', '<Plug>(caw:zeropos:toggle)'] }
 
 " Git
 Plug 'airblade/vim-gitgutter'
@@ -192,6 +193,13 @@ nnoremap <Space>i <C-u>:IndentLinesToggle<CR>
 
 " vim-easy-align
 vmap <Enter> <Plug>(EasyAlign)
+
+" caw.vim
+nmap <Leader>c <Plug>(caw:hatpos:toggle)
+vmap <Leader>c <Plug>(caw:hatpos:toggle)
+nmap <Leader>, <Plug>(caw:zeropos:toggle)
+vmap <Leader>, <Plug>(caw:zeropos:toggle)
+
 
 " }}}
 
