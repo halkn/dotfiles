@@ -75,7 +75,7 @@ case ${OSTYPE} in
         fi
         ;;
     linux* )
-        alias ls="ls --color=always"
+        alias ls="ls --color=auto"
         ;;
 esac
 
@@ -156,41 +156,50 @@ setopt share_history
 # function
 #####################################################################
 
-
-# Open the selected file
-#   - CTRL-O to open with `open` command,
-#   - CTRL-E or Enter key to open with the $EDITOR
+# fo - Open a file with fuzzy find.
 fo() {
-  local out file key
-  IFS=$'\n' out=($(fzf-tmux --query="$1" --exit-0 --expect=ctrl-o,ctrl-e))
-  key=$(head -1 <<< "$out")
-  file=$(head -2 <<< "$out" | tail -1)
-  if [ -n "$file" ]; then
-    [ "$key" = ctrl-o ] && open "$file" || ${EDITOR:-vim} "$file"
-  fi
+    local file
+    file=$(fzf) && open "$file"
 }
 
 # fda - including hidden directories
 fda() {
   local dir
-#  dir=$(find ${1:-.} -type d 2> /dev/null | fzf +m) && cd "$dir"
-  dir=$(fd --hidden --type d --follow --exclude ".git" 2> /dev/null | fzf +m) && cd "$dir"
+  dir=$(fd --hidden --type d --follow --exclude "{.git,.svn}" 2> /dev/null | fzf +m) && cd "$dir"
 
 }
 
 # fdr - cd to selected parent directory
+# fdr() {
+#   local declare dirs=()
+#   get_parent_dirs() {
+#     if [[ -d "${1}" ]]; then dirs+=("$1"); else return; fi
+#     if [[ "${1}" == '/' ]]; then
+#       for _dir in "${dirs[@]}"; do echo $_dir; done
+#     else
+#       get_parent_dirs $(dirname "$1")
+#     fi
+#   }
+#   local DIR=$(get_parent_dirs $(realpath "${1:-$PWD}") | fzf-tmux --tac)
+#   cd "$DIR"
+# }
 fdr() {
-  local declare dirs=()
-  get_parent_dirs() {
-    if [[ -d "${1}" ]]; then dirs+=("$1"); else return; fi
-    if [[ "${1}" == '/' ]]; then
-      for _dir in "${dirs[@]}"; do echo $_dir; done
-    else
-      get_parent_dirs $(dirname "$1")
-    fi
-  }
-  local DIR=$(get_parent_dirs $(realpath "${1:-$PWD}") | fzf-tmux --tac)
-  cd "$DIR"
+    get_parent_dirs() {
+        local dpath
+        for dir in $(echo ${PWD} | tr "/" " " | sed 's/^[ \t]*//')
+        do
+            dpath+="/"$dir && echo "${dpath}"
+        done
+    }
+    local DIR="$( get_parent_dirs |
+        fzf --reverse --preview '
+            __cd_nxt="$(echo {})";
+            __cd_path="$(echo ${__cd_nxt} | sed "s;//;/;")";
+            echo $__cd_path;
+            echo;
+            ls -aF "${__cd_path}";
+    ')"
+  cd "${DIR}"
 }
 
 # fh - repeat history
@@ -212,7 +221,7 @@ function cd() {
                 __cd_path="$(echo $(pwd)/${__cd_nxt} | sed "s;//;/;")";
                 echo $__cd_path;
                 echo;
-                ls -ap -FG "${__cd_path}";
+                ls -aF "${__cd_path}";
         ')"
         [[ ${#dir} != 0 ]] || return 0
         builtin cd "$dir" &> /dev/null
