@@ -20,6 +20,7 @@ Plug 'tpope/vim-repeat'
 Plug 'Yggdroot/indentLine', { 'on': 'IndentLinesToggle' }
 Plug 'junegunn/vim-easy-align', { 'on': '<Plug>(EasyAlign)' }
 Plug 'tyru/caw.vim', { 'on': ['<Plug>(caw:hatpos:toggle)', '<Plug>(caw:zeropos:toggle)'] }
+Plug 'cohama/lexima.vim'
 
 " Git
 Plug 'airblade/vim-gitgutter'
@@ -35,8 +36,8 @@ Plug 'prabirshrestha/vim-lsp'
 Plug 'prabirshrestha/asyncomplete.vim'
 Plug 'prabirshrestha/asyncomplete-lsp.vim'
 
-" ALE
-Plug 'w0rp/ale', { 'for': ['go','sh'] }
+" Linter
+Plug 'w0rp/ale', { 'for': ['go','sh','sql'] }
 
 " Language
 Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' , 'for' : 'go' }
@@ -55,6 +56,7 @@ call plug#end()
 " ============================================================================
 augroup vimrc_filetype
     autocmd!
+    autocmd FileType gitcommit setlocal spell spelllang=cjk,en
     autocmd FileType text      setlocal textwidth=0
     autocmd FileType vim       setlocal foldmethod=marker
 augroup END
@@ -277,8 +279,15 @@ endif
 " Linter
 let g:ale_linters = {
     \ 'go': ['gometalinter'],
-    \ 'shell': ['shfmt'],
+    \ 'sh': ['shellcheck'],
+    \ 'sql': ['sqlfmt']
     \ }
+
+" Fixer
+let g:ale_fixers = {
+    \ 'sh': ['shfmt'],
+    \ 'sql':['sqlfmt']
+    \}
 
 " Sign
 let g:ale_sign_column_always = 1
@@ -296,6 +305,9 @@ let g:ale_echo_msg_format = '[%linter%] %s [%severity%]'
 " Disable event of linter
 let g:ale_lint_on_enter = 1
 let g:ale_lint_on_text_changed = 'never'
+
+" Auto Fix on save
+let g:ale_fix_on_save = 1
 
 " Use the quickfix list instead of the loclist
 let g:ale_set_loclist = 0
