@@ -37,10 +37,12 @@ Plug 'prabirshrestha/asyncomplete.vim'
 Plug 'prabirshrestha/asyncomplete-lsp.vim'
 
 " Linter
-Plug 'w0rp/ale', { 'for': ['go','sh','sql'] }
+Plug 'w0rp/ale', { 'for': ['go','markdown','sh','sql'] }
 
 " Language
 Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' , 'for' : 'go' }
+Plug 'dhruvasagar/vim-table-mode', { 'for' : ['markdown','asciidoc'] }
+Plug 'iamcco/markdown-preview.vim'
 
 " syntax
 Plug 'cespare/vim-toml', { 'for': 'toml' }
@@ -279,6 +281,7 @@ endif
 " Linter
 let g:ale_linters = {
     \ 'go': ['gometalinter'],
+    \ 'markdown': ['markdownlint'],
     \ 'sh': ['shellcheck'],
     \ 'sql': ['sqlfmt']
     \ }
@@ -334,6 +337,13 @@ let g:go_highlight_methods = 1
 let g:go_highlight_operators = 1
 let g:go_highlight_structs = 1
 let g:go_highlight_types = 1
+
+" }}}
+
+" markdown {{{
+
+" vim-table-mode
+let g:table_mode_corner = '|'
 
 " }}}
 
