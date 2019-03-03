@@ -1,0 +1,12 @@
+[filelayout]
+[[filelayout.type]]
+id = "example1"
+length =[1,2,3,4]
+
+[[filelayout.type]]
+id = "example2"
+length =[4,3,2,1]
+
+[[filelayout.type]]
+id = "example3"
+length =[2,5,3,10,4]

@@ -19,7 +19,7 @@ Plug 'tpope/vim-surround'
 Plug 'tpope/vim-repeat'
 Plug 'Yggdroot/indentLine', { 'on': 'IndentLinesToggle' }
 Plug 'junegunn/vim-easy-align', { 'on': '<Plug>(EasyAlign)' }
-Plug 'tyru/caw.vim', { 'on': ['<Plug>(caw:hatpos:toggle)', '<Plug>(caw:zeropos:toggle)'] }
+Plug 'tyru/caw.vim'
 Plug 'cohama/lexima.vim'
 
 " Git
@@ -40,7 +40,7 @@ Plug 'prabirshrestha/asyncomplete-lsp.vim'
 Plug 'w0rp/ale', { 'for': ['go','markdown','sh','sql'] }
 
 " Language
-Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' , 'for' : 'go' }
+" Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' , 'for' : 'go' }
 Plug 'dhruvasagar/vim-table-mode', { 'for' : ['markdown','asciidoc'] }
 Plug 'iamcco/markdown-preview.vim'
 
@@ -49,6 +49,7 @@ Plug 'cespare/vim-toml', { 'for': 'toml' }
 
 " coloscheme
 Plug 'jacoborus/tender.vim'
+Plug 'romainl/Apprentice'
 
 call plug#end()
 
@@ -180,7 +181,7 @@ set viminfo+='1000,n$XDG_CACHE_HOME/vim/viminfo
 " Util {{{
 " lightline 
 let g:lightline = {
-    \ 'colorscheme': 'tender',
+    \ 'colorscheme': 'wombat',
     \ }
 
 " nerdtree 
@@ -245,34 +246,47 @@ command! -bang -nargs=* Rg
 " }}}
 
 " LSP {{{
+
+" Enable auto complete
 let g:lsp_async_completion = 1
-"let g:lsp_log_verbose = 1
-"let g:lsp_log_file = expand('~/vim-lsp.log')
 
-if executable('pyls')
-    augroup LspPython
-    au!
-    autocmd User lsp_setup call lsp#register_server({
-        \ 'name': 'pyls',
-        \ 'cmd': {server_info->['pyls']},
-        \ 'whitelist': ['python'],
-        \ })
-    autocmd Filetype python setlocal omnifunc=lsp#complete
-    autocmd FileType python nmap gd <plug>(lsp-definition)
-endif
+" Disable Document diagnostics
+let g:lsp_diagnostics_enabled = 0
+let g:lsp_signs_enabled = 0
+let g:lsp_diagnostics_echo_cursor = 0
 
-if executable('gopls')
+" if executable('gopls')
+"     augroup LspGo
+"     au!
+"     autocmd User lsp_setup call lsp#register_server({
+"        \ 'name': 'gopls',
+"        \ 'cmd': {server_info->['gopls', '-mode', 'stdio']},
+"        \ 'whitelist': ['go'],
+"        \ })
+"     autocmd FileType go setlocal omnifunc=lsp#complete
+"     autocmd FileType go nmap gd <plug>(lsp-definition)
+"     augroup END
+" endif
+
+if executable('bingo')
     augroup LspGo
     au!
     autocmd User lsp_setup call lsp#register_server({
-        \ 'name': 'gopls',
-        \ 'cmd': {server_info->['gopls', '-mode', 'stdio']},
+        \ 'name': 'bingo',
+        \ 'cmd': {server_info->['bingo', '-mode', 'stdio','-format-style=goimports']},
         \ 'whitelist': ['go'],
         \ })
+    autocmd FileType go setlocal noexpandtab tabstop=4 shiftwidth=4
     autocmd FileType go setlocal omnifunc=lsp#complete
     autocmd FileType go nmap gd <plug>(lsp-definition)
     augroup END
 endif
+
+" Debugging
+"let g:lsp_log_verbose = 1
+"let g:lsp_log_file = expand('~/vim-lsp.log')
+" for asyncomplete.vim log
+" let g:asyncomplete_log_file = expand('~/asyncomplete.log')
 
 " }}}
 
@@ -288,6 +302,7 @@ let g:ale_linters = {
 
 " Fixer
 let g:ale_fixers = {
+    \ 'go': ['goimports'],
     \ 'sh': ['shfmt'],
     \ 'sql':['sqlfmt']
     \}
@@ -354,32 +369,33 @@ let g:table_mode_corner = '|'
 filetype plugin indent on
 syntax on
 set background=dark
-colorscheme tender
+" colorscheme tender
+colorscheme Apprentice
 
-if exists('&termguicolors')
-    set termguicolors
-    let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
-    let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
-endif
+" if exists('&termguicolors')
+" "     set termguicolors
+"     let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
+"     let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
+" endif
 
-let g:terminal_ansi_colors = [
-    \ '#282828',
-    \ '#f43753',
-    \ '#c9d05c',
-    \ '#ffc24b',
-    \ '#b3deef',
-    \ '#d3b987',
-    \ '#73cef4',
-    \ '#eeeeee',
-    \ '#1d1d1d',
-    \ '#f43753',
-    \ '#c9d05c',
-    \ '#ffc24b',
-    \ '#b3deef',
-    \ '#d3b987',
-    \ '#73cef4',
-    \ '#ffffff'
-    \ ]
+" let g:terminal_ansi_colors = [
+"    \ '#282828',
+"    \ '#f43753',
+"    \ '#c9d05c',
+"    \ '#ffc24b',
+"    \ '#b3deef',
+"    \ '#d3b987',
+"    \ '#73cef4',
+"    \ '#eeeeee',
+"    \ '#1d1d1d',
+"    \ '#f43753',
+"    \ '#c9d05c',
+"    \ '#ffc24b',
+"    \ '#b3deef',
+"    \ '#d3b987',
+"    \ '#73cef4',
+"    \ '#ffffff'
+"    \ ]
 
 "}}}
 " ============================================================================
