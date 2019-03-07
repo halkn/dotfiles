@@ -49,7 +49,6 @@ Plug 'cespare/vim-toml', { 'for': 'toml' }
 
 " coloscheme
 Plug 'jacoborus/tender.vim'
-Plug 'romainl/Apprentice'
 
 call plug#end()
 
@@ -181,7 +180,9 @@ set viminfo+='1000,n$XDG_CACHE_HOME/vim/viminfo
 " Util {{{
 " lightline 
 let g:lightline = {
-    \ 'colorscheme': 'wombat',
+    \ 'colorscheme': 'tender',
+    \ 'separator': { 'left': "\ue0b0", 'right': "\ue0b2" },
+    \ 'subseparator': { 'left': "\ue0b1", 'right': "\ue0b3" },
     \ }
 
 " nerdtree 
@@ -204,7 +205,6 @@ nmap <Leader>c <Plug>(caw:hatpos:toggle)
 vmap <Leader>c <Plug>(caw:hatpos:toggle)
 nmap <Leader>, <Plug>(caw:zeropos:toggle)
 vmap <Leader>, <Plug>(caw:zeropos:toggle)
-
 
 " }}}
 
@@ -369,33 +369,32 @@ let g:table_mode_corner = '|'
 filetype plugin indent on
 syntax on
 set background=dark
-" colorscheme tender
-colorscheme Apprentice
+colorscheme tender
 
-" if exists('&termguicolors')
-" "     set termguicolors
-"     let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
-"     let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
-" endif
+if exists('&termguicolors')
+    set termguicolors
+    let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
+    let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
+endif
 
-" let g:terminal_ansi_colors = [
-"    \ '#282828',
-"    \ '#f43753',
-"    \ '#c9d05c',
-"    \ '#ffc24b',
-"    \ '#b3deef',
-"    \ '#d3b987',
-"    \ '#73cef4',
-"    \ '#eeeeee',
-"    \ '#1d1d1d',
-"    \ '#f43753',
-"    \ '#c9d05c',
-"    \ '#ffc24b',
-"    \ '#b3deef',
-"    \ '#d3b987',
-"    \ '#73cef4',
-"    \ '#ffffff'
-"    \ ]
+let g:terminal_ansi_colors = [
+  \ '#282828',
+  \ '#f43753',
+  \ '#c9d05c',
+  \ '#ffc24b',
+  \ '#b3deef',
+  \ '#d3b987',
+  \ '#73cef4',
+  \ '#eeeeee',
+  \ '#1d1d1d',
+  \ '#f43753',
+  \ '#c9d05c',
+  \ '#ffc24b',
+  \ '#b3deef',
+  \ '#d3b987',
+  \ '#73cef4',
+  \ '#ffffff'
+  \ ]
 
 "}}}
 " ============================================================================
