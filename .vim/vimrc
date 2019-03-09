@@ -48,7 +48,9 @@ Plug 'iamcco/markdown-preview.vim'
 Plug 'cespare/vim-toml', { 'for': 'toml' }
 
 " coloscheme
-Plug 'jacoborus/tender.vim'
+" Plug 'jacoborus/tender.vim'
+Plug 'hal0920/tender.vim'
+
 
 call plug#end()
 
@@ -273,12 +275,13 @@ if executable('bingo')
     au!
     autocmd User lsp_setup call lsp#register_server({
         \ 'name': 'bingo',
-        \ 'cmd': {server_info->['bingo', '-mode', 'stdio','-format-style=goimports']},
+        \ 'cmd': {server_info->['bingo', '-mode', 'stdio']},
         \ 'whitelist': ['go'],
         \ })
     autocmd FileType go setlocal noexpandtab tabstop=4 shiftwidth=4
     autocmd FileType go setlocal omnifunc=lsp#complete
     autocmd FileType go nmap gd <plug>(lsp-definition)
+    autocmd FileType go nmap <Leader>rn <plug>(lsp-rename)
     augroup END
 endif
 
@@ -376,25 +379,6 @@ if exists('&termguicolors')
     let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
     let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
 endif
-
-let g:terminal_ansi_colors = [
-  \ '#282828',
-  \ '#f43753',
-  \ '#c9d05c',
-  \ '#ffc24b',
-  \ '#b3deef',
-  \ '#d3b987',
-  \ '#73cef4',
-  \ '#eeeeee',
-  \ '#1d1d1d',
-  \ '#f43753',
-  \ '#c9d05c',
-  \ '#ffc24b',
-  \ '#b3deef',
-  \ '#d3b987',
-  \ '#73cef4',
-  \ '#ffffff'
-  \ ]
 
 "}}}
 " ============================================================================
