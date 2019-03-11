@@ -1,3 +1,11 @@
 [user]
 	name = hal0920
 	email = h.mhty0wia.s@gmail.com
+[diff]
+	tool = vimdiff
+[merge]
+	tool = vimdiff
+[difftool]
+	prompt = false
+[mergetool]
+	prompt = false
