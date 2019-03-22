@@ -18,14 +18,19 @@ silent! source $VIMRUNTIME/defaults.vim
 call plug#begin('~/.vim/plugged')
 
 " Util
+Plug 'hal0920/tender.vim'
 Plug 'itchyny/lightline.vim'
-Plug 'liuchengxu/vim-which-key'
+Plug 'maximbaz/lightline-ale'
+Plug 'junegunn/fzf'
+Plug 'junegunn/fzf.vim'
 Plug 'vim-jp/vimdoc-ja'
 Plug 'scrooloose/nerdtree', { 'on':  'NERDTreeToggle' }
-Plug 'tpope/vim-surround'
-Plug 'tpope/vim-repeat'
 Plug 'Yggdroot/indentLine', { 'on': 'IndentLinesToggle' }
 Plug 'junegunn/vim-easy-align', { 'on': '<Plug>(EasyAlign)' }
+
+" Edit
+Plug 'tpope/vim-surround'
+Plug 'tpope/vim-repeat'
 Plug 'tyru/caw.vim'
 Plug 'cohama/lexima.vim'
 
@@ -33,30 +38,17 @@ Plug 'cohama/lexima.vim'
 Plug 'airblade/vim-gitgutter'
 Plug 'tpope/vim-fugitive', { 'on': ['Git', 'Gcommit', 'Gstatus', 'Gdiff', 'Gblame', 'Glog'] }
 
-" Fuzzy Finder
-Plug 'junegunn/fzf'
-Plug 'junegunn/fzf.vim'
-
-" LSP
+" Development
+Plug 'sheerun/vim-polyglot'
 Plug 'prabirshrestha/async.vim'
 Plug 'prabirshrestha/vim-lsp'
 Plug 'prabirshrestha/asyncomplete.vim'
 Plug 'prabirshrestha/asyncomplete-lsp.vim'
-
-" Linter
 Plug 'w0rp/ale', { 'for': ['go','vim','markdown','sh','sql'] }
 
-" Language
-" Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' , 'for' : 'go' }
-Plug 'dhruvasagar/vim-table-mode', { 'for' : ['markdown','asciidoc'] }
-Plug 'iamcco/markdown-preview.vim'
-
-" syntax
-Plug 'cespare/vim-toml', { 'for': 'toml' }
-
-" coloscheme
-" Plug 'jacoborus/tender.vim'
-Plug 'hal0920/tender.vim'
+" Document
+Plug 'dhruvasagar/vim-table-mode', { 'for' : 'markdown' }
+Plug 'iamcco/markdown-preview.vim', { 'for': 'markdown' }
 
 call plug#end()
 
@@ -185,6 +177,7 @@ set viminfo+='1000,n$XDG_CACHE_HOME/vim/viminfo
 " ============================================================================
 
 " Util {{{
+
 " lightline 
 let g:lightline = {
     \ 'colorscheme': 'tender',
@@ -192,13 +185,25 @@ let g:lightline = {
     \ 'subseparator': { 'left': "\ue0b1", 'right': "\ue0b3" },
     \ }
 
+" fzf 
+nnoremap <silent> <Leader>f :<C-u>Files<CR>
+nnoremap <silent> <Leader>G :<C-u>GFiles?<CR>
+nnoremap <silent> <Leader>b :<C-u>Buffers<CR>
+nnoremap <silent> <Leader>rg :<C-u>Rg<CR>
+" Likewise, Files command with preview window
+command! -bang -nargs=? -complete=dir Files
+    \ call fzf#vim#files(<q-args>, fzf#vim#with_preview(), <bang>0)
+" Rg
+command! -bang -nargs=* Rg
+    \ call fzf#vim#grep(
+    \ 'rg --column --line-number --hidden --ignore-case --no-heading --color=always '.shellescape(<q-args>), 1,
+    \ <bang>0   ? fzf#vim#with_preview({'options': '--delimiter : --nth 4..'}, 'up:60%')
+    \           : fzf#vim#with_preview({'options': '--delimiter : --nth 4..'}, 'right:50%:hidden', 'p'),
+    \ <bang>0)
+
 " nerdtree 
 let NERDTreeShowHidden=1
 nmap <silent><c-e> :NERDTreeToggle<CR>
-
-" vim-which-key
-set timeoutlen=750
-nnoremap <silent> <Leader>      :WhichKey '<Leader>'<CR>
 
 " indentLine
 let g:loaded_indentLine = 1
@@ -206,6 +211,10 @@ nnoremap <Space>i <C-u>:IndentLinesToggle<CR>
 
 " vim-easy-align
 vmap <Enter> <Plug>(EasyAlign)
+
+" }}}
+
+" Edit {{{
 
 " caw.vim
 nmap <Leader>c <Plug>(caw:hatpos:toggle)
@@ -232,25 +241,7 @@ nnoremap <silent> [fugitive]l :<C-u>Glog<CR>
 
 " }}}
 
-" fzf {{{
-" mapping
-nnoremap <silent> <Leader>f :<C-u>Files<CR>
-nnoremap <silent> <Leader>G :<C-u>GFiles?<CR>
-nnoremap <silent> <Leader>b :<C-u>Buffers<CR>
-nnoremap <silent> <Leader>rg :<C-u>Rg<CR>
-
-" Likewise, Files command with preview window
-command! -bang -nargs=? -complete=dir Files
-  \ call fzf#vim#files(<q-args>, fzf#vim#with_preview(), <bang>0)
-" Rg
-command! -bang -nargs=* Rg
-\ call fzf#vim#grep(
-\ 'rg --column --line-number --hidden --ignore-case --no-heading --color=always '.shellescape(<q-args>), 1,
-\ <bang>0 ? fzf#vim#with_preview({'options': '--delimiter : --nth 4..'}, 'up:60%')
-\ : fzf#vim#with_preview({'options': '--delimiter : --nth 4..'}, 'right:50%:hidden', 'p'),
-\ <bang>0)
-
-" }}}
+" Development {{{
 
 " LSP {{{
 
@@ -359,29 +350,9 @@ let g:ale_list_window_size = 5
 
 " }}}
 
-" vim-go {{{
-
-let g:go_def_mapping_enabled = 0
-let g:go_metalinter_autosave = 1
-let g:go_fmt_command = 'goimports'
-
-let g:go_list_type = 'locationlist'
-let g:go_list_type_commands = {'GoInstall': 'quickfix', 'GoBuild': 'quickfix', 'GoTest': 'quickfix'}
-let g:go_list_autoclose = 1
-let g:go_list_height = 10
-
-let g:go_highlight_build_constraints = 1
-let g:go_highlight_extra_types = 1
-let g:go_highlight_fields = 1
-let g:go_highlight_functions = 1
-let g:go_highlight_methods = 1
-let g:go_highlight_operators = 1
-let g:go_highlight_structs = 1
-let g:go_highlight_types = 1
-
 " }}}
 
-" markdown {{{
+" Document {{{
 
 " vim-table-mode
 let g:table_mode_corner = '|'
