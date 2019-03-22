@@ -1,4 +1,11 @@
 " ============================================================================
+"  encoding {{{
+" ============================================================================
+set encoding=utf-8
+scriptencoding utf-8
+
+" }}}
+" ============================================================================
 " default {{{
 " ============================================================================
 unlet! skip_defaults_vim
@@ -37,7 +44,7 @@ Plug 'prabirshrestha/asyncomplete.vim'
 Plug 'prabirshrestha/asyncomplete-lsp.vim'
 
 " Linter
-Plug 'w0rp/ale', { 'for': ['go','markdown','sh','sql'] }
+Plug 'w0rp/ale', { 'for': ['go','vim','markdown','sh','sql'] }
 
 " Language
 " Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' , 'for' : 'go' }
@@ -107,7 +114,6 @@ nnoremap x "_x
 " ============================================================================
 
 " Encoding
-set encoding=utf-8
 set fileencodings=utf-8
 set fileformats=unix,dos,mac
 
@@ -310,6 +316,7 @@ endif
 " Linter
 let g:ale_linters = {
     \ 'go': ['gometalinter'],
+    \ 'vim':['vint'],
     \ 'markdown': ['markdownlint'],
     \ 'sh': ['shellcheck'],
     \ 'sql': ['sqlfmt']
@@ -356,10 +363,10 @@ let g:ale_list_window_size = 5
 
 let g:go_def_mapping_enabled = 0
 let g:go_metalinter_autosave = 1
-let g:go_fmt_command = "goimports"
+let g:go_fmt_command = 'goimports'
 
-let g:go_list_type = "locationlist"
-let g:go_list_type_commands = {"GoInstall": "quickfix", "GoBuild": "quickfix", "GoTest": "quickfix"}
+let g:go_list_type = 'locationlist'
+let g:go_list_type_commands = {'GoInstall': 'quickfix', 'GoBuild': 'quickfix', 'GoTest': 'quickfix'}
 let g:go_list_autoclose = 1
 let g:go_list_height = 10
 
