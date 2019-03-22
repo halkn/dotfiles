@@ -274,12 +274,13 @@ if executable('bingo')
     au!
     autocmd User lsp_setup call lsp#register_server({
         \ 'name': 'bingo',
-        \ 'cmd': {server_info->['bingo', '-mode', 'stdio','-format-style=goimports']},
+        \ 'cmd': {server_info->['bingo', '-mode', 'stdio']},
         \ 'whitelist': ['go'],
         \ })
     autocmd FileType go setlocal noexpandtab tabstop=4 shiftwidth=4
     autocmd FileType go setlocal omnifunc=lsp#complete
     autocmd FileType go nmap gd <plug>(lsp-definition)
+    autocmd FileType go nmap <Leader>rn <plug>(lsp-rename)
     augroup END
 endif
 
