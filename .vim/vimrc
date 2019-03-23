@@ -20,7 +20,6 @@ call plug#begin('~/.vim/plugged')
 " Util
 Plug 'hal0920/tender.vim'
 Plug 'itchyny/lightline.vim'
-Plug 'maximbaz/lightline-ale'
 Plug 'junegunn/fzf'
 Plug 'junegunn/fzf.vim'
 Plug 'vim-jp/vimdoc-ja'
@@ -178,12 +177,64 @@ set viminfo+='1000,n$XDG_CACHE_HOME/vim/viminfo
 
 " Util {{{
 
-" lightline 
+" lightline {{{
+
 let g:lightline = {
-    \ 'colorscheme': 'tender',
-    \ 'separator': { 'left': "\ue0b0", 'right': "\ue0b2" },
-    \ 'subseparator': { 'left': "\ue0b1", 'right': "\ue0b3" },
+    \ 'colorscheme': 'wombat',
+    \ 'active': {
+    \   'left' : [ ['mode', 'paste'],
+    \              ['filename', 'modified'] ],
+    \   'right': [ ['linter_errors','linter_warnings','linter_ok','lineinfo'],
+    \              ['percent'],
+    \              ['readonly','fileformat', 'fileencoding', 'filetype'] ]
+    \ },
+    \ 'component_expand': {
+    \   'linter_warnings': 'LightlineLinterWarnings',
+    \   'linter_errors': 'LightlineLinterErrors',
+    \   'linter_ok': 'LightlineLinterOK'
+    \ },
+    \ 'component_type': {
+    \   'readonly': 'error',
+    \   'linter_warnings': 'warning',
+    \   'linter_errors': 'error',
+    \   'linter_ok': 'left'
+    \ },
     \ }
+
+function! LightlineLinterWarnings() abort
+  let l:counts = ale#statusline#Count(bufnr(''))
+  let l:all_errors = l:counts.error + l:counts.style_error
+  let l:all_non_errors = l:counts.total - l:all_errors
+  return l:counts.total == 0 ? '' : printf('%d ◆', all_non_errors)
+endfunction
+
+function! LightlineLinterErrors() abort
+  let l:counts = ale#statusline#Count(bufnr(''))
+  let l:all_errors = l:counts.error + l:counts.style_error
+  let l:all_non_errors = l:counts.total - l:all_errors
+  return l:counts.total == 0 ? '' : printf('%d ✗', all_errors)
+endfunction
+
+function! LightlineLinterOK() abort
+  let l:counts = ale#statusline#Count(bufnr(''))
+  let l:all_errors = l:counts.error + l:counts.style_error
+  let l:all_non_errors = l:counts.total - l:all_errors
+  return l:counts.total == 0 ? '✓ ' : ''
+endfunction
+
+augroup ALE_Lint
+    au!
+    autocmd User ALELint call s:MaybeUpdateLightline()
+augroup END
+
+" Update and show lightline but only if it's visible (e.g., not in Goyo)
+function! s:MaybeUpdateLightline()
+  if exists('#lightline')
+    call lightline#update()
+  end
+endfunction
+
+" }}}
 
 " fzf 
 nnoremap <silent> <Leader>f :<C-u>Files<CR>
