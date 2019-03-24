@@ -236,11 +236,12 @@ endfunction
 
 " }}}
 
-" fzf 
+" fzf {{{
 nnoremap <silent> <Leader>f :<C-u>Files<CR>
 nnoremap <silent> <Leader>G :<C-u>GFiles?<CR>
 nnoremap <silent> <Leader>b :<C-u>Buffers<CR>
-nnoremap <silent> <Leader>rg :<C-u>Rg<CR>
+nnoremap <silent> <Leader>R :<C-u>Rg<CR>
+nnoremap <silent> <Leader>l :<C-u>Lines<CR>
 " Likewise, Files command with preview window
 command! -bang -nargs=? -complete=dir Files
     \ call fzf#vim#files(<q-args>, fzf#vim#with_preview(), <bang>0)
@@ -252,13 +253,15 @@ command! -bang -nargs=* Rg
     \           : fzf#vim#with_preview({'options': '--delimiter : --nth 4..'}, 'right:50%:hidden', 'p'),
     \ <bang>0)
 
+" }}}
+
 " nerdtree 
 let NERDTreeShowHidden=1
-nmap <silent><c-e> :NERDTreeToggle<CR>
+nmap <silent><c-e> :<c-u>NERDTreeToggle<CR>
 
 " indentLine
 let g:loaded_indentLine = 1
-nnoremap <Space>i <C-u>:IndentLinesToggle<CR>
+nnoremap <silent><c-d> :<c-u>IndentLinesToggle<CR>
 
 " vim-easy-align
 vmap <Enter> <Plug>(EasyAlign)
@@ -329,7 +332,7 @@ if executable('bingo')
     autocmd FileType go setlocal noexpandtab tabstop=4 shiftwidth=4
     autocmd FileType go setlocal omnifunc=lsp#complete
     autocmd FileType go nmap gd <plug>(lsp-definition)
-    autocmd FileType go nmap <Leader>rn <plug>(lsp-rename)
+    autocmd FileType go nmap <Leader>r <plug>(lsp-rename)
     augroup END
 endif
 
