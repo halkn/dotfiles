@@ -373,8 +373,8 @@ let g:ale_fixers = {
 
 " Sign
 let g:ale_sign_column_always = 1
-let g:ale_sign_error = '!!'
-let g:ale_sign_warning = '=='
+let g:ale_sign_error = '✗'
+let g:ale_sign_warning = '◆'
 
 " Disable highlight
 let g:ale_set_highlights = 0
@@ -395,9 +395,9 @@ let g:ale_fix_on_save = 1
 let g:ale_set_loclist = 0
 let g:ale_set_quickfix = 1
 
-" always open list
-let g:ale_open_list = 1
-let g:ale_list_window_size = 5
+" Mapping
+nmap <silent> gp <Plug>(ale_previous_wrap)
+nmap <silent> gn <Plug>(ale_next_wrap)
 
 " }}}
 
@@ -430,11 +430,11 @@ syntax on
 set background=dark
 colorscheme tender
 
-if exists('&termguicolors')
-    set termguicolors
-    let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
-    let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
-endif
+" if exists('&termguicolors')
+"     set termguicolors
+"     let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
+"     let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
+" endif
 
 "}}}
 " ============================================================================
