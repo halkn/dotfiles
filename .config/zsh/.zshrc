@@ -13,6 +13,19 @@ fi
 umask 022
 
 #####################################################################
+# Keybind
+#####################################################################
+# vim key bind
+bindkey -v
+
+# insert mode keybind (like emacs)
+bindkey -M viins '^A'  beginning-of-line
+bindkey -M viins '^B'  backward-char
+bindkey -M viins '^E'  end-of-line
+bindkey -M viins '^F'  forward-char
+bindkey -M viins '^H'  backward-delete-char
+
+#####################################################################
 # completion
 #####################################################################
 # load command completion function
