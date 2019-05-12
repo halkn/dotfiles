@@ -39,12 +39,12 @@ Plug 'airblade/vim-gitgutter'
 Plug 'tpope/vim-fugitive', { 'on': ['Git', 'Gcommit', 'Gstatus', 'Gdiff', 'Gblame', 'Glog'] }
 
 " Development
-Plug 'sheerun/vim-polyglot'
 Plug 'prabirshrestha/async.vim'
 Plug 'prabirshrestha/vim-lsp'
 Plug 'prabirshrestha/asyncomplete.vim'
 Plug 'prabirshrestha/asyncomplete-lsp.vim'
-Plug 'w0rp/ale', { 'for': ['go','vim','markdown','sh','sql'] }
+Plug 'w0rp/ale', { 'for': ['vim','markdown','sh','sql'] }
+Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' }
 
 " Document
 Plug 'dhruvasagar/vim-table-mode', { 'for' : 'markdown' }
@@ -304,36 +304,22 @@ nnoremap <silent> [fugitive]l :<C-u>Glog<CR>
 let g:lsp_async_completion = 1
 
 " Disable Document diagnostics
-let g:lsp_diagnostics_enabled = 0
-let g:lsp_signs_enabled = 0
-let g:lsp_diagnostics_echo_cursor = 0
-
-" if executable('gopls')
-"     augroup LspGo
-"     au!
-"     autocmd User lsp_setup call lsp#register_server({
-"        \ 'name': 'gopls',
-"        \ 'cmd': {server_info->['gopls', '-mode', 'stdio']},
-"        \ 'whitelist': ['go'],
-"        \ })
-"     autocmd FileType go setlocal omnifunc=lsp#complete
-"     autocmd FileType go nmap gd <plug>(lsp-definition)
-"     augroup END
-" endif
+let g:lsp_diagnostics_enabled = 1
+let g:lsp_signs_enabled = 1
+let g:lsp_diagnostics_echo_cursor = 1
 
 " golang
-if executable('bingo')
+if executable('gopls')
     augroup LspGo
     au!
     autocmd User lsp_setup call lsp#register_server({
-        \ 'name': 'bingo',
-        \ 'cmd': {server_info->['bingo', '-mode', 'stdio']},
+        \ 'name': 'gopls',
+        \ 'cmd': {server_info->['gopls', '-mode', 'stdio']},
         \ 'whitelist': ['go'],
         \ })
-    autocmd FileType go setlocal noexpandtab tabstop=4 shiftwidth=4
     autocmd FileType go setlocal omnifunc=lsp#complete
-    autocmd FileType go nmap gd <plug>(lsp-definition)
-    autocmd FileType go nmap <Leader>r <plug>(lsp-rename)
+    autocmd FileType go nmap gd <Plug>(lsp-definition)
+    autocmd FileType go nmap K <Plug>(lsp-hover)
     augroup END
 endif
 
@@ -405,8 +391,13 @@ nmap <silent> gn <Plug>(ale_next_wrap)
 
 " }}}
 
-" vim-polyglot
-" go
+" vim-go
+" Use vim-lsp
+let g:go_code_completion_enabled = 0
+let g:go_doc_keywordprg_enabled = 0
+let g:go_def_mapping_enabled = 0
+
+" hightlight
 let g:go_highlight_build_constraints = 1
 let g:go_highlight_extra_types = 1
 let g:go_highlight_fields = 1
@@ -415,6 +406,29 @@ let g:go_highlight_methods = 1
 let g:go_highlight_operators = 1
 let g:go_highlight_structs = 1
 let g:go_highlight_types = 1
+
+" format
+let g:go_fmt_command = 'goimports'
+
+" lint
+let g:go_metalinter_autosave = 1
+let g:go_metalinter_command = 'golangci-lint'
+let g:go_metalinter_autosave_enabled = ['golint', 'errcheck']
+
+" list
+let g:go_list_type = 'quickfix'
+
+" mapping
+augroup GoCommads
+    autocmd!
+    autocmd FileType go nmap <buffer> <silent> <F2> <Plug>(go-rename)
+    autocmd FileType go nmap <buffer> <silent> <leader>r <Plug>(go-run)
+    autocmd FileType go nmap <buffer> <silent> <leader>t <Plug>(go-test)
+    autocmd FileType go nmap <buffer> <silent> <leader>v <Plug>(go-coverage-toggle)
+    autocmd FileType go nmap <buffer> <silent> <Leader>ie <Plug>(go-iferr)
+    autocmd FileType go nmap <buffer> <silent> <Leader>dl :<C-u>GoDecls<CR>
+    autocmd FileType go nmap <buffer> <silent> <Leader>dd :<C-u>GoDeclsDir<CR>
+augroup END
 
 " }}}
 
