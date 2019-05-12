@@ -139,8 +139,7 @@ set autoindent
 set shiftwidth=4
 set shiftround
 set tabstop=4
-set virtualedit=block
-set virtualedit=onemore
+set virtualedit=block,onemore
 set whichwrap=b,s,[,],<,>
 set backspace=indent,eol,start
 
