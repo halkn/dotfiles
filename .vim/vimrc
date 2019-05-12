@@ -19,7 +19,6 @@ call plug#begin('~/.vim/plugged')
 
 " Util
 Plug 'hal0920/tender.vim'
-Plug 'cocopon/iceberg.vim'
 Plug 'itchyny/lightline.vim'
 Plug 'junegunn/fzf'
 Plug 'junegunn/fzf.vim'
@@ -181,7 +180,7 @@ set viminfo+='1000,n$XDG_CACHE_HOME/vim/viminfo
 " lightline {{{
 
 let g:lightline = {
-    \ 'colorscheme': 'iceberg',
+    \ 'colorscheme': 'tender',
     \ 'active': {
     \   'left' : [ ['mode', 'paste'],
     \              ['filename', 'modified'] ],
@@ -446,7 +445,7 @@ let g:table_mode_corner = '|'
 filetype plugin indent on
 syntax on
 set background=dark
-colorscheme iceberg
+colorscheme tender
 
 if exists('&termguicolors')
     set termguicolors
