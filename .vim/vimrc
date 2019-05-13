@@ -299,7 +299,8 @@ augroup END
 
 " }}}
 
-" vim-go
+" vim-go {{{
+
 " Use vim-lsp
 let g:go_code_completion_enabled = 0
 let g:go_doc_keywordprg_enabled = 0
@@ -337,6 +338,8 @@ augroup GoCommads
     autocmd FileType go nmap <buffer> <silent> <Leader>dl :<C-u>GoDecls<CR>
     autocmd FileType go nmap <buffer> <silent> <Leader>dd :<C-u>GoDeclsDir<CR>
 augroup END
+
+" }}}
 
 " }}}
 
