@@ -278,7 +278,9 @@ if executable('bash-language-server')
         \ 'cmd': {server_info->[&shell, &shellcmdflag, 'bash-language-server start']},
         \ 'whitelist': ['sh'],
         \ })
-    autocmd FileType sh nmap gd <plug>(lsp-definition)
+    autocmd FileType sh setlocal omnifunc=lsp#complete
+    autocmd FileType sh nmap gd <Plug>(lsp-definition)
+    autocmd FIleType sh nmap K <Plug>(lsp-hover)
 endif
 
 " efm ( markdown and vim )
