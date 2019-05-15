@@ -269,6 +269,25 @@ if executable('gopls')
     augroup END
 endif
 
+if executable('pyls')
+    augroup LspPython
+    au!
+    autocmd User lsp_setup call lsp#register_server({
+        \ 'name': 'pyls',
+        \ 'cmd': {server_info->['pyls']},
+        \ 'whitelist': ['python'],
+        \ 'workspace_config': {'pyls': 
+        \   {'plugins': 
+        \       {'pydocstyle': {'enabled': v:true}}
+        \   }
+        \ }
+        \ })
+    autocmd FileType python setlocal omnifunc=lsp#complete
+    autocmd FileType python nmap gd <Plug>(lsp-definition)
+    autocmd FileType python nmap K <Plug>(lsp-hover)
+    augroup END
+endif
+
 " bash
 if executable('bash-language-server')
     augroup LspBash
