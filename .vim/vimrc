@@ -42,6 +42,7 @@ Plug 'prabirshrestha/async.vim'
 Plug 'prabirshrestha/vim-lsp'
 Plug 'prabirshrestha/asyncomplete.vim'
 Plug 'prabirshrestha/asyncomplete-lsp.vim'
+Plug 'liuchengxu/vista.vim', { 'on': ['Vista', 'Vista!!'] }
 Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' }
 
 " Document
@@ -361,6 +362,11 @@ augroup GoCommads
 augroup END
 
 " }}}
+
+" vista
+let g:vista_default_executive = 'vim_lsp'
+nnoremap <silent><c-t> :<c-u>Vista!!<CR>
+nnoremap <silent> <Leader>vf :<c-u>Vista finder vim_lsp<CR>
 
 " }}}
 
