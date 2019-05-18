@@ -91,14 +91,46 @@ inoremap <C-a> <C-o>^
 inoremap <C-e> <End>
 inoremap <C-d> <Del>
 
-" Resize window
-noremap <C-w>> 10<C-w>>
-noremap <C-w>< 10<C-w><
-noremap <C-w>+ 10<C-w>+
-noremap <C-w>- 10<C-w>-
+" Move cursor like emacs in Insert Mode
+cnoremap <C-b> <Left>
+cnoremap <C-f> <Right>
+cnoremap <C-a> <HOME>
+cnoremap <C-e> <END>
+
+" Move cursor the begining and end of line
+nnoremap H ^
+nnoremap L $
+vnoremap H ^
+vnoremap L $
+
+" Move between windows
+nnoremap <tab>   <c-w>w
+nnoremap <S-tab> <c-w>W
 
 " Not yank is delete operation
 nnoremap x "_x
+nnoremap s "_x
+
+" open termianl in vertial split,new tab,current winddow
+nnoremap ts :<C-u>terminal<CR>
+nnoremap tv :<C-u>vsplit <BAR> terminal ++curwin<CR>
+nnoremap tt :<C-u>tabnew <BAR> terminal ++curwin<CR>
+nnoremap tw :<C-u>terminal ++curwin<CR>
+tnoremap ts <C-W>:<C-u>terminal<CR>
+tnoremap tv <C-w>:<C-u>vsplit <BAR> terminal ++curwin<CR>
+tnoremap tt <C-w>:<C-u>tabnew <BAR> terminal ++curwin<CR>
+tnoremap tw <C-w>:<C-u>terminal ++curwin<CR>
+
+" Use ESC to transition to terminal normal mode
+tnoremap <F1> <ESC>
+tnoremap <ESC> <C-w>N
+
+" Toggle options
+nmap [Toggle] <Nop>
+map <Leader>o [Toggle]
+nnoremap <silent> [Toggle]n :<C-u>setlocal relativenumber! relativenumber?<CR>
+nnoremap <silent> [Toggle]w :<C-u>setlocal wrap! wrap?<CR>
+nnoremap <silent> [Toggle]p :<C-u>set paste! paste?<CR>
 
 " }}}
 " ============================================================================
