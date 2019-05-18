@@ -26,6 +26,7 @@ Plug 'vim-jp/vimdoc-ja'
 Plug 'scrooloose/nerdtree', { 'on':  'NERDTreeToggle' }
 Plug 'Yggdroot/indentLine', { 'on': 'IndentLinesToggle' }
 Plug 'junegunn/vim-easy-align', { 'on': '<Plug>(EasyAlign)' }
+Plug 'simeji/winresizer', { 'on': 'WinResizerStartResize' }
 
 " Edit
 Plug 'tpope/vim-surround'
@@ -211,6 +212,10 @@ nnoremap <silent><c-d> :<c-u>IndentLinesToggle<CR>
 
 " vim-easy-align
 vmap <Enter> <Plug>(EasyAlign)
+
+" winresizer.vim
+let g:winresizer_start_key = '<C-w>r'
+nnoremap <silent><C-w>r :<c-u>WinResizerStartResize<CR>
 
 " }}}
 
