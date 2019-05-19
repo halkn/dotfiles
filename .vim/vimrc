@@ -211,21 +211,37 @@ set viminfo+='1000,n$XDG_CACHE_HOME/vim/viminfo
 " Util {{{
 
 " fzf {{{
+
+" key mappings
 nnoremap <silent> <Leader>f :<C-u>Files<CR>
 nnoremap <silent> <Leader>G :<C-u>GFiles?<CR>
 nnoremap <silent> <Leader>b :<C-u>Buffers<CR>
 nnoremap <silent> <Leader>R :<C-u>Rg<CR>
-nnoremap <silent> <Leader>l :<C-u>Lines<CR>
-" Likewise, Files command with preview window
+nnoremap <silent> <Leader>l :<C-u>BLines<CR>
+
+" Files command with preview window
 command! -bang -nargs=? -complete=dir Files
     \ call fzf#vim#files(<q-args>, fzf#vim#with_preview(), <bang>0)
-" Rg
+
+" Use fzf#vim#grep with ripgrep as Rg command
+let g:rg_command = '
+    \ rg --column --line-number --hidden --ignore-case --no-heading  --color "always"
+    \ -g "!{.git,.svn,node_modules,vendor}/*" '
 command! -bang -nargs=* Rg
     \ call fzf#vim#grep(
-    \ 'rg --column --line-number --hidden --ignore-case --no-heading --color=always '.shellescape(<q-args>), 1,
+    \ g:rg_command .shellescape(<q-args>), 1,
     \ <bang>0   ? fzf#vim#with_preview({'options': '--delimiter : --nth 4..'}, 'up:60%')
     \           : fzf#vim#with_preview({'options': '--delimiter : --nth 4..'}, 'right:50%:hidden', 'p'),
     \ <bang>0)
+
+" Override Colors command. You can safely do this in your .vimrc as fzf.vim
+" will not override existing commands.
+command! -bang Colors
+  \ call fzf#vim#colors({'left': '15%', 'options': '--reverse --margin 30%,0'}, <bang>0)
+
+" fuzzy finder for C-x completion
+imap <c-x><c-k> <plug>(fzf-complete-word)
+imap <c-x><c-f> <plug>(fzf-complete-path)
 
 " }}}
 
