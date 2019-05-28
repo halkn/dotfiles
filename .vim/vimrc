@@ -420,6 +420,7 @@ augroup END
 let g:vista_default_executive = 'vim_lsp'
 nnoremap <silent><c-t> :<c-u>Vista!!<CR>
 nnoremap <silent> <Leader>vf :<c-u>Vista finder vim_lsp<CR>
+let g:vista#renderer#enable_icon = 0
 
 " }}}
 
