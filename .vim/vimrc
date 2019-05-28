@@ -36,7 +36,9 @@ Plug 'cohama/lexima.vim'
 
 " Git
 Plug 'airblade/vim-gitgutter'
-Plug 'tpope/vim-fugitive', { 'on': ['Git', 'Gcommit', 'Gstatus', 'Gdiff', 'Gblame', 'Glog'] }
+Plug 'tpope/vim-fugitive', { 
+    \ 'on': ['Git', 'Gcommit', 'Gstatus', 'Gdiff', 'Gblame', 'Glog']
+    \ }
 
 " Development
 Plug 'prabirshrestha/async.vim'
