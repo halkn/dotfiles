@@ -54,6 +54,7 @@ Plug 'fatih/vim-go', {
 " Document
 Plug 'dhruvasagar/vim-table-mode', { 'for' : 'markdown' }
 Plug 'iamcco/markdown-preview.vim', { 'for': 'markdown' }
+Plug 'habamax/vim-asciidoctor', { 'for': 'asciidoc' }
 
 call plug#end()
 
@@ -438,6 +439,10 @@ let g:vista#renderer#enable_icon = 0
 
 " vim-table-mode
 let g:table_mode_corner = '|'
+
+" vim-asciidoctor
+let g:asciidoctor_executable = 'asciidoctor'
+let g:asciidoctor_extensions = ['asciidoctor-diagram']
 
 " }}}
 
