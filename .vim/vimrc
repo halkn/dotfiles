@@ -46,7 +46,10 @@ Plug 'prabirshrestha/vim-lsp'
 Plug 'prabirshrestha/asyncomplete.vim'
 Plug 'prabirshrestha/asyncomplete-lsp.vim'
 Plug 'liuchengxu/vista.vim', { 'on': ['Vista', 'Vista!!'] }
-Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' }
+Plug 'fatih/vim-go', { 
+    \ 'do': ':GoUpdateBinaries',
+    \ 'for': 'go'
+    \ }
 
 " Document
 Plug 'dhruvasagar/vim-table-mode', { 'for' : 'markdown' }
