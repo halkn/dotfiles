@@ -41,11 +41,17 @@ Plug 'tpope/vim-fugitive', {
     \ }
 
 " Development
+" lsp
 Plug 'prabirshrestha/async.vim'
 Plug 'prabirshrestha/vim-lsp'
+Plug 'liuchengxu/vista.vim', { 'on': ['Vista', 'Vista!!'] }
+" auto complete
 Plug 'prabirshrestha/asyncomplete.vim'
 Plug 'prabirshrestha/asyncomplete-lsp.vim'
-Plug 'liuchengxu/vista.vim', { 'on': ['Vista', 'Vista!!'] }
+Plug 'prabirshrestha/asyncomplete-ultisnips.vim'
+" snippet
+Plug 'SirVer/ultisnips'
+" lang
 Plug 'fatih/vim-go', { 
     \ 'do': ':GoUpdateBinaries',
     \ 'for': 'go'
@@ -383,6 +389,23 @@ augroup END
 " for asyncomplete.vim log
 " let g:asyncomplete_log_file = expand('~/asyncomplete.log')
 
+" vista.vim
+let g:vista_default_executive = 'vim_lsp'
+nnoremap <silent><c-t> :<c-u>Vista!!<CR>
+nnoremap <silent> <Leader>vf :<c-u>Vista finder vim_lsp<CR>
+let g:vista#renderer#enable_icon = 0
+
+" }}}
+
+" asyncomplete {{{
+
+" asyncomplete-ultisnips.
+call asyncomplete#register_source(asyncomplete#sources#ultisnips#get_source_options({
+    \ 'name': 'ultisnips',
+    \ 'whitelist': ['*'],
+    \ 'completor': function('asyncomplete#sources#ultisnips#completor'),
+    \ }))
+
 " }}}
 
 " vim-go {{{
@@ -426,12 +449,6 @@ augroup GoCommads
 augroup END
 
 " }}}
-
-" vista
-let g:vista_default_executive = 'vim_lsp'
-nnoremap <silent><c-t> :<c-u>Vista!!<CR>
-nnoremap <silent> <Leader>vf :<c-u>Vista finder vim_lsp<CR>
-let g:vista#renderer#enable_icon = 0
 
 " }}}
 
