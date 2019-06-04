@@ -79,9 +79,10 @@ call plug#end()
 " ============================================================================
 augroup vimrc_filetype
     autocmd!
+    autocmd FileType help wincmd L
     autocmd FileType gitcommit setlocal spell spelllang=cjk,en
-    autocmd FileType text      setlocal textwidth=0
-    autocmd FileType vim       setlocal foldmethod=marker
+    autocmd FileType text setlocal textwidth=0
+    autocmd FileType vim setlocal foldmethod=marker
 augroup END
 
 " }}}
