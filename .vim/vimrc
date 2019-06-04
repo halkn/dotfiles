@@ -6,10 +6,19 @@ scriptencoding utf-8
 
 " }}}
 " ============================================================================
-" default {{{
+" init {{{
 " ============================================================================
 unlet! skip_defaults_vim
 silent! source $VIMRUNTIME/defaults.vim
+
+if has('vim_starting')
+    " Use vertical bar cursor in Insert mode
+    let &t_SI .= "\e[6 q"
+    " Use Block cursor in Normal mode
+    let &t_EI .= "\e[2 q"
+    " Use Underline cursor in Replace mode
+    let &t_SR .= "\e[4 q"
+endif
 
 " }}}
 " ============================================================================
