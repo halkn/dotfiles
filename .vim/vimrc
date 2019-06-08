@@ -43,6 +43,8 @@ Plug 'tpope/vim-repeat'
 Plug 'tyru/caw.vim'
 Plug 'cohama/lexima.vim'
 Plug 'junegunn/vim-easy-align', { 'on': '<Plug>(EasyAlign)' }
+Plug 'kana/vim-operator-user'
+Plug 'kana/vim-operator-replace', { 'on' : '<Plug>(operator-replace)' }
 
 " Git
 Plug 'airblade/vim-gitgutter'
@@ -308,6 +310,9 @@ nmap <Leader>c <Plug>(caw:hatpos:toggle)
 vmap <Leader>c <Plug>(caw:hatpos:toggle)
 nmap <Leader>, <Plug>(caw:zeropos:toggle)
 vmap <Leader>, <Plug>(caw:zeropos:toggle)
+
+" vim-operator-replace
+map R  <Plug>(operator-replace)
 
 " }}}
 
