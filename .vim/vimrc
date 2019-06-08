@@ -68,8 +68,8 @@ Plug 'fatih/vim-go', {
     \ }
 
 " Document
+Plug 'previm/previm', { 'for' : 'markdown' }
 Plug 'dhruvasagar/vim-table-mode', { 'for' : 'markdown' }
-Plug 'iamcco/markdown-preview.vim', { 'for': 'markdown' }
 Plug 'habamax/vim-asciidoctor', { 'for': 'asciidoc' }
 
 call plug#end()
@@ -470,6 +470,20 @@ augroup END
 " }}}
 
 " Document {{{
+
+" markdown
+let g:markdown_fenced_languages = [
+\  'go',
+\  'sh',
+\]
+
+" previm
+let g:previm_open_cmd = 'open'
+augroup vimrc_previm
+    autocmd!
+    autocmd FileType markdown nnoremap <buffer> <silent> <Leader>p :<C-u>PrevimOpen<CR>
+    autocmd FileType markdown nnoremap <buffer> <silent> <Leader>r :<C-u>call previm#refresh()<CR>
+augroup END
 
 " vim-table-mode
 let g:table_mode_corner = '|'
