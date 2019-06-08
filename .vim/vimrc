@@ -34,7 +34,6 @@ Plug 'junegunn/fzf.vim'
 Plug 'vim-jp/vimdoc-ja'
 Plug 'scrooloose/nerdtree', { 'on':  'NERDTreeToggle' }
 Plug 'Yggdroot/indentLine', { 'on': 'IndentLinesToggle' }
-Plug 'junegunn/vim-easy-align', { 'on': '<Plug>(EasyAlign)' }
 Plug 'simeji/winresizer', { 'on': 'WinResizerStartResize' }
 Plug 'glidenote/memolist.vim', { 'on': ['MemoNew','MemoList','MemoGrep'] }
 
@@ -43,6 +42,7 @@ Plug 'tpope/vim-surround'
 Plug 'tpope/vim-repeat'
 Plug 'tyru/caw.vim'
 Plug 'cohama/lexima.vim'
+Plug 'junegunn/vim-easy-align', { 'on': '<Plug>(EasyAlign)' }
 
 " Git
 Plug 'airblade/vim-gitgutter'
