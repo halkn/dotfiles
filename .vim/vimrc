@@ -36,6 +36,7 @@ Plug 'scrooloose/nerdtree', { 'on':  'NERDTreeToggle' }
 Plug 'Yggdroot/indentLine', { 'on': 'IndentLinesToggle' }
 Plug 'junegunn/vim-easy-align', { 'on': '<Plug>(EasyAlign)' }
 Plug 'simeji/winresizer', { 'on': 'WinResizerStartResize' }
+Plug 'glidenote/memolist.vim', { 'on': ['MemoNew','MemoList','MemoGrep'] }
 
 " Edit
 Plug 'tpope/vim-surround'
@@ -287,6 +288,16 @@ vmap <Enter> <Plug>(EasyAlign)
 " winresizer.vim
 let g:winresizer_start_key = '<C-w>r'
 nnoremap <silent><C-w>r :<c-u>WinResizerStartResize<CR>
+
+" memolist
+let g:memolist_fzf = 1
+let g:memolist_delimiter_yaml_start = '---'
+let g:memolist_delimiter_yaml_end  = '---'
+let g:memolist_memo_suffix = 'md'
+let g:memolist_template_dir_path = '/Users/haruki/.dotfiles/.config/memolist.vim'
+nnoremap <Leader>mn  :<C-u>MemoNew<CR>
+nnoremap <Leader>ml  :<C-u>MemoList<CR>
+nnoremap <Leader>mg  :<C-u>MemoGrep<CR>
 
 " }}}
 
