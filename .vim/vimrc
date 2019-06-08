@@ -284,9 +284,6 @@ nmap <silent><c-e> :<c-u>NERDTreeToggle<CR>
 let g:loaded_indentLine = 1
 nnoremap <silent><c-d> :<c-u>IndentLinesToggle<CR>
 
-" vim-easy-align
-vmap <Enter> <Plug>(EasyAlign)
-
 " winresizer.vim
 let g:winresizer_start_key = '<C-w>r'
 nnoremap <silent><C-w>r :<c-u>WinResizerStartResize<CR>
@@ -310,6 +307,9 @@ nmap <Leader>c <Plug>(caw:hatpos:toggle)
 vmap <Leader>c <Plug>(caw:hatpos:toggle)
 nmap <Leader>, <Plug>(caw:zeropos:toggle)
 vmap <Leader>, <Plug>(caw:zeropos:toggle)
+
+" vim-easy-align
+vmap <Enter> <Plug>(EasyAlign)
 
 " vim-operator-replace
 map R  <Plug>(operator-replace)
