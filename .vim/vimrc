@@ -257,7 +257,7 @@ command! -bang -nargs=* Rg
     \ call fzf#vim#grep(
     \ g:rg_command .shellescape(<q-args>), 1,
     \ <bang>0   ? fzf#vim#with_preview({'options': '--delimiter : --nth 4..'}, 'up:60%')
-    \           : fzf#vim#with_preview({'options': '--delimiter : --nth 4..'}, 'right:50%:hidden', 'p'),
+    \           : fzf#vim#with_preview({'options': '--delimiter : --nth 4..'}, 'right:50%:hidden', '?'),
     \ <bang>0)
 
 " Override Colors command. You can safely do this in your .vimrc as fzf.vim
