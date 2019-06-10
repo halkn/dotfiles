@@ -24,6 +24,13 @@ export ZDOTDIR=$XDG_CONFIG_HOME/zsh
 # golang
 export GOPATH=$HOME/dev/go
 
+# npm
+export NPM_CONFIG_USERCONFIG=$XDG_CONFIG_HOME/npm/npmrc
+
+# RubyGems
+export GEM_HOME="$XDG_DATA_HOME"/gem
+export GEM_SPEC_CACHE="$XDG_CACHE_HOME"/gem
+
 # PATH
 typeset -U path
 path=(
