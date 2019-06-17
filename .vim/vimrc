@@ -477,12 +477,14 @@ augroup END
 
 " markdown
 let g:markdown_fenced_languages = [
-\  'go',
-\  'sh',
-\]
+    \  'go',
+    \  'sh',
+    \]
 
 " previm
 let g:previm_open_cmd = 'open'
+let g:previm_disable_default_css = 1
+let g:previm_custom_css_path = '$HOME/.dotfiles/etc/templates/markdown.css'
 augroup vimrc_previm
     autocmd!
     autocmd FileType markdown nnoremap <buffer> <silent> <Leader>p :<C-u>PrevimOpen<CR>
