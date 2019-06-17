@@ -72,7 +72,6 @@ Plug 'fatih/vim-go', {
 " Document
 Plug 'previm/previm', { 'for' : 'markdown' }
 Plug 'dhruvasagar/vim-table-mode', { 'for' : 'markdown' }
-Plug 'habamax/vim-asciidoctor', { 'for': 'asciidoc' }
 
 call plug#end()
 
@@ -492,10 +491,6 @@ augroup END
 
 " vim-table-mode
 let g:table_mode_corner = '|'
-
-" vim-asciidoctor
-let g:asciidoctor_executable = 'asciidoctor'
-let g:asciidoctor_extensions = ['asciidoctor-diagram']
 
 " }}}
 
