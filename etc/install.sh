@@ -12,7 +12,7 @@ brew install fzf
 brew install ripgrep
 brew install fd
 brew install p7zip
-brew install shellcheck
+brew install jq
 brew install go
 brew install yarn
 echo "finished !"
