@@ -272,7 +272,9 @@ imap <c-x><c-f> <plug>(fzf-complete-path)
 
 " lightline
 let g:lightline = {
-    \ 'colorscheme': 'tender',
+    \ 'colorscheme': 'wombat',
+    \ 'separator': { 'left': "\ue0b0", 'right': "\ue0b2" },
+    \ 'subseparator': { 'left': "\ue0b1", 'right': "\ue0b3" },
     \ }
 
 " nerdtree 
@@ -358,6 +360,7 @@ if executable('gopls')
     autocmd FileType go setlocal omnifunc=lsp#complete
     autocmd FileType go nmap gd <Plug>(lsp-definition)
     autocmd FileType go nmap K <Plug>(lsp-hover)
+    autocmd FileType go nmap <F2> <Plug>(lsp-rename)
     augroup END
 endif
 
@@ -460,7 +463,6 @@ let g:go_list_type = 'quickfix'
 " mapping
 augroup GoCommads
     autocmd!
-    autocmd FileType go nmap <buffer> <silent> <F2> <Plug>(go-rename)
     autocmd FileType go nmap <buffer> <silent> <leader>r <Plug>(go-run)
     autocmd FileType go nmap <buffer> <silent> <leader>t <Plug>(go-test)
     autocmd FileType go nmap <buffer> <silent> <leader>v <Plug>(go-coverage-toggle)
