@@ -34,6 +34,9 @@ export GEM_SPEC_CACHE="$XDG_CACHE_HOME"/gem
 # Docker
 export DOCKER_CONFIG="$XDG_CONFIG_HOME"/docker
 
+# homebrew
+export HOMEBREW_NO_INSTALL_CLEANUP=1
+
 # PATH
 typeset -U path
 path=(
