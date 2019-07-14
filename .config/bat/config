@@ -1,0 +1,6 @@
+# Show line numbers, Git modifications and file header (but no grid)
+--style="numbers,changes,header"
+
+# Add syntax
+--map-syntax .zshenv:zsh
+--map-syntax vimrc:vim

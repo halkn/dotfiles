@@ -2,6 +2,7 @@
 
 # brew install
 echo "brew install start ..."
+brew install bat
 brew install zsh
 brew install git
 brew install coreutils
