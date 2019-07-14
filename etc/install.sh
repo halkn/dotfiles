@@ -3,20 +3,20 @@
 # brew install
 echo "brew install start ..."
 brew install bat
-brew install exa
-brew install zsh
-brew install git
 brew install coreutils
+brew install exa
+brew install fd
+brew install fzf
+brew install git
+brew install go
+brew install jq
+brew install p7zip
+brew install ripgrep
 brew install tig
 brew install tmux
 brew install vim
-brew install fzf
-brew install ripgrep
-brew install fd
-brew install p7zip
-brew install jq
-brew install go
 brew install yarn
+brew install zsh
 echo "finished !"
 
 # except XDG_CONFIG_HOME because it is maked by dotdiles deploy
