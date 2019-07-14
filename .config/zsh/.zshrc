@@ -104,6 +104,8 @@ alias mkdir='nocorrect mkdir'
 # Util
 alias ll="ls -lhF"
 alias la="ls -lhAF"
+alias l="exa -lha --git --time-style=long-iso"
+alias tree="exa -laT --time-style=long-iso --git-ignore --ignore-glob='.git|.svn'"
 
 # human readable for du and df
 alias du="du -h"
