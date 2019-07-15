@@ -359,6 +359,9 @@ if executable('gopls')
         \ })
     autocmd FileType go setlocal omnifunc=lsp#complete
     autocmd FileType go nmap gd <Plug>(lsp-definition)
+    autocmd FileType go nmap gy <Plug>(lsp-type-definition)
+    autocmd FileType go nmap gr <Plug>(lsp-next-reference)
+    autocmd FileType go nmap gR <Plug>(lsp-previous-reference)
     autocmd FileType go nmap K <Plug>(lsp-hover)
     autocmd FileType go nmap <F2> <Plug>(lsp-rename)
     augroup END
@@ -467,6 +470,7 @@ augroup GoCommads
     autocmd FileType go nmap <buffer> <silent> <leader>t <Plug>(go-test)
     autocmd FileType go nmap <buffer> <silent> <leader>v <Plug>(go-coverage-toggle)
     autocmd FileType go nmap <buffer> <silent> <Leader>ie <Plug>(go-iferr)
+    autocmd FileType go nmap <buffer> <silent> <Leader>im <Plug>(go-implements)
     autocmd FileType go nmap <buffer> <silent> <Leader>dl :<C-u>GoDecls<CR>
     autocmd FileType go nmap <buffer> <silent> <Leader>dd :<C-u>GoDeclsDir<CR>
 augroup END
