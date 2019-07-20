@@ -24,7 +24,11 @@ export ZDOTDIR=$XDG_CONFIG_HOME/zsh
 # golang
 export GOPATH=$HOME/dev/go
 
+# nodebrew
+export NODEBREW_ROOT=$XDG_DATA_HOME/nodebrew
+
 # npm
+export NPM_HOME=$XDG_DATA_HOME/npm
 export NPM_CONFIG_USERCONFIG=$XDG_CONFIG_HOME/npm/npmrc
 
 # RubyGems
@@ -47,6 +51,8 @@ path=(
     /usr/sbin
     /sbin
     $GOPATH/bin(N-/)
+    $NODEBREW_ROOT/current/bin(N-/)
+    $NPM_HOME/bin(N-/)
     $path
 )
 

@@ -10,12 +10,12 @@ brew install fzf
 brew install git
 brew install go
 brew install jq
+brew install nodebrew
 brew install p7zip
 brew install ripgrep
 brew install tig
 brew install tmux
 brew install vim
-brew install yarn
 brew install zsh
 echo "finished !"
 
@@ -24,6 +24,8 @@ echo "Set up for XDG Base Directory Specification"
 mkdir -p ~/.cache
 mkdir -p ~/.local/share
 mkdir -p ~/.local/share/tig
+mkdir -p ~/.local/share/nodebrew
+mkdir -p ~/.local/share/npm
 mkdir -p ~/.local/share/zsh
 echo "finished !"
 
