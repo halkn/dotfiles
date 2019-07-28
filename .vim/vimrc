@@ -61,6 +61,8 @@ Plug 'liuchengxu/vista.vim', { 'on': ['Vista', 'Vista!!'] }
 Plug 'prabirshrestha/asyncomplete.vim'
 Plug 'prabirshrestha/asyncomplete-lsp.vim'
 Plug 'prabirshrestha/asyncomplete-ultisnips.vim'
+Plug 'prabirshrestha/asyncomplete-buffer.vim'
+Plug 'prabirshrestha/asyncomplete-file.vim'
 " snippet
 Plug 'SirVer/ultisnips'
 " lang
@@ -426,12 +428,31 @@ let g:vista#renderer#enable_icon = 0
 
 " asyncomplete {{{
 
-" asyncomplete-ultisnips.
-call asyncomplete#register_source(asyncomplete#sources#ultisnips#get_source_options({
-    \ 'name': 'ultisnips',
-    \ 'whitelist': ['*'],
-    \ 'completor': function('asyncomplete#sources#ultisnips#completor'),
-    \ }))
+augroup asyncomplete_setup 
+    " asyncomplete-ultisnips.
+    autocmd User asyncomplete_setup call asyncomplete#register_source(asyncomplete#sources#ultisnips#get_source_options({
+        \ 'name': 'ultisnips',
+        \ 'whitelist': ['*'],
+        \ 'completor': function('asyncomplete#sources#ultisnips#completor'),
+        \ }))
+    " asyncomplete-buffer
+    autocmd User asyncomplete_setup call asyncomplete#register_source(asyncomplete#sources#buffer#get_source_options({
+        \ 'name': 'buffer',
+        \ 'whitelist': ['*'],
+        \ 'blacklist': ['go'],
+        \ 'completor': function('asyncomplete#sources#buffer#completor'),
+        \ 'config': {
+        \    'max_buffer_size': 5000000,
+        \  },
+        \ }))
+    " asyncomplete-file
+    autocmd User asyncomplete_setup call asyncomplete#register_source(asyncomplete#sources#file#get_source_options({
+        \ 'name': 'file',
+        \ 'whitelist': ['*'],
+        \ 'priority': 10,
+        \ 'completor': function('asyncomplete#sources#file#completor')
+        \ }))
+augroup END
 
 " }}}
 
