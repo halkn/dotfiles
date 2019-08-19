@@ -27,7 +27,7 @@ endif
 call plug#begin('~/.vim/plugged')
 
 " Util
-Plug 'hal0920/tender.vim'
+Plug 'halkn/tender.vim'
 Plug 'itchyny/lightline.vim'
 Plug 'ctrlpvim/ctrlp.vim'
 Plug 'vim-jp/vimdoc-ja'
@@ -97,7 +97,7 @@ augroup END
 let mapleader = "\<Space>"
 
 " reload vimrc
-nnoremap <Space>s :source $HOME/.vim/vimrc<CR>
+nnoremap <Space>s :source $MYVIMRC<CR>
 
 " Clear search highlight
 nnoremap <Esc><Esc> :nohlsearch<CR><Esc>
@@ -178,13 +178,13 @@ set wildmenu
 set display=lastline
 set laststatus=2
 set cursorline
-set number
-set relativenumber
+" set number
+" set relativenumber
 set wrap
 set list
 set listchars=tab:»-,trail:-,eol:↲,extends:»,precedes:«,nbsp:%
 set scrolloff=8
-set showtabline=2
+set showtabline=0
 set synmaxcol=512
 set showcmd
 set signcolumn=yes
@@ -322,6 +322,7 @@ nmap ]g <Plug>GitGutterNextHunk
 " fugitive
 nmap [fugitive] <Nop>
 map <Leader>g [fugitive]
+nnoremap <silent> [fugitive]s :<C-u>Gstatus<CR>
 nnoremap <silent> [fugitive]c :<C-u>Gcommit<CR>
 nnoremap <silent> [fugitive]d :<C-u>Gdiff<CR>
 nnoremap <silent> [fugitive]b :<C-u>Gblame<CR>
