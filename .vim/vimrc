@@ -29,13 +29,13 @@ call plug#begin('~/.vim/plugged')
 " Util
 Plug 'hal0920/tender.vim'
 Plug 'itchyny/lightline.vim'
-Plug 'junegunn/fzf'
-Plug 'junegunn/fzf.vim'
+Plug 'ctrlpvim/ctrlp.vim'
 Plug 'vim-jp/vimdoc-ja'
 Plug 'scrooloose/nerdtree', { 'on':  'NERDTreeToggle' }
 Plug 'Yggdroot/indentLine', { 'on': 'IndentLinesToggle' }
 Plug 'simeji/winresizer', { 'on': 'WinResizerStartResize' }
 Plug 'glidenote/memolist.vim', { 'on': ['MemoNew','MemoList','MemoGrep'] }
+Plug 'jremmen/vim-ripgrep', { 'on': 'Rg' }
 
 " Edit
 Plug 'tpope/vim-surround'
@@ -230,6 +230,12 @@ set helplang=ja,en
 " vimfinfo
 set viminfo+='1000,n$XDG_CACHE_HOME/vim/viminfo
 
+" grep
+if executable('rg')
+    let &grepprg = 'rg --vimgrep --hidden --glob "!{.git,.svn}"'
+    set grepformat=%f:%l:%c:%m,%f:%l:%m
+endif
+
 " }}}
 " ============================================================================
 " Plugin setting {{{
@@ -237,40 +243,23 @@ set viminfo+='1000,n$XDG_CACHE_HOME/vim/viminfo
 
 " Util {{{
 
-" fzf {{{
-
-" key mappings
-nnoremap <silent> <Leader>f :<C-u>Files<CR>
-nnoremap <silent> <Leader>G :<C-u>GFiles?<CR>
-nnoremap <silent> <Leader>b :<C-u>Buffers<CR>
-nnoremap <silent> <Leader>R :<C-u>Rg<CR>
-nnoremap <silent> <Leader>l :<C-u>BLines<CR>
-
-" Files command with preview window
-command! -bang -nargs=? -complete=dir Files
-    \ call fzf#vim#files(<q-args>, fzf#vim#with_preview(), <bang>0)
-
-" Use fzf#vim#grep with ripgrep as Rg command
-let g:rg_command = '
-    \ rg --column --line-number --hidden --ignore-case --no-heading  --color "always"
-    \ -g "!{.git,.svn,node_modules,vendor}/*" '
-command! -bang -nargs=* Rg
-    \ call fzf#vim#grep(
-    \ g:rg_command .shellescape(<q-args>), 1,
-    \ <bang>0   ? fzf#vim#with_preview({'options': '--delimiter : --nth 4..'}, 'up:60%')
-    \           : fzf#vim#with_preview({'options': '--delimiter : --nth 4..'}, 'right:50%:hidden', '?'),
-    \ <bang>0)
-
-" Override Colors command. You can safely do this in your .vimrc as fzf.vim
-" will not override existing commands.
-command! -bang Colors
-  \ call fzf#vim#colors({'left': '15%', 'options': '--reverse --margin 30%,0'}, <bang>0)
-
-" fuzzy finder for C-x completion
-imap <c-x><c-k> <plug>(fzf-complete-word)
-imap <c-x><c-f> <plug>(fzf-complete-path)
-
-" }}}
+" CtrlP
+let g:ctrlp_user_command = 'rg --files --hidden --glob "!{.git,.svn}"'
+let g:ctrlp_use_caching = 1
+let g:ctrlp_cache_dir = $XDG_CACHE_HOME.'/ctrlp'
+let g:ctrlp_prompt_mappings = {
+    \ 'PrtBS()':              ['<bs>', '<c-]>', '<c-h>'],
+    \ 'PrtSelectMove("j")':   ['<c-j>', '<down>', '<c-n>'],
+    \ 'PrtSelectMove("k")':   ['<c-k>', '<up>', '<c-p>'],
+    \ 'PrtHistory(-1)':       ['<Nop>'],
+    \ 'PrtHistory(1)':        ['<Nop>'],
+    \ 'PrtCurLeft()':         ['<left>', '<c-^>'],
+    \ }
+let g:ctrlp_map = '<Nop>'
+nnoremap <silent> <Leader>f :<C-u>CtrlP .<CR>
+nnoremap <silent> <Leader>b :<C-u>CtrlPBuffer<CR>
+nnoremap <silent> <Leader>l :<C-u>CtrlPLine<CR>
+nnoremap <silent> <Leader>q :<C-u>CtrlPQuickfix<CR>
 
 " lightline
 let g:lightline = {
@@ -292,7 +281,7 @@ let g:winresizer_start_key = '<C-w>r'
 nnoremap <silent><C-w>r :<c-u>WinResizerStartResize<CR>
 
 " memolist
-let g:memolist_fzf = 1
+let g:memolist_ex_cmd = 'CtrlP'
 let g:memolist_delimiter_yaml_start = '---'
 let g:memolist_delimiter_yaml_end  = '---'
 let g:memolist_memo_suffix = 'md'
@@ -300,6 +289,10 @@ let g:memolist_template_dir_path = '$XDG_CONFIG_HOME/memolist.vim'
 nnoremap <Leader>mn  :<C-u>MemoNew<CR>
 nnoremap <Leader>ml  :<C-u>MemoList<CR>
 nnoremap <Leader>mg  :<C-u>MemoGrep<CR>
+
+" vim-ripgrep
+let g:rg_command = 'rg --vimgrep --hidden --glob "!{.git,.svn}"'
+let g:rg_format = '%f:%l:%c:%m,%f:%l:%m'
 
 " }}}
 
