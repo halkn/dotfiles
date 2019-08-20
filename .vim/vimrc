@@ -38,8 +38,7 @@ Plug 'glidenote/memolist.vim', { 'on': ['MemoNew','MemoList','MemoGrep'] }
 Plug 'jremmen/vim-ripgrep', { 'on': 'Rg' }
 
 " Edit
-Plug 'tpope/vim-surround'
-Plug 'tpope/vim-repeat'
+Plug 'machakann/vim-sandwich'
 Plug 'tyru/caw.vim'
 Plug 'cohama/lexima.vim'
 Plug 'junegunn/vim-easy-align', { 'on': '<Plug>(EasyAlign)' }
@@ -135,7 +134,10 @@ nnoremap <S-tab> <c-w>W
 
 " Not yank is delete operation
 nnoremap x "_x
-nnoremap s "_x
+
+" Disable s operation
+nnoremap s <Nop>
+vnoremap s <Nop>
 
 " Quit the current window
 nnoremap <silent> <C-q> :q<CR>
