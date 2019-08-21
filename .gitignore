@@ -1,5 +1,6 @@
 .vim/autoload
 .vim/plugged
+.vim/sessions
 .config/zsh/.zcompdump
 .config/zsh/.zshrc.zwc
 .config/zsh/.zcompcache
