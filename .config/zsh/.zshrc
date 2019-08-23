@@ -319,7 +319,7 @@ zplugin ice blockf; zplugin light felixr/docker-zsh-completion
 # Shell StartUp
 #####################################################################
 # Start tmux
-[[ -z "$TMUX" && ! -z "$PS1" ]] && exec tmux
+[[ -z "$TMUX" && ! -z "$PS1" ]] && exec tmux -f "$XDG_CONFIG_HOME"/tmux/tmux.conf
 
 #if (which zprof > /dev/null) ;then
 #  zprof | less
