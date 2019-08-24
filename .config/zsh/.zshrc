@@ -32,7 +32,7 @@ bindkey -M viins '^H'  backward-delete-char
 # load command completion function
 autoload -Uz compinit
 # load compinit
-compinit
+compinit -d $XDG_CACHE_HOME/zsh/.zcompdump
 
 # Choose a complementary candidate from the menu.
 # select=2: Complement immediately
@@ -56,6 +56,7 @@ zstyle ':completion:*' group-name ''
 
 # use cache
 zstyle ':completion:*' use-cache yes
+zstyle ':completion:*' cache-path "${XDG_CACHE_HOME}/.zcompcache"
 
 # use detailed completion
 zstyle ':completion:*' verbose yes
