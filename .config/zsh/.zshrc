@@ -4,7 +4,7 @@
 #####################################################################
 # auto zcompile
 if [ ! -f $ZDOTDIR/.zshrc.zwc -o $ZDOTDIR/.zshrc -nt $ZDOTDIR/.zshrc.zwc ]; then
-    zcompile $ZDOTDIR/.zshrc
+  zcompile $ZDOTDIR/.zshrc
 fi
 
 #####################################################################
@@ -111,37 +111,37 @@ zstyle ':completion:*' verbose yes
 # - _approximate:   complete from approximate suggestions
 # - _prefix:        complete without caring the characters after carret
 zstyle ':completion:*' completer \
-    _complete \
-    _match \
-    _approximate \
-    _oldlist \
-    _history \
-    _ignored \
-    _prefix
+  _complete \
+  _match \
+  _approximate \
+  _oldlist \
+  _history \
+  _ignored \
+  _prefix
 
 #####################################################################
 # ls setting
 #####################################################################
 if type exa > /dev/null 2>&1; then
-    alias ls="exa"
-    alias ll="ls -l --time-style=long-iso"
-    alias la="exa -la --git --time-style=long-iso"
-    alias tree="exa -laT --time-style=long-iso --git-ignore --ignore-glob='.git|.svn'"
+  alias ls="exa"
+  alias ll="ls -l --time-style=long-iso"
+  alias la="exa -la --git --time-style=long-iso"
+  alias tree="exa -laT --time-style=long-iso --git-ignore --ignore-glob='.git|.svn'"
 else
-    case ${OSTYPE} in
-        darwin* )
-            if [[ -x `which gls` ]]; then
-                alias ls="gls --color=auto"
-            else
-                alias ls="ls -G"
-            fi
-            ;;
-        linux* )
-            alias ls="ls --color=auto"
-            ;;
-    esac
-    alias ll="ls -lhF"
-    alias la="ls -lhAF"
+  case ${OSTYPE} in
+    darwin* )
+      if [[ -x `which gls` ]]; then
+        alias ls="gls --color=auto"
+      else
+        alias ls="ls -G"
+      fi
+      ;;
+    linux* )
+      alias ls="ls --color=auto"
+      ;;
+  esac
+  alias ll="ls -lhF"
+  alias la="ls -lhAF"
 fi
 
 #####################################################################
@@ -158,9 +158,9 @@ alias df="df -h"
 
 # cat to bat
 if type bat > /dev/null 2>&1; then
-    alias cat="bat"
-    alias less="bat"
-    export GIT_PAGER="bat"
+  alias cat="bat"
+  alias less="bat"
+  export GIT_PAGER="bat"
 fi
 
 #####################################################################
@@ -226,8 +226,8 @@ setopt share_history
 
 # fo - Open a file with fuzzy find.
 fo() {
-    local file
-    file=$(fzf) && open "$file"
+  local file
+  file=$(fzf) && open "$file"
 }
 
 # fda - including hidden directories
@@ -239,21 +239,21 @@ fda() {
 
 # fdr - cd to selected parent directory
 fdr() {
-    get_parent_dirs() {
-        local dpath
-        for dir in $(echo ${PWD} | tr "/" " " | sed 's/^[ \t]*//')
-        do
-            dpath+="/"$dir && echo "${dpath}"
-        done
-    }
-    local DIR="$( get_parent_dirs |
-        fzf --reverse --preview '
-            __cd_nxt="$(echo {})";
-            __cd_path="$(echo ${__cd_nxt} | sed "s;//;/;")";
-            echo $__cd_path;
-            echo;
-            ls -aF "${__cd_path}";
-    ')"
+  get_parent_dirs() {
+    local dpath
+    for dir in $(echo ${PWD} | tr "/" " " | sed 's/^[ \t]*//')
+    do
+      dpath+="/"$dir && echo "${dpath}"
+    done
+  }
+  local DIR="$( get_parent_dirs |
+    fzf --reverse --preview '
+      __cd_nxt="$(echo {})";
+      __cd_path="$(echo ${__cd_nxt} | sed "s;//;/;")";
+      echo $__cd_path;
+      echo;
+      ls -aF "${__cd_path}";
+  ')"
   cd "${DIR}"
 }
 
@@ -264,45 +264,45 @@ fh() {
 
 # interactive cd
 function cd() {
-    if [[ "$#" != 0 ]]; then
-        builtin cd "$@";
-        return
-    fi
-    while true; do
-        local lsd=$(ls -aaF | grep '/$' | sed 's;/$;;')
-        local dir="$(printf '%s\n' "${lsd[@]}" |
-            fzf --reverse --preview '
-                __cd_nxt="$(echo {})";
-                __cd_path="$(echo $(pwd)/${__cd_nxt} | sed "s;//;/;")";
-                echo $__cd_path;
-                echo;
-                ls -aF "${__cd_path}";
-        ')"
-        [[ ${#dir} != 0 ]] || return 0
-        builtin cd "$dir" &> /dev/null
-    done
+  if [[ "$#" != 0 ]]; then
+    builtin cd "$@";
+    return
+  fi
+  while true; do
+    local lsd=$(ls -aaF | grep '/$' | sed 's;/$;;')
+    local dir="$(printf '%s\n' "${lsd[@]}" |
+      fzf --reverse --preview '
+        __cd_nxt="$(echo {})";
+        __cd_path="$(echo $(pwd)/${__cd_nxt} | sed "s;//;/;")";
+        echo $__cd_path;
+        echo;
+        ls -aF "${__cd_path}";
+    ')"
+    [[ ${#dir} != 0 ]] || return 0
+    builtin cd "$dir" &> /dev/null
+  done
 }
 
 # interactice ssh
 function ssh() {
-    if [[ "$#" != 0 ]];then
-        /usr/bin/ssh "$@";
-        return
-    fi
-    local host=$(rg '^Host' ~/.ssh/config | awk '{print $2}' | fzf )
-    [[ ${#host} != 0 ]] || return 0
-    /usr/bin/ssh "$host"
+  if [[ "$#" != 0 ]];then
+    /usr/bin/ssh "$@";
+    return
+  fi
+  local host=$(rg '^Host' ~/.ssh/config | awk '{print $2}' | fzf )
+  [[ ${#host} != 0 ]] || return 0
+  /usr/bin/ssh "$host"
 }
 
 # fshow - git commit browser
 fshow() {
   git log --graph --color=always \
-      --format="%C(auto)%h%d %s %C(black)%C(bold)%cr" "$@" |
+    --format="%C(auto)%h%d %s %C(black)%C(bold)%cr" "$@" |
   fzf --ansi --no-sort --reverse --tiebreak=index --bind=ctrl-s:toggle-sort \
-      --bind "ctrl-m:execute:
-                (grep -o '[a-f0-9]\{7\}' | head -1 |
-                xargs -I % sh -c 'git show --color=always %') << 'FZF-EOF'
-                {}
+    --bind "ctrl-m:execute:
+        (grep -o '[a-f0-9]\{7\}' | head -1 |
+        xargs -I % sh -c 'git show --color=always %') << 'FZF-EOF'
+        {}
 FZF-EOF"
 }
 
@@ -310,18 +310,18 @@ FZF-EOF"
 fadd() {
   local out q n addfiles
   while out=$(
-      git status --short |
-      awk '{if (substr($0,2,1) !~ / /) print $2}' |
-      fzf-tmux --multi --exit-0 --expect=ctrl-d); do
-    q=$(head -1 <<< "$out")
-    n=$[$(wc -l <<< "$out") - 1]
-    addfiles=(`echo $(tail "-$n" <<< "$out")`)
-    [[ -z "$addfiles" ]] && continue
-    if [ "$q" = ctrl-d ]; then
-      git diff --color=always $addfiles
-    else
-      git add $addfiles
-    fi
+    git status --short |
+    awk '{if (substr($0,2,1) !~ / /) print $2}' |
+    fzf-tmux --multi --exit-0 --expect=ctrl-d); do
+  q=$(head -1 <<< "$out")
+  n=$[$(wc -l <<< "$out") - 1]
+  addfiles=(`echo $(tail "-$n" <<< "$out")`)
+  [[ -z "$addfiles" ]] && continue
+  if [ "$q" = ctrl-d ]; then
+    git diff --color=always $addfiles
+  else
+    git add $addfiles
+  fi
   done
 }
 
