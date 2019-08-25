@@ -126,6 +126,7 @@ if type exa > /dev/null 2>&1; then
   alias ls="exa"
   alias ll="ls -l --time-style=long-iso"
   alias la="exa -la --git --time-style=long-iso"
+  alias ltr="ll --sort=modified"
   alias tree="exa -laT --time-style=long-iso --git-ignore --ignore-glob='.git|.svn'"
 else
   case ${OSTYPE} in
@@ -142,6 +143,7 @@ else
   esac
   alias ll="ls -lhF"
   alias la="ls -lhAF"
+  alias ltr="ll -tr"
 fi
 
 #####################################################################
@@ -156,12 +158,39 @@ alias mkdir='nocorrect mkdir'
 alias du="du -h"
 alias df="df -h"
 
+# cd
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ....='cd ../../..'
+
+# zsh
+alias zs="source $ZDOTDIR/.zshrc"
+alias zb='for i in $(seq 1 10); do time zsh -i -c exit; done'
+
+# vim
+alias v="vim"
+alias vi="vim"
+
+# dotfiles
+alias dot="cd $HOME/.dotfiles && $EDITOR"
+
 # cat to bat
 if type bat > /dev/null 2>&1; then
   alias cat="bat"
   alias less="bat"
   export GIT_PAGER="bat"
 fi
+
+# Toggle GO111MODULE.
+function change_go_module {
+  echo "!!!!! Current GO111MODULE is" $GO111MODULE "!!!!!"
+  local GOMOD=$(echo "on\noff\nauto" | fzf +m)
+  if [ -n "${GOMOD}" ]; then
+    export GO111MODULE=${GOMOD}
+  fi
+  echo "!!!!! Change  GO111MODULE is" $GO111MODULE "!!!!!"
+}
+alias gmod=change_go_module
 
 #####################################################################
 # options
