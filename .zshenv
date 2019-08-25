@@ -4,6 +4,6 @@
 # set $ZDOTDIR
 export ZDOTDIR=$HOME/.config/zsh
 
-# load zshenv 
+# load zshenv
 source $ZDOTDIR/.zshenv
 

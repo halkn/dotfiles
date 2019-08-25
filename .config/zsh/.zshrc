@@ -80,7 +80,7 @@ compinit -d $XDG_CACHE_HOME/zsh/.zcompdump
 #           as soon as there are two or more completion candidates
 zstyle ':completion:*:default' menu select=2
 
-# Color a completion candidate 
+# Color a completion candidate
 # '' : default colors
 zstyle ':completion:*:default' list-colors ''
 
@@ -123,7 +123,7 @@ zstyle ':completion:*' completer \
 # ls setting
 #####################################################################
 case ${OSTYPE} in
-    darwin* ) 
+    darwin* )
         if [[ -x `which gls` ]]; then
             alias ls="gls --color=auto"
         else
@@ -164,7 +164,7 @@ setopt auto_resume
 setopt no_beep
 # Expand {} (ex. echo {a-c} -> a b c)
 setopt brace_ccl
-# command spellcheck 
+# command spellcheck
 setopt correct
 # Disable flow control
 setopt no_flow_control
@@ -185,14 +185,14 @@ setopt list_rows_first
 # Enable redirection for multi files
 setopt multios
 # For multi byte
-setopt print_eightbit
+setopt print_eight_bit
 # no glob expand when complete
 setopt glob_complete
 # Expand history
-setopt hist_expand 
+setopt hist_expand
 # complete sort numeric
 setopt numeric_glob_sort
-# autp cd when input is only directory name 
+# autp cd when input is only directory name
 setopt auto_cd
 # cd history pushd DIRSTACK
 setopt auto_pushd
@@ -228,19 +228,6 @@ fda() {
 }
 
 # fdr - cd to selected parent directory
-# fdr() {
-#   local declare dirs=()
-#   get_parent_dirs() {
-#     if [[ -d "${1}" ]]; then dirs+=("$1"); else return; fi
-#     if [[ "${1}" == '/' ]]; then
-#       for _dir in "${dirs[@]}"; do echo $_dir; done
-#     else
-#       get_parent_dirs $(dirname "$1")
-#     fi
-#   }
-#   local DIR=$(get_parent_dirs $(realpath "${1:-$PWD}") | fzf-tmux --tac)
-#   cd "$DIR"
-# }
 fdr() {
     get_parent_dirs() {
         local dpath

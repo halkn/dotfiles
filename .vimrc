@@ -47,7 +47,7 @@ Plug 'kana/vim-operator-replace', { 'on' : '<Plug>(operator-replace)' }
 
 " Git
 Plug 'airblade/vim-gitgutter'
-Plug 'tpope/vim-fugitive', { 
+Plug 'tpope/vim-fugitive', {
   \ 'on': ['Git', 'Gcommit', 'Gstatus', 'Gdiff', 'Gblame', 'Glog']
   \ }
 
@@ -65,7 +65,7 @@ Plug 'prabirshrestha/asyncomplete-file.vim'
 " snippet
 Plug 'SirVer/ultisnips'
 " lang
-Plug 'fatih/vim-go', { 
+Plug 'fatih/vim-go', {
   \ 'do': ':GoUpdateBinaries',
   \ 'for': 'go'
   \ }
@@ -274,7 +274,7 @@ let g:lightline = {
   \ 'subseparator': { 'left': "\ue0b1", 'right': "\ue0b3" },
   \ }
 
-" nerdtree 
+" nerdtree
 let NERDTreeShowHidden=1
 nmap <silent><c-e> :<c-u>NERDTreeToggle<CR>
 
@@ -378,8 +378,8 @@ if executable('pyls')
     \ 'name': 'pyls',
     \ 'cmd': {server_info->['pyls']},
     \ 'whitelist': ['python'],
-    \ 'workspace_config': {'pyls': 
-    \   {'plugins': 
+    \ 'workspace_config': {'pyls':
+    \   {'plugins':
     \     {'pydocstyle': {'enabled': v:true}}
     \   }
     \ }
@@ -434,7 +434,7 @@ let g:vista#renderer#enable_icon = 0
 
 " asyncomplete {{{
 
-augroup asyncomplete_setup 
+augroup asyncomplete_setup
   " asyncomplete-ultisnips.
   autocmd User asyncomplete_setup call asyncomplete#register_source(asyncomplete#sources#ultisnips#get_source_options({
     \ 'name': 'ultisnips',
