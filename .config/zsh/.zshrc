@@ -122,18 +122,27 @@ zstyle ':completion:*' completer \
 #####################################################################
 # ls setting
 #####################################################################
-case ${OSTYPE} in
-    darwin* )
-        if [[ -x `which gls` ]]; then
-            alias ls="gls --color=auto"
-        else
-            alias ls="ls -G"
-        fi
-        ;;
-    linux* )
-        alias ls="ls --color=auto"
-        ;;
-esac
+if type exa > /dev/null 2>&1; then
+    alias ls="exa"
+    alias ll="ls -l --time-style=long-iso"
+    alias la="exa -la --git --time-style=long-iso"
+    alias tree="exa -laT --time-style=long-iso --git-ignore --ignore-glob='.git|.svn'"
+else
+    case ${OSTYPE} in
+        darwin* )
+            if [[ -x `which gls` ]]; then
+                alias ls="gls --color=auto"
+            else
+                alias ls="ls -G"
+            fi
+            ;;
+        linux* )
+            alias ls="ls --color=auto"
+            ;;
+    esac
+    alias ll="ls -lhF"
+    alias la="ls -lhAF"
+fi
 
 #####################################################################
 # alias
@@ -143,15 +152,16 @@ alias mv='nocorrect mv'
 alias cp='nocorrect cp'
 alias mkdir='nocorrect mkdir'
 
-# Util
-alias ll="ls -lhF"
-alias la="ls -lhAF"
-alias l="exa -lha --git --time-style=long-iso"
-alias tree="exa -laT --time-style=long-iso --git-ignore --ignore-glob='.git|.svn'"
-
 # human readable for du and df
 alias du="du -h"
 alias df="df -h"
+
+# cat to bat
+if type bat > /dev/null 2>&1; then
+    alias cat="bat"
+    alias less="bat"
+    export GIT_PAGER="bat"
+fi
 
 #####################################################################
 # options
@@ -259,7 +269,7 @@ function cd() {
         return
     fi
     while true; do
-        local lsd=$(ls -ap | grep '/$' | sed 's;/$;;')
+        local lsd=$(ls -aaF | grep '/$' | sed 's;/$;;')
         local dir="$(printf '%s\n' "${lsd[@]}" |
             fzf --reverse --preview '
                 __cd_nxt="$(echo {})";
@@ -291,7 +301,7 @@ fshow() {
   fzf --ansi --no-sort --reverse --tiebreak=index --bind=ctrl-s:toggle-sort \
       --bind "ctrl-m:execute:
                 (grep -o '[a-f0-9]\{7\}' | head -1 |
-                xargs -I % sh -c 'git show --color=always % | less -R') << 'FZF-EOF'
+                xargs -I % sh -c 'git show --color=always %') << 'FZF-EOF'
                 {}
 FZF-EOF"
 }
@@ -308,7 +318,7 @@ fadd() {
     addfiles=(`echo $(tail "-$n" <<< "$out")`)
     [[ -z "$addfiles" ]] && continue
     if [ "$q" = ctrl-d ]; then
-      git diff --color=always $addfiles | less -R
+      git diff --color=always $addfiles
     else
       git add $addfiles
     fi
