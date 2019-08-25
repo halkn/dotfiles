@@ -14,6 +14,47 @@ umask 022
 stty -ixon
 
 #####################################################################
+# zplugin
+#####################################################################
+# Customizing Paths
+declare -A ZPLGM
+ZPLGM[HOME_DIR]=${XDG_DATA_HOME:-$HOME/.local/share}/zplugin
+ZPLGM[BIN_DIR]=${ZPLGM[HOME_DIR]}/bin
+ZPLGM[PLUGINS_DIR]=${ZPLGM[HOME_DIR]}/plugins
+ZPLGM[COMPLETIONS_DIR]=${ZPLGM[HOME_DIR]}/completions
+ZPLGM[SNIPPETS_DIR]=${ZPLGM[HOME_DIR]}/snippets
+ZPLGM[SERVICES_DIR]=${ZPLGM[HOME_DIR]}/services
+ZPLGM[ZCOMPDUMP_PATH]=$XDG_CACHE_HOME/zsh/.zcompdump
+
+# Instaling zplugin
+if [ ! -d ${ZPLGM[HOME_DIR]} ]; then
+  mkdir -p ${ZPLGM[HOME_DIR]}
+  git clone https://github.com/zdharma/zplugin ${ZPLGM[BIN_DIR]}
+fi
+
+# Initialize
+source ${ZPLGM[HOME_DIR]}/bin/zplugin.zsh
+autoload -Uz _zplugin
+(( ${+_comps} )) && _comps[zplugin]=_zplugin
+
+## load plugins
+zplugin ice wait"0" blockf
+zplugin light zsh-users/zsh-completions
+
+zplugin ice wait"0" atload"_zsh_autosuggest_start"
+zplugin light zsh-users/zsh-autosuggestions
+
+zplugin ice wait"0" atinit"zpcompinit; zpcdreplay"
+zplugin light zdharma/fast-syntax-highlighting
+
+# prompt
+zplugin ice pick"async.zsh" src"pure.zsh"
+zplugin light sindresorhus/pure
+
+zplugin ice as"completion"
+zplugin snippet https://github.com/docker/cli/blob/master/contrib/completion/zsh/_docker
+
+#####################################################################
 # Keybind
 #####################################################################
 # vim key bind
@@ -286,35 +327,6 @@ fadd() {
     fi
   done
 }
-
-#####################################################################
-# zplugin
-#####################################################################
-# Instaling zplugin
-if [ ! -e $HOME/.zplugin ]; then
-    git clone https://github.com/zdharma/zplugin.git $HOME/.zplugin/bin
-fi
-
-# Initialize
-source $HOME/.zplugin/bin/zplugin.zsh
-autoload -Uz _zplugin
-(( ${+_comps} )) && _comps[zplugin]=_zplugin
-
-# Theme
-zplugin ice pick"async.zsh" src"pure.zsh"
-zplugin light sindresorhus/pure
-
-# Load zsh plugins
-zplugin light zsh-users/zsh-syntax-highlighting
-zplugin light zsh-users/zsh-autosuggestions
-
-# Lazy load zsh plugins
-zplugin ice wait'!1'; zplugin light greymd/tmux-xpanes
-zplugin ice wait'!1'; zplugin light mollifier/cd-gitroot
-
-# Load completions
-zplugin ice blockf; zplugin light zsh-users/zsh-completions
-zplugin ice blockf; zplugin light felixr/docker-zsh-completion
 
 #####################################################################
 # Shell StartUp
