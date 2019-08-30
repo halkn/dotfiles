@@ -359,6 +359,13 @@ fman() {
   man -k . | fzf --prompt='Man> ' | awk '{print $1}' | xargs -r man
 }
 
+# Change directory to development directory in ghq.
+gl() {
+  local dir
+  dir=$(ghq list > /dev/null | fzf +m)
+  cd $(ghq root)/$dir
+}
+
 #####################################################################
 # Shell StartUp
 #####################################################################

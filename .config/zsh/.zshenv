@@ -22,7 +22,8 @@ export XDG_CACHE_HOME=~/.cache
 export ZDOTDIR=$XDG_CONFIG_HOME/zsh
 
 # golang
-export GOPATH=$HOME/dev/go
+export GOPATH=$XDG_DATA_HOME/go
+export GO111MODULE=on
 
 # nodebrew
 export NODEBREW_ROOT=$XDG_DATA_HOME/nodebrew

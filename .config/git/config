@@ -9,3 +9,5 @@
 	prompt = false
 [mergetool]
 	prompt = false
+[ghq]
+	root = ~/dev
