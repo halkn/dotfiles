@@ -51,6 +51,7 @@ zplugin light zdharma/fast-syntax-highlighting
 zplugin ice pick"async.zsh" src"pure.zsh"
 zplugin light sindresorhus/pure
 
+# add complection
 zplugin ice as"completion"
 zplugin snippet https://github.com/docker/cli/blob/master/contrib/completion/zsh/_docker
 
@@ -160,8 +161,6 @@ alias df="df -h"
 
 # cd
 alias ..='cd ..'
-alias ...='cd ../..'
-alias ....='cd ../../..'
 
 # zsh
 alias zs="source $ZDOTDIR/.zshrc"
@@ -180,17 +179,6 @@ if type bat > /dev/null 2>&1; then
   alias less="bat"
   export GIT_PAGER="bat"
 fi
-
-# Toggle GO111MODULE.
-function change_go_module {
-  echo "!!!!! Current GO111MODULE is" $GO111MODULE "!!!!!"
-  local GOMOD=$(echo "on\noff\nauto" | fzf +m)
-  if [ -n "${GOMOD}" ]; then
-    export GO111MODULE=${GOMOD}
-  fi
-  echo "!!!!! Change  GO111MODULE is" $GO111MODULE "!!!!!"
-}
-alias gmod=change_go_module
 
 #####################################################################
 # options
@@ -253,10 +241,29 @@ setopt share_history
 # function
 #####################################################################
 
-# fo - Open a file with fuzzy find.
-fo() {
-  local file
-  file=$(fzf) && open "$file"
+# !!!!!!!!!!!!!!!!!!!!
+# cd extension
+# !!!!!!!!!!!!!!!!!!!!
+
+# cd - interactive cd
+function cd() {
+  if [[ "$#" != 0 ]]; then
+    builtin cd "$@";
+    return
+  fi
+  while true; do
+    local lsd=$(ls -aaF | grep '/$' | sed 's;/$;;')
+    local dir="$(printf '%s\n' "${lsd[@]}" |
+      fzf --reverse --preview '
+        __cd_nxt="$(echo {})";
+        __cd_path="$(echo $(pwd)/${__cd_nxt} | sed "s;//;/;")";
+        echo $__cd_path;
+        echo;
+        ls -aF "${__cd_path}";
+    ')"
+    [[ ${#dir} != 0 ]] || return 0
+    builtin cd "$dir" &> /dev/null
+  done
 }
 
 # fda - including hidden directories
@@ -285,43 +292,18 @@ fdr() {
   ')"
   cd "${DIR}"
 }
+alias ...=fdr
 
-# fh - repeat history
-fh() {
-  print -z $( ([ -n "$ZSH_NAME" ] && fc -l 1 || history) | fzf +s --tac | sed 's/ *[0-9]* *//')
+# gl - cd to development directory in ghq list.
+gl() {
+  local dir
+  dir=$(ghq list > /dev/null | fzf +m)
+  cd $(ghq root)/$dir
 }
 
-# interactive cd
-function cd() {
-  if [[ "$#" != 0 ]]; then
-    builtin cd "$@";
-    return
-  fi
-  while true; do
-    local lsd=$(ls -aaF | grep '/$' | sed 's;/$;;')
-    local dir="$(printf '%s\n' "${lsd[@]}" |
-      fzf --reverse --preview '
-        __cd_nxt="$(echo {})";
-        __cd_path="$(echo $(pwd)/${__cd_nxt} | sed "s;//;/;")";
-        echo $__cd_path;
-        echo;
-        ls -aF "${__cd_path}";
-    ')"
-    [[ ${#dir} != 0 ]] || return 0
-    builtin cd "$dir" &> /dev/null
-  done
-}
-
-# interactice ssh
-function ssh() {
-  if [[ "$#" != 0 ]];then
-    /usr/bin/ssh "$@";
-    return
-  fi
-  local host=$(rg '^Host' ~/.ssh/config | awk '{print $2}' | fzf )
-  [[ ${#host} != 0 ]] || return 0
-  /usr/bin/ssh "$host"
-}
+# !!!!!!!!!!!!!!!!!!!!
+# git extension
+# !!!!!!!!!!!!!!!!!!!!
 
 # fshow - git commit browser
 fshow() {
@@ -335,7 +317,7 @@ fshow() {
 FZF-EOF"
 }
 
-
+# fadd - git status browser
 fadd() {
   local out q n addfiles
   while out=$(
@@ -354,16 +336,45 @@ fadd() {
   done
 }
 
-# fman - Man pages finder
+# !!!!!!!!!!!!!!!!!!!!
+# Others
+# !!!!!!!!!!!!!!!!!!!!
+
+# fo - Open a file with fuzzy find.
+fo() {
+  local file
+  file=$(fzf) && open "$file"
+}
+
+# fh - repeat history.
+fh() {
+  print -z $( ([ -n "$ZSH_NAME" ] && fc -l 1 || history) | fzf +s --tac | sed 's/ *[0-9]* *//')
+}
+
+# ssh - interactice ssh.
+function ssh() {
+  if [[ "$#" != 0 ]];then
+    /usr/bin/ssh "$@";
+    return
+  fi
+  local host=$(rg '^Host' ~/.ssh/config | awk '{print $2}' | fzf )
+  [[ ${#host} != 0 ]] || return 0
+  /usr/bin/ssh "$host"
+}
+
+# fman - Man pages finder.
 fman() {
   man -k . | fzf --prompt='Man> ' | awk '{print $1}' | xargs -r man
 }
 
-# Change directory to development directory in ghq.
-gl() {
-  local dir
-  dir=$(ghq list > /dev/null | fzf +m)
-  cd $(ghq root)/$dir
+# gmod - Change GO111MODULE interactively.
+gmod() {
+  echo "!!!!! Current GO111MODULE is" $GO111MODULE "!!!!!"
+  local GOMOD=$(echo "on\noff\nauto" | fzf +m)
+  if [ -n "${GOMOD}" ]; then
+    export GO111MODULE=${GOMOD}
+  fi
+  echo "!!!!! Change  GO111MODULE is" $GO111MODULE "!!!!!"
 }
 
 #####################################################################
