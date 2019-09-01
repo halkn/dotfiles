@@ -1,13 +1,17 @@
 [user]
-	name = halkn
-	email = h.mhty0wia.s@gmail.com
+    name = halkn
+    email = h.mhty0wia.s@gmail.com
 [diff]
-	tool = vimdiff
+    tool = vimdiff
 [merge]
-	tool = vimdiff
+    tool = vimdiff
 [difftool]
-	prompt = false
+    prompt = false
 [mergetool]
-	prompt = false
+    prompt = false
 [ghq]
-	root = ~/dev
+    root = ~/dev
+[alias]
+    st = status
+    cm =commit
+    dt = difftool
