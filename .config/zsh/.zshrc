@@ -358,7 +358,7 @@ gs() {
       --height='80%' \
       --preview "git diff --color=always -- {-1} " \
       --preview-window='right:60%' \
-      --expect=ctrl-a,ctrl-r,ctrl-m,ctrl-d \
+      --expect=ctrl-a,ctrl-r,ctrl-m,ctrl-d,ctrl-v \
       --bind "ctrl-f:preview-page-down,ctrl-b:preview-page-up" \
       --bind "ctrl-o:toggle-preview" \
       --bind "q:abort"
@@ -372,6 +372,8 @@ gs() {
       git reset -q HEAD $files
     elif [ "$key" = ctrl-d ]; then
       git difftool $files
+    elif [ "$key" = ctrl-v ]; then
+      vim $files
     fi
   done
 }
