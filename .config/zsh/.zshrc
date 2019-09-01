@@ -305,34 +305,73 @@ gl() {
 # git extension
 # !!!!!!!!!!!!!!!!!!!!
 
-# fshow - git commit browser
-fshow() {
-  git log --graph --color=always \
-    --format="%C(auto)%h%d %s %C(black)%C(bold)%cr" "$@" |
-  fzf --ansi --no-sort --reverse --tiebreak=index --bind=ctrl-s:toggle-sort \
-    --bind "ctrl-m:execute:
-        (grep -o '[a-f0-9]\{7\}' | head -1 |
-        xargs -I % sh -c 'git show --color=always %') << 'FZF-EOF'
-        {}
-FZF-EOF"
+# Function to judgement if it is git repository.
+function is_inside_repo {
+  git rev-parse --is-inside-work-tree &>/dev/null
+  return $?
 }
 
-# fadd - git status browser
-fadd() {
-  local out q n addfiles
-  while out=$(
-    git status --short |
-    awk '{if (substr($0,2,1) !~ / /) print $2}' |
-    fzf-tmux --multi --exit-0 --expect=ctrl-d); do
-  q=$(head -1 <<< "$out")
-  n=$[$(wc -l <<< "$out") - 1]
-  addfiles=(`echo $(tail "-$n" <<< "$out")`)
-  [[ -z "$addfiles" ]] && continue
-  if [ "$q" = ctrl-d ]; then
-    git diff --color=always $addfiles
-  else
-    git add $addfiles
+# fgl - git log show with fzf
+fgl() {
+  is_inside_repo || return 1
+  local filter
+  if [ -n $@ ] && [ -f $@ ]; then
+    filter="-- $@"
   fi
+
+  git log \
+    --graph \
+    --color=always \
+    --abbrev=7 \
+    --format='%C(auto)%h%d %an %C(blue)%s %C(yellow)%cr' $@ |
+  fzf \
+    --ansi \
+    --height 80% \
+    --no-sort \
+    --reverse \
+    --tiebreak=index \
+    --preview "f() { 
+        set -- \$(echo -- \$@ | grep -o '[a-f0-9]\{7\}');
+        [ \$# -eq 0 ] || git show --color=always \$1 $filter;
+      }; f {}" \
+    --preview-window=right:60% \
+    --bind "ctrl-f:preview-page-down,ctrl-b:preview-page-up" \
+    --bind "ctrl-o:toggle-preview" \
+    --bind "q:abort" \
+    --bind "ctrl-m:execute:
+      (grep -o '[a-f0-9]\{7\}' | head -1 |
+      xargs -I % sh -c 'git show --color=always % | less -R') << 'FZF-EOF'
+      {}
+      FZF-EOF"
+}
+
+# fgs - git status browser
+fgs() {
+  is_inside_repo || return 1
+  local out key n files
+  while out=$(
+    git -c color.status=always -c status.relativePaths=true status --short |
+    fzf \
+      --ansi \
+      --multi \
+      --height='80%' \
+      --preview "git diff --color=always -- {-1} " \
+      --preview-window='right:60%' \
+      --expect=ctrl-a,ctrl-r,ctrl-m,ctrl-d \
+      --bind "ctrl-f:preview-page-down,ctrl-b:preview-page-up" \
+      --bind "ctrl-o:toggle-preview" \
+      --bind "q:abort"
+  ); do
+    key=$(head -1 <<< "$out")
+    n=$[$(wc -l <<< "$out") - 1]
+    files=(`echo $(tail "-$n" <<< "$out" | awk '{print $2}')`)
+    if [ "$key" = ctrl-a -o "$key" = ctrl-m ]; then
+      git add $files
+    elif [ "$key" = ctrl-r ]; then
+      git reset -q HEAD $files
+    elif [ "$key" = ctrl-d ]; then
+      git difftool $files
+    fi
   done
 }
 
