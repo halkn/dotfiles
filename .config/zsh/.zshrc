@@ -294,12 +294,13 @@ fdr() {
 }
 alias ...=fdr
 
-# gl - cd to development directory in ghq list.
-gl() {
+# fuzzy-ghq-list - cd to development directory in ghq list.
+fuzzy-ghq-list() {
   local dir
-  dir=$(ghq list > /dev/null | fzf +m)
-  cd $(ghq root)/$dir
+  dir=$(ghq list > /dev/null | fzf +m) && cd $(ghq root)/$dir
 }
+alias dev=fuzzy-ghq-list
+alias repo=fuzzy-ghq-list
 
 # !!!!!!!!!!!!!!!!!!!!
 # git extension
@@ -311,8 +312,8 @@ function is_inside_repo {
   return $?
 }
 
-# fgl - git log show with fzf
-fgl() {
+# gl - git log show with fzf
+gl() {
   is_inside_repo || return 1
   local filter
   if [ -n $@ ] && [ -f $@ ]; then
@@ -345,8 +346,8 @@ fgl() {
       FZF-EOF"
 }
 
-# fgs - git status browser
-fgs() {
+# gs - git status browser
+gs() {
   is_inside_repo || return 1
   local out key n files
   while out=$(
