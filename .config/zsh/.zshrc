@@ -327,6 +327,7 @@ gl() {
     --format='%C(auto)%h%d %an %C(blue)%s %C(yellow)%cr' $@ |
   fzf \
     --ansi \
+    --exit-0 \
     --height 80% \
     --no-sort \
     --reverse \
@@ -355,6 +356,7 @@ gs() {
     fzf \
       --ansi \
       --multi \
+      --exit-0 \
       --height='80%' \
       --preview "git diff --color=always -- {-1} " \
       --preview-window='right:60%' \
