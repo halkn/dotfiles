@@ -360,7 +360,7 @@ gs() {
       --height='80%' \
       --preview "git diff --color=always -- {-1} " \
       --preview-window='right:60%' \
-      --expect=ctrl-a,ctrl-r,ctrl-m,ctrl-d,ctrl-v \
+      --expect=ctrl-m,ctrl-d,ctrl-v \
       --bind "ctrl-f:preview-page-down,ctrl-b:preview-page-up" \
       --bind "ctrl-o:toggle-preview" \
       --bind "q:abort"
@@ -368,10 +368,13 @@ gs() {
     key=$(head -1 <<< "$out")
     n=$[$(wc -l <<< "$out") - 1]
     files=(`echo $(tail "-$n" <<< "$out" | awk '{print $2}')`)
-    if [ "$key" = ctrl-a -o "$key" = ctrl-m ]; then
-      git add $files
-    elif [ "$key" = ctrl-r ]; then
-      git reset -q HEAD $files
+    state=(`echo $(tail "-$n" <<< "$out" | cut -b 1-1)`)
+    if [ "$key" = ctrl-m ]; then
+      if [ -z "$state" -o "$state" = "?" ]; then
+        git add $files
+      else
+        git reset -q HEAD $files
+      fi
     elif [ "$key" = ctrl-d ]; then
       git difftool $files
     elif [ "$key" = ctrl-v ]; then
