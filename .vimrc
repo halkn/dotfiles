@@ -26,58 +26,62 @@ endif
 " ============================================================================
 call plug#begin('~/.vim/plugged')
 
-" Util
+" Util -----------------------------------------------------------------------
+Plug 'vim-jp/vimdoc-ja'
 Plug 'halkn/tender.vim'
 Plug 'itchyny/lightline.vim'
-Plug 'ctrlpvim/ctrlp.vim'
-Plug 'vim-jp/vimdoc-ja'
-Plug 'scrooloose/nerdtree', { 'on':  'NERDTreeToggle' }
-Plug 'Yggdroot/indentLine', { 'on': 'IndentLinesToggle' }
-Plug 'simeji/winresizer', { 'on': 'WinResizerStartResize' }
-Plug 'glidenote/memolist.vim', { 'on': ['MemoNew','MemoList','MemoGrep'] }
-Plug 'jremmen/vim-ripgrep', { 'on': 'Rg' }
-Plug 'tyru/capture.vim', { 'on': 'Capture' }
-
-" Edit
-Plug 'machakann/vim-sandwich'
-Plug 'tpope/vim-commentary'
-Plug 'cohama/lexima.vim'
-Plug 'junegunn/vim-easy-align', { 'on': '<Plug>(EasyAlign)' }
-Plug 'kana/vim-operator-user'
-Plug 'kana/vim-operator-replace', { 'on' : '<Plug>(operator-replace)' }
-
-" Git
-Plug 'mhinz/vim-signify', { 'on': 'SignifyToggle' }
+Plug 'ctrlpvim/ctrlp.vim', { 
+  \ 'on': [ 'CtrlP','CtrlPLine','CtrlPBuffer','CtrlPQuickfix' ]
+  \ }
 Plug 'tpope/vim-fugitive', {
   \ 'on': ['Git', 'Gcommit', 'Gstatus', 'Gdiff', 'Gblame', 'Glog']
   \ }
 
-" Development
+" Edit -----------------------------------------------------------------------
+Plug 'tpope/vim-commentary'
+Plug 'cohama/lexima.vim'
+Plug 'machakann/vim-sandwich'
+Plug 'kana/vim-operator-user'
+Plug 'kana/vim-operator-replace', { 'on' : '<Plug>(operator-replace)' }
+
+" Dev ------------------------------------------------------------------------
 " lsp
 Plug 'prabirshrestha/async.vim'
 Plug 'prabirshrestha/vim-lsp'
-Plug 'liuchengxu/vista.vim', { 'on': ['Vista', 'Vista!!'] }
-" auto complete
-Plug 'prabirshrestha/asyncomplete.vim'
-Plug 'prabirshrestha/asyncomplete-lsp.vim'
-Plug 'prabirshrestha/asyncomplete-ultisnips.vim'
-Plug 'prabirshrestha/asyncomplete-buffer.vim'
 " snippet
 Plug 'honza/vim-snippets'
 Plug 'SirVer/ultisnips'
-" lang
+" autoComplete
+Plug 'prabirshrestha/asyncomplete.vim'
+Plug 'prabirshrestha/asyncomplete-buffer.vim'
+Plug 'prabirshrestha/asyncomplete-lsp.vim'
+Plug 'prabirshrestha/asyncomplete-ultisnips.vim'
+
+" Lang -----------------------------------------------------------------------
+" Go
 Plug 'fatih/vim-go', {
   \ 'do': ':GoUpdateBinaries',
   \ 'for': 'go'
   \ }
 
-" Document
+" Markdown
 Plug 'previm/previm', { 'for' : 'markdown' }
 Plug 'dhruvasagar/vim-table-mode', { 'for' : 'markdown' }
 Plug 'tyru/open-browser.vim', {
   \ 'for': 'markdown',
   \ 'on': '<Plug>(openbrowser-smart-search)'
   \ }
+
+" Other ----------------------------------------------------------------------
+Plug 'scrooloose/nerdtree', { 'on':  'NERDTreeToggle' }
+Plug 'mhinz/vim-signify', { 'on': 'SignifyToggle' }
+Plug 'Yggdroot/indentLine', { 'on': 'IndentLinesToggle' }
+Plug 'jremmen/vim-ripgrep', { 'on': 'Rg' }
+Plug 'liuchengxu/vista.vim', { 'on': ['Vista', 'Vista!!'] }
+Plug 'simeji/winresizer', { 'on': 'WinResizerStartResize' }
+Plug 'glidenote/memolist.vim', { 'on': ['MemoNew','MemoList','MemoGrep'] }
+Plug 'junegunn/vim-easy-align', { 'on': '<Plug>(EasyAlign)' }
+Plug 'tyru/capture.vim', { 'on': 'Capture' }
 
 call plug#end()
 
@@ -252,7 +256,14 @@ endif
 
 " Util {{{
 
-" CtrlP
+" lightline.vim
+let g:lightline = {
+  \ 'colorscheme': 'wombat',
+  \ 'separator': { 'left': "\ue0b0", 'right': "\ue0b2" },
+  \ 'subseparator': { 'left': "\ue0b1", 'right': "\ue0b3" },
+  \ }
+
+" ctrlp.vim
 let g:ctrlp_user_command = 'rg --files --hidden --glob "!{.git,.svn}"'
 let g:ctrlp_use_caching = 1
 let g:ctrlp_cache_dir = $XDG_CACHE_HOME.'/ctrlp'
@@ -270,62 +281,7 @@ nnoremap <silent> <Leader>b :<C-u>CtrlPBuffer<CR>
 nnoremap <silent> <Leader>l :<C-u>CtrlPLine<CR>
 nnoremap <silent> <Leader>q :<C-u>CtrlPQuickfix<CR>
 
-" lightline
-let g:lightline = {
-  \ 'colorscheme': 'wombat',
-  \ 'separator': { 'left': "\ue0b0", 'right': "\ue0b2" },
-  \ 'subseparator': { 'left': "\ue0b1", 'right': "\ue0b3" },
-  \ }
-
-" nerdtree
-let NERDTreeShowHidden=1
-nmap <silent><c-e> :<c-u>NERDTreeToggle<CR>
-
-" indentLine
-let g:loaded_indentLine = 1
-nnoremap <silent><c-d> :<c-u>IndentLinesToggle<CR>
-
-" winresizer.vim
-let g:winresizer_start_key = '<C-w>r'
-nnoremap <silent><C-w>r :<c-u>WinResizerStartResize<CR>
-
-" memolist
-let g:memolist_ex_cmd = 'CtrlP'
-let g:memolist_delimiter_yaml_start = '---'
-let g:memolist_delimiter_yaml_end  = '---'
-let g:memolist_memo_suffix = 'md'
-let g:memolist_template_dir_path = '$XDG_CONFIG_HOME/memolist.vim'
-nnoremap <Leader>mn  :<C-u>MemoNew<CR>
-nnoremap <Leader>ml  :<C-u>MemoList<CR>
-nnoremap <Leader>mg  :<C-u>MemoGrep<CR>
-
-" vim-ripgrep
-let g:rg_command = 'rg --vimgrep --hidden --glob "!{.git,.svn}"'
-let g:rg_format = '%f:%l:%c:%m,%f:%l:%m'
-
-" }}}
-
-" Edit {{{
-
-" vim-commentary
-nmap <Leader>c gcc
-vmap <Leader>c gc
-
-" vim-easy-align
-vmap <Enter> <Plug>(EasyAlign)
-
-" vim-operator-replace
-map R  <Plug>(operator-replace)
-
-" }}}
-
-" Git {{{
-
-" vim-signify
-noremap <silent> <C-y> :SignifyToggle<CR>
-let g:signify_vcs_list = [ 'git' ]
-
-" fugitive
+" vim-fugitive
 nmap [fugitive] <Nop>
 map <Leader>g [fugitive]
 nnoremap <silent> [fugitive]s :<C-u>Gstatus<CR>
@@ -337,7 +293,18 @@ nnoremap <silent> [fugitive]l :<C-u>Glog<CR>
 
 " }}}
 
-" Development {{{
+" Edit {{{
+
+" vim-commentary
+nmap <Leader>c gcc
+vmap <Leader>c gc
+
+" vim-operator-replace
+map R  <Plug>(operator-replace)
+
+" }}}
+
+" Dev {{{
 
 " LSP {{{
 
@@ -425,15 +392,9 @@ augroup END
 " for asyncomplete.vim log
 " let g:asyncomplete_log_file = expand('~/asyncomplete.log')
 
-" vista.vim
-let g:vista_default_executive = 'vim_lsp'
-nnoremap <silent><c-t> :<c-u>Vista!!<CR>
-nnoremap <silent> <Leader>vf :<c-u>Vista finder vim_lsp<CR>
-let g:vista#renderer#enable_icon = 0
-
 " }}}
 
-" asyncomplete {{{
+" autoComplete {{{
 
 augroup asyncomplete_setup
   " asyncomplete-ultisnips.
@@ -456,8 +417,11 @@ augroup END
 
 " }}}
 
-" vim-go {{{
+" }}}
 
+" Lang {{{
+
+" Golang {{{
 " Use vim-lsp
 let g:go_code_completion_enabled = 0
 let g:go_doc_keywordprg_enabled = 0
@@ -498,9 +462,7 @@ augroup END
 
 " }}}
 
-" }}}
-
-" Document {{{
+" Marldown {{{
 
 " markdown
 let g:markdown_fenced_languages = [
@@ -525,6 +487,51 @@ let g:table_mode_corner = '|'
 " open-browser
 nmap gx <Plug>(openbrowser-smart-search)
 vmap gx <Plug>(openbrowser-smart-search)
+
+" }}}
+
+" }}}
+
+" Other {{{
+
+" nerdtree
+let NERDTreeShowHidden=1
+nmap <silent><c-e> :<c-u>NERDTreeToggle<CR>
+
+" vim-signify
+noremap <silent> <C-y> :SignifyToggle<CR>
+let g:signify_vcs_list = [ 'git' ]
+
+" indentLine
+let g:loaded_indentLine = 1
+nnoremap <silent><c-d> :<c-u>IndentLinesToggle<CR>
+
+" vim-ripgrep
+let g:rg_command = 'rg --vimgrep --hidden --glob "!{.git,.svn}"'
+let g:rg_format = '%f:%l:%c:%m,%f:%l:%m'
+
+" vista.vim
+let g:vista_default_executive = 'vim_lsp'
+nnoremap <silent><c-t> :<c-u>Vista!!<CR>
+nnoremap <silent> <Leader>vf :<c-u>Vista finder vim_lsp<CR>
+let g:vista#renderer#enable_icon = 0
+
+" winresizer
+let g:winresizer_start_key = '<C-w>r'
+nnoremap <silent><C-w>r :<c-u>WinResizerStartResize<CR>
+
+" memolist
+let g:memolist_ex_cmd = 'CtrlP'
+let g:memolist_delimiter_yaml_start = '---'
+let g:memolist_delimiter_yaml_end  = '---'
+let g:memolist_memo_suffix = 'md'
+let g:memolist_template_dir_path = '$XDG_CONFIG_HOME/memolist.vim'
+nnoremap <Leader>mn  :<C-u>MemoNew<CR>
+nnoremap <Leader>ml  :<C-u>MemoList<CR>
+nnoremap <Leader>mg  :<C-u>MemoGrep<CR>
+
+" vim-easy-align
+vmap <Enter> <Plug>(EasyAlign)
 
 " }}}
 
