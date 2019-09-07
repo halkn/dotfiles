@@ -63,6 +63,7 @@ Plug 'prabirshrestha/asyncomplete-lsp.vim'
 Plug 'prabirshrestha/asyncomplete-ultisnips.vim'
 Plug 'prabirshrestha/asyncomplete-buffer.vim'
 " snippet
+Plug 'honza/vim-snippets'
 Plug 'SirVer/ultisnips'
 " lang
 Plug 'fatih/vim-go', {
