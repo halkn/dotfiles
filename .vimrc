@@ -505,6 +505,8 @@ augroup END
 " markdown
 let g:markdown_fenced_languages = [
   \ 'go',
+  \ 'python',
+  \ 'vim',
   \ 'sh',
   \ ]
 
