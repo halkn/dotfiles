@@ -22,7 +22,7 @@ endif
 
 " }}}
 " ============================================================================
-" VIM-PLUG BLOCK {{{
+" Load Plugins {{{
 " ============================================================================
 call plug#begin('~/.vim/plugged')
 
@@ -36,17 +36,18 @@ Plug 'Yggdroot/indentLine', { 'on': 'IndentLinesToggle' }
 Plug 'simeji/winresizer', { 'on': 'WinResizerStartResize' }
 Plug 'glidenote/memolist.vim', { 'on': ['MemoNew','MemoList','MemoGrep'] }
 Plug 'jremmen/vim-ripgrep', { 'on': 'Rg' }
+Plug 'tyru/capture.vim', { 'on': 'Capture' }
 
 " Edit
 Plug 'machakann/vim-sandwich'
-Plug 'tyru/caw.vim'
+Plug 'tpope/vim-commentary'
 Plug 'cohama/lexima.vim'
 Plug 'junegunn/vim-easy-align', { 'on': '<Plug>(EasyAlign)' }
 Plug 'kana/vim-operator-user'
 Plug 'kana/vim-operator-replace', { 'on' : '<Plug>(operator-replace)' }
 
 " Git
-Plug 'airblade/vim-gitgutter'
+Plug 'mhinz/vim-signify', { 'on': 'SignifyToggle' }
 Plug 'tpope/vim-fugitive', {
   \ 'on': ['Git', 'Gcommit', 'Gstatus', 'Gdiff', 'Gblame', 'Glog']
   \ }
@@ -61,7 +62,6 @@ Plug 'prabirshrestha/asyncomplete.vim'
 Plug 'prabirshrestha/asyncomplete-lsp.vim'
 Plug 'prabirshrestha/asyncomplete-ultisnips.vim'
 Plug 'prabirshrestha/asyncomplete-buffer.vim'
-Plug 'prabirshrestha/asyncomplete-file.vim'
 " snippet
 Plug 'SirVer/ultisnips'
 " lang
@@ -306,11 +306,9 @@ let g:rg_format = '%f:%l:%c:%m,%f:%l:%m'
 
 " Edit {{{
 
-" caw.vim
-nmap <Leader>c <Plug>(caw:hatpos:toggle)
-vmap <Leader>c <Plug>(caw:hatpos:toggle)
-nmap <Leader>, <Plug>(caw:zeropos:toggle)
-vmap <Leader>, <Plug>(caw:zeropos:toggle)
+" vim-commentary
+nmap <Leader>c gcc
+vmap <Leader>c gc
 
 " vim-easy-align
 vmap <Enter> <Plug>(EasyAlign)
@@ -322,10 +320,9 @@ map R  <Plug>(operator-replace)
 
 " Git {{{
 
-" vim-gitgutter
-let g:gitgutter_map_keys = 0
-map [g <Plug>GitGutterPrevHunk
-nmap ]g <Plug>GitGutterNextHunk
+" vim-signify
+noremap <silent> <C-y> :SignifyToggle<CR>
+let g:signify_vcs_list = [ 'git' ]
 
 " fugitive
 nmap [fugitive] <Nop>
@@ -453,13 +450,6 @@ augroup asyncomplete_setup
     \ 'config': {
     \  'max_buffer_size': 5000000,
     \  },
-    \ }))
-  " asyncomplete-file
-  autocmd User asyncomplete_setup call asyncomplete#register_source(asyncomplete#sources#file#get_source_options({
-    \ 'name': 'file',
-    \ 'whitelist': ['*'],
-    \ 'priority': 10,
-    \ 'completor': function('asyncomplete#sources#file#completor')
     \ }))
 augroup END
 
