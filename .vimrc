@@ -242,7 +242,7 @@ endif
 " ============================================================================
 " autocmd {{{
 " ============================================================================
-augroup vimrc_filetype
+augroup vimrc-Filetype
   autocmd!
   autocmd FileType help wincmd L
   autocmd FileType gitcommit setlocal spell spelllang=cjk,en
@@ -325,25 +325,19 @@ let g:lsp_signs_hint = {'text': '▲'}
 
 " golang
 if executable('gopls')
-  augroup LspGo
+  augroup vimrc-LspGo
   au!
   autocmd User lsp_setup call lsp#register_server({
     \ 'name': 'gopls',
     \ 'cmd': {server_info->['gopls', '-mode', 'stdio']},
     \ 'whitelist': ['go'],
     \ })
-  autocmd FileType go setlocal omnifunc=lsp#complete
-  autocmd FileType go nmap gd <Plug>(lsp-definition)
-  autocmd FileType go nmap gy <Plug>(lsp-type-definition)
-  autocmd FileType go nmap gr <Plug>(lsp-next-reference)
-  autocmd FileType go nmap gR <Plug>(lsp-previous-reference)
-  autocmd FileType go nmap K <Plug>(lsp-hover)
-  autocmd FileType go nmap <F2> <Plug>(lsp-rename)
   augroup END
+  autocmd FileType go call s:setup_lsp()
 endif
 
 if executable('pyls')
-  augroup LspPython
+  augroup vimrc-LspPython
   au!
   autocmd User lsp_setup call lsp#register_server({
     \ 'name': 'pyls',
@@ -355,39 +349,42 @@ if executable('pyls')
     \   }
     \ }
     \ })
-  autocmd FileType python setlocal omnifunc=lsp#complete
-  autocmd FileType python nmap gd <Plug>(lsp-definition)
-  autocmd FileType python nmap gy <Plug>(lsp-type-definition)
-  autocmd FileType python nmap gr <Plug>(lsp-next-reference)
-  autocmd FileType python nmap gR <Plug>(lsp-previous-reference)
-  autocmd FileType python nmap K <Plug>(lsp-hover)
-  autocmd FileType python nmap <F2> <Plug>(lsp-rename)
   augroup END
 endif
 
 " bash
 if executable('bash-language-server')
-  augroup LspBash
+  augroup vimrc-LspBash
   au!
   autocmd User lsp_setup call lsp#register_server({
     \ 'name': 'bash-language-server',
     \ 'cmd': {server_info->[&shell, &shellcmdflag, 'bash-language-server start']},
     \ 'whitelist': ['sh'],
     \ })
-  autocmd FileType sh setlocal omnifunc=lsp#complete
-  autocmd FileType sh nmap gd <Plug>(lsp-definition)
-  autocmd FIleType sh nmap K <Plug>(lsp-hover)
 endif
 
 " efm ( markdown and vim )
-augroup LspEFM
-  au!
-  autocmd User lsp_setup call lsp#register_server({
-    \ 'name': 'efm-langserver-erb',
-    \ 'cmd': {server_info->['efm-langserver']},
-    \ 'whitelist': ['vim','markdown'],
-    \ })
-augroup END
+if executable('efm-langserver')
+  augroup vimrc-LspEFM
+    au!
+    autocmd User lsp_setup call lsp#register_server({
+      \ 'name': 'efm-langserver-erb',
+      \ 'cmd': {server_info->['efm-langserver']},
+      \ 'whitelist': ['vim','markdown'],
+      \ })
+  augroup END
+endif
+
+
+function! s:setup_lsp() abort
+  setlocal omnifunc=lsp#complete
+  nmap <silent> <buffer> gd <Plug>(lsp-definition)
+  nmap <silent> <buffer> gy <Plug>(lsp-type-definition)
+  nmap <silent> <buffer> gr <Plug>(lsp-next-reference)
+  nmap <silent> <buffer> gR <Plug>(lsp-previous-reference)
+  nmap <silent> <buffer> K <Plug>(lsp-hover)
+  nmap <silent> <buffer> <F2> <Plug>(lsp-rename)
+endfunction
 
 " Debugging
 "let g:lsp_log_verbose = 1
@@ -399,7 +396,7 @@ augroup END
 
 " autoComplete {{{
 
-augroup asyncomplete_setup
+augroup vimrc-AsyncompleteSetup
   " asyncomplete-ultisnips.
   autocmd User asyncomplete_setup call asyncomplete#register_source(asyncomplete#sources#ultisnips#get_source_options({
     \ 'name': 'ultisnips',
@@ -452,7 +449,7 @@ let g:go_metalinter_autosave_enabled = ['golint', 'errcheck']
 let g:go_list_type = 'quickfix'
 
 " mapping
-augroup GoCommads
+augroup vimrc-GoCommads
   autocmd!
   autocmd FileType go nmap <buffer> <silent> <leader>r <Plug>(go-run)
   autocmd FileType go nmap <buffer> <silent> <leader>t <Plug>(go-test)
@@ -478,7 +475,7 @@ let g:markdown_fenced_languages = [
 " previm
 let g:previm_disable_default_css = 1
 let g:previm_custom_css_path = '$HOME/.dotfiles/etc/templates/markdown.css'
-augroup vimrc_previm
+augroup vimrc-Previm
   autocmd!
   autocmd FileType markdown nnoremap <buffer> <silent> <Leader>p :<C-u>PrevimOpen<CR>
   autocmd FileType markdown nnoremap <buffer> <silent> <Leader>r :<C-u>call previm#refresh()<CR>
