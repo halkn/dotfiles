@@ -1,5 +1,5 @@
 " ============================================================================
-" init {{{
+" Init {{{
 " ============================================================================
 unlet! skip_defaults_vim
 silent! source $VIMRUNTIME/defaults.vim
@@ -77,20 +77,6 @@ Plug 'junegunn/vim-easy-align', { 'on': '<Plug>(EasyAlign)' }
 Plug 'tyru/capture.vim', { 'on': 'Capture' }
 
 call plug#end()
-
-" }}}
-" ============================================================================
-" File types {{{
-" ============================================================================
-augroup vimrc_filetype
-  autocmd!
-  autocmd FileType help wincmd L
-  autocmd FileType gitcommit setlocal spell spelllang=cjk,en
-  autocmd FileType text setlocal textwidth=0
-  autocmd FileType vim setlocal foldmethod=marker tabstop=2 shiftwidth=2
-  autocmd FileType sh setlocal tabstop=2 shiftwidth=2
-  autocmd FileType zsh setlocal tabstop=2 shiftwidth=2
-augroup END
 
 " }}}
 " ============================================================================
@@ -175,6 +161,15 @@ set encoding=utf-8
 set fileencodings=utf-8
 set fileformats=unix,dos,mac
 
+" color
+set background=dark
+silent! colorscheme tender
+if exists('&termguicolors')
+  set termguicolors
+  let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
+  let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
+endif
+
 " Don't creat swap files
 set nobackup
 set noswapfile
@@ -242,6 +237,20 @@ if executable('rg')
   let &grepprg = 'rg --vimgrep --hidden --glob "!{.git,.svn}"'
   set grepformat=%f:%l:%c:%m,%f:%l:%m
 endif
+
+" }}}
+" ============================================================================
+" autocmd {{{
+" ============================================================================
+augroup vimrc_filetype
+  autocmd!
+  autocmd FileType help wincmd L
+  autocmd FileType gitcommit setlocal spell spelllang=cjk,en
+  autocmd FileType text setlocal textwidth=0
+  autocmd FileType vim setlocal foldmethod=marker tabstop=2 shiftwidth=2
+  autocmd FileType sh setlocal tabstop=2 shiftwidth=2
+  autocmd FileType zsh setlocal tabstop=2 shiftwidth=2
+augroup END
 
 " }}}
 " ============================================================================
@@ -531,19 +540,3 @@ vmap <Enter> <Plug>(EasyAlign)
 
 " }}}
 " ============================================================================
-" color {{{
-" ============================================================================
-filetype plugin indent on
-syntax on
-set background=dark
-colorscheme tender
-
-if exists('&termguicolors')
-  set termguicolors
-  let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
-  let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
-endif
-
-"}}}
-" ============================================================================
-
