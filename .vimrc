@@ -1,6 +1,9 @@
 " ============================================================================
 " Init {{{
 " ============================================================================
+set encoding=utf-8
+scriptencoding utf-8
+
 unlet! skip_defaults_vim
 silent! source $VIMRUNTIME/defaults.vim
 
@@ -157,7 +160,6 @@ nnoremap <silent> [Toggle]p :<C-u>set paste! paste?<CR>
 " ============================================================================
 
 " Encoding
-set encoding=utf-8
 set fileencodings=utf-8
 set fileformats=unix,dos,mac
 
