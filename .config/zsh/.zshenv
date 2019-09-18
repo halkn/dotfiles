@@ -65,3 +65,5 @@ export LESSHISTFILE=-
 export FZF_DEFAULT_COMMAND='rg --files --hidden --glob "!{.git,.svn}"'
 export FZF_DEFAULT_OPTS='--height 50% --layout=reverse --border'
 
+# ripgrep
+export RIPGREP_CONFIG_PATH=$XDG_CONFIG_HOME/ripgrep/config
