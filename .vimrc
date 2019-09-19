@@ -57,7 +57,7 @@ Plug 'prabirshrestha/asyncomplete-ultisnips.vim'
 " Go
 Plug 'fatih/vim-go', {
   \ 'do': ':GoUpdateBinaries',
-  \ 'for': 'go'
+  \ 'for': [ 'go','gomod' ]
   \ }
 
 " Markdown
@@ -171,6 +171,7 @@ if exists('&termguicolors')
   let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
   let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
 endif
+syntax on
 
 " Don't creat swap files
 set nobackup
@@ -352,6 +353,8 @@ if executable('pyls')
     \ }
     \ })
   augroup END
+  autocmd FileType python call s:setup_lsp()
+  autocmd BufWritePre *.py LspDocumentFormatSync
 endif
 
 " bash
