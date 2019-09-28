@@ -459,7 +459,7 @@ let g:go_fmt_command = 'goimports'
 " lint
 let g:go_metalinter_autosave = 1
 let g:go_metalinter_command = 'golangci-lint'
-let g:go_metalinter_autosave_enabled = ['golint', 'errcheck']
+let g:go_metalinter_autosave_enabled = ['golint', 'errcheck', 'staticcheck']
 
 " list
 let g:go_list_type = 'quickfix'
