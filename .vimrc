@@ -79,7 +79,6 @@ Plug 'liuchengxu/vista.vim', { 'on': ['Vista', 'Vista!!'] }
 Plug 'simeji/winresizer', { 'on': 'WinResizerStartResize' }
 Plug 'glidenote/memolist.vim', { 'on': ['MemoNew','MemoList','MemoGrep'] }
 Plug 'junegunn/vim-easy-align', { 'on': '<Plug>(EasyAlign)' }
-Plug 'tyru/capture.vim', { 'on': 'Capture' }
 
 call plug#end()
 
@@ -255,6 +254,7 @@ augroup vimrc-Filetype
   autocmd FileType vim setlocal foldmethod=marker tabstop=2 shiftwidth=2
   autocmd FileType sh setlocal tabstop=2 shiftwidth=2
   autocmd FileType zsh setlocal tabstop=2 shiftwidth=2
+  autocmd FileType markdown setlocal tabstop=2 shiftwidth=2
 augroup END
 
 " }}}
@@ -433,6 +433,10 @@ let g:quickrun_config['go'] = {
   \ 'runner/terminal/opener': 'vnew',
   \ }
 
+command! -nargs=+ -complete=command Capture QuickRun -type vim -src <q-args>
+
+" }}}
+
 " }}}
 
 " Lang {{{
@@ -547,8 +551,6 @@ nnoremap <Leader>mg  :<C-u>MemoGrep<CR>
 
 " vim-easy-align
 vmap <Enter> <Plug>(EasyAlign)
-
-" }}}
 
 " }}}
 
