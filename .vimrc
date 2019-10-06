@@ -65,6 +65,7 @@ Plug 'fatih/vim-go', {
 " Markdown
 Plug 'previm/previm', { 'for' : 'markdown' }
 Plug 'dhruvasagar/vim-table-mode', { 'for' : 'markdown' }
+Plug 'mattn/vim-maketable', { 'for' : 'markdown' }
 Plug 'tyru/open-browser.vim', {
   \ 'for': 'markdown',
   \ 'on': '<Plug>(openbrowser-smart-search)'
