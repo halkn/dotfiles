@@ -391,6 +391,7 @@ function! s:setup_lsp() abort
   nmap <silent> <buffer> gr <Plug>(lsp-next-reference)
   nmap <silent> <buffer> gR <Plug>(lsp-previous-reference)
   nmap <silent> <buffer> K <Plug>(lsp-hover)
+  nmap <silent> <buffer> <Leader>k <Plug>(lsp-peek-definition)
   nmap <silent> <buffer> <F2> <Plug>(lsp-rename)
 endfunction
 
@@ -465,6 +466,7 @@ let g:go_fmt_command = 'goimports'
 let g:go_metalinter_autosave = 1
 let g:go_metalinter_command = 'golangci-lint'
 let g:go_metalinter_autosave_enabled = ['golint', 'errcheck', 'staticcheck']
+let g:go_metalinter_enabled = ['vet', 'golint', 'staticcheck']
 
 " list
 let g:go_list_type = 'quickfix'
@@ -478,6 +480,11 @@ augroup vimrc-GoCommads
   autocmd FileType go nmap <buffer> <silent> <Leader>im <Plug>(go-implements)
   autocmd FileType go nmap <buffer> <silent> <Leader>dl :<C-u>GoDecls<CR>
   autocmd FileType go nmap <buffer> <silent> <Leader>dd :<C-u>GoDeclsDir<CR>
+
+  autocmd Filetype go command! -bang A call go#alternate#Switch(<bang>0, 'edit')
+  autocmd Filetype go command! -bang AV call go#alternate#Switch(<bang>0, 'vsplit')
+  autocmd Filetype go command! -bang AS call go#alternate#Switch(<bang>0, 'split')
+  autocmd Filetype go command! -bang AT call go#alternate#Switch(<bang>0, 'tabe')
 augroup END
 
 " }}}
