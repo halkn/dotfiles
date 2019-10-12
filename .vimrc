@@ -501,7 +501,7 @@ let g:markdown_fenced_languages = [
 
 " previm
 let g:previm_disable_default_css = 1
-let g:previm_custom_css_path = '$HOME/.dotfiles/etc/templates/markdown.css'
+let g:previm_custom_css_path = '$HOME/.dotfiles/etc/templates/previm/markdown.css'
 augroup vimrc-Previm
   autocmd!
   autocmd FileType markdown nnoremap <buffer> <silent> <Leader>p :<C-u>PrevimOpen<CR>
@@ -552,7 +552,7 @@ let g:memolist_ex_cmd = 'CtrlP'
 let g:memolist_delimiter_yaml_start = '---'
 let g:memolist_delimiter_yaml_end  = '---'
 let g:memolist_memo_suffix = 'md'
-let g:memolist_template_dir_path = '$XDG_CONFIG_HOME/memolist.vim'
+let g:memolist_template_dir_path = '$HOME/.dotfiles/etc/templates/memotemplates'
 nnoremap <Leader>mn  :<C-u>MemoNew<CR>
 nnoremap <Leader>ml  :<C-u>MemoList<CR>
 nnoremap <Leader>mg  :<C-u>MemoGrep<CR>
