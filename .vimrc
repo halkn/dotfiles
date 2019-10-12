@@ -80,6 +80,7 @@ Plug 'liuchengxu/vista.vim', { 'on': ['Vista', 'Vista!!'] }
 Plug 'simeji/winresizer', { 'on': 'WinResizerStartResize' }
 Plug 'glidenote/memolist.vim', { 'on': ['MemoNew','MemoList','MemoGrep'] }
 Plug 'junegunn/vim-easy-align', { 'on': '<Plug>(EasyAlign)' }
+Plug 'mattn/sonictemplate-vim', { 'on' : 'Template' }
 
 call plug#end()
 
