@@ -147,8 +147,7 @@ nnoremap tt :<C-u>tabnew <BAR> terminal ++curwin<CR>
 nnoremap tw :<C-u>terminal ++curwin<CR>
 
 " Use ESC to transition to terminal normal mode
-tnoremap <F1> <ESC>
-tnoremap <ESC> <C-w>N
+tnoremap <C-w><ESC> <C-w>N
 
 " Toggle options
 nmap [Toggle] <Nop>
