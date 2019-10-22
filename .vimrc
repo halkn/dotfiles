@@ -523,6 +523,7 @@ vmap gx <Plug>(openbrowser-smart-search)
 
 " nerdtree
 let NERDTreeShowHidden=1
+let NERDTreeIgnore=['\.git$', '\.svn$', '\~$']
 nmap <silent><c-e> :<c-u>NERDTreeToggle<CR>
 
 " vim-signify
