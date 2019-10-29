@@ -135,6 +135,10 @@ nnoremap x "_x
 nnoremap s <Nop>
 vnoremap s <Nop>
 
+" Indent in visual and select mode automatically re-selects.
+vnoremap > >gv
+vnoremap < <gv
+
 " Quit the current window
 nnoremap <silent> <C-q> :q<CR>
 inoremap <silent> <C-q> <Esc>:q<CR>
@@ -273,7 +277,7 @@ let g:lightline = {
   \ }
 
 " ctrlp.vim
-let g:ctrlp_user_command = 'rg --files --hidden --glob "!{.git,.svn}"'
+let g:ctrlp_user_command = 'fd --type file --hidden -E .git -E .svn'
 let g:ctrlp_use_caching = 1
 let g:ctrlp_cache_dir = $XDG_CACHE_HOME.'/ctrlp'
 let g:ctrlp_prompt_mappings = {
