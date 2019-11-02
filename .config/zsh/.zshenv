@@ -62,7 +62,7 @@ export LESS='-g -i -M -R -S -W -z-4 -x4'
 export LESSHISTFILE=-
 
 # fzf
-export FZF_DEFAULT_COMMAND='fd --type file --hidden'
+export FZF_DEFAULT_COMMAND='fd --type file --follow --hidden -E .git -E .svn'
 export FZF_DEFAULT_OPTS='--height 50% --layout=reverse --border'
 
 # ripgrep
