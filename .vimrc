@@ -342,8 +342,8 @@ if executable('gopls')
     \ 'cmd': {server_info->['gopls', '-mode', 'stdio']},
     \ 'whitelist': ['go'],
     \ })
-  augroup END
   autocmd FileType go call s:setup_lsp()
+  augroup END
 endif
 
 if executable('pyls')
@@ -359,9 +359,9 @@ if executable('pyls')
     \   }
     \ }
     \ })
-  augroup END
   autocmd FileType python call s:setup_lsp()
   autocmd BufWritePre *.py LspDocumentFormatSync
+  augroup END
 endif
 
 " bash
@@ -373,6 +373,7 @@ if executable('bash-language-server')
     \ 'cmd': {server_info->[&shell, &shellcmdflag, 'bash-language-server start']},
     \ 'whitelist': ['sh'],
     \ })
+  augroup END
 endif
 
 " efm ( markdown and vim )
