@@ -27,8 +27,9 @@ Plug 'vim-jp/vimdoc-ja'
 Plug 'halkn/tender.vim'
 Plug 'itchyny/lightline.vim'
 Plug 'ctrlpvim/ctrlp.vim', { 
-  \ 'on': [ 'CtrlP','CtrlPLine','CtrlPBuffer','CtrlPQuickfix' ]
+  \ 'on': [ 'CtrlP','CtrlPLine','CtrlPBuffer','CtrlPQuickfix','CtrlPRg' ]
   \ }
+Plug 'halkn/ctrlp-ripgrep', { 'on' : 'CtrlPRg' }
 Plug 'tpope/vim-fugitive', {
   \ 'on': ['Git', 'Gcommit', 'Gstatus', 'Gdiff', 'Gblame', 'Glog']
   \ }
@@ -293,6 +294,7 @@ nnoremap <silent> <Leader>f :<C-u>CtrlP .<CR>
 nnoremap <silent> <Leader>b :<C-u>CtrlPBuffer<CR>
 nnoremap <silent> <Leader>l :<C-u>CtrlPLine<CR>
 nnoremap <silent> <Leader>q :<C-u>CtrlPQuickfix<CR>
+nnoremap <silent> <Leader>R :CtrlPRg 
 
 " vim-fugitive
 nmap [fugitive] <Nop>
