@@ -29,7 +29,7 @@ Plug 'itchyny/lightline.vim'
 Plug 'ctrlpvim/ctrlp.vim', { 
   \ 'on': [ 'CtrlP','CtrlPLine','CtrlPBuffer','CtrlPQuickfix','CtrlPRg' ]
   \ }
-Plug 'halkn/ctrlp-ripgrep', { 'on' : 'CtrlPRg' }
+Plug 'halkn/ripgrep.vim', { 'on' : [ 'Rg', 'CtrlPRg'] }
 Plug 'tpope/vim-fugitive', {
   \ 'on': ['Git', 'Gcommit', 'Gstatus', 'Gdiff', 'Gblame', 'Glog']
   \ }
@@ -76,7 +76,6 @@ Plug 'tyru/open-browser.vim', {
 Plug 'scrooloose/nerdtree', { 'on':  'NERDTreeToggle' }
 Plug 'mhinz/vim-signify', { 'on': 'SignifyToggle' }
 Plug 'Yggdroot/indentLine', { 'on': 'IndentLinesToggle' }
-Plug 'jremmen/vim-ripgrep', { 'on': 'Rg' }
 Plug 'liuchengxu/vista.vim', { 'on': ['Vista', 'Vista!!'] }
 Plug 'simeji/winresizer', { 'on': 'WinResizerStartResize' }
 Plug 'glidenote/memolist.vim', { 'on': ['MemoNew','MemoList','MemoGrep'] }
@@ -244,7 +243,7 @@ set viminfo+='1000,n$XDG_CACHE_HOME/vim/viminfo
 
 " grep
 if executable('rg')
-  let &grepprg = 'rg --vimgrep --hidden --glob "!{.git,.svn}"'
+  let &grepprg = 'rg --vimgrep --hidden'
   set grepformat=%f:%l:%c:%m,%f:%l:%m
 endif
 
