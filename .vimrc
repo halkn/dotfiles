@@ -81,6 +81,7 @@ Plug 'simeji/winresizer', { 'on': 'WinResizerStartResize' }
 Plug 'glidenote/memolist.vim', { 'on': ['MemoNew','MemoList','MemoGrep'] }
 Plug 'junegunn/vim-easy-align', { 'on': '<Plug>(EasyAlign)' }
 Plug 'mattn/sonictemplate-vim', { 'on' : 'Template' }
+Plug 'itchyny/calendar.vim', { 'on' : 'Calendar' }
 
 call plug#end()
 
@@ -156,9 +157,29 @@ tnoremap <C-w><ESC> <C-w>N
 " Toggle options
 nmap [Toggle] <Nop>
 map <Leader>o [Toggle]
-nnoremap <silent> [Toggle]n :<C-u>setlocal relativenumber! relativenumber?<CR>
+nnoremap <silent> [Toggle]n :<C-u>setlocal number! number?<CR>
+nnoremap <silent> [Toggle]rn :<C-u>setlocal relativenumber! relativenumber?<CR>
 nnoremap <silent> [Toggle]w :<C-u>setlocal wrap! wrap?<CR>
 nnoremap <silent> [Toggle]p :<C-u>set paste! paste?<CR>
+
+" Shortening for ++enc=
+cnoreabbrev ++u ++enc=utf8
+cnoreabbrev ++c ++enc=cp932
+cnoreabbrev ++s ++enc=sjis
+
+" quickfix
+nnoremap <silent> [q :<C-u>cprev<CR>
+nnoremap <silent> ]q :<C-u>cnext<CR>
+
+function! ToggleQuickfix()
+    let l:nr = winnr('$')
+    cwindow
+    let l:nr2 = winnr('$')
+    if l:nr == l:nr2
+        cclose
+    endif
+endfunction
+nnoremap <script> <silent> Q :call ToggleQuickfix()<CR>
 
 " }}}
 " ============================================================================
@@ -253,13 +274,24 @@ endif
 " ============================================================================
 augroup vimrc-Filetype
   autocmd!
-  autocmd FileType help wincmd L
   autocmd FileType gitcommit setlocal spell spelllang=cjk,en
   autocmd FileType text setlocal textwidth=0
   autocmd FileType vim setlocal foldmethod=marker tabstop=2 shiftwidth=2
   autocmd FileType sh setlocal tabstop=2 shiftwidth=2
   autocmd FileType zsh setlocal tabstop=2 shiftwidth=2
   autocmd FileType markdown setlocal tabstop=2 shiftwidth=2
+augroup END
+
+augroup vimrc-help
+  autocmd!
+  autocmd FileType help wincmd L
+  autocmd FileType help nnoremap <silent> <buffer> q <C-w>c
+augroup END
+
+augroup vimrc-quickfix
+  autocmd!
+  autocmd Filetype qf nnoremap <silent> <buffer> p <CR>zz<C-w>p
+  autocmd Filetype qf nnoremap <silent> <buffer> q <C-w>c
 augroup END
 
 " }}}
