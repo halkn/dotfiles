@@ -436,11 +436,6 @@ augroup END
 
 " quickrun.vim
 let g:quickrun_config = {}
-let g:quickrun_config['go'] = {
-  \ 'runner': 'terminal',
-  \ 'runner/terminal/opener': 'vnew',
-  \ }
-
 command! -nargs=+ -complete=command Capture QuickRun -type vim -src <q-args>
 
 " }}}
@@ -480,6 +475,7 @@ let g:go_list_type = 'quickfix'
 " mapping
 augroup vimrc-GoCommads
   autocmd!
+  autocmd FileType go nmap <buffer> <silent> <leader>r <Plug>(go-run)
   autocmd FileType go nmap <buffer> <silent> <leader>t <Plug>(go-test)
   autocmd FileType go nmap <buffer> <silent> <leader>v <Plug>(go-coverage-toggle)
   autocmd FileType go nmap <buffer> <silent> <Leader>ie <Plug>(go-iferr)
