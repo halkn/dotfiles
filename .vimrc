@@ -324,7 +324,7 @@ let g:ctrlp_map = '<Nop>'
 nnoremap <silent> <Leader>f :<C-u>CtrlP .<CR>
 nnoremap <silent> <Leader>b :<C-u>CtrlPBuffer<CR>
 nnoremap <silent> <Leader>l :<C-u>CtrlPLine<CR>
-nnoremap <silent> <Leader>q :<C-u>CtrlPQuickfix<CR>
+nnoremap <silent> <Leader>q :<C-u>cclose<CR> <BAR> :CtrlPQuickfix<CR>
 nnoremap <Leader>R :CtrlPRg<Space>
 
 " vim-fugitive
@@ -426,8 +426,9 @@ function! s:setup_lsp() abort
   setlocal omnifunc=lsp#complete
   nmap <silent> <buffer> gd <Plug>(lsp-definition)
   nmap <silent> <buffer> gy <Plug>(lsp-type-definition)
-  nmap <silent> <buffer> gr <Plug>(lsp-next-reference)
-  nmap <silent> <buffer> gR <Plug>(lsp-previous-reference)
+  nmap <silent> <buffer> gr <Plug>(lsp-references)
+  " nmap <silent> <buffer> gr <Plug>(lsp-next-reference)
+  " nmap <silent> <buffer> gR <Plug>(lsp-previous-reference)
   nmap <silent> <buffer> K <Plug>(lsp-hover)
   nmap <silent> <buffer> <Leader>k <Plug>(lsp-peek-definition)
   nmap <silent> <buffer> <F2> <Plug>(lsp-rename)
