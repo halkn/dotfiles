@@ -1,35 +1,78 @@
 #!/bin/bash
 
 # brew install
-echo "brew install start ..."
-brew install bat
-brew install coreutils
-brew install exa
-brew install fd
-brew install fzf
-brew install ghq
-brew install git
-brew install go
-brew install jq
-brew install nodebrew
-brew install p7zip
-brew install ripgrep
-brew install tig
-brew install tmux
-brew install vim
-brew install zsh
-echo "finished !"
+declare -a BREW_APPS=(
+  "bat"
+  "coreutils"
+  "exa"
+  "fd"
+  "fzf"
+  "ghq"
+  "git"
+  "go"
+  "jq"
+  "nodebrew"
+  "p7zip"
+  "ripgrep"
+  "tig"
+  "tmux"
+  "vim"
+  "zsh"
+)
+
+for brew_app in ${BREW_APPS[@]}; do
+  brew_install_result=0
+  $(brew leaves | grep -x ${brew_app} 2>&1 > /dev/null) || brew_install_result=$?
+  if [[ ! "$brew_install_result" = "0"  ]]; then
+    brew install ${brew_app}
+  fi
+done
+
+echo 'Complete for Homebrew app installation'
 
 # except XDG_CONFIG_HOME because it is maked by dotdiles deploy
-echo "Set up for XDG Base Directory Specification"
-mkdir -p ~/.cache
-mkdir -p ~/.local/share
-mkdir -p ~/.local/share/gem
-mkdir -p ~/.local/share/go
-mkdir -p ~/.local/share/nodebrew
-mkdir -p ~/.local/share/npm
-mkdir -p ~/.local/share/tig
-mkdir -p ~/.local/share/zsh
-echo "finished !"
+if [[ -z ${XDG_CACHE_HOME}  ]]; then
+  echo "XDG_CACHE_HOME is not defined"
+  XDG_CACHE_HOME=$(cat .config/zsh/.zshenv | grep "export XDG_CACHE_HOME" | awk -F'=' '{print $2}')
+  echo "mkdir for" $(eval echo ${XDG_CACHE_HOME}) 
+  mkdir -p $(eval echo ${XDG_CACHE_HOME})
+fi
+
+if [[ -z ${XDG_DATA_HOME} ]]; then
+  echo "XDG_DATA_HOME is not defined"
+  XDG_DATA_HOME=$(cat .config/zsh/.zshenv | grep "export XDG_DATA_HOME" | awk -F'=' '{print $2}')
+  echo "mkdir for" $(eval echo ${XDG_DATA_HOME}) 
+  mkdir -p $(eval echo ${XDG_DATA_HOME})
+fi
+
+declare -a XDG_DIR=(
+  "gem"
+  "go"
+  "nodebrew"
+  "npm"
+  "tig"
+  "zsh"
+)
+
+for dir in ${XDG_DIR[@]}; do
+  mkdir -p $(eval echo ${XDG_DATA_HOME})/${dir}
+done
+
+echo 'Complete for mkdir xdg directory'
+
+# vim plugin manager
+if [[ ! -e "$HOME/.vim/autoload/plug.vim" ]]; then
+curl -fLo ${HOME}/.vim/autoload/plug.vim --create-dirs \
+  https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+fi
+
+# go tools
+export GO111MODULE=off
+go get github.com/mattn/efm-langserver
+export GO111MODULE=on
+
+# npm tools
+npm install -g bash-language-server
+npm install -g markdownlint-cli
 
 exit 0
