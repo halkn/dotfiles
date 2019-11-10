@@ -177,7 +177,6 @@ alias dot="cd $HOME/.dotfiles && $EDITOR"
 if type bat > /dev/null 2>&1; then
   alias cat="bat"
   alias less="bat"
-  export GIT_PAGER="bat"
 fi
 
 #####################################################################
@@ -334,7 +333,7 @@ gl() {
     --tiebreak=index \
     --preview "f() { 
         set -- \$(echo -- \$@ | grep -o '[a-f0-9]\{7\}');
-        [ \$# -eq 0 ] || git show --color=always \$1 $filter;
+        [ \$# -eq 0 ] || git show --color=always \$1 $filter | diff-so-fancy;
       }; f {}" \
     --preview-window=right:60% \
     --bind "ctrl-f:preview-page-down,ctrl-b:preview-page-up" \
@@ -342,7 +341,7 @@ gl() {
     --bind "q:abort" \
     --bind "ctrl-m:execute:
       (grep -o '[a-f0-9]\{7\}' | head -1 |
-      xargs -I % sh -c 'git show --color=always % | less -R') << 'FZF-EOF'
+      xargs -I % sh -c 'git show --color=always % ') << 'FZF-EOF'
       {}
       FZF-EOF"
 }
@@ -358,7 +357,7 @@ gs() {
       --multi \
       --exit-0 \
       --height='80%' \
-      --preview "git diff --color=always -- {-1} " \
+      --preview "git diff --color=always -- {-1} | diff-so-fancy " \
       --preview-window='right:60%' \
       --expect=ctrl-m,ctrl-d,ctrl-v \
       --bind "ctrl-f:preview-page-down,ctrl-b:preview-page-up" \

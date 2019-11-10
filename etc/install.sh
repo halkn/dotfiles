@@ -4,6 +4,7 @@
 declare -a BREW_APPS=(
   "bat"
   "coreutils"
+  "diff-so-fancy"
   "exa"
   "fd"
   "fzf"
