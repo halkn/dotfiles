@@ -24,3 +24,9 @@ init:
 	@echo ''
 	@echo '==> End to Initialize'
 
+update:
+	@echo '==> Start to Update tools'
+	@echo ''
+	@DOTPATH=$(ROOT_PATH) bash $(ROOT_PATH)/etc/update.sh
+	@echo ''
+	@echo '==> End to Update tools'
