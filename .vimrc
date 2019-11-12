@@ -374,6 +374,13 @@ if executable('gopls')
     \ 'name': 'gopls',
     \ 'cmd': {server_info->['gopls', '-mode', 'stdio']},
     \ 'whitelist': ['go'],
+    \ 'workspace_config': {'gopls': 
+    \   {
+    \     'hoverKind': 'SynopsisDocumentation',
+    \     'completeUnimported': v:true,
+    \     'staticcheck': v:true,
+    \   }
+    \ },
     \ })
   autocmd FileType go call s:setup_lsp()
   augroup END
