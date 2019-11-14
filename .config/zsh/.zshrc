@@ -383,6 +383,20 @@ gs() {
 }
 
 # !!!!!!!!!!!!!!!!!!!!
+# homebrew
+# !!!!!!!!!!!!!!!!!!!!
+# Delete (one or multiple) selected application(s)
+# mnemonic [B]rew [U]ninstall [A]pplication
+bua() {
+  local uninst=$(brew leaves | fzf -m)
+
+  if [[ $uninst ]]; then
+    for prog in $(echo $uninst);
+    do; brew uninstall $prog; done;
+  fi
+}
+
+# !!!!!!!!!!!!!!!!!!!!
 # Others
 # !!!!!!!!!!!!!!!!!!!!
 
