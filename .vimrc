@@ -152,7 +152,7 @@ nnoremap tt :<C-u>tabnew <BAR> terminal ++curwin<CR>
 nnoremap tw :<C-u>terminal ++curwin<CR>
 
 " Use ESC to transition to terminal normal mode
-tnoremap <C-w><ESC> <C-w>N
+tnoremap <ESC> <C-w>N
 
 " Toggle options
 nmap [Toggle] <Nop>
@@ -254,7 +254,7 @@ set hlsearch
 set clipboard=unnamed
 
 " Completion
-set completeopt=menu,menuone,noinsert,noselect
+set completeopt=popup,menuone,noinsert,noselect
 
 " help
 set helplang=ja,en
