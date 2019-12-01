@@ -421,6 +421,18 @@ if executable('bash-language-server')
   augroup END
 endif
 
+" vim
+if executable('vim-language-server')
+  augroup vimrc-LspVim
+  au!
+  autocmd User lsp_setup call lsp#register_server({
+    \ 'name': 'vim-language-server',
+    \ 'cmd': {server_info->[&shell, &shellcmdflag, 'vim-language-server --stdio']},
+    \ 'whitelist': ['vim'],
+    \ })
+  augroup END
+endif
+
 " efm ( markdown and vim )
 if executable('efm-langserver')
   augroup vimrc-LspEFM
@@ -428,11 +440,10 @@ if executable('efm-langserver')
     autocmd User lsp_setup call lsp#register_server({
       \ 'name': 'efm-langserver-erb',
       \ 'cmd': {server_info->['efm-langserver']},
-      \ 'whitelist': ['vim','markdown'],
+      \ 'whitelist': ['markdown'],
       \ })
   augroup END
 endif
-
 
 function! s:setup_lsp() abort
   setlocal omnifunc=lsp#complete
