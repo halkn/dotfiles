@@ -25,6 +25,7 @@ call plug#begin('~/.vim/plugged')
 " Util -----------------------------------------------------------------------
 Plug 'vim-jp/vimdoc-ja'
 Plug 'halkn/tender.vim'
+Plug 'gruvbox-community/gruvbox'
 Plug 'itchyny/lightline.vim'
 Plug 'ctrlpvim/ctrlp.vim', {
   \ 'on': [ 'CtrlP','CtrlPLine','CtrlPBuffer','CtrlPQuickfix','CtrlPRg' ]
@@ -192,13 +193,13 @@ set fileformats=unix,dos,mac
 
 " color
 set background=dark
-silent! colorscheme tender
 if exists('&termguicolors')
   set termguicolors
   let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
   let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
 endif
-syntax on
+let g:gruvbox_sign_column = 'bg0'
+silent! colorscheme gruvbox
 
 " Don't creat swap files
 set nobackup
@@ -304,7 +305,7 @@ augroup END
 
 " lightline.vim
 let g:lightline = {
-  \ 'colorscheme': 'wombat',
+  \ 'colorscheme': 'gruvbox',
   \ 'separator': { 'left': "\ue0b0", 'right': "\ue0b2" },
   \ 'subseparator': { 'left': "\ue0b1", 'right': "\ue0b3" },
   \ }
@@ -366,6 +367,9 @@ let g:lsp_signs_error = {'text': '✗'}
 let g:lsp_signs_warning = {'text': '!!'}
 let g:lsp_signs_information = {'text': '●'}
 let g:lsp_signs_hint = {'text': '▲'}
+
+highlight link LspErrorText GruvboxRedSign
+highlight clear LspWarningLine
 
 " golang
 if executable('gopls')
