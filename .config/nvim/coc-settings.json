@@ -1,0 +1,62 @@
+{
+    "suggest.noselect": false,
+    "diagnostic.virtualText" : true,
+    "coc.preferences.snippets.enable": true,
+    "coc.preferences.formatOnType": false,
+    "coc.preferences.formatOnSaveFiletypes": [ "go" ],
+    "list.insertMappings": {
+        "<C-n>": "normal:j",
+        "<C-p>": "normal:k",
+        "<C-v>": "action:vsplit",
+        "<C-x>": "action:split"
+    },
+    "list.source.files.command": "fd",
+    "list.source.files.args": ["--type","file","--hidden"],
+    "list.source.grep.args": ["--hidden"],
+    "languageserver": {
+        "golang": {
+            "command": "gopls",
+            "rootPatterns": ["go.mod", ".vim/", ".git/", ".hg/"],
+            "filetypes": ["go"],
+            "initializationOptions": {
+                "usePlaceholders": true,
+                "completeUnimported": true,
+                "staticcheck" : true
+            }
+        },
+        "bash": {
+            "command": "bash-language-server",
+            "args": ["start"],
+            "filetypes": ["sh"],
+            "ignoredRootPaths": ["~"]
+        },
+        "vimls": {
+            "command": "vim-language-server",
+            "args": ["--stdio"],
+            "initializationOptions": {
+                "iskeyword": "@,48-57,_,192-255,-#",
+                "vimruntime": "",
+                "runtimepath": "",
+                "diagnostic": {
+                    "enable": true
+                },
+                "indexes": {
+                    "runtimepath": true,
+                    "gap": 100,
+                    "count": 3,
+                    "projectRootPatterns" : ["strange-root-pattern", ".git", "autoload", "plugin"]
+                },
+                "suggest": {
+                    "fromVimruntime": true,
+                    "fromRuntimepath": false
+                }
+            },
+            "filetypes": [ "vim" ]
+        },
+        "efm": {
+            "command": "efm-langserver",
+            "args": [],
+            "filetypes": ["markdown"]
+        }
+    }
+}
