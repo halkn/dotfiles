@@ -26,6 +26,7 @@ call plug#begin('~/.vim/plugged')
 Plug 'vim-jp/vimdoc-ja'
 Plug 'halkn/tender.vim'
 Plug 'gruvbox-community/gruvbox'
+Plug 'nightsense/snow'
 Plug 'itchyny/lightline.vim'
 Plug 'ctrlpvim/ctrlp.vim', {
   \ 'on': [ 'CtrlP','CtrlPLine','CtrlPBuffer','CtrlPQuickfix','CtrlPRg' ]
@@ -198,8 +199,7 @@ if exists('&termguicolors')
   let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
   let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
 endif
-let g:gruvbox_sign_column = 'bg0'
-silent! colorscheme gruvbox
+silent! colorscheme snow
 
 " Don't creat swap files
 set nobackup
@@ -215,7 +215,7 @@ set cursorline
 " set relativenumber
 set wrap
 set list
-set listchars=tab:»-,trail:-,eol:↲,extends:»,precedes:«,nbsp:%
+set listchars=tab:\ \ ,trail:-,eol:↲,extends:»,precedes:«,nbsp:%
 set scrolloff=8
 set showtabline=0
 set synmaxcol=512
@@ -305,7 +305,7 @@ augroup END
 
 " lightline.vim
 let g:lightline = {
-  \ 'colorscheme': 'gruvbox',
+  \ 'colorscheme': 'snow_dark',
   \ 'separator': { 'left': "\ue0b0", 'right': "\ue0b2" },
   \ 'subseparator': { 'left': "\ue0b1", 'right': "\ue0b3" },
   \ }
@@ -368,7 +368,7 @@ let g:lsp_signs_warning = {'text': '!!'}
 let g:lsp_signs_information = {'text': '●'}
 let g:lsp_signs_hint = {'text': '▲'}
 
-highlight link LspErrorText GruvboxRedSign
+" highlight link LspErrorText GruvboxRedSign
 highlight clear LspWarningLine
 
 " golang
