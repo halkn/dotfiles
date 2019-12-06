@@ -4,9 +4,6 @@
 set encoding=utf-8
 scriptencoding utf-8
 
-unlet! skip_defaults_vim
-silent! source $VIMRUNTIME/defaults.vim
-
 if has('vim_starting')
   " Use vertical bar cursor in Insert mode
   let &t_SI .= "\e[6 q"
@@ -15,6 +12,9 @@ if has('vim_starting')
   " Use Underline cursor in Replace mode
   let &t_SR .= "\e[4 q"
 endif
+
+" set reader
+let mapleader = "\<Space>"
 
 " }}}
 " ============================================================================
@@ -91,8 +91,6 @@ call plug#end()
 " ============================================================================
 " mapping {{{
 " ============================================================================
-" set reader
-let mapleader = "\<Space>"
 
 " reload vimrc
 nnoremap <Space>s :source $MYVIMRC<CR>
