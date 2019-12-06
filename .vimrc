@@ -313,6 +313,7 @@ let g:lightline = {
 let g:ctrlp_user_command = 'fd --type file --hidden -E .git -E .svn'
 let g:ctrlp_use_caching = 1
 let g:ctrlp_cache_dir = $XDG_CACHE_HOME.'/ctrlp'
+let g:ctrlp_match_window = 'bottom,oreder:ttb,min:1,max:10,results:0'
 let g:ctrlp_prompt_mappings = {
   \ 'PrtBS()':            ['<bs>', '<c-]>', '<c-h>'],
   \ 'PrtSelectMove("j")': ['<c-j>', '<down>', '<c-n>'],
