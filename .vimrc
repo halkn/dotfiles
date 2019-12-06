@@ -200,6 +200,7 @@ if exists('&termguicolors')
   let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
 endif
 silent! colorscheme snow
+syntax on
 
 " Don't creat swap files
 set nobackup
@@ -502,6 +503,7 @@ command! -nargs=+ -complete=command Capture QuickRun -type vim -src <q-args>
 
 " Golang {{{
 " Use vim-lsp
+let g:go_gopls_enabled = 0
 let g:go_code_completion_enabled = 0
 let g:go_doc_keywordprg_enabled = 0
 let g:go_def_mapping_enabled = 0
@@ -522,8 +524,8 @@ let g:go_fmt_command = 'goimports'
 " lint
 let g:go_metalinter_autosave = 1
 let g:go_metalinter_command = 'golangci-lint'
-let g:go_metalinter_autosave_enabled = ['golint', 'errcheck', 'staticcheck']
-let g:go_metalinter_enabled = ['vet', 'golint', 'staticcheck']
+let g:go_metalinter_autosave_enabled = [ 'golint', 'errcheck']
+let g:go_metalinter_enabled = ['golint', 'errcheck']
 
 " list
 let g:go_list_type = 'quickfix'
