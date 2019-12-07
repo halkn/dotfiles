@@ -40,6 +40,7 @@ Plug 'tpope/vim-fugitive', {
 Plug 'tpope/vim-commentary'
 Plug 'cohama/lexima.vim'
 Plug 'machakann/vim-sandwich'
+Plug 'Shougo/echodoc.vim'
 Plug 'kana/vim-operator-user'
 Plug 'kana/vim-operator-replace', { 'on' : '<Plug>(operator-replace)' }
 
@@ -350,6 +351,11 @@ vmap <Leader>c gc
 " vim-operator-replace
 map R  <Plug>(operator-replace)
 
+" echodoc
+let g:echodoc#enable_at_startup = 1
+let g:echodoc#type = 'popup'
+highlight link EchoDocPopup Pmenu
+
 " }}}
 
 " Dev {{{
@@ -367,6 +373,9 @@ let g:lsp_signs_error = {'text': '✗'}
 let g:lsp_signs_warning = {'text': '!!'}
 let g:lsp_signs_information = {'text': '●'}
 let g:lsp_signs_hint = {'text': '▲'}
+
+" Disable Signature help
+let g:lsp_signature_help_enabled = 0
 
 " highlight link LspErrorText GruvboxRedSign
 highlight clear LspWarningLine
