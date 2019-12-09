@@ -25,7 +25,6 @@ call plug#begin('~/.vim/plugged')
 " Util -----------------------------------------------------------------------
 Plug 'vim-jp/vimdoc-ja'
 Plug 'halkn/tender.vim'
-Plug 'gruvbox-community/gruvbox'
 Plug 'nightsense/snow'
 Plug 'itchyny/lightline.vim'
 Plug 'ctrlpvim/ctrlp.vim', {
