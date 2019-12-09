@@ -28,9 +28,9 @@ Plug 'halkn/tender.vim'
 Plug 'nightsense/snow'
 Plug 'itchyny/lightline.vim'
 Plug 'ctrlpvim/ctrlp.vim', {
-  \ 'on': [ 'CtrlP','CtrlPLine','CtrlPBuffer','CtrlPQuickfix','CtrlPRg' ]
+  \ 'on': [ 'CtrlP', 'CtrlPLine', 'CtrlPBuffer', 'CtrlPQuickfix', 'CtrlPRg' ]
   \ }
-Plug 'halkn/ripgrep.vim', { 'on' : [ 'Rg','CtrlPRg' ] }
+Plug 'halkn/ripgrep.vim', { 'on' : [ 'Rg', 'CtrlPRg' ] }
 Plug 'tpope/vim-fugitive', {
   \ 'on': ['Git', 'Gcommit', 'Gstatus', 'Gdiff', 'Gblame', 'Glog']
   \ }
@@ -197,8 +197,8 @@ if exists('&termguicolors')
   let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
   let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
 endif
-silent! colorscheme snow
-syntax on
+silent! colorscheme tender
+" syntax on
 
 " Don't creat swap files
 set nobackup
