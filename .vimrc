@@ -27,10 +27,14 @@ Plug 'vim-jp/vimdoc-ja'
 Plug 'halkn/tender.vim'
 Plug 'nightsense/snow'
 Plug 'itchyny/lightline.vim'
-Plug 'ctrlpvim/ctrlp.vim', {
-  \ 'on': [ 'CtrlP', 'CtrlPLine', 'CtrlPBuffer', 'CtrlPQuickfix', 'CtrlPRg' ]
-  \ }
-Plug 'halkn/ripgrep.vim', { 'on' : [ 'Rg', 'CtrlPRg' ] }
+if has('popupwin')
+  Plug 'liuchengxu/vim-clap', { 'on': 'Clap' }
+else
+  Plug 'ctrlpvim/ctrlp.vim', {
+    \ 'on': [ 'CtrlP', 'CtrlPLine', 'CtrlPBuffer', 'CtrlPQuickfix', 'CtrlPRg' ]
+    \ }
+  Plug 'halkn/ripgrep.vim', { 'on' : [ 'Rg', 'CtrlPRg' ] }
+endif
 Plug 'tpope/vim-fugitive', {
   \ 'on': ['Git', 'Gcommit', 'Gstatus', 'Gdiff', 'Gblame', 'Glog']
   \ }
@@ -309,25 +313,33 @@ let g:lightline = {
   \ 'subseparator': { 'left': "\ue0b1", 'right': "\ue0b3" },
   \ }
 
-" ctrlp.vim
-let g:ctrlp_user_command = 'fd --type file --hidden -E .git -E .svn'
-let g:ctrlp_use_caching = 1
-let g:ctrlp_cache_dir = $XDG_CACHE_HOME.'/ctrlp'
-let g:ctrlp_match_window = 'bottom,oreder:ttb,min:1,max:10,results:0'
-let g:ctrlp_prompt_mappings = {
-  \ 'PrtBS()':            ['<bs>', '<c-]>', '<c-h>'],
-  \ 'PrtSelectMove("j")': ['<c-j>', '<down>', '<c-n>'],
-  \ 'PrtSelectMove("k")': ['<c-k>', '<up>', '<c-p>'],
-  \ 'PrtHistory(-1)':     ['<Nop>'],
-  \ 'PrtHistory(1)':      ['<Nop>'],
-  \ 'PrtCurLeft()':       ['<left>', '<c-^>'],
-  \ }
-let g:ctrlp_map = '<Nop>'
-nnoremap <silent> <Leader>f :<C-u>CtrlP .<CR>
-nnoremap <silent> <Leader>b :<C-u>CtrlPBuffer<CR>
-nnoremap <silent> <Leader>l :<C-u>CtrlPLine<CR>
-nnoremap <silent> <Leader>q :<C-u>cclose<CR> <BAR> :CtrlPQuickfix<CR>
-nnoremap <Leader>R :CtrlPRg<Space>
+if has('popupwin')
+  let g:clap_default_external_filter = 'fzf'
+  nnoremap <silent> <Leader>f :<C-u>Clap files --hidden<CR>
+  nnoremap <silent> <Leader>b :<C-u>Clap buffers<CR>
+  nnoremap <silent> <Leader>l :<C-u>Clap blines<CR>
+  nnoremap <silent> <Leader>G :<C-u>Clap grep --hidden<CR>
+else
+  " ctrlp.vim
+  let g:ctrlp_user_command = 'fd --type file --hidden -E .git -E .svn'
+  let g:ctrlp_use_caching = 1
+  let g:ctrlp_cache_dir = $XDG_CACHE_HOME.'/ctrlp'
+  let g:ctrlp_match_window = 'bottom,oreder:ttb,min:1,max:10,results:20'
+  let g:ctrlp_prompt_mappings = {
+    \ 'PrtBS()':            ['<bs>', '<c-]>', '<c-h>'],
+    \ 'PrtSelectMove("j")': ['<c-j>', '<down>', '<c-n>'],
+    \ 'PrtSelectMove("k")': ['<c-k>', '<up>', '<c-p>'],
+    \ 'PrtHistory(-1)':     ['<Nop>'],
+    \ 'PrtHistory(1)':      ['<Nop>'],
+    \ 'PrtCurLeft()':       ['<left>', '<c-^>'],
+    \ }
+  let g:ctrlp_map = '<Nop>'
+  nnoremap <silent> <Leader>f :<C-u>CtrlP .<CR>
+  nnoremap <silent> <Leader>b :<C-u>CtrlPBuffer<CR>
+  nnoremap <silent> <Leader>l :<C-u>CtrlPLine<CR>
+  nnoremap <silent> <Leader>q :<C-u>cclose<CR> <BAR> :CtrlPQuickfix<CR>
+  nnoremap <Leader>R :CtrlPRg<Space>
+endif
 
 " vim-fugitive
 nmap [fugitive] <Nop>
