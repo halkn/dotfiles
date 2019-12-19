@@ -25,7 +25,6 @@ call plug#begin('~/.vim/plugged')
 " Util -----------------------------------------------------------------------
 Plug 'vim-jp/vimdoc-ja'
 Plug 'halkn/tender.vim'
-Plug 'nightsense/snow'
 Plug 'itchyny/lightline.vim'
 if has('popupwin')
   Plug 'liuchengxu/vim-clap', { 'on': 'Clap' }
@@ -202,7 +201,6 @@ if exists('&termguicolors')
   let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
 endif
 silent! colorscheme tender
-" syntax on
 
 " Don't creat swap files
 set nobackup
@@ -308,7 +306,7 @@ augroup END
 
 " lightline.vim
 let g:lightline = {
-  \ 'colorscheme': 'snow_dark',
+  \ 'colorscheme': 'wombat',
   \ 'separator': { 'left': "\ue0b0", 'right': "\ue0b2" },
   \ 'subseparator': { 'left': "\ue0b1", 'right': "\ue0b3" },
   \ }
@@ -612,10 +610,6 @@ let g:signify_vcs_list = [ 'git' ]
 " indentLine
 let g:loaded_indentLine = 1
 nnoremap <silent><c-d> :<c-u>IndentLinesToggle<CR>
-
-" vim-ripgrep
-let g:rg_command = 'rg --vimgrep --hidden --glob "!{.git,.svn}"'
-let g:rg_format = '%f:%l:%c:%m,%f:%l:%m'
 
 " vista.vim
 let g:vista_default_executive = 'vim_lsp'
