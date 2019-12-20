@@ -26,14 +26,7 @@ call plug#begin('~/.vim/plugged')
 Plug 'vim-jp/vimdoc-ja'
 Plug 'halkn/tender.vim'
 Plug 'itchyny/lightline.vim'
-if has('popupwin')
-  Plug 'liuchengxu/vim-clap', { 'on': 'Clap' }
-else
-  Plug 'ctrlpvim/ctrlp.vim', {
-    \ 'on': [ 'CtrlP', 'CtrlPLine', 'CtrlPBuffer', 'CtrlPQuickfix', 'CtrlPRg' ]
-    \ }
-  Plug 'halkn/ripgrep.vim', { 'on' : [ 'Rg', 'CtrlPRg' ] }
-endif
+Plug 'liuchengxu/vim-clap', { 'on': 'Clap' }
 Plug 'tpope/vim-fugitive', {
   \ 'on': ['Git', 'Gcommit', 'Gstatus', 'Gdiff', 'Gblame', 'Glog']
   \ }
@@ -311,33 +304,12 @@ let g:lightline = {
   \ 'subseparator': { 'left': "\ue0b1", 'right': "\ue0b3" },
   \ }
 
-if has('popupwin')
-  let g:clap_default_external_filter = 'fzf'
-  nnoremap <silent> <Leader>f :<C-u>Clap files --hidden<CR>
-  nnoremap <silent> <Leader>b :<C-u>Clap buffers<CR>
-  nnoremap <silent> <Leader>l :<C-u>Clap blines<CR>
-  nnoremap <silent> <Leader>G :<C-u>Clap grep --hidden<CR>
-else
-  " ctrlp.vim
-  let g:ctrlp_user_command = 'fd --type file --hidden -E .git -E .svn'
-  let g:ctrlp_use_caching = 1
-  let g:ctrlp_cache_dir = $XDG_CACHE_HOME.'/ctrlp'
-  let g:ctrlp_match_window = 'bottom,oreder:ttb,min:1,max:10,results:20'
-  let g:ctrlp_prompt_mappings = {
-    \ 'PrtBS()':            ['<bs>', '<c-]>', '<c-h>'],
-    \ 'PrtSelectMove("j")': ['<c-j>', '<down>', '<c-n>'],
-    \ 'PrtSelectMove("k")': ['<c-k>', '<up>', '<c-p>'],
-    \ 'PrtHistory(-1)':     ['<Nop>'],
-    \ 'PrtHistory(1)':      ['<Nop>'],
-    \ 'PrtCurLeft()':       ['<left>', '<c-^>'],
-    \ }
-  let g:ctrlp_map = '<Nop>'
-  nnoremap <silent> <Leader>f :<C-u>CtrlP .<CR>
-  nnoremap <silent> <Leader>b :<C-u>CtrlPBuffer<CR>
-  nnoremap <silent> <Leader>l :<C-u>CtrlPLine<CR>
-  nnoremap <silent> <Leader>q :<C-u>cclose<CR> <BAR> :CtrlPQuickfix<CR>
-  nnoremap <Leader>R :CtrlPRg<Space>
-endif
+" vim-clap
+let g:clap_default_external_filter = 'fzf'
+nnoremap <silent> <Leader>f :<C-u>Clap files --hidden<CR>
+nnoremap <silent> <Leader>b :<C-u>Clap buffers<CR>
+nnoremap <silent> <Leader>l :<C-u>Clap blines<CR>
+nnoremap <silent> <Leader>G :<C-u>Clap grep --hidden<CR>
 
 " vim-fugitive
 nmap [fugitive] <Nop>
@@ -622,14 +594,30 @@ let g:winresizer_start_key = '<C-w>r'
 nnoremap <silent><C-w>r :<c-u>WinResizerStartResize<CR>
 
 " memolist
-let g:memolist_ex_cmd = 'CtrlP'
+let g:memolist_path = expand('~/memo')
 let g:memolist_delimiter_yaml_start = '---'
 let g:memolist_delimiter_yaml_end  = '---'
 let g:memolist_memo_suffix = 'md'
 let g:memolist_template_dir_path = '$HOME/.dotfiles/etc/templates/memotemplates'
 nnoremap <Leader>mn  :<C-u>MemoNew<CR>
-nnoremap <Leader>ml  :<C-u>MemoList<CR>
 nnoremap <Leader>mg  :<C-u>MemoGrep<CR>
+
+" clap-providor for memolit
+function! s:find_memo() abort
+  let l:memos = substitute(expand(g:memolist_path.'/*.md'), g:memolist_path."/", "", "g")
+  return split(l:memos, "\n")
+endfunction
+
+function! s:open_memo(selected) abort
+  execute ":edit ".g:memolist_path.'/'.a:selected
+endfunction
+
+let g:clap_provider_memo = {
+  \ 'source': function('s:find_memo') ,
+  \ 'sink': function('s:open_memo'),
+  \ }
+
+nnoremap <Leader>ml :<C-u>Clap memo<CR>
 
 " vim-easy-align
 vmap <Enter> <Plug>(EasyAlign)
