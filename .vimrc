@@ -147,8 +147,8 @@ nnoremap tv :<C-u>vsplit <BAR> terminal ++curwin<CR>
 nnoremap tt :<C-u>tabnew <BAR> terminal ++curwin<CR>
 nnoremap tw :<C-u>terminal ++curwin<CR>
 
-" Use ESC to transition to terminal normal mode
-tnoremap <ESC> <C-w>N
+" Use <C-w>ESC to transition to terminal normal mode
+tnoremap <C-w><ESC> <C-w>N
 
 " Toggle options
 nmap [Toggle] <Nop>
@@ -183,7 +183,7 @@ nnoremap <script> <silent> Q :call ToggleQuickfix()<CR>
 " ============================================================================
 
 " Encoding
-set fileencodings=utf-8
+set fileencodings=utf-8,cp932
 set fileformats=unix,dos,mac
 
 " color
@@ -310,6 +310,7 @@ nnoremap <silent> <Leader>f :<C-u>Clap files --hidden<CR>
 nnoremap <silent> <Leader>b :<C-u>Clap buffers<CR>
 nnoremap <silent> <Leader>l :<C-u>Clap blines<CR>
 nnoremap <silent> <Leader>G :<C-u>Clap grep --hidden<CR>
+nnoremap <silent> <Leader>q :<C-u>Clap quickfix<CR>
 
 " vim-fugitive
 nmap [fugitive] <Nop>
