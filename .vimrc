@@ -26,6 +26,7 @@ call plug#begin('~/.vim/plugged')
 Plug 'vim-jp/vimdoc-ja'
 Plug 'halkn/tender.vim'
 Plug 'itchyny/lightline.vim'
+Plug 'sheerun/vim-polyglot'
 Plug 'liuchengxu/vim-clap', { 'on': 'Clap' }
 Plug 'tpope/vim-fugitive', {
   \ 'on': ['Git', 'Gcommit', 'Gstatus', 'Gdiff', 'Gblame', 'Glog']
@@ -44,22 +45,19 @@ Plug 'kana/vim-operator-replace', { 'on' : '<Plug>(operator-replace)' }
 Plug 'prabirshrestha/async.vim'
 Plug 'prabirshrestha/vim-lsp'
 " snippet
-Plug 'honza/vim-snippets'
-Plug 'SirVer/ultisnips'
+Plug 'mattn/sonictemplate-vim'
 " autoComplete
 Plug 'prabirshrestha/asyncomplete.vim'
 Plug 'prabirshrestha/asyncomplete-buffer.vim'
 Plug 'prabirshrestha/asyncomplete-lsp.vim'
-Plug 'prabirshrestha/asyncomplete-ultisnips.vim'
 " Runner
 Plug 'thinca/vim-quickrun'
+Plug 'janko/vim-test'
 
 " Lang -----------------------------------------------------------------------
 " Go
-Plug 'fatih/vim-go', {
-  \ 'do': ':GoUpdateBinaries',
-  \ 'for': [ 'go','gomod' ]
-  \ }
+Plug 'mattn/vim-goimports', { 'for': [ 'go','gomod' ] }
+Plug 'arp242/switchy.vim', { 'for': 'go' }
 
 " Markdown
 Plug 'previm/previm', { 'for' : 'markdown' }
@@ -78,7 +76,6 @@ Plug 'liuchengxu/vista.vim', { 'on': ['Vista', 'Vista!!'] }
 Plug 'simeji/winresizer', { 'on': 'WinResizerStartResize' }
 Plug 'glidenote/memolist.vim', { 'on': ['MemoNew','MemoList','MemoGrep'] }
 Plug 'junegunn/vim-easy-align', { 'on': '<Plug>(EasyAlign)' }
-Plug 'mattn/sonictemplate-vim', { 'on' : 'Template' }
 Plug 'itchyny/calendar.vim', { 'on' : 'Calendar' }
 
 call plug#end()
@@ -304,6 +301,16 @@ let g:lightline = {
   \ 'subseparator': { 'left': "\ue0b1", 'right': "\ue0b3" },
   \ }
 
+" vim-polyglot
+let g:go_highlight_build_constraints = 1
+let g:go_highlight_extra_types = 1
+let g:go_highlight_fields = 1
+let g:go_highlight_functions = 1
+let g:go_highlight_methods = 1
+let g:go_highlight_operators = 1
+let g:go_highlight_structs = 1
+let g:go_highlight_types = 1
+
 " vim-clap
 let g:clap_default_external_filter = 'fzf'
 nnoremap <silent> <Leader>f :<C-u>Clap files --hidden<CR>
@@ -374,6 +381,7 @@ if executable('gopls')
     \   {
     \     'hoverKind': 'SynopsisDocumentation',
     \     'completeUnimported': v:true,
+    \     'usePlaceholders': v:true,
     \     'staticcheck': v:true,
     \   }
     \ },
@@ -441,8 +449,6 @@ function! s:setup_lsp() abort
   nmap <silent> <buffer> gd <Plug>(lsp-definition)
   nmap <silent> <buffer> gy <Plug>(lsp-type-definition)
   nmap <silent> <buffer> gr <Plug>(lsp-references)
-  " nmap <silent> <buffer> gr <Plug>(lsp-next-reference)
-  " nmap <silent> <buffer> gR <Plug>(lsp-previous-reference)
   nmap <silent> <buffer> K <Plug>(lsp-hover)
   nmap <silent> <buffer> <Leader>k <Plug>(lsp-peek-definition)
   nmap <silent> <buffer> <F2> <Plug>(lsp-rename)
@@ -458,14 +464,8 @@ endfunction
 
 " autoComplete {{{
 
+let g:asyncomplete_auto_completeopt = 0
 augroup vimrc-AsyncompleteSetup
-  " asyncomplete-ultisnips.
-  autocmd User asyncomplete_setup call asyncomplete#register_source(asyncomplete#sources#ultisnips#get_source_options({
-    \ 'name': 'ultisnips',
-    \ 'whitelist': ['*'],
-    \ 'completor': function('asyncomplete#sources#ultisnips#completor'),
-    \ }))
-  " asyncomplete-buffer
   autocmd User asyncomplete_setup call asyncomplete#register_source(asyncomplete#sources#buffer#get_source_options({
     \ 'name': 'buffer',
     \ 'whitelist': ['*'],
@@ -483,7 +483,34 @@ augroup END
 
 " quickrun.vim
 let g:quickrun_config = {}
+let g:quickrun_config = {
+    \ '_' : {
+        \ 'runner' : 'job',
+        \ 'outputter' : 'error',
+        \ 'outputter/error/success' : 'buffer',
+        \ 'outputter/error/error'   : 'quickfix',
+    \ }
+\}
+
 command! -nargs=+ -complete=command Capture QuickRun -type vim -src <q-args>
+
+" vim-test
+let g:test#preserve_screen = 1
+let test#strategy = "make_bang"
+
+augroup vimrc-TestCommand
+  au!
+  autocmd FileType go call s:setup_test_command()
+augroup END
+
+function! s:setup_test_command() abort
+  nnoremap <silent> <buffer> <Leader>t :<C-u>TestFile<CR>
+  nnoremap <silent> <buffer> TN :<C-u>TestNearest<CR>
+  nnoremap <silent> <buffer> TF :<C-u>TestFile<CR>
+  nnoremap <silent> <buffer> TS :<C-u>TestSuite<CR>
+  nnoremap <silent> <buffer> TL :<C-u>TestLast<CR>
+  nnoremap <silent> <buffer> TV :<C-u>TestVisit<CR>
+endfunction
 
 " }}}
 
@@ -492,49 +519,12 @@ command! -nargs=+ -complete=command Capture QuickRun -type vim -src <q-args>
 " Lang {{{
 
 " Golang {{{
-" Use vim-lsp
-let g:go_gopls_enabled = 0
-let g:go_code_completion_enabled = 0
-let g:go_doc_keywordprg_enabled = 0
-let g:go_def_mapping_enabled = 0
-
-" hightlight
-let g:go_highlight_build_constraints = 1
-let g:go_highlight_extra_types = 1
-let g:go_highlight_fields = 1
-let g:go_highlight_functions = 1
-let g:go_highlight_methods = 1
-let g:go_highlight_operators = 1
-let g:go_highlight_structs = 1
-let g:go_highlight_types = 1
-
-" format
-let g:go_fmt_command = 'goimports'
-
-" lint
-let g:go_metalinter_autosave = 1
-let g:go_metalinter_command = 'golangci-lint'
-let g:go_metalinter_autosave_enabled = [ 'golint', 'errcheck']
-let g:go_metalinter_enabled = ['golint', 'errcheck']
-
-" list
-let g:go_list_type = 'quickfix'
-
-" mapping
-augroup vimrc-GoCommads
-  autocmd!
-  autocmd FileType go nmap <buffer> <silent> <leader>r <Plug>(go-run)
-  autocmd FileType go nmap <buffer> <silent> <leader>t <Plug>(go-test)
-  autocmd FileType go nmap <buffer> <silent> <leader>v <Plug>(go-coverage-toggle)
-  autocmd FileType go nmap <buffer> <silent> <Leader>ie <Plug>(go-iferr)
-  autocmd FileType go nmap <buffer> <silent> <Leader>im <Plug>(go-implements)
-  autocmd FileType go nmap <buffer> <silent> <Leader>dl :<C-u>GoDecls<CR>
-  autocmd FileType go nmap <buffer> <silent> <Leader>dd :<C-u>GoDeclsDir<CR>
-
-  autocmd Filetype go command! -bang A call go#alternate#Switch(<bang>0, 'edit')
-  autocmd Filetype go command! -bang AV call go#alternate#Switch(<bang>0, 'vsplit')
-  autocmd Filetype go command! -bang AS call go#alternate#Switch(<bang>0, 'split')
-  autocmd Filetype go command! -bang AT call go#alternate#Switch(<bang>0, 'tabe')
+ 
+augroup vimrc-GoCommands
+  au!
+  autocmd FileType go nnoremap <buffer> <silent> <Leader>a :<C-u>call switchy#switch('edit', 'buf')<CR>
+  autocmd Filetype go command! -bang A call switchy#switch('edit', 'buf')
+  autocmd Filetype go command! -bang AS call switchy#switch('split', 'sbuf')
 augroup END
 
 " }}}
