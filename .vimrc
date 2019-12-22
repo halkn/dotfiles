@@ -20,65 +20,181 @@ let mapleader = "\<Space>"
 " ============================================================================
 " Load Plugins {{{
 " ============================================================================
-call plug#begin('~/.vim/plugged')
+" call plug#begin('~/.vim/plugged')
 
-" Util -----------------------------------------------------------------------
-Plug 'vim-jp/vimdoc-ja'
-Plug 'halkn/tender.vim'
-Plug 'itchyny/lightline.vim'
-Plug 'sheerun/vim-polyglot'
-Plug 'liuchengxu/vim-clap', { 'on': 'Clap' }
-Plug 'tpope/vim-fugitive', {
-  \ 'on': ['Git', 'Gcommit', 'Gstatus', 'Gdiff', 'Gblame', 'Glog']
-  \ }
+" " Util -----------------------------------------------------------------------
+" Plug 'vim-jp/vimdoc-ja'
+" Plug 'halkn/tender.vim'
+" Plug 'itchyny/lightline.vim'
+" Plug 'sheerun/vim-polyglot'
+" Plug 'liuchengxu/vim-clap', { 'on': 'Clap' }
+" Plug 'tpope/vim-fugitive', {
+"   \ 'on': ['Git', 'Gcommit', 'Gstatus', 'Gdiff', 'Gblame', 'Glog']
+"   \ }
 
-" Edit -----------------------------------------------------------------------
-Plug 'tpope/vim-commentary'
-Plug 'cohama/lexima.vim'
-Plug 'machakann/vim-sandwich'
-Plug 'Shougo/echodoc.vim'
-Plug 'kana/vim-operator-user'
-Plug 'kana/vim-operator-replace', { 'on' : '<Plug>(operator-replace)' }
+" " Edit -----------------------------------------------------------------------
+" Plug 'tpope/vim-commentary'
+" Plug 'cohama/lexima.vim'
+" Plug 'machakann/vim-sandwich'
+" Plug 'Shougo/echodoc.vim'
+" Plug 'kana/vim-operator-user'
+" Plug 'kana/vim-operator-replace', { 'on' : '<Plug>(operator-replace)' }
 
-" Dev ------------------------------------------------------------------------
-" lsp
-Plug 'prabirshrestha/async.vim'
-Plug 'prabirshrestha/vim-lsp'
-" snippet
-Plug 'mattn/sonictemplate-vim'
-" autoComplete
-Plug 'prabirshrestha/asyncomplete.vim'
-Plug 'prabirshrestha/asyncomplete-buffer.vim'
-Plug 'prabirshrestha/asyncomplete-lsp.vim'
-" Runner
-Plug 'thinca/vim-quickrun'
-Plug 'janko/vim-test'
+" " Dev ------------------------------------------------------------------------
+" " lsp
+" Plug 'prabirshrestha/async.vim'
+" Plug 'prabirshrestha/vim-lsp'
+" " snippet
+" Plug 'mattn/sonictemplate-vim'
+" " autoComplete
+" Plug 'prabirshrestha/asyncomplete.vim'
+" Plug 'prabirshrestha/asyncomplete-buffer.vim'
+" Plug 'prabirshrestha/asyncomplete-lsp.vim'
+" " Runner
+" Plug 'thinca/vim-quickrun'
+" Plug 'janko/vim-test'
 
-" Lang -----------------------------------------------------------------------
-" Go
-Plug 'mattn/vim-goimports', { 'for': [ 'go','gomod' ] }
-Plug 'arp242/switchy.vim', { 'for': 'go' }
+" " Lang -----------------------------------------------------------------------
+" " Go
+" Plug 'mattn/vim-goimports', { 'for': [ 'go','gomod' ] }
+" Plug 'arp242/switchy.vim', { 'for': 'go' }
 
-" Markdown
-Plug 'previm/previm', { 'for' : 'markdown' }
-Plug 'dhruvasagar/vim-table-mode', { 'for' : 'markdown' }
-Plug 'mattn/vim-maketable', { 'for' : 'markdown' }
-Plug 'tyru/open-browser.vim', {
-  \ 'for': 'markdown',
-  \ 'on': '<Plug>(openbrowser-smart-search)'
-  \ }
+" " Markdown
+" Plug 'previm/previm', { 'for' : 'markdown' }
+" Plug 'dhruvasagar/vim-table-mode', { 'for' : 'markdown' }
+" Plug 'mattn/vim-maketable', { 'for' : 'markdown' }
+" Plug 'tyru/open-browser.vim', {
+"   \ 'for': 'markdown',
+"   \ 'on': '<Plug>(openbrowser-smart-search)'
+"   \ }
 
-" Other ----------------------------------------------------------------------
-Plug 'scrooloose/nerdtree', { 'on':  'NERDTreeToggle' }
-Plug 'mhinz/vim-signify', { 'on': 'SignifyToggle' }
-Plug 'Yggdroot/indentLine', { 'on': 'IndentLinesToggle' }
-Plug 'liuchengxu/vista.vim', { 'on': ['Vista', 'Vista!!'] }
-Plug 'simeji/winresizer', { 'on': 'WinResizerStartResize' }
-Plug 'glidenote/memolist.vim', { 'on': ['MemoNew','MemoList','MemoGrep'] }
-Plug 'junegunn/vim-easy-align', { 'on': '<Plug>(EasyAlign)' }
-Plug 'itchyny/calendar.vim', { 'on' : 'Calendar' }
+" " Other ----------------------------------------------------------------------
+" Plug 'scrooloose/nerdtree', { 'on':  'NERDTreeToggle' }
+" Plug 'mhinz/vim-signify', { 'on': 'SignifyToggle' }
+" Plug 'Yggdroot/indentLine', { 'on': 'IndentLinesToggle' }
+" Plug 'liuchengxu/vista.vim', { 'on': ['Vista', 'Vista!!'] }
+" Plug 'simeji/winresizer', { 'on': 'WinResizerStartResize' }
+" Plug 'glidenote/memolist.vim', { 'on': ['MemoNew','MemoList','MemoGrep'] }
+" Plug 'junegunn/vim-easy-align', { 'on': '<Plug>(EasyAlign)' }
+" Plug 'itchyny/calendar.vim', { 'on' : 'Calendar' }
 
-call plug#end()
+" call plug#end()
+
+" }}}
+" ============================================================================
+" Plugin {{{
+
+" start_plugs {{{
+let s:start_plugs = [
+  \ ['halkn/tender.vim', {}],
+  \ ['itchyny/lightline.vim', {}],
+  \ ['sheerun/vim-polyglot', {}],
+  \ ['liuchengxu/vim-clap', {}], 
+  \ ['prabirshrestha/async.vim', {}],
+  \ ['prabirshrestha/vim-lsp', {}],
+  \ ]
+" }}}
+
+" opt_plugs_lazy {{{
+let s:opt_plugs_lazy = [
+  \ ['tpope/vim-fugitive', {'type': 'opt'}],
+  \ ['mhinz/vim-signify', {'type': 'opt'}],
+  \ ['prabirshrestha/asyncomplete.vim', {'type': 'opt'}],
+  \ ['prabirshrestha/asyncomplete-buffer.vim', {'type': 'opt'}],
+  \ ['prabirshrestha/asyncomplete-lsp.vim', {'type': 'opt'}],
+  \ ['cohama/lexima.vim', {'type': 'opt'}],
+  \ ['tpope/vim-commentary', {'type': 'opt'}],
+  \ ['junegunn/vim-easy-align', {'type': 'opt'}],
+  \ ['machakann/vim-sandwich', {'type': 'opt'}],
+  \ ['kana/vim-operator-user', {'type': 'opt'}],
+  \ ['kana/vim-operator-replace', {'type': 'opt'}],
+  \ ['simeji/winresizer', {'type': 'opt'}],
+  \ ['glidenote/memolist.vim', {'type': 'opt'}],
+  \ ['itchyny/calendar.vim', {'type': 'opt'}],
+  \ ['tyru/open-browser.vim', {'type': 'opt'}],
+  \ ['vim-jp/vimdoc-ja', {'type': 'opt'}],
+  \ ]
+" }}}
+
+" opt_plugs_dev {{{
+let s:opt_plugs_dev = [
+  \ ['Shougo/echodoc.vim', {'type': 'opt'}],
+  \ ['liuchengxu/vista.vim', {'type': 'opt'}],
+  \ ['mattn/sonictemplate-vim', {'type': 'opt'}],
+  \ ['thinca/vim-quickrun', {'type': 'opt'}],
+  \ ['janko/vim-test', {'type': 'opt'}],
+  \ ]
+" }}}
+
+" opt_plugs_go {{{
+let s:opt_plugs_go = [
+  \ ['mattn/vim-goimports', {'type': 'opt'}],
+  \ ['arp242/switchy.vim', {'type': 'opt'}],
+  \ ]
+" }}}
+
+" opt_plugs_markdown {{{
+let s:opt_plugs_markdown = [
+  \ ['previm/previm', {'type': 'opt'}],
+  \ ['dhruvasagar/vim-table-mode', {'type': 'opt'}],
+  \ ['mattn/vim-maketable', {'type': 'opt'}],
+  \ ]
+" }}}
+
+if exists('*minpac#init')
+
+  " load minpac.
+  packadd minpac call minpac#init()
+  call minpac#add('k-takata/minpac', {'type': 'opt'})
+
+  " load other plugins.
+  function! s:minpac_add(plugs)
+    for l:plug in a:plugs
+      exe 'call minpac#add("' . l:plug[0] . '", ' . string(l:plug[1]) . ')'
+    endfor
+  endfunction
+
+  call s:minpac_add(s:start_plugs)
+  call s:minpac_add(s:opt_plugs_lazy)
+  call s:minpac_add(s:opt_plugs_dev)
+  call s:minpac_add(s:opt_plugs_go)
+  call s:minpac_add(s:opt_plugs_markdown)
+
+endif
+
+" packloadall
+command! PackUpdate packadd minpac | source $MYVIMRC | call minpac#update('', {'do': 'call minpac#status()'})
+command! PackClean  packadd minpac | source $MYVIMRC | call minpac#clean()
+command! PackStatus packadd minpac | source $MYVIMRC | call minpac#status()
+
+function! s:minpac_lazy(plugs)
+  for l:plug in a:plugs
+    let l:name = split(l:plug[0], '/')[1]
+    exe 'packadd ' . l:name
+  endfor
+endfunction
+
+function! LazyLoad(timer)
+  for l:plug in s:opt_plugs_lazy
+    let l:name = split(l:plug[0], '/')[1]
+    exe 'packadd ' . l:name
+  endfor
+endfunction
+
+augroup lazy_load_bundle
+  au!
+  autocmd VimEnter * call timer_start(1, 'LazyLoad')
+augroup END
+
+augroup vimrc-ft-plugin
+  autocmd!
+  autocmd FileType sh,go,python call s:minpac_lazy(s:opt_plugs_dev)
+  autocmd BufNew,BufRead *.go call s:minpac_lazy(s:opt_plugs_go)
+  autocmd FileType markdown call s:minpac_lazy(s:opt_plugs_markdown)
+augroup END
+
+syntax enable
+filetype plugin indent on
 
 " }}}
 " ============================================================================
@@ -492,7 +608,7 @@ let g:quickrun_config = {
     \ }
 \}
 
-command! -nargs=+ -complete=command Capture QuickRun -type vim -src <q-args>
+command! -nargs=+ -complete=command Capture packadd vim-quickrun | QuickRun -type vim -src <q-args>
 
 " vim-test
 let g:test#preserve_screen = 1
