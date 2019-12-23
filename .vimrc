@@ -39,15 +39,15 @@ let s:opt_plugs_lazy = [
   \ ['prabirshrestha/asyncomplete-buffer.vim', {'type': 'opt'}],
   \ ['prabirshrestha/asyncomplete-lsp.vim', {'type': 'opt'}],
   \ ['cohama/lexima.vim', {'type': 'opt'}],
-  \ ['tpope/vim-commentary', {'type': 'opt'}],
-  \ ['junegunn/vim-easy-align', {'type': 'opt'}],
   \ ['machakann/vim-sandwich', {'type': 'opt'}],
   \ ['kana/vim-operator-user', {'type': 'opt'}],
   \ ['kana/vim-operator-replace', {'type': 'opt'}],
+  \ ['tpope/vim-commentary', {'type': 'opt'}],
+  \ ['junegunn/vim-easy-align', {'type': 'opt'}],
   \ ['simeji/winresizer', {'type': 'opt'}],
-  \ ['glidenote/memolist.vim', {'type': 'opt'}],
-  \ ['itchyny/calendar.vim', {'type': 'opt'}],
   \ ['tyru/open-browser.vim', {'type': 'opt'}],
+  \ ['itchyny/calendar.vim', {'type': 'opt'}],
+  \ ['glidenote/memolist.vim', {'type': 'opt'}],
   \ ['vim-jp/vimdoc-ja', {'type': 'opt'}],
   \ ]
 " }}}
@@ -235,15 +235,6 @@ nnoremap <script> <silent> Q :call ToggleQuickfix()<CR>
 set fileencodings=utf-8,cp932
 set fileformats=unix,dos,mac
 
-" color
-set background=dark
-if exists('&termguicolors')
-  set termguicolors
-  let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
-  let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
-endif
-silent! colorscheme tender
-
 " Don't creat swap files
 set nobackup
 set noswapfile
@@ -347,16 +338,27 @@ augroup END
 " Plugin setting {{{
 " ============================================================================
 
-" Util {{{
+" start_plugs {{{
 
-" lightline.vim
+" colorscheme {{{
+set background=dark
+if exists('&termguicolors')
+  set termguicolors
+  let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
+  let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
+endif
+silent! colorscheme tender
+" }}}
+
+" lightline.vim {{{
 let g:lightline = {
   \ 'colorscheme': 'wombat',
   \ 'separator': { 'left': "\ue0b0", 'right': "\ue0b2" },
   \ 'subseparator': { 'left': "\ue0b1", 'right': "\ue0b3" },
   \ }
+" }}}
 
-" vim-polyglot
+" vim-polyglot {{{
 let g:go_highlight_build_constraints = 1
 let g:go_highlight_extra_types = 1
 let g:go_highlight_fields = 1
@@ -365,46 +367,19 @@ let g:go_highlight_methods = 1
 let g:go_highlight_operators = 1
 let g:go_highlight_structs = 1
 let g:go_highlight_types = 1
+" }}}
 
-" vim-clap
+" vim-clap {{{
 let g:clap_default_external_filter = 'fzf'
 nnoremap <silent> <Leader>f :<C-u>Clap files --hidden<CR>
 nnoremap <silent> <Leader>b :<C-u>Clap buffers<CR>
 nnoremap <silent> <Leader>l :<C-u>Clap blines<CR>
 nnoremap <silent> <Leader>G :<C-u>Clap grep --hidden<CR>
 nnoremap <silent> <Leader>q :<C-u>Clap quickfix<CR>
-
-" vim-fugitive
-nmap [fugitive] <Nop>
-map <Leader>g [fugitive]
-nnoremap <silent> [fugitive]s :<C-u>Gstatus<CR>
-nnoremap <silent> [fugitive]a :<C-u>Gwrite<CR>
-nnoremap <silent> [fugitive]c :<C-u>Gcommit<CR>
-nnoremap <silent> [fugitive]d :<C-u>Gdiff<CR>
-nnoremap <silent> [fugitive]b :<C-u>Gblame<CR>
-nnoremap <silent> [fugitive]l :<C-u>Glog<CR>
-
+nnoremap <silent> <Leader>L :<C-u>Clap<CR>
 " }}}
 
-" Edit {{{
-
-" vim-commentary
-nmap <Leader>c gcc
-vmap <Leader>c gc
-
-" vim-operator-replace
-map R  <Plug>(operator-replace)
-
-" echodoc
-let g:echodoc#enable_at_startup = 1
-let g:echodoc#type = 'popup'
-highlight link EchoDocPopup Pmenu
-
-" }}}
-
-" Dev {{{
-
-" LSP {{{
+" vim-lsp {{{
 
 " Enable auto complete
 let g:lsp_async_completion = 1
@@ -421,7 +396,6 @@ let g:lsp_signs_hint = {'text': '▲'}
 " Disable Signature help
 let g:lsp_signature_help_enabled = 0
 
-" highlight link LspErrorText GruvboxRedSign
 highlight clear LspWarningLine
 
 " golang
@@ -519,6 +493,28 @@ endfunction
 
 " }}}
 
+" }}}
+
+" opt_plugs_lazy {{{
+
+" Git {{{
+
+" vim-fugitive
+nmap [fugitive] <Nop>
+map <Leader>g [fugitive]
+nnoremap <silent> [fugitive]s :<C-u>Gstatus<CR>
+nnoremap <silent> [fugitive]a :<C-u>Gwrite<CR>
+nnoremap <silent> [fugitive]c :<C-u>Gcommit<CR>
+nnoremap <silent> [fugitive]d :<C-u>Gdiff<CR>
+nnoremap <silent> [fugitive]b :<C-u>Gblame<CR>
+nnoremap <silent> [fugitive]l :<C-u>Glog<CR>
+
+" vim-signify
+noremap <silent> <C-y> :SignifyToggle<CR>
+let g:signify_vcs_list = [ 'git' ]
+
+" }}}
+
 " autoComplete {{{
 
 let g:asyncomplete_auto_completeopt = 0
@@ -536,7 +532,73 @@ augroup END
 
 " }}}
 
-" Runner {{{
+" TextObj {{{
+
+" vim-operator-replace
+map R  <Plug>(operator-replace)
+
+" }}}
+
+" Util {{{
+
+" vim-commentary
+nmap <Leader>c gcc
+vmap <Leader>c gc
+
+" vim-easy-align
+vmap <Enter> <Plug>(EasyAlign)
+
+" winresizer
+let g:winresizer_start_key = '<C-w>r'
+
+" open-browser
+nmap gx <Plug>(openbrowser-smart-search)
+vmap gx <Plug>(openbrowser-smart-search)
+
+" calender.vim
+let g:calendar_cache_directory = expand('$XDG_CACHE_HOME')
+
+" memolist
+let g:memolist_path = expand('~/memo')
+let g:memolist_delimiter_yaml_start = '---'
+let g:memolist_delimiter_yaml_end  = '---'
+let g:memolist_memo_suffix = 'md'
+let g:memolist_template_dir_path = '$HOME/.dotfiles/etc/templates/memotemplates'
+nnoremap <Leader>mn :<C-u>MemoNew<CR>
+nnoremap <Leader>mg :<C-u>MemoGrep<CR>
+nnoremap <Leader>ml :<C-u>Clap memo<CR>
+
+" clap-providor for memolit
+function! s:find_memo() abort
+  let l:memos = substitute(expand(g:memolist_path.'/*.md'), expand(g:memolist_path."/"), "", "g")
+  return split(l:memos, "\n")
+endfunction
+
+function! s:open_memo(selected) abort
+  execute ":edit ".expand(g:memolist_path.'/'.a:selected)
+endfunction
+
+let g:clap_provider_memo = {
+  \ 'source': function('s:find_memo') ,
+  \ 'sink': function('s:open_memo'),
+  \ }
+
+" }}}
+
+" }}}
+
+" opt_plugs_dev {{{
+
+" echodoc
+let g:echodoc#enable_at_startup = 1
+let g:echodoc#type = 'popup'
+highlight link EchoDocPopup Pmenu
+
+" vista.vim
+let g:vista_default_executive = 'vim_lsp'
+nnoremap <silent><c-t> :<c-u>Vista!!<CR>
+nnoremap <silent> <Leader>vf :<c-u>Vista finder vim_lsp<CR>
+let g:vista#renderer#enable_icon = 0
 
 " quickrun.vim
 let g:quickrun_config = {}
@@ -571,12 +633,8 @@ endfunction
 
 " }}}
 
-" }}}
+" opt_plugs_go {{{
 
-" Lang {{{
-
-" Golang {{{
- 
 augroup vimrc-GoCommands
   au!
   autocmd FileType go nnoremap <buffer> <silent> <Leader>a :<C-u>call switchy#switch('edit', 'buf')<CR>
@@ -586,9 +644,8 @@ augroup END
 
 " }}}
 
-" Marldown {{{
+" opt_plugs_markdown {{{
 
-" markdown
 let g:markdown_fenced_languages = [
   \ 'go',
   \ 'python',
@@ -607,58 +664,6 @@ augroup END
 
 " vim-table-mode
 let g:table_mode_corner = '|'
-
-" open-browser
-nmap gx <Plug>(openbrowser-smart-search)
-vmap gx <Plug>(openbrowser-smart-search)
-
-" }}}
-
-" }}}
-
-" Other {{{
-
-" vim-signify
-noremap <silent> <C-y> :SignifyToggle<CR>
-let g:signify_vcs_list = [ 'git' ]
-
-" vista.vim
-let g:vista_default_executive = 'vim_lsp'
-nnoremap <silent><c-t> :<c-u>Vista!!<CR>
-nnoremap <silent> <Leader>vf :<c-u>Vista finder vim_lsp<CR>
-let g:vista#renderer#enable_icon = 0
-
-" winresizer
-let g:winresizer_start_key = '<C-w>r'
-
-" memolist
-let g:memolist_path = expand('~/memo')
-let g:memolist_delimiter_yaml_start = '---'
-let g:memolist_delimiter_yaml_end  = '---'
-let g:memolist_memo_suffix = 'md'
-let g:memolist_template_dir_path = '$HOME/.dotfiles/etc/templates/memotemplates'
-nnoremap <Leader>mn  :<C-u>MemoNew<CR>
-nnoremap <Leader>mg  :<C-u>MemoGrep<CR>
-
-" clap-providor for memolit
-function! s:find_memo() abort
-  let l:memos = substitute(expand(g:memolist_path.'/*.md'), expand(g:memolist_path."/"), "", "g")
-  return split(l:memos, "\n")
-endfunction
-
-function! s:open_memo(selected) abort
-  execute ":edit ".expand(g:memolist_path.'/'.a:selected)
-endfunction
-
-let g:clap_provider_memo = {
-  \ 'source': function('s:find_memo') ,
-  \ 'sink': function('s:open_memo'),
-  \ }
-
-nnoremap <Leader>ml :<C-u>Clap memo<CR>
-
-" vim-easy-align
-vmap <Enter> <Plug>(EasyAlign)
 
 " }}}
 
