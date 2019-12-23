@@ -318,16 +318,19 @@ set wildmenu
 set display=lastline
 set laststatus=2
 set cursorline
-" set number
-" set relativenumber
 set wrap
 set list
-set listchars=tab:\ \ ,trail:-,eol:↲,extends:»,precedes:«,nbsp:%
+set listchars=tab:>-,trail:-,eol:↲,extends:»,precedes:«,nbsp:%
 set scrolloff=8
-set showtabline=0
-set synmaxcol=512
+set synmaxcol=256
 set showcmd
 set signcolumn=yes
+set noshowmode
+if has("gui_running")
+  set showtabline=2
+else
+  set showtabline=0
+endif
 
 " buffer
 set hidden
@@ -533,6 +536,7 @@ if executable('bash-language-server')
     \ 'cmd': {server_info->[&shell, &shellcmdflag, 'bash-language-server start']},
     \ 'whitelist': ['sh'],
     \ })
+  autocmd FileType sh call s:setup_lsp()
   augroup END
 endif
 
@@ -545,6 +549,7 @@ if executable('vim-language-server')
     \ 'cmd': {server_info->[&shell, &shellcmdflag, 'vim-language-server --stdio']},
     \ 'whitelist': ['vim'],
     \ })
+  autocmd FileType vim call s:setup_lsp()
   augroup END
 endif
 
@@ -677,18 +682,9 @@ vmap gx <Plug>(openbrowser-smart-search)
 
 " Other {{{
 
-" nerdtree
-let NERDTreeShowHidden=1
-let NERDTreeIgnore=['\.git$', '\.svn$', '\~$']
-nmap <silent><c-e> :<c-u>NERDTreeToggle<CR>
-
 " vim-signify
 noremap <silent> <C-y> :SignifyToggle<CR>
 let g:signify_vcs_list = [ 'git' ]
-
-" indentLine
-let g:loaded_indentLine = 1
-nnoremap <silent><c-d> :<c-u>IndentLinesToggle<CR>
 
 " vista.vim
 let g:vista_default_executive = 'vim_lsp'
@@ -698,7 +694,6 @@ let g:vista#renderer#enable_icon = 0
 
 " winresizer
 let g:winresizer_start_key = '<C-w>r'
-nnoremap <silent><C-w>r :<c-u>WinResizerStartResize<CR>
 
 " memolist
 let g:memolist_path = expand('~/memo')
@@ -711,12 +706,12 @@ nnoremap <Leader>mg  :<C-u>MemoGrep<CR>
 
 " clap-providor for memolit
 function! s:find_memo() abort
-  let l:memos = substitute(expand(g:memolist_path.'/*.md'), g:memolist_path."/", "", "g")
+  let l:memos = substitute(expand(g:memolist_path.'/*.md'), expand(g:memolist_path."/"), "", "g")
   return split(l:memos, "\n")
 endfunction
 
 function! s:open_memo(selected) abort
-  execute ":edit ".g:memolist_path.'/'.a:selected
+  execute ":edit ".expand(g:memolist_path.'/'.a:selected)
 endfunction
 
 let g:clap_provider_memo = {
