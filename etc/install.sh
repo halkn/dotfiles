@@ -62,9 +62,9 @@ done
 echo 'Complete for mkdir xdg directory'
 
 # vim plugin manager
-if [[ ! -e "$HOME/.vim/autoload/plug.vim" ]]; then
-curl -fLo ${HOME}/.vim/autoload/plug.vim --create-dirs \
-  https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+if [[ ! -e "$HOME/.vim/pack/minpac/opt/minpac" ]]; then
+git clone https://github.com/k-takata/minpac.git \
+    ~/.vim/pack/minpac/opt/minpac
 fi
 
 # go tools

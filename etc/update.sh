@@ -4,4 +4,4 @@
 brew upgrade
 
 # vim plugin
-vim -c PlugUpdate -c qa
+vim -c PackUpdate -c qa

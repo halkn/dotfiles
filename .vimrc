@@ -80,7 +80,7 @@ let s:opt_plugs_markdown = [
 if exists('*minpac#init')
 
   " load minpac.
-  packadd minpac call minpac#init()
+  call minpac#init()
   call minpac#add('k-takata/minpac', {'type': 'opt'})
 
   " load other plugins.
