@@ -463,7 +463,7 @@ if executable('vim-language-server')
   augroup END
 endif
 
-" efm ( markdown and vim )
+" efm ( markdown )
 if executable('efm-langserver')
   augroup vimrc-LspEFM
     au!
