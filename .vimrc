@@ -4,6 +4,9 @@
 set encoding=utf-8
 scriptencoding utf-8
 
+syntax enable
+filetype plugin indent on
+
 if has('vim_starting')
   " Use vertical bar cursor in Insert mode
   let &t_SI .= "\e[6 q"
@@ -15,122 +18,6 @@ endif
 
 " set reader
 let mapleader = "\<Space>"
-
-" }}}
-" ============================================================================
-" Plugin {{{
-
-" start_plugs {{{
-let s:start_plugs = [
-  \ ['halkn/tender.vim', {}],
-  \ ['itchyny/lightline.vim', {}],
-  \ ['sheerun/vim-polyglot', {}],
-  \ ['liuchengxu/vim-clap', {}], 
-  \ ['prabirshrestha/async.vim', {}],
-  \ ['prabirshrestha/vim-lsp', {}],
-  \ ]
-" }}}
-
-" opt_plugs_lazy {{{
-let s:opt_plugs_lazy = [
-  \ ['tpope/vim-fugitive', {'type': 'opt'}],
-  \ ['mhinz/vim-signify', {'type': 'opt'}],
-  \ ['prabirshrestha/asyncomplete.vim', {'type': 'opt'}],
-  \ ['prabirshrestha/asyncomplete-buffer.vim', {'type': 'opt'}],
-  \ ['prabirshrestha/asyncomplete-lsp.vim', {'type': 'opt'}],
-  \ ['cohama/lexima.vim', {'type': 'opt'}],
-  \ ['machakann/vim-sandwich', {'type': 'opt'}],
-  \ ['kana/vim-operator-user', {'type': 'opt'}],
-  \ ['kana/vim-operator-replace', {'type': 'opt'}],
-  \ ['tpope/vim-commentary', {'type': 'opt'}],
-  \ ['junegunn/vim-easy-align', {'type': 'opt'}],
-  \ ['simeji/winresizer', {'type': 'opt'}],
-  \ ['tyru/open-browser.vim', {'type': 'opt'}],
-  \ ['itchyny/calendar.vim', {'type': 'opt'}],
-  \ ['glidenote/memolist.vim', {'type': 'opt'}],
-  \ ['vim-jp/vimdoc-ja', {'type': 'opt'}],
-  \ ]
-" }}}
-
-" opt_plugs_dev {{{
-let s:opt_plugs_dev = [
-  \ ['Shougo/echodoc.vim', {'type': 'opt'}],
-  \ ['liuchengxu/vista.vim', {'type': 'opt'}],
-  \ ['mattn/sonictemplate-vim', {'type': 'opt'}],
-  \ ['thinca/vim-quickrun', {'type': 'opt'}],
-  \ ['janko/vim-test', {'type': 'opt'}],
-  \ ]
-" }}}
-
-" opt_plugs_go {{{
-let s:opt_plugs_go = [
-  \ ['mattn/vim-goimports', {'type': 'opt'}],
-  \ ['arp242/switchy.vim', {'type': 'opt'}],
-  \ ]
-" }}}
-
-" opt_plugs_markdown {{{
-let s:opt_plugs_markdown = [
-  \ ['previm/previm', {'type': 'opt'}],
-  \ ['dhruvasagar/vim-table-mode', {'type': 'opt'}],
-  \ ['mattn/vim-maketable', {'type': 'opt'}],
-  \ ]
-" }}}
-
-if exists('*minpac#init')
-
-  " load minpac.
-  call minpac#init()
-  call minpac#add('k-takata/minpac', {'type': 'opt'})
-
-  " load other plugins.
-  function! s:minpac_add(plugs)
-    for l:plug in a:plugs
-      exe 'call minpac#add("' . l:plug[0] . '", ' . string(l:plug[1]) . ')'
-    endfor
-  endfunction
-
-  call s:minpac_add(s:start_plugs)
-  call s:minpac_add(s:opt_plugs_lazy)
-  call s:minpac_add(s:opt_plugs_dev)
-  call s:minpac_add(s:opt_plugs_go)
-  call s:minpac_add(s:opt_plugs_markdown)
-
-endif
-
-" packloadall
-command! PackUpdate packadd minpac | source $MYVIMRC | call minpac#update('', {'do': 'call minpac#status()'})
-command! PackClean  packadd minpac | source $MYVIMRC | call minpac#clean()
-command! PackStatus packadd minpac | source $MYVIMRC | call minpac#status()
-
-function! s:minpac_lazy(plugs)
-  for l:plug in a:plugs
-    let l:name = split(l:plug[0], '/')[1]
-    exe 'packadd ' . l:name
-  endfor
-endfunction
-
-function! LazyLoad(timer)
-  for l:plug in s:opt_plugs_lazy
-    let l:name = split(l:plug[0], '/')[1]
-    exe 'packadd ' . l:name
-  endfor
-endfunction
-
-augroup lazy_load_bundle
-  au!
-  autocmd VimEnter * call timer_start(1, 'LazyLoad')
-augroup END
-
-augroup vimrc-ft-plugin
-  autocmd!
-  autocmd FileType sh,go,python call s:minpac_lazy(s:opt_plugs_dev)
-  autocmd BufNew,BufRead *.go call s:minpac_lazy(s:opt_plugs_go)
-  autocmd FileType markdown call s:minpac_lazy(s:opt_plugs_markdown)
-augroup END
-
-syntax enable
-filetype plugin indent on
 
 " }}}
 " ============================================================================
@@ -310,7 +197,7 @@ endif
 " ============================================================================
 " autocmd {{{
 " ============================================================================
-augroup vimrc-Filetype
+augroup vimrc-ft-indent
   autocmd!
   autocmd FileType gitcommit setlocal spell spelllang=cjk,en
   autocmd FileType git setlocal nofoldenable
@@ -335,8 +222,122 @@ augroup END
 
 " }}}
 " ============================================================================
+" Plugin {{{
+
+" Plugin Manager {{{
+
+" start_plugs {{{
+let s:start_plugs = [
+  \ ['halkn/tender.vim', {}],
+  \ ['itchyny/lightline.vim', {}],
+  \ ['sheerun/vim-polyglot', {}],
+  \ ['liuchengxu/vim-clap', {}], 
+  \ ['prabirshrestha/async.vim', {}],
+  \ ['prabirshrestha/vim-lsp', {}],
+  \ ]
+" }}}
+
+" opt_plugs_lazy {{{
+let s:opt_plugs_lazy = [
+  \ ['tpope/vim-fugitive', {'type': 'opt'}],
+  \ ['mhinz/vim-signify', {'type': 'opt'}],
+  \ ['prabirshrestha/asyncomplete.vim', {'type': 'opt'}],
+  \ ['prabirshrestha/asyncomplete-buffer.vim', {'type': 'opt'}],
+  \ ['prabirshrestha/asyncomplete-lsp.vim', {'type': 'opt'}],
+  \ ['cohama/lexima.vim', {'type': 'opt'}],
+  \ ['machakann/vim-sandwich', {'type': 'opt'}],
+  \ ['kana/vim-operator-user', {'type': 'opt'}],
+  \ ['kana/vim-operator-replace', {'type': 'opt'}],
+  \ ['tpope/vim-commentary', {'type': 'opt'}],
+  \ ['junegunn/vim-easy-align', {'type': 'opt'}],
+  \ ['simeji/winresizer', {'type': 'opt'}],
+  \ ['tyru/open-browser.vim', {'type': 'opt'}],
+  \ ['itchyny/calendar.vim', {'type': 'opt'}],
+  \ ['glidenote/memolist.vim', {'type': 'opt'}],
+  \ ['vim-jp/vimdoc-ja', {'type': 'opt'}],
+  \ ]
+" }}}
+
+" opt_plugs_dev {{{
+let s:opt_plugs_dev = [
+  \ ['Shougo/echodoc.vim', {'type': 'opt'}],
+  \ ['liuchengxu/vista.vim', {'type': 'opt'}],
+  \ ['mattn/sonictemplate-vim', {'type': 'opt'}],
+  \ ['thinca/vim-quickrun', {'type': 'opt'}],
+  \ ['janko/vim-test', {'type': 'opt'}],
+  \ ]
+" }}}
+
+" opt_plugs_go {{{
+let s:opt_plugs_go = [
+  \ ['mattn/vim-goimports', {'type': 'opt'}],
+  \ ['arp242/switchy.vim', {'type': 'opt'}],
+  \ ]
+" }}}
+
+" opt_plugs_markdown {{{
+let s:opt_plugs_markdown = [
+  \ ['previm/previm', {'type': 'opt'}],
+  \ ['dhruvasagar/vim-table-mode', {'type': 'opt'}],
+  \ ['mattn/vim-maketable', {'type': 'opt'}],
+  \ ]
+" }}}
+
+if exists('*minpac#init')
+
+  " load minpac.
+  call minpac#init()
+  call minpac#add('k-takata/minpac', {'type': 'opt'})
+
+  " load other plugins.
+  function! s:minpac_add(plugs)
+    for l:plug in a:plugs
+      exe 'call minpac#add("' . l:plug[0] . '", ' . string(l:plug[1]) . ')'
+    endfor
+  endfunction
+
+  call s:minpac_add(s:start_plugs)
+  call s:minpac_add(s:opt_plugs_lazy)
+  call s:minpac_add(s:opt_plugs_dev)
+  call s:minpac_add(s:opt_plugs_go)
+  call s:minpac_add(s:opt_plugs_markdown)
+
+endif
+
+" packloadall
+command! PackUpdate packadd minpac | source $MYVIMRC | call minpac#update('', {'do': 'call minpac#status()'})
+command! PackClean  packadd minpac | source $MYVIMRC | call minpac#clean()
+command! PackStatus packadd minpac | source $MYVIMRC | call minpac#status()
+
+function! s:minpac_lazy(plugs)
+  for l:plug in a:plugs
+    let l:name = split(l:plug[0], '/')[1]
+    exe 'packadd ' . l:name
+  endfor
+endfunction
+
+function! LazyLoad(timer)
+  for l:plug in s:opt_plugs_lazy
+    let l:name = split(l:plug[0], '/')[1]
+    exe 'packadd ' . l:name
+  endfor
+endfunction
+
+augroup lazy_load_bundle
+  au!
+  autocmd VimEnter * call timer_start(1, 'LazyLoad')
+augroup END
+
+augroup vimrc-ft-plugin
+  autocmd!
+  autocmd FileType sh,go,python call s:minpac_lazy(s:opt_plugs_dev)
+  autocmd BufNew,BufRead *.go call s:minpac_lazy(s:opt_plugs_go)
+  autocmd FileType markdown call s:minpac_lazy(s:opt_plugs_markdown)
+augroup END
+
+" }}}
+
 " Plugin setting {{{
-" ============================================================================
 
 " start_plugs {{{
 
@@ -664,6 +665,8 @@ augroup END
 
 " vim-table-mode
 let g:table_mode_corner = '|'
+
+" }}}
 
 " }}}
 
