@@ -74,6 +74,7 @@ export GO111MODULE=on
 
 # npm tools
 npm install -g bash-language-server
+npm install -g vim-language-server
 npm install -g markdownlint-cli
 
 exit 0
