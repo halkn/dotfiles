@@ -223,42 +223,44 @@ augroup END
 " }}}
 " ============================================================================
 " Plugin {{{
-
 " Plugin Manager {{{
 
-" start_plugs {{{
-let s:start_plugs = [
-  \ ['halkn/tender.vim', {}],
+" Plugin list {{{
+" start_layout
+let s:start_layout_plugs = [
+  \ ['halkn/tender.vim', {'type': 'opt'}],
   \ ['itchyny/lightline.vim', {}],
+  \ ['vim-jp/vimdoc-ja', {}],
   \ ['sheerun/vim-polyglot', {}],
+  \ ]
+" start_edit
+let s:start_edit_plugs = [
+  \ ['cohama/lexima.vim', {}],
+  \ ['tpope/vim-commentary', {}],
+  \ ['kana/vim-operator-user', {}],
+  \ ['kana/vim-operator-replace', {}],
+  \ ['machakann/vim-sandwich', {}],
+  \ ['junegunn/vim-easy-align', {}],
+  \ ]
+" start_util
+let s:start_util_plugs = [
   \ ['liuchengxu/vim-clap', {}], 
+  \ ['tpope/vim-fugitive', {}],
+  \ ['mhinz/vim-signify', {}],
+  \ ['simeji/winresizer', {}],
+  \ ['tyru/open-browser.vim', {}],
+  \ ['itchyny/calendar.vim', {}],
+  \ ['glidenote/memolist.vim', {}],
+  \ ]
+" start_lsp
+let s:start_lsp_plugs = [
   \ ['prabirshrestha/async.vim', {}],
   \ ['prabirshrestha/vim-lsp', {}],
+  \ ['prabirshrestha/asyncomplete.vim', {}],
+  \ ['prabirshrestha/asyncomplete-buffer.vim', {}],
+  \ ['prabirshrestha/asyncomplete-lsp.vim', {}],
   \ ]
-" }}}
-
-" opt_plugs_lazy {{{
-let s:opt_plugs_lazy = [
-  \ ['tpope/vim-fugitive', {'type': 'opt'}],
-  \ ['mhinz/vim-signify', {'type': 'opt'}],
-  \ ['prabirshrestha/asyncomplete.vim', {'type': 'opt'}],
-  \ ['prabirshrestha/asyncomplete-buffer.vim', {'type': 'opt'}],
-  \ ['prabirshrestha/asyncomplete-lsp.vim', {'type': 'opt'}],
-  \ ['cohama/lexima.vim', {'type': 'opt'}],
-  \ ['machakann/vim-sandwich', {'type': 'opt'}],
-  \ ['kana/vim-operator-user', {'type': 'opt'}],
-  \ ['kana/vim-operator-replace', {'type': 'opt'}],
-  \ ['tpope/vim-commentary', {'type': 'opt'}],
-  \ ['junegunn/vim-easy-align', {'type': 'opt'}],
-  \ ['simeji/winresizer', {'type': 'opt'}],
-  \ ['tyru/open-browser.vim', {'type': 'opt'}],
-  \ ['itchyny/calendar.vim', {'type': 'opt'}],
-  \ ['glidenote/memolist.vim', {'type': 'opt'}],
-  \ ['vim-jp/vimdoc-ja', {'type': 'opt'}],
-  \ ]
-" }}}
-
-" opt_plugs_dev {{{
+" opt_dev
 let s:opt_plugs_dev = [
   \ ['Shougo/echodoc.vim', {'type': 'opt'}],
   \ ['liuchengxu/vista.vim', {'type': 'opt'}],
@@ -266,16 +268,12 @@ let s:opt_plugs_dev = [
   \ ['thinca/vim-quickrun', {'type': 'opt'}],
   \ ['janko/vim-test', {'type': 'opt'}],
   \ ]
-" }}}
-
-" opt_plugs_go {{{
+" opt_go
 let s:opt_plugs_go = [
   \ ['mattn/vim-goimports', {'type': 'opt'}],
   \ ['arp242/switchy.vim', {'type': 'opt'}],
   \ ]
-" }}}
-
-" opt_plugs_markdown {{{
+" opt_markdown
 let s:opt_plugs_markdown = [
   \ ['previm/previm', {'type': 'opt'}],
   \ ['dhruvasagar/vim-table-mode', {'type': 'opt'}],
@@ -284,49 +282,39 @@ let s:opt_plugs_markdown = [
 " }}}
 
 if exists('*minpac#init')
-
   " load minpac.
   call minpac#init()
   call minpac#add('k-takata/minpac', {'type': 'opt'})
 
-  " load other plugins.
+  " function to load plugin.
   function! s:minpac_add(plugs)
     for l:plug in a:plugs
       exe 'call minpac#add("' . l:plug[0] . '", ' . string(l:plug[1]) . ')'
     endfor
   endfunction
 
-  call s:minpac_add(s:start_plugs)
-  call s:minpac_add(s:opt_plugs_lazy)
+  " load plugins
+  call s:minpac_add(s:start_layout_plugs)
+  call s:minpac_add(s:start_edit_plugs)
+  call s:minpac_add(s:start_util_plugs)
+  call s:minpac_add(s:start_lsp_plugs)
   call s:minpac_add(s:opt_plugs_dev)
   call s:minpac_add(s:opt_plugs_go)
   call s:minpac_add(s:opt_plugs_markdown)
-
 endif
 
-" packloadall
+" Define user commands for updating/cleaning the plugins.
 command! PackUpdate packadd minpac | source $MYVIMRC | call minpac#update('', {'do': 'call minpac#status()'})
 command! PackClean  packadd minpac | source $MYVIMRC | call minpac#clean()
 command! PackStatus packadd minpac | source $MYVIMRC | call minpac#status()
 
+" Lazy load
 function! s:minpac_lazy(plugs)
   for l:plug in a:plugs
     let l:name = split(l:plug[0], '/')[1]
     exe 'packadd ' . l:name
   endfor
 endfunction
-
-function! LazyLoad(timer)
-  for l:plug in s:opt_plugs_lazy
-    let l:name = split(l:plug[0], '/')[1]
-    exe 'packadd ' . l:name
-  endfor
-endfunction
-
-augroup lazy_load_bundle
-  au!
-  autocmd VimEnter * call timer_start(1, 'LazyLoad')
-augroup END
 
 augroup vimrc-ft-plugin
   autocmd!
@@ -336,12 +324,12 @@ augroup vimrc-ft-plugin
 augroup END
 
 " }}}
-
 " Plugin setting {{{
 
 " start_plugs {{{
 
-" colorscheme {{{
+" layout {{{
+" tender
 set background=dark
 if exists('&termguicolors')
   set termguicolors
@@ -349,17 +337,15 @@ if exists('&termguicolors')
   let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
 endif
 silent! colorscheme tender
-" }}}
 
-" lightline.vim {{{
+" lightline.vim
 let g:lightline = {
   \ 'colorscheme': 'wombat',
   \ 'separator': { 'left': "\ue0b0", 'right': "\ue0b2" },
   \ 'subseparator': { 'left': "\ue0b1", 'right': "\ue0b3" },
   \ }
-" }}}
 
-" vim-polyglot {{{
+" vim-polyglot
 let g:go_highlight_build_constraints = 1
 let g:go_highlight_extra_types = 1
 let g:go_highlight_fields = 1
@@ -370,7 +356,20 @@ let g:go_highlight_structs = 1
 let g:go_highlight_types = 1
 " }}}
 
-" vim-clap {{{
+" edit {{{
+" vim-commentary
+nmap <Leader>c gcc
+vmap <Leader>c gc
+
+" vim-operator-replace
+map R  <Plug>(operator-replace)
+
+" vim-easy-align
+vmap <Enter> <Plug>(EasyAlign)
+" }}}
+
+" util {{{
+" vim-clap
 let g:clap_default_external_filter = 'fzf'
 nnoremap <silent> <Leader>f :<C-u>Clap files --hidden<CR>
 nnoremap <silent> <Leader>b :<C-u>Clap buffers<CR>
@@ -378,10 +377,59 @@ nnoremap <silent> <Leader>l :<C-u>Clap blines<CR>
 nnoremap <silent> <Leader>G :<C-u>Clap grep --hidden<CR>
 nnoremap <silent> <Leader>q :<C-u>Clap quickfix<CR>
 nnoremap <silent> <Leader>L :<C-u>Clap<CR>
+
+" vim-fugitive
+nmap [fugitive] <Nop>
+map <Leader>g [fugitive]
+nnoremap <silent> [fugitive]s :<C-u>Gstatus<CR>
+nnoremap <silent> [fugitive]a :<C-u>Gwrite<CR>
+nnoremap <silent> [fugitive]c :<C-u>Gcommit<CR>
+nnoremap <silent> [fugitive]d :<C-u>Gdiff<CR>
+nnoremap <silent> [fugitive]b :<C-u>Gblame<CR>
+nnoremap <silent> [fugitive]l :<C-u>Glog<CR>
+
+" vim-signify
+noremap <silent> <C-y> :SignifyToggle<CR>
+let g:signify_vcs_list = [ 'git' ]
+
+" winresizer
+let g:winresizer_start_key = '<C-w>r'
+
+" open-browser
+nmap gx <Plug>(openbrowser-smart-search)
+vmap gx <Plug>(openbrowser-smart-search)
+
+" calender.vim
+let g:calendar_cache_directory = expand('$XDG_CACHE_HOME/calendar.vim')
+
+" memolist
+let g:memolist_path = expand('~/memo')
+let g:memolist_delimiter_yaml_start = '---'
+let g:memolist_delimiter_yaml_end  = '---'
+let g:memolist_memo_suffix = 'md'
+let g:memolist_template_dir_path = '$HOME/.dotfiles/etc/templates/memotemplates'
+nnoremap <Leader>mn :<C-u>MemoNew<CR>
+nnoremap <Leader>mg :<C-u>MemoGrep<CR>
+nnoremap <Leader>ml :<C-u>Clap memo<CR>
+
+" clap-providor for memolit
+function! s:find_memo() abort
+  let l:memos = substitute(expand(g:memolist_path.'/*.md'), expand(g:memolist_path."/"), "", "g")
+  return split(l:memos, "\n")
+endfunction
+
+function! s:open_memo(selected) abort
+  execute ":edit ".expand(g:memolist_path.'/'.a:selected)
+endfunction
+
+let g:clap_provider_memo = {
+  \ 'source': function('s:find_memo') ,
+  \ 'sink': function('s:open_memo'),
+  \ }
+
 " }}}
 
-" vim-lsp {{{
-
+" lsp {{{
 " Enable auto complete
 let g:lsp_async_completion = 1
 
@@ -492,32 +540,7 @@ endfunction
 " for asyncomplete.vim log
 " let g:asyncomplete_log_file = expand('~/asyncomplete.log')
 
-" }}}
-
-" }}}
-
-" opt_plugs_lazy {{{
-
-" Git {{{
-
-" vim-fugitive
-nmap [fugitive] <Nop>
-map <Leader>g [fugitive]
-nnoremap <silent> [fugitive]s :<C-u>Gstatus<CR>
-nnoremap <silent> [fugitive]a :<C-u>Gwrite<CR>
-nnoremap <silent> [fugitive]c :<C-u>Gcommit<CR>
-nnoremap <silent> [fugitive]d :<C-u>Gdiff<CR>
-nnoremap <silent> [fugitive]b :<C-u>Gblame<CR>
-nnoremap <silent> [fugitive]l :<C-u>Glog<CR>
-
-" vim-signify
-noremap <silent> <C-y> :SignifyToggle<CR>
-let g:signify_vcs_list = [ 'git' ]
-
-" }}}
-
-" autoComplete {{{
-
+" asyncomplete.vim
 let g:asyncomplete_auto_completeopt = 0
 augroup vimrc-AsyncompleteSetup
   autocmd User asyncomplete_setup call asyncomplete#register_source(asyncomplete#sources#buffer#get_source_options({
@@ -530,66 +553,11 @@ augroup vimrc-AsyncompleteSetup
     \  },
     \ }))
 augroup END
-
-" }}}
-
-" TextObj {{{
-
-" vim-operator-replace
-map R  <Plug>(operator-replace)
-
-" }}}
-
-" Util {{{
-
-" vim-commentary
-nmap <Leader>c gcc
-vmap <Leader>c gc
-
-" vim-easy-align
-vmap <Enter> <Plug>(EasyAlign)
-
-" winresizer
-let g:winresizer_start_key = '<C-w>r'
-
-" open-browser
-nmap gx <Plug>(openbrowser-smart-search)
-vmap gx <Plug>(openbrowser-smart-search)
-
-" calender.vim
-let g:calendar_cache_directory = expand('$XDG_CACHE_HOME')
-
-" memolist
-let g:memolist_path = expand('~/memo')
-let g:memolist_delimiter_yaml_start = '---'
-let g:memolist_delimiter_yaml_end  = '---'
-let g:memolist_memo_suffix = 'md'
-let g:memolist_template_dir_path = '$HOME/.dotfiles/etc/templates/memotemplates'
-nnoremap <Leader>mn :<C-u>MemoNew<CR>
-nnoremap <Leader>mg :<C-u>MemoGrep<CR>
-nnoremap <Leader>ml :<C-u>Clap memo<CR>
-
-" clap-providor for memolit
-function! s:find_memo() abort
-  let l:memos = substitute(expand(g:memolist_path.'/*.md'), expand(g:memolist_path."/"), "", "g")
-  return split(l:memos, "\n")
-endfunction
-
-function! s:open_memo(selected) abort
-  execute ":edit ".expand(g:memolist_path.'/'.a:selected)
-endfunction
-
-let g:clap_provider_memo = {
-  \ 'source': function('s:find_memo') ,
-  \ 'sink': function('s:open_memo'),
-  \ }
-
 " }}}
 
 " }}}
 
-" opt_plugs_dev {{{
-
+" opt_dev {{{
 " echodoc
 let g:echodoc#enable_at_startup = 1
 let g:echodoc#type = 'popup'
@@ -611,9 +579,7 @@ let g:quickrun_config = {
         \ 'outputter/error/error'   : 'quickfix',
     \ }
 \}
-
 command! -nargs=+ -complete=command Capture packadd vim-quickrun | QuickRun -type vim -src <q-args>
-
 " vim-test
 let g:test#preserve_screen = 1
 let test#strategy = "make_bang"
@@ -634,19 +600,16 @@ endfunction
 
 " }}}
 
-" opt_plugs_go {{{
-
+" opt_go {{{
 augroup vimrc-GoCommands
   au!
   autocmd FileType go nnoremap <buffer> <silent> <Leader>a :<C-u>call switchy#switch('edit', 'buf')<CR>
   autocmd Filetype go command! -bang A call switchy#switch('edit', 'buf')
   autocmd Filetype go command! -bang AS call switchy#switch('split', 'sbuf')
 augroup END
-
 " }}}
 
-" opt_plugs_markdown {{{
-
+" opt_markdown {{{
 let g:markdown_fenced_languages = [
   \ 'go',
   \ 'python',
@@ -665,10 +628,8 @@ augroup END
 
 " vim-table-mode
 let g:table_mode_corner = '|'
-
 " }}}
 
 " }}}
-
 " }}}
 " ============================================================================
