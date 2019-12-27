@@ -466,7 +466,7 @@ if executable('gopls')
     \   }
     \ },
     \ })
-  autocmd FileType go call s:setup_lsp()
+  " autocmd FileType go call s:setup_lsp()
   augroup END
 endif
 
@@ -483,8 +483,8 @@ if executable('pyls')
     \   }
     \ }
     \ })
-  autocmd FileType python call s:setup_lsp()
-  autocmd BufWritePre *.py LspDocumentFormatSync
+  " autocmd FileType python call s:setup_lsp()
+  " autocmd BufWritePre *.py LspDocumentFormatSync
   augroup END
 endif
 
@@ -497,7 +497,7 @@ if executable('bash-language-server')
     \ 'cmd': {server_info->[&shell, &shellcmdflag, 'bash-language-server start']},
     \ 'whitelist': ['sh'],
     \ })
-  autocmd FileType sh call s:setup_lsp()
+  " autocmd FileType sh call s:setup_lsp()
   augroup END
 endif
 
@@ -510,7 +510,7 @@ if executable('vim-language-server')
     \ 'cmd': {server_info->[&shell, &shellcmdflag, 'vim-language-server --stdio']},
     \ 'whitelist': ['vim'],
     \ })
-  autocmd FileType vim call s:setup_lsp()
+  " autocmd FileType vim call s:setup_lsp()
   augroup END
 endif
 
@@ -535,6 +535,12 @@ function! s:setup_lsp() abort
   nmap <silent> <buffer> <Leader>k <Plug>(lsp-peek-definition)
   nmap <silent> <buffer> <F2> <Plug>(lsp-rename)
 endfunction
+
+augroup vimrc-lsp-install
+    au!
+    " call s:on_lsp_buffer_enabled only for languages that has the server registered.
+    autocmd User lsp_buffer_enabled call s:setup_lsp()
+augroup END
 
 " Debugging
 "let g:lsp_log_verbose = 1
