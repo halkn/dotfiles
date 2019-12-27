@@ -134,7 +134,7 @@ set laststatus=2
 set cursorline
 set wrap
 set list
-set listchars=tab:>-,trail:-,eol:↲,extends:»,precedes:«,nbsp:%
+set listchars=tab:\ \ ,trail:-,eol:↲,extends:»,precedes:«,nbsp:%
 set scrolloff=8
 set synmaxcol=256
 set showcmd
@@ -229,6 +229,7 @@ augroup END
 " start_layout
 let s:start_layout_plugs = [
   \ ['halkn/tender.vim', {'type': 'opt'}],
+  \ ['sainnhe/edge', {}],
   \ ['itchyny/lightline.vim', {}],
   \ ['vim-jp/vimdoc-ja', {}],
   \ ['sheerun/vim-polyglot', {}],
@@ -336,11 +337,12 @@ if exists('&termguicolors')
   let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
   let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
 endif
-silent! colorscheme tender
+let g:edge_disable_italic_comment = 1
+silent! colorscheme edge
 
 " lightline.vim
 let g:lightline = {
-  \ 'colorscheme': 'wombat',
+  \ 'colorscheme': 'edge',
   \ 'separator': { 'left': "\ue0b0", 'right': "\ue0b2" },
   \ 'subseparator': { 'left': "\ue0b1", 'right': "\ue0b3" },
   \ }
