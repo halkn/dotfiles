@@ -310,24 +310,31 @@ command! PackClean  packadd minpac | source $MYVIMRC | call minpac#clean()
 command! PackStatus packadd minpac | source $MYVIMRC | call minpac#status()
 
 " Lazy load
-function! s:minpac_lazy(plugs)
+function! s:plug_lazyload(plugs)
   for l:plug in a:plugs
     let l:name = split(l:plug[0], '/')[1]
     exe 'packadd ' . l:name
   endfor
 endfunction
 
+function! s:plug_load_dev() abort
+  if exists('g:vimrc_loaded_dev_plug')
+    return
+  endif
+  let g:vimrc_loaded_dev_plug = 1
+  call s:plug_lazyload(s:opt_plugs_dev)
+endfunction
+
 augroup vimrc-ft-plugin
-  autocmd!
-  autocmd FileType sh,go,python call s:minpac_lazy(s:opt_plugs_dev)
-  autocmd BufNew,BufRead *.go call s:minpac_lazy(s:opt_plugs_go)
-  autocmd FileType markdown call s:minpac_lazy(s:opt_plugs_markdown)
+  au!
+  autocmd FileType sh,go,python call s:plug_load_dev()
+  autocmd BufNew,BufRead *.go ++once call s:plug_lazyload(s:opt_plugs_go)
+  autocmd FileType markdown ++once call s:plug_lazyload(s:opt_plugs_markdown)
 augroup END
 
 " }}}
-" Plugin setting {{{
 
-" start_plugs {{{
+" Plugin setting {{{
 
 " layout {{{
 " tender
@@ -563,8 +570,6 @@ augroup vimrc-AsyncompleteSetup
 augroup END
 " }}}
 
-" }}}
-
 " opt_dev {{{
 " echodoc
 let g:echodoc#enable_at_startup = 1
@@ -639,5 +644,6 @@ let g:table_mode_corner = '|'
 " }}}
 
 " }}}
+
 " }}}
 " ============================================================================
