@@ -223,7 +223,6 @@ augroup END
 " }}}
 " ============================================================================
 " Plugin {{{
-" Plugin Manager {{{
 
 " Plugin list {{{
 " start_layout
@@ -282,6 +281,7 @@ let s:opt_plugs_markdown = [
   \ ]
 " }}}
 
+" minpac {{{
 if exists('*minpac#init')
   " load minpac.
   call minpac#init()
@@ -310,31 +310,25 @@ command! PackClean  packadd minpac | source $MYVIMRC | call minpac#clean()
 command! PackStatus packadd minpac | source $MYVIMRC | call minpac#status()
 
 " Lazy load
-function! s:plug_lazyload(plugs)
+function! s:plug_lazyload(plugs, group)
   for l:plug in a:plugs
     let l:name = split(l:plug[0], '/')[1]
     exe 'packadd ' . l:name
+    let l:setup_func = substitute(substitute(l:name, '\.vim', '', 'g'), '-', '_', 'g')
+    if exists("*s:setup_plug_".l:setup_func)
+      exe 'call s:setup_plug_'.l:setup_func.'()'
+    endif
   endfor
+  exe 'au! vimrc-lazy-'.a:group
 endfunction
 
-function! s:plug_load_dev() abort
-  if exists('g:vimrc_loaded_dev_plug')
-    return
-  endif
-  let g:vimrc_loaded_dev_plug = 1
-  call s:plug_lazyload(s:opt_plugs_dev)
-endfunction
-
-augroup vimrc-ft-plugin
-  au!
-  autocmd FileType sh,go,python call s:plug_load_dev()
-  autocmd BufNew,BufRead *.go ++once call s:plug_lazyload(s:opt_plugs_go)
-  autocmd FileType markdown ++once call s:plug_lazyload(s:opt_plugs_markdown)
-augroup END
+augroup vimrc-lazy-dev | au! Filetype sh,go,python call s:plug_lazyload(s:opt_plugs_dev, 'dev') | augroup END
+augroup vimrc-lazy-go | au! BufNew,BufRead *.go call s:plug_lazyload(s:opt_plugs_go, 'go')| augroup END
+augroup vimrc-lazy-markdown | au! Filetype markdown call s:plug_lazyload(s:opt_plugs_markdown, 'markdown')| augroup END
 
 " }}}
 
-" Plugin setting {{{
+" settings {{{
 
 " layout {{{
 " tender
@@ -572,54 +566,57 @@ augroup END
 
 " opt_dev {{{
 " echodoc
-let g:echodoc#enable_at_startup = 1
-let g:echodoc#type = 'popup'
-highlight link EchoDocPopup Pmenu
+function! s:setup_plug_echodoc() abort
+  let g:echodoc#enable_at_startup = 1
+  let g:echodoc#type = 'popup'
+  highlight link EchoDocPopup Pmenu
+endfunction
 
 " vista.vim
-let g:vista_default_executive = 'vim_lsp'
-nnoremap <silent><c-t> :<c-u>Vista!!<CR>
-nnoremap <silent> <Leader>vf :<c-u>Vista finder vim_lsp<CR>
-let g:vista#renderer#enable_icon = 0
+function! s:setup_plug_vista() abort
+  let g:vista_default_executive = 'vim_lsp'
+  let g:vista#renderer#enable_icon = 0
+  nnoremap <silent> <c-t> :<c-u>Vista!!<CR>
+endfunction
 
 " quickrun.vim
-let g:quickrun_config = {}
-let g:quickrun_config = {
+function! s:setup_plug_vim_quickrun() abort
+  let g:quickrun_config = {}
+  let g:quickrun_config = {
     \ '_' : {
-        \ 'runner' : 'job',
-        \ 'outputter' : 'error',
-        \ 'outputter/error/success' : 'buffer',
-        \ 'outputter/error/error'   : 'quickfix',
+      \ 'runner' : 'job',
+      \ 'outputter' : 'error',
+      \ 'outputter/error/success' : 'buffer',
+      \ 'outputter/error/error'   : 'quickfix',
     \ }
-\}
+  \}
+endfunction
 command! -nargs=+ -complete=command Capture packadd vim-quickrun | QuickRun -type vim -src <q-args>
+
 " vim-test
-let g:test#preserve_screen = 1
-let test#strategy = "make_bang"
-
-augroup vimrc-TestCommand
-  au!
-  autocmd FileType go call s:setup_test_command()
-augroup END
-
-function! s:setup_test_command() abort
-  nnoremap <silent> <buffer> <Leader>t :<C-u>TestFile<CR>
-  nnoremap <silent> <buffer> TN :<C-u>TestNearest<CR>
-  nnoremap <silent> <buffer> TF :<C-u>TestFile<CR>
-  nnoremap <silent> <buffer> TS :<C-u>TestSuite<CR>
-  nnoremap <silent> <buffer> TL :<C-u>TestLast<CR>
-  nnoremap <silent> <buffer> TV :<C-u>TestVisit<CR>
+function! s:setup_plug_vim_test() abort
+  let g:test#preserve_screen = 1
+  let test#strategy = "make_bang"
+  nnoremap <silent> <Leader>t :<C-u>TestFile<CR>
+  nnoremap <silent> TN :<C-u>TestNearest<CR>
+  nnoremap <silent> TF :<C-u>TestFile<CR>
+  nnoremap <silent> TS :<C-u>TestSuite<CR>
+  nnoremap <silent> TL :<C-u>TestLast<CR>
+  nnoremap <silent> TV :<C-u>TestVisit<CR>
 endfunction
 
 " }}}
 
 " opt_go {{{
-augroup vimrc-GoCommands
-  au!
-  autocmd FileType go nnoremap <buffer> <silent> <Leader>a :<C-u>call switchy#switch('edit', 'buf')<CR>
-  autocmd Filetype go command! -bang A call switchy#switch('edit', 'buf')
-  autocmd Filetype go command! -bang AS call switchy#switch('split', 'sbuf')
-augroup END
+" switchy.vim
+function! s:setup_plug_switchy() abort
+  augroup vimrc-switchy
+    au!
+    autocmd FileType go nnoremap <buffer> <silent> <Leader>a :<C-u>call switchy#switch('edit', 'buf')<CR>
+    autocmd Filetype go command! -buffer -bang A call switchy#switch('edit', 'buf')
+    autocmd Filetype go command! -buffer -bang AS call switchy#switch('split', 'sbuf')
+  augroup END
+endfunction
 " }}}
 
 " opt_markdown {{{
@@ -631,16 +628,20 @@ let g:markdown_fenced_languages = [
   \ ]
 
 " previm
-let g:previm_disable_default_css = 1
-let g:previm_custom_css_path = '$HOME/.dotfiles/etc/templates/previm/markdown.css'
-augroup vimrc-Previm
-  autocmd!
-  autocmd FileType markdown nnoremap <buffer> <silent> <Leader>p :<C-u>PrevimOpen<CR>
-  autocmd FileType markdown nnoremap <buffer> <silent> <Leader>r :<C-u>call previm#refresh()<CR>
-augroup END
+function! s:setup_plug_previm() abort
+  let g:previm_disable_default_css = 1
+  let g:previm_custom_css_path = '$HOME/.dotfiles/etc/templates/previm/markdown.css'
+  augroup vimrc-Previm
+    au!
+    autocmd FileType markdown nnoremap <buffer> <silent> <Leader>p :<C-u>PrevimOpen<CR>
+    autocmd FileType markdown nnoremap <buffer> <silent> <Leader>r :<C-u>call previm#refresh()<CR>
+  augroup END
+endfunction
 
 " vim-table-mode
-let g:table_mode_corner = '|'
+function! s:setup_plug_vim_table_mode() abort
+  let g:table_mode_corner = '|'
+endfunction
 " }}}
 
 " }}}
