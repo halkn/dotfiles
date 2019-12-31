@@ -475,7 +475,6 @@ endfunction
 
 " efm-langserver ( markdown )
 function! s:setup_efm_langserver() abort
-  echo 'called efm'
   if executable('efm-langserver')
     call lsp#register_server({
       \ 'name': 'efm-langserver',
