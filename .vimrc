@@ -345,8 +345,8 @@ silent! colorscheme edge
 " lightline.vim
 let g:lightline = {
   \ 'colorscheme': 'edge',
-  \ 'separator': { 'left': "\ue0b0", 'right': "\ue0b2" },
-  \ 'subseparator': { 'left': "\ue0b1", 'right': "\ue0b3" },
+  \ 'separator': {'left': "\ue0b8", 'right': "\ue0be"},
+  \ 'subseparator': {'left': "\ue0b9", 'right': "\ue0b9"},
   \ }
 
 " vim-polyglot
