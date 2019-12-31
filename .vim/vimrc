@@ -16,6 +16,12 @@ if has('vim_starting')
   let &t_SR .= "\e[4 q"
 endif
 
+if $TMUX != ""
+" echo $HOME
+  let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
+  let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
+endif
+
 " Disable default plugin
 let g:loaded_gzip               = 1
 let g:loaded_tar                = 1
@@ -70,6 +76,10 @@ if has("gui_running")
   set showtabline=2
 else
   set showtabline=0
+endif
+set background=dark
+if exists('&termguicolors')
+  set termguicolors
 endif
 
 " buffer
@@ -246,7 +256,6 @@ augroup END
 " Plugin list {{{
 " start_layout
 let s:start_layout_plugs = [
-  \ ['halkn/tender.vim', {'type': 'opt'}],
   \ ['sainnhe/edge', {}],
   \ ['itchyny/lightline.vim', {}],
   \ ['vim-jp/vimdoc-ja', {}],
@@ -262,7 +271,7 @@ let s:start_edit_plugs = [
   \ ]
 " start_util
 let s:start_util_plugs = [
-  \ ['liuchengxu/vim-clap', {}], 
+  \ ['liuchengxu/vim-clap', {}],
   \ ['tpope/vim-fugitive', {}],
   \ ['mhinz/vim-signify', {}],
   \ ['simeji/winresizer', {}],
@@ -351,12 +360,6 @@ augroup vimrc-lazy-markdown | au! Filetype markdown call s:plug_lazyload(s:opt_p
 
 " layout {{{
 " tender
-set background=dark
-if exists('&termguicolors')
-  set termguicolors
-  let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
-  let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
-endif
 let g:edge_disable_italic_comment = 1
 silent! colorscheme edge
 
