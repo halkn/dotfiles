@@ -256,6 +256,7 @@ let s:start_util_plugs = [
 let s:start_lsp_plugs = [
   \ ['prabirshrestha/async.vim', {}],
   \ ['prabirshrestha/vim-lsp', {}],
+  \ ['mattn/vim-lsp-settings', {}],
   \ ['prabirshrestha/asyncomplete.vim', {}],
   \ ['prabirshrestha/asyncomplete-buffer.vim', {}],
   \ ['prabirshrestha/asyncomplete-lsp.vim', {}],
@@ -450,82 +451,18 @@ let g:lsp_signature_help_enabled = 0
 
 highlight clear LspWarningLine
 
-" golang
-if executable('gopls')
-  augroup vimrc-LspGo
-  au!
-  autocmd User lsp_setup call lsp#register_server({
-    \ 'name': 'gopls',
-    \ 'cmd': {server_info->['gopls', '-mode', 'stdio']},
-    \ 'whitelist': ['go'],
-    \ 'workspace_config': {'gopls': 
-    \   {
-    \     'hoverKind': 'SynopsisDocumentation',
-    \     'completeUnimported': v:true,
-    \     'usePlaceholders': v:true,
-    \     'staticcheck': v:true,
-    \   }
-    \ },
-    \ })
-  " autocmd FileType go call s:setup_lsp()
-  augroup END
-endif
-
-if executable('pyls')
-  augroup vimrc-LspPython
-  au!
-  autocmd User lsp_setup call lsp#register_server({
-    \ 'name': 'pyls',
-    \ 'cmd': {server_info->['pyls']},
-    \ 'whitelist': ['python'],
-    \ 'workspace_config': {'pyls':
-    \   {'plugins':
-    \     {'pydocstyle': {'enabled': v:true}}
-    \   }
-    \ }
-    \ })
-  " autocmd FileType python call s:setup_lsp()
-  " autocmd BufWritePre *.py LspDocumentFormatSync
-  augroup END
-endif
-
-" bash
-if executable('bash-language-server')
-  augroup vimrc-LspBash
-  au!
-  autocmd User lsp_setup call lsp#register_server({
-    \ 'name': 'bash-language-server',
-    \ 'cmd': {server_info->[&shell, &shellcmdflag, 'bash-language-server start']},
-    \ 'whitelist': ['sh'],
-    \ })
-  " autocmd FileType sh call s:setup_lsp()
-  augroup END
-endif
-
-" vim
-if executable('vim-language-server')
-  augroup vimrc-LspVim
-  au!
-  autocmd User lsp_setup call lsp#register_server({
-    \ 'name': 'vim-language-server',
-    \ 'cmd': {server_info->[&shell, &shellcmdflag, 'vim-language-server --stdio']},
-    \ 'whitelist': ['vim'],
-    \ })
-  " autocmd FileType vim call s:setup_lsp()
-  augroup END
-endif
-
-" efm ( markdown )
-if executable('efm-langserver')
-  augroup vimrc-LspEFM
-    au!
-    autocmd User lsp_setup call lsp#register_server({
-      \ 'name': 'efm-langserver-erb',
-      \ 'cmd': {server_info->['efm-langserver']},
-      \ 'whitelist': ['markdown'],
-      \ })
-  augroup END
-endif
+let g:lsp_settings = {
+  \ 'gopls': {
+  \   'workspace_config': { 'gopls':
+  \     {
+  \       'hoverKind': 'SynopsisDocumentation',
+  \       'completeUnimported': v:true,
+  \       'usePlaceholders': v:true,
+  \       'staticcheck': v:true,
+  \     }
+  \   }
+  \ }
+  \}
 
 function! s:setup_lsp() abort
   setlocal omnifunc=lsp#complete
@@ -537,17 +474,24 @@ function! s:setup_lsp() abort
   nmap <silent> <buffer> <F2> <Plug>(lsp-rename)
 endfunction
 
-augroup vimrc-lsp-install
-    au!
-    " call s:on_lsp_buffer_enabled only for languages that has the server registered.
-    autocmd User lsp_buffer_enabled call s:setup_lsp()
-augroup END
+" efm-langserver ( markdown )
+function! s:setup_efm_langserver() abort
+  echo 'called efm'
+  if executable('efm-langserver')
+    call lsp#register_server({
+      \ 'name': 'efm-langserver',
+      \ 'cmd': {server_info->['efm-langserver']},
+      \ 'whitelist': ['markdown'],
+      \ })
+  endif
+endfunction
 
-" Debugging
-"let g:lsp_log_verbose = 1
-"let g:lsp_log_file = expand('~/vim-lsp.log')
-" for asyncomplete.vim log
-" let g:asyncomplete_log_file = expand('~/asyncomplete.log')
+augroup vimrc-lsp-setup
+  au!
+  " call s:on_lsp_buffer_enabled only for languages that has the server registered.
+  autocmd User lsp_buffer_enabled call s:setup_lsp()
+  autocmd FileType markdown call s:setup_efm_langserver()
+augroup END
 
 " asyncomplete.vim
 let g:asyncomplete_auto_completeopt = 0
