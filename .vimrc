@@ -21,6 +21,98 @@ let mapleader = "\<Space>"
 
 " }}}
 " ============================================================================
+" options {{{
+" ============================================================================
+
+" Encoding
+set fileencodings=utf-8,cp932
+set fileformats=unix,dos,mac
+
+" Don't creat swap files
+set nobackup
+set noswapfile
+set noundofile
+
+" Appearance
+set wildmenu
+set display=lastline
+set laststatus=2
+set cursorline
+set wrap
+set list
+set listchars=tab:\ \ ,trail:-,eol:↲,extends:»,precedes:«,nbsp:%
+set scrolloff=8
+set synmaxcol=256
+set showcmd
+set signcolumn=yes
+set noshowmode
+if has("gui_running")
+  set showtabline=2
+else
+  set showtabline=0
+endif
+
+" buffer
+set hidden
+set switchbuf=useopen
+
+" edit
+set smarttab
+set expandtab
+set autoindent
+set shiftwidth=4
+set shiftround
+set tabstop=4
+set virtualedit=block,onemore
+set whichwrap=b,s,[,],<,>
+set backspace=indent,eol,start
+
+" window
+set splitbelow
+set splitright
+set winwidth=30
+set winheight=1
+set cmdwinheight=5
+set noequalalways
+
+" search
+set ignorecase
+set smartcase
+set incsearch
+set hlsearch
+
+" clipborad
+set clipboard=unnamed
+
+" Completion
+set completeopt=popup,menuone,noinsert,noselect
+
+" help
+set helplang=ja,en
+
+" vimfinfo
+set viminfo+='1000,n$XDG_CACHE_HOME/vim/viminfo
+
+" grep
+if executable('rg')
+  let &grepprg = 'rg --vimgrep --hidden'
+  set grepformat=%f:%l:%c:%m,%f:%l:%m
+endif
+
+" indent by FileType
+augroup vimrc-ft-indent
+  autocmd!
+  autocmd FileType gitcommit setlocal spell spelllang=cjk,en
+  autocmd FileType git setlocal nofoldenable
+  autocmd FileType text setlocal textwidth=0
+  autocmd FileType vim setlocal foldmethod=marker tabstop=2 shiftwidth=2
+  autocmd FileType sh setlocal tabstop=2 shiftwidth=2
+  autocmd FileType zsh setlocal tabstop=2 shiftwidth=2
+  autocmd FileType markdown setlocal tabstop=2 shiftwidth=2
+augroup END
+
+" }}}
+" ============================================================================
 " mapping {{{
 " ============================================================================
 
@@ -103,6 +195,12 @@ cnoreabbrev ++s ++enc=sjis
 nnoremap <silent> [q :<C-u>cprev<CR>
 nnoremap <silent> ]q :<C-u>cnext<CR>
 
+augroup vimrc-quickfix
+  autocmd!
+  autocmd Filetype qf nnoremap <silent> <buffer> p <CR>zz<C-w>p
+  autocmd Filetype qf nnoremap <silent> <buffer> q <C-w>c
+augroup END
+
 function! ToggleQuickfix()
     let l:nr = winnr('$')
     cwindow
@@ -113,112 +211,13 @@ function! ToggleQuickfix()
 endfunction
 nnoremap <script> <silent> Q :call ToggleQuickfix()<CR>
 
-" }}}
-" ============================================================================
-" options {{{
-" ============================================================================
-
-" Encoding
-set fileencodings=utf-8,cp932
-set fileformats=unix,dos,mac
-
-" Don't creat swap files
-set nobackup
-set noswapfile
-set noundofile
-
-" Appearance
-set wildmenu
-set display=lastline
-set laststatus=2
-set cursorline
-set wrap
-set list
-set listchars=tab:\ \ ,trail:-,eol:↲,extends:»,precedes:«,nbsp:%
-set scrolloff=8
-set synmaxcol=256
-set showcmd
-set signcolumn=yes
-set noshowmode
-if has("gui_running")
-  set showtabline=2
-else
-  set showtabline=0
-endif
-
-" buffer
-set hidden
-set switchbuf=useopen
-
-" edit
-set smarttab
-set expandtab
-set autoindent
-set shiftwidth=4
-set shiftround
-set tabstop=4
-set virtualedit=block,onemore
-set whichwrap=b,s,[,],<,>
-set backspace=indent,eol,start
-
-" window
-set splitbelow
-set splitright
-set winwidth=30
-set winheight=1
-set cmdwinheight=5
-set noequalalways
-
-" search
-set ignorecase
-set smartcase
-set incsearch
-set hlsearch
-
-" clipborad
-set clipboard=unnamed
-
-" Completion
-set completeopt=popup,menuone,noinsert,noselect
-
-" help
-set helplang=ja,en
-
-" vimfinfo
-set viminfo+='1000,n$XDG_CACHE_HOME/vim/viminfo
-
-" grep
-if executable('rg')
-  let &grepprg = 'rg --vimgrep --hidden'
-  set grepformat=%f:%l:%c:%m,%f:%l:%m
-endif
-
-" }}}
-" ============================================================================
-" autocmd {{{
-" ============================================================================
-augroup vimrc-ft-indent
-  autocmd!
-  autocmd FileType gitcommit setlocal spell spelllang=cjk,en
-  autocmd FileType git setlocal nofoldenable
-  autocmd FileType text setlocal textwidth=0
-  autocmd FileType vim setlocal foldmethod=marker tabstop=2 shiftwidth=2
-  autocmd FileType sh setlocal tabstop=2 shiftwidth=2
-  autocmd FileType zsh setlocal tabstop=2 shiftwidth=2
-  autocmd FileType markdown setlocal tabstop=2 shiftwidth=2
-augroup END
-
+" vim help
 augroup vimrc-help
   autocmd!
   autocmd FileType help wincmd L
   autocmd FileType help nnoremap <silent> <buffer> q <C-w>c
 augroup END
 
-augroup vimrc-quickfix
-  autocmd!
-  autocmd Filetype qf nnoremap <silent> <buffer> p <CR>zz<C-w>p
-  autocmd Filetype qf nnoremap <silent> <buffer> q <C-w>c
-augroup END
 
 " }}}
 " ============================================================================
