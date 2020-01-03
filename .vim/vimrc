@@ -302,6 +302,7 @@ let s:opt_plugs_go = [
   \ ]
 " opt_markdown
 let s:opt_plugs_markdown = [
+  \ ['plasticboy/vim-markdown', {'type': 'opt'}],
   \ ['previm/previm', {'type': 'opt'}],
   \ ['dhruvasagar/vim-table-mode', {'type': 'opt'}],
   \ ['mattn/vim-maketable', {'type': 'opt'}],
@@ -351,7 +352,7 @@ endfunction
 
 augroup vimrc-lazy-dev | au! Filetype sh,go,python call s:plug_lazyload(s:opt_plugs_dev, 'dev') | augroup END
 augroup vimrc-lazy-go | au! BufNew,BufRead *.go call s:plug_lazyload(s:opt_plugs_go, 'go')| augroup END
-augroup vimrc-lazy-markdown | au! Filetype markdown call s:plug_lazyload(s:opt_plugs_markdown, 'markdown')| augroup END
+augroup vimrc-lazy-markdown | au! BufNew,BufRead *.md call s:plug_lazyload(s:opt_plugs_markdown, 'markdown')| augroup END
 
 " }}}
 
@@ -585,12 +586,16 @@ endfunction
 " }}}
 
 " opt_markdown {{{
-let g:markdown_fenced_languages = [
-  \ 'go',
-  \ 'python',
-  \ 'vim',
-  \ 'sh',
-  \ ]
+" vim-markdown
+function! s:setup_plug_vim_markdown() abort
+  let g:vim_markdown_folding_disabled = 1
+  let g:vim_markdown_frontmatter = 1
+  let g:vim_markdown_conceal_code_blocks = 0
+  augroup vimrc-vim-markdown
+    au!
+    autocmd FileType markdown nnoremap <buffer> <silent> <C-t> :<C-u>Toc<CR>
+  augroup END
+endfunction
 
 " previm
 function! s:setup_plug_previm() abort
