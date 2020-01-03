@@ -169,6 +169,7 @@ alias zb='for i in $(seq 1 10); do time zsh -i -c exit; done'
 # vim
 alias v="vim"
 alias vi="vim"
+alias vb='for i in $(seq 1 10); do vim --startuptime ~/vim.log -c q; done && grep editing ~/vim.log && rm ~/vim.log'
 
 # dotfiles
 alias dot="cd $HOME/.dotfiles && $EDITOR"
