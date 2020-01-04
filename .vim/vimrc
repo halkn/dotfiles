@@ -278,10 +278,11 @@ let s:start_lsp_plugs = [
   \ ['prabirshrestha/asyncomplete.vim', {}],
   \ ['prabirshrestha/asyncomplete-buffer.vim', {}],
   \ ['prabirshrestha/asyncomplete-lsp.vim', {}],
+  \ ['hrsh7th/vim-vsnip', {}],
+  \ ['hrsh7th/vim-vsnip-integ', {}]
   \ ]
 " opt_dev
 let s:opt_plugs_dev = [
-  \ ['Shougo/echodoc.vim', {'type': 'opt'}],
   \ ['liuchengxu/vista.vim', {'type': 'opt'}],
   \ ['mattn/sonictemplate-vim', {'type': 'opt'}],
   \ ['thinca/vim-quickrun', {'type': 'opt'}],
@@ -507,16 +508,19 @@ augroup vimrc-AsyncompleteSetup
     \  },
     \ }))
 augroup END
+
+" vim-vsnip
+imap <expr> <C-j>   vsnip#available(1)  ? '<Plug>(vsnip-expand)'         : '<C-j>'
+imap <expr> <C-l>   vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : '<C-l>'
+smap <expr> <C-l>   vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : '<C-l>'
+imap <expr> <Tab>   vsnip#available(1)  ? '<Plug>(vsnip-jump-next)'      : '<Tab>'
+smap <expr> <Tab>   vsnip#available(1)  ? '<Plug>(vsnip-jump-next)'      : '<Tab>'
+imap <expr> <S-Tab> vsnip#available(-1) ? '<Plug>(vsnip-jump-prev)'      : '<S-Tab>'
+smap <expr> <S-Tab> vsnip#available(-1) ? '<Plug>(vsnip-jump-prev)'      : '<S-Tab>'
+
 " }}}
 
 " opt_dev {{{
-" echodoc
-function! s:setup_plug_echodoc() abort
-  let g:echodoc#enable_at_startup = 1
-  let g:echodoc#type = 'popup'
-  highlight link EchoDocPopup Pmenu
-endfunction
-
 " vista.vim
 function! s:setup_plug_vista() abort
   let g:vista_default_executive = 'vim_lsp'
