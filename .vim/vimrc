@@ -266,7 +266,6 @@ let s:start_edit_plugs = [
   \ ['kana/vim-operator-user', {}],
   \ ['kana/vim-operator-replace', {}],
   \ ['machakann/vim-sandwich', {}],
-  \ ['junegunn/vim-easy-align', {}],
   \ ]
 " start_util
 let s:start_util_plugs = [
@@ -275,7 +274,6 @@ let s:start_util_plugs = [
   \ ['mhinz/vim-signify', {}],
   \ ['simeji/winresizer', {}],
   \ ['tyru/open-browser.vim', {}],
-  \ ['itchyny/calendar.vim', {}],
   \ ['glidenote/memolist.vim', {}],
   \ ]
 " start_lsp
@@ -380,8 +378,6 @@ vmap <Leader>c gc
 " vim-operator-replace
 map R  <Plug>(operator-replace)
 
-" vim-easy-align
-vmap <Enter> <Plug>(EasyAlign)
 " }}}
 
 " util {{{
@@ -425,9 +421,6 @@ let g:winresizer_start_key = '<C-w>r'
 " open-browser
 nmap gx <Plug>(openbrowser-smart-search)
 vmap gx <Plug>(openbrowser-smart-search)
-
-" calender.vim
-let g:calendar_cache_directory = expand('$XDG_CACHE_HOME/calendar.vim')
 
 " memolist
 let g:memolist_path = expand('~/memo')
