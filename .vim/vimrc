@@ -253,22 +253,16 @@ augroup END
 " Plugin {{{
 
 " Plugin list {{{
-" start_layout
-let s:start_layout_plugs = [
+" start_plug
+let s:start_plugs = [
   \ ['sainnhe/edge', {}],
   \ ['itchyny/lightline.vim', {}],
   \ ['vim-jp/vimdoc-ja', {}],
-  \ ]
-" start_edit
-let s:start_edit_plugs = [
   \ ['cohama/lexima.vim', {}],
   \ ['tpope/vim-commentary', {}],
   \ ['kana/vim-operator-user', {}],
   \ ['kana/vim-operator-replace', {}],
   \ ['machakann/vim-sandwich', {}],
-  \ ]
-" start_util
-let s:start_util_plugs = [
   \ ['liuchengxu/vim-clap', {}],
   \ ['tpope/vim-fugitive', {}],
   \ ['mhinz/vim-signify', {}],
@@ -321,9 +315,7 @@ if exists('*minpac#init')
   endfunction
 
   " load plugins
-  call s:minpac_add(s:start_layout_plugs)
-  call s:minpac_add(s:start_edit_plugs)
-  call s:minpac_add(s:start_util_plugs)
+  call s:minpac_add(s:start_plugs)
   call s:minpac_add(s:start_lsp_plugs)
   call s:minpac_add(s:opt_plugs_dev)
   call s:minpac_add(s:opt_plugs_go)
@@ -356,7 +348,7 @@ augroup vimrc-lazy-markdown | au! BufNew,BufRead *.md call s:plug_lazyload(s:opt
 
 " settings {{{
 
-" layout {{{
+" start_plugs {{{
 " tender
 let g:edge_disable_italic_comment = 1
 silent! colorscheme edge
@@ -368,9 +360,6 @@ let g:lightline = {
   \ 'subseparator': {'left': "\ue0b9", 'right': "\ue0b9"},
   \ }
 
-" }}}
-
-" edit {{{
 " vim-commentary
 nmap <Leader>c gcc
 vmap <Leader>c gc
@@ -378,9 +367,6 @@ vmap <Leader>c gc
 " vim-operator-replace
 map R  <Plug>(operator-replace)
 
-" }}}
-
-" util {{{
 " vim-clap
 nnoremap <silent> <Leader>f :<C-u>Clap files --hidden<CR>
 nnoremap <silent> <Leader>b :<C-u>Clap buffers<CR>
