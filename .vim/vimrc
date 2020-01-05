@@ -254,7 +254,7 @@ augroup END
 
 " Plugin list {{{
 " start_plug
-let s:start_plugs = [
+let s:start_plugs_global = [
   \ ['sainnhe/edge', {}],
   \ ['itchyny/lightline.vim', {}],
   \ ['vim-jp/vimdoc-ja', {}],
@@ -271,7 +271,7 @@ let s:start_plugs = [
   \ ['glidenote/memolist.vim', {}],
   \ ]
 " start_lsp
-let s:start_lsp_plugs = [
+let s:start_plugs_lsp = [
   \ ['prabirshrestha/async.vim', {}],
   \ ['prabirshrestha/vim-lsp', {}],
   \ ['mattn/vim-lsp-settings', {}],
@@ -316,8 +316,8 @@ if exists('*minpac#init')
   endfunction
 
   " load plugins
-  call s:minpac_add(s:start_plugs)
-  call s:minpac_add(s:start_lsp_plugs)
+  call s:minpac_add(s:start_plugs_global)
+  call s:minpac_add(s:start_plugs_lsp)
   call s:minpac_add(s:opt_plugs_dev)
   call s:minpac_add(s:opt_plugs_go)
   call s:minpac_add(s:opt_plugs_markdown)
@@ -349,7 +349,7 @@ augroup vimrc-lazy-markdown | au! BufNew,BufRead *.md call s:plug_lazyload(s:opt
 
 " settings {{{
 
-" start_plugs {{{
+" start_plugs_global {{{
 " tender
 let g:edge_disable_italic_comment = 1
 silent! colorscheme edge
@@ -436,7 +436,7 @@ let g:clap_provider_memo = {
 
 " }}}
 
-" lsp {{{
+" start_plugs_lsp {{{
 " Enable auto complete
 let g:lsp_async_completion = 1
 
