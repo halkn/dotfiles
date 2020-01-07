@@ -369,7 +369,7 @@ vmap <Leader>c gc
 map R  <Plug>(operator-replace)
 
 " vim-clap
-nnoremap <silent> <Leader>f :<C-u>Clap files --hidden<CR>
+nnoremap <silent> <Leader>f :<C-u>Clap files --hidden .<CR>
 nnoremap <silent> <Leader>b :<C-u>Clap buffers<CR>
 nnoremap <silent> <Leader>l :<C-u>Clap blines<CR>
 nnoremap <silent> <Leader>G :<C-u>Clap grep --hidden<CR>
@@ -387,6 +387,9 @@ let g:clap_provider_ghq = {
   \ 'source': 'ghq list' ,
   \ 'sink': function('s:open_ghq'),
   \ }
+
+command! Ghq :Clap ghq
+nnoremap <silent> <Leader>R :<C-u>Clap ghq<CR>
 
 " vim-fugitive
 nmap [fugitive] <Nop>
