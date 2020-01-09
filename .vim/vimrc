@@ -206,7 +206,7 @@ nnoremap tt :<C-u>tabnew <BAR> terminal ++curwin<CR>
 nnoremap tw :<C-u>terminal ++curwin<CR>
 
 " Use <C-w>ESC to transition to terminal normal mode
-tnoremap <C-w><ESC> <C-w>N
+" tnoremap <C-w><ESC> <C-w>N
 
 " Toggle options
 nmap [Toggle] <Nop>
@@ -283,7 +283,7 @@ let s:start_plugs_lsp = [
   \ ]
 " opt_command
 let s:opt_plugs_command = [
-  \ ['lambdalisue/gina.vim', {'type': 'opt'}, 'Gina'],
+  \ ['lambdalisue/gina.vim', {'type': 'opt'}, {'cmd': 'Gina'} ],
   \ ]
 " opt_dev
 let s:opt_plugs_dev = [
@@ -307,194 +307,6 @@ let s:opt_plugs_markdown = [
 " }}}
 
 " settings {{{
-
-" start_plugs_global {{{
-" tender
-let g:edge_disable_italic_comment = 1
-silent! colorscheme edge
-
-" lightline.vim
-let g:lightline = {
-  \ 'colorscheme': 'edge',
-  \ 'separator': {'left': "\ue0b8", 'right': "\ue0be"},
-  \ 'subseparator': {'left': "\ue0b9", 'right': "\ue0b9"},
-  \ }
-
-" vim-commentary
-nmap <Leader>c gcc
-vmap <Leader>c gc
-
-" vim-operator-replace
-map R  <Plug>(operator-replace)
-
-" vim-clap
-nnoremap <silent> <Leader>f :<C-u>Clap files --hidden .<CR>
-nnoremap <silent> <Leader>b :<C-u>Clap buffers<CR>
-nnoremap <silent> <Leader>l :<C-u>Clap blines<CR>
-nnoremap <silent> <Leader>G :<C-u>Clap grep --hidden<CR>
-nnoremap <silent> <Leader>q :<C-u>Clap quickfix<CR>
-nnoremap <silent> <Leader>L :<C-u>Clap<CR>
-
-" clap-providor for ghq
-function! s:open_ghq(selected) abort
-  let l:dir = expand(substitute(system('ghq root'), '\n', '', 'g').'/'.a:selected)
-  execute ":cd ".l:dir
-  execute ":pwd"
-endfunction
-
-let g:clap_provider_ghq = {
-  \ 'source': 'ghq list' ,
-  \ 'sink': function('s:open_ghq'),
-  \ }
-
-command! Ghq :Clap ghq
-nnoremap <silent> <Leader>R :<C-u>Clap ghq<CR>
-
-" vim-signify
-noremap <silent> <C-y> :SignifyToggle<CR>
-let g:signify_vcs_list = [ 'git' ]
-
-" winresizer
-let g:winresizer_start_key = '<C-w>r'
-
-" open-browser
-nmap gx <Plug>(openbrowser-smart-search)
-vmap gx <Plug>(openbrowser-smart-search)
-
-" memolist
-let g:memolist_path = expand('~/memo')
-let g:memolist_delimiter_yaml_start = '---'
-let g:memolist_delimiter_yaml_end  = '---'
-let g:memolist_memo_suffix = 'md'
-let g:memolist_template_dir_path = '$HOME/.dotfiles/etc/templates/memotemplates'
-nnoremap <Leader>mn :<C-u>MemoNew<CR>
-nnoremap <Leader>mg :<C-u>MemoGrep<CR>
-nnoremap <Leader>ml :<C-u>Clap memo<CR>
-
-" clap-providor for memolit
-function! s:find_memo() abort
-  let l:memos = substitute(expand(g:memolist_path.'/*.md'), expand(g:memolist_path."/"), "", "g")
-  return split(l:memos, "\n")
-endfunction
-
-function! s:open_memo(selected) abort
-  execute ":edit ".expand(g:memolist_path.'/'.a:selected)
-endfunction
-
-let g:clap_provider_memo = {
-  \ 'source': function('s:find_memo') ,
-  \ 'sink': function('s:open_memo'),
-  \ }
-
-" }}}
-
-" start_plugs_lsp {{{
-" Enable auto complete
-let g:lsp_async_completion = 1
-
-" Enable Document diagnostics
-let g:lsp_diagnostics_enabled = 1
-let g:lsp_signs_enabled = 1
-let g:lsp_diagnostics_echo_cursor = 1
-let g:lsp_signs_error = {'text': '✗'}
-let g:lsp_signs_warning = {'text': '!!'}
-let g:lsp_signs_information = {'text': '●'}
-let g:lsp_signs_hint = {'text': '▲'}
-
-let g:lsp_settings = {
-  \ 'gopls': {
-  \   'workspace_config': { 'gopls':
-  \     {
-  \       'hoverKind': 'SynopsisDocumentation',
-  \       'completeUnimported': v:true,
-  \       'usePlaceholders': v:true,
-  \       'staticcheck': v:true,
-  \     }
-  \   }
-  \ }
-  \}
-
-function! s:setup_lsp() abort
-  setlocal omnifunc=lsp#complete
-  nmap <silent> <buffer> gd <Plug>(lsp-definition)
-  nmap <silent> <buffer> gy <Plug>(lsp-type-definition)
-  nmap <silent> <buffer> gr <Plug>(lsp-references)
-  nmap <silent> <buffer> K <Plug>(lsp-hover)
-  nmap <silent> <buffer> <Leader>k <Plug>(lsp-peek-definition)
-  nmap <silent> <buffer> <F2> <Plug>(lsp-rename)
-endfunction
-
-" efm-langserver ( markdown )
-function! s:setup_efm_langserver() abort
-  if executable('efm-langserver')
-    call lsp#register_server({
-      \ 'name': 'efm-langserver',
-      \ 'cmd': {server_info->['efm-langserver']},
-      \ 'whitelist': ['markdown'],
-      \ })
-  endif
-endfunction
-
-augroup vimrc-lsp-setup
-  au!
-  " call s:on_lsp_buffer_enabled only for languages that has the server registered.
-  autocmd User lsp_buffer_enabled call s:setup_lsp()
-  autocmd FileType markdown call s:setup_efm_langserver()
-augroup END
-
-" asyncomplete.vim
-let g:asyncomplete_auto_completeopt = 0
-augroup vimrc-AsyncompleteSetup
-  autocmd User asyncomplete_setup call asyncomplete#register_source(asyncomplete#sources#buffer#get_source_options({
-    \ 'name': 'buffer',
-    \ 'whitelist': ['*'],
-    \ 'blacklist': ['go','python'],
-    \ 'completor': function('asyncomplete#sources#buffer#completor'),
-    \ 'config': {
-    \  'max_buffer_size': 5000000,
-    \  },
-    \ }))
-augroup END
-
-" vim-vsnip
-imap <expr> <C-j>   vsnip#available(1)  ? '<Plug>(vsnip-expand)'         : '<C-j>'
-imap <expr> <C-l>   vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : '<C-l>'
-smap <expr> <C-l>   vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : '<C-l>'
-imap <expr> <Tab>   vsnip#available(1)  ? '<Plug>(vsnip-jump-next)'      : '<Tab>'
-smap <expr> <Tab>   vsnip#available(1)  ? '<Plug>(vsnip-jump-next)'      : '<Tab>'
-imap <expr> <S-Tab> vsnip#available(-1) ? '<Plug>(vsnip-jump-prev)'      : '<S-Tab>'
-smap <expr> <S-Tab> vsnip#available(-1) ? '<Plug>(vsnip-jump-prev)'      : '<S-Tab>'
-
-" }}}
-
-" opt_command {{{
-" gina.vim
-nmap [gina] <Nop>
-map <Leader>g [gina]
-nnoremap <silent> [gina]s :<C-u>Gina status<CR>
-nnoremap <silent> [gina]c :<C-u>Gina commit<CR>
-nnoremap <silent> [gina]d :<C-u>Gina compare<CR>
-nnoremap <silent> [gina]b :<C-u>Gina blame<CR>
-nnoremap <silent> [gina]l :<C-u>Gina log<CR>
-nnoremap <silent> [gina]L :<C-u>Gina log :%<CR>
-function! s:setup_plug_gina() abort
-call gina#custom#command#option(
-  \ 'status',
-  \ '-s|--short'
-  \)
-call gina#custom#action#alias(
-  \ '/\%(blame\|log\|reflog\)',
-  \ 'preview',
-  \ 'botright show:commit:preview',
-  \)
-call gina#custom#mapping#nmap(
-  \ '/\%(blame\|log\|reflog\)',
-  \ 'p',
-  \ ':<C-u>call gina#action#call(''preview'')<CR>',
-  \ {'noremap': 1, 'silent': 1}
-  \)
-endfunction
-" }}}
 
 " opt_dev {{{
 " vista.vim
@@ -602,22 +414,49 @@ command! PackUpdate packadd minpac | source $MYVIMRC | call minpac#update('', {'
 command! PackClean  packadd minpac | source $MYVIMRC | call minpac#clean()
 command! PackStatus packadd minpac | source $MYVIMRC | call minpac#status()
 
-" Lazy load on undefined command
-function! s:plug_lazyload_cmd(name) abort
-  exe 'packadd '.a:name
-  let l:setup_func = substitute(substitute(a:name, '\.vim', '', 'g'), '-', '_', 'g')
-  if exists("*s:setup_plug_".l:setup_func)
-    exe 'call s:setup_plug_'.l:setup_func.'()'
-  endif
+
+" Define function to setup a plugin
+let s:plug_config_dir = split(&packpath,',')[0] . '/rc.d/'
+function! s:setup_plugins(plugs) abort
+  for l:plug in a:plugs
+    let l:name = split(l:plug[0], '/')[1]
+    let l:lazy_type = get(l:plug, 2, {})
+    if l:lazy_type != {}
+      if has_key(l:lazy_type, 'cmd')
+        exe 'augroup vimrc-lazy-cmd-'.l:name
+        exe 'au!'
+        exe 'autocmd CmdUndefined '.l:lazy_type['cmd']." call s:plug_load_lazy('".l:name."')"
+        exe 'augroup END'
+      endif
+    endif
+    let l:setup_file = glob(s:plug_config_dir
+      \ .substitute(l:name, '\.vim', '', 'g')
+      \ .'.rc.vim'
+      \ )
+    if l:setup_file != ''
+      exe 'source '.l:setup_file
+    endif
+  endfor
 endfunction
 
-for s:opt_plug_cmd in s:opt_plugs_command
-  let s:plug_name = split(s:opt_plug_cmd[0], '/')[1]
-  exe 'augroup vimrc-lazy-cmd-'.s:plug_name
-  exe 'au!'
-  exe 'autocmd CmdUndefined '.s:opt_plug_cmd[2]." call s:plug_lazyload_cmd('".s:plug_name."')"
-  exe 'augroup END'
-endfor
+" Setup plugins
+call s:setup_plugins(s:start_plugs_global
+  \ + s:start_plugs_lsp
+  \ + s:opt_plugs_command
+  \ )
+
+" Lazy load plugin
+function! s:plug_load_lazy(name) abort
+  exe 'packadd '.a:name
+  let l:setup_file = glob(s:plug_config_dir
+    \ .'post.d/'
+    \ .substitute(a:name, '\.vim', '', 'g')
+    \ .'.rc.vim'
+    \ )
+  if l:setup_file != ''
+    exe 'source '.l:setup_file
+  endif
+endfunction
 
 " Lazy load
 function! s:plug_lazyload(plugs, group)
