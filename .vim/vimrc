@@ -312,14 +312,14 @@ if exists('*minpac#init')
   call minpac#init()
   call minpac#add('k-takata/minpac', {'type': 'opt'})
 
-  " function to load plugin.
+  " function to add plugin.
   function! s:minpac_add(plugs)
     for l:plug in a:plugs
       exe 'call minpac#add("' . l:plug[0] . '", ' . string(l:plug[1]) . ')'
     endfor
   endfunction
 
-  " load plugins
+  " add plugins
   call s:minpac_add(s:start_plugs_global)
   call s:minpac_add(s:start_plugs_lsp)
   call s:minpac_add(s:opt_plugs_command)
