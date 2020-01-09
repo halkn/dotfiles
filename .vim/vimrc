@@ -80,6 +80,7 @@ set background=dark
 if exists('&termguicolors')
   set termguicolors
 endif
+set diffopt^=vertical
 
 " buffer
 set hidden
@@ -264,7 +265,6 @@ let s:start_plugs_global = [
   \ ['kana/vim-operator-replace', {}],
   \ ['machakann/vim-sandwich', {}],
   \ ['liuchengxu/vim-clap', {}],
-  \ ['tpope/vim-fugitive', {}],
   \ ['mhinz/vim-signify', {}],
   \ ['simeji/winresizer', {}],
   \ ['tyru/open-browser.vim', {}],
@@ -280,6 +280,10 @@ let s:start_plugs_lsp = [
   \ ['prabirshrestha/asyncomplete-lsp.vim', {}],
   \ ['hrsh7th/vim-vsnip', {}],
   \ ['hrsh7th/vim-vsnip-integ', {}]
+  \ ]
+" opt_command
+let s:opt_plugs_command = [
+  \ ['lambdalisue/gina.vim', {'type': 'opt'}, 'Gina'],
   \ ]
 " opt_dev
 let s:opt_plugs_dev = [
@@ -318,6 +322,7 @@ if exists('*minpac#init')
   " load plugins
   call s:minpac_add(s:start_plugs_global)
   call s:minpac_add(s:start_plugs_lsp)
+  call s:minpac_add(s:opt_plugs_command)
   call s:minpac_add(s:opt_plugs_dev)
   call s:minpac_add(s:opt_plugs_go)
   call s:minpac_add(s:opt_plugs_markdown)
@@ -327,6 +332,23 @@ endif
 command! PackUpdate packadd minpac | source $MYVIMRC | call minpac#update('', {'do': 'call minpac#status()'})
 command! PackClean  packadd minpac | source $MYVIMRC | call minpac#clean()
 command! PackStatus packadd minpac | source $MYVIMRC | call minpac#status()
+
+" Lazy load on undefined command
+function! s:plug_lazyload_cmd(name) abort
+  exe 'packadd '.a:name
+  let l:setup_func = substitute(substitute(a:name, '\.vim', '', 'g'), '-', '_', 'g')
+  if exists("*s:setup_plug_".l:setup_func)
+    exe 'call s:setup_plug_'.l:setup_func.'()'
+  endif
+endfunction
+
+for s:opt_plug_cmd in s:opt_plugs_command
+  let s:plug_name = split(s:opt_plug_cmd[0], '/')[1]
+  exe 'augroup vimrc-lazy-cmd-'.s:plug_name
+  exe 'au!'
+  exe 'autocmd CmdUndefined '.s:opt_plug_cmd[2]." call s:plug_lazyload_cmd('".s:plug_name."')"
+  exe 'augroup END'
+endfor
 
 " Lazy load
 function! s:plug_lazyload(plugs, group)
@@ -390,16 +412,6 @@ let g:clap_provider_ghq = {
 
 command! Ghq :Clap ghq
 nnoremap <silent> <Leader>R :<C-u>Clap ghq<CR>
-
-" vim-fugitive
-nmap [fugitive] <Nop>
-map <Leader>g [fugitive]
-nnoremap <silent> [fugitive]s :<C-u>Gstatus<CR>
-nnoremap <silent> [fugitive]a :<C-u>Gwrite<CR>
-nnoremap <silent> [fugitive]c :<C-u>Gcommit<CR>
-nnoremap <silent> [fugitive]d :<C-u>Gdiff<CR>
-nnoremap <silent> [fugitive]b :<C-u>Gblame<CR>
-nnoremap <silent> [fugitive]l :<C-u>Glog<CR>
 
 " vim-signify
 noremap <silent> <C-y> :SignifyToggle<CR>
@@ -516,6 +528,35 @@ smap <expr> <Tab>   vsnip#available(1)  ? '<Plug>(vsnip-jump-next)'      : '<Tab
 imap <expr> <S-Tab> vsnip#available(-1) ? '<Plug>(vsnip-jump-prev)'      : '<S-Tab>'
 smap <expr> <S-Tab> vsnip#available(-1) ? '<Plug>(vsnip-jump-prev)'      : '<S-Tab>'
 
+" }}}
+
+" opt_command {{{
+" gina.vim
+nmap [gina] <Nop>
+map <Leader>g [gina]
+nnoremap <silent> [gina]s :<C-u>Gina status<CR>
+nnoremap <silent> [gina]c :<C-u>Gina commit<CR>
+nnoremap <silent> [gina]d :<C-u>Gina compare<CR>
+nnoremap <silent> [gina]b :<C-u>Gina blame<CR>
+nnoremap <silent> [gina]l :<C-u>Gina log<CR>
+nnoremap <silent> [gina]L :<C-u>Gina log :%<CR>
+function! s:setup_plug_gina() abort
+call gina#custom#command#option(
+  \ 'status',
+  \ '-s|--short'
+  \)
+call gina#custom#action#alias(
+  \ '/\%(blame\|log\|reflog\)',
+  \ 'preview',
+  \ 'botright show:commit:preview',
+  \)
+call gina#custom#mapping#nmap(
+  \ '/\%(blame\|log\|reflog\)',
+  \ 'p',
+  \ ':<C-u>call gina#action#call(''preview'')<CR>',
+  \ {'noremap': 1, 'silent': 1}
+  \)
+endfunction
 " }}}
 
 " opt_dev {{{
