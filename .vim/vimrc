@@ -306,69 +306,6 @@ let s:opt_plugs_markdown = [
   \ ]
 " }}}
 
-" minpac {{{
-if exists('*minpac#init')
-  " load minpac.
-  call minpac#init()
-  call minpac#add('k-takata/minpac', {'type': 'opt'})
-
-  " function to add plugin.
-  function! s:minpac_add(plugs)
-    for l:plug in a:plugs
-      exe 'call minpac#add("' . l:plug[0] . '", ' . string(l:plug[1]) . ')'
-    endfor
-  endfunction
-
-  " add plugins
-  call s:minpac_add(s:start_plugs_global)
-  call s:minpac_add(s:start_plugs_lsp)
-  call s:minpac_add(s:opt_plugs_command)
-  call s:minpac_add(s:opt_plugs_dev)
-  call s:minpac_add(s:opt_plugs_go)
-  call s:minpac_add(s:opt_plugs_markdown)
-endif
-
-" Define user commands for updating/cleaning the plugins.
-command! PackUpdate packadd minpac | source $MYVIMRC | call minpac#update('', {'do': 'call minpac#status()'})
-command! PackClean  packadd minpac | source $MYVIMRC | call minpac#clean()
-command! PackStatus packadd minpac | source $MYVIMRC | call minpac#status()
-
-" Lazy load on undefined command
-function! s:plug_lazyload_cmd(name) abort
-  exe 'packadd '.a:name
-  let l:setup_func = substitute(substitute(a:name, '\.vim', '', 'g'), '-', '_', 'g')
-  if exists("*s:setup_plug_".l:setup_func)
-    exe 'call s:setup_plug_'.l:setup_func.'()'
-  endif
-endfunction
-
-for s:opt_plug_cmd in s:opt_plugs_command
-  let s:plug_name = split(s:opt_plug_cmd[0], '/')[1]
-  exe 'augroup vimrc-lazy-cmd-'.s:plug_name
-  exe 'au!'
-  exe 'autocmd CmdUndefined '.s:opt_plug_cmd[2]." call s:plug_lazyload_cmd('".s:plug_name."')"
-  exe 'augroup END'
-endfor
-
-" Lazy load
-function! s:plug_lazyload(plugs, group)
-  for l:plug in a:plugs
-    let l:name = split(l:plug[0], '/')[1]
-    exe 'packadd ' . l:name
-    let l:setup_func = substitute(substitute(l:name, '\.vim', '', 'g'), '-', '_', 'g')
-    if exists("*s:setup_plug_".l:setup_func)
-      exe 'call s:setup_plug_'.l:setup_func.'()'
-    endif
-  endfor
-  exe 'au! vimrc-lazy-'.a:group
-endfunction
-
-augroup vimrc-lazy-dev | au! Filetype sh,go,python call s:plug_lazyload(s:opt_plugs_dev, 'dev') | augroup END
-augroup vimrc-lazy-go | au! BufNew,BufRead *.go call s:plug_lazyload(s:opt_plugs_go, 'go')| augroup END
-augroup vimrc-lazy-markdown | au! BufNew,BufRead *.md call s:plug_lazyload(s:opt_plugs_markdown, 'markdown')| augroup END
-
-" }}}
-
 " settings {{{
 
 " start_plugs_global {{{
@@ -635,6 +572,69 @@ function! s:setup_plug_vim_table_mode() abort
   let g:table_mode_corner = '|'
 endfunction
 " }}}
+
+" }}}
+
+" minpac {{{
+if exists('*minpac#init')
+  " load minpac.
+  call minpac#init()
+  call minpac#add('k-takata/minpac', {'type': 'opt'})
+
+  " function to add plugin.
+  function! s:minpac_add(plugs)
+    for l:plug in a:plugs
+      exe 'call minpac#add("' . l:plug[0] . '", ' . string(l:plug[1]) . ')'
+    endfor
+  endfunction
+
+  " add plugins
+  call s:minpac_add(s:start_plugs_global)
+  call s:minpac_add(s:start_plugs_lsp)
+  call s:minpac_add(s:opt_plugs_command)
+  call s:minpac_add(s:opt_plugs_dev)
+  call s:minpac_add(s:opt_plugs_go)
+  call s:minpac_add(s:opt_plugs_markdown)
+endif
+
+" Define user commands for updating/cleaning the plugins.
+command! PackUpdate packadd minpac | source $MYVIMRC | call minpac#update('', {'do': 'call minpac#status()'})
+command! PackClean  packadd minpac | source $MYVIMRC | call minpac#clean()
+command! PackStatus packadd minpac | source $MYVIMRC | call minpac#status()
+
+" Lazy load on undefined command
+function! s:plug_lazyload_cmd(name) abort
+  exe 'packadd '.a:name
+  let l:setup_func = substitute(substitute(a:name, '\.vim', '', 'g'), '-', '_', 'g')
+  if exists("*s:setup_plug_".l:setup_func)
+    exe 'call s:setup_plug_'.l:setup_func.'()'
+  endif
+endfunction
+
+for s:opt_plug_cmd in s:opt_plugs_command
+  let s:plug_name = split(s:opt_plug_cmd[0], '/')[1]
+  exe 'augroup vimrc-lazy-cmd-'.s:plug_name
+  exe 'au!'
+  exe 'autocmd CmdUndefined '.s:opt_plug_cmd[2]." call s:plug_lazyload_cmd('".s:plug_name."')"
+  exe 'augroup END'
+endfor
+
+" Lazy load
+function! s:plug_lazyload(plugs, group)
+  for l:plug in a:plugs
+    let l:name = split(l:plug[0], '/')[1]
+    exe 'packadd ' . l:name
+    let l:setup_func = substitute(substitute(l:name, '\.vim', '', 'g'), '-', '_', 'g')
+    if exists("*s:setup_plug_".l:setup_func)
+      exe 'call s:setup_plug_'.l:setup_func.'()'
+    endif
+  endfor
+  exe 'au! vimrc-lazy-'.a:group
+endfunction
+
+augroup vimrc-lazy-dev | au! Filetype sh,go,python call s:plug_lazyload(s:opt_plugs_dev, 'dev') | augroup END
+augroup vimrc-lazy-go | au! BufNew,BufRead *.go call s:plug_lazyload(s:opt_plugs_go, 'go')| augroup END
+augroup vimrc-lazy-markdown | au! BufNew,BufRead *.md call s:plug_lazyload(s:opt_plugs_markdown, 'markdown')| augroup END
 
 " }}}
 
