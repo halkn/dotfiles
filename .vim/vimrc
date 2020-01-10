@@ -254,7 +254,6 @@ augroup END
 " Plugin {{{
 
 " Plugin list {{{
-" start_plug
 let s:start_plugs_global = [
   \ ['sainnhe/edge', {}],
   \ ['itchyny/lightline.vim', {}],
@@ -270,7 +269,6 @@ let s:start_plugs_global = [
   \ ['tyru/open-browser.vim', {}],
   \ ['glidenote/memolist.vim', {}],
   \ ]
-" start_lsp
 let s:start_plugs_lsp = [
   \ ['prabirshrestha/async.vim', {}],
   \ ['prabirshrestha/vim-lsp', {}],
@@ -281,23 +279,19 @@ let s:start_plugs_lsp = [
   \ ['hrsh7th/vim-vsnip', {}],
   \ ['hrsh7th/vim-vsnip-integ', {}]
   \ ]
-" opt_command
 let s:opt_plugs_command = [
   \ ['lambdalisue/gina.vim', {'type': 'opt'}, {'cmd': 'Gina'} ],
   \ ]
-" opt_dev
 let s:opt_plugs_dev = [
   \ ['liuchengxu/vista.vim', {'type': 'opt'}],
   \ ['mattn/sonictemplate-vim', {'type': 'opt'}],
   \ ['thinca/vim-quickrun', {'type': 'opt'}],
   \ ['janko/vim-test', {'type': 'opt'}],
   \ ]
-" opt_go
 let s:opt_plugs_go = [
   \ ['mattn/vim-goimports', {'type': 'opt'}],
   \ ['arp242/switchy.vim', {'type': 'opt'}],
   \ ]
-" opt_markdown
 let s:opt_plugs_markdown = [
   \ ['plasticboy/vim-markdown', {'type': 'opt'}],
   \ ['previm/previm', {'type': 'opt'}],
@@ -401,19 +395,20 @@ if exists('*minpac#init')
   endfunction
 
   " add plugins
-  call s:minpac_add(s:start_plugs_global)
-  call s:minpac_add(s:start_plugs_lsp)
-  call s:minpac_add(s:opt_plugs_command)
-  call s:minpac_add(s:opt_plugs_dev)
-  call s:minpac_add(s:opt_plugs_go)
-  call s:minpac_add(s:opt_plugs_markdown)
+  call s:minpac_add([]
+    \ + s:start_plugs_global
+    \ + s:start_plugs_lsp
+    \ + s:opt_plugs_command
+    \ + s:opt_plugs_dev
+    \ + s:opt_plugs_go
+    \ + s:opt_plugs_markdown
+    \ )
 endif
 
 " Define user commands for updating/cleaning the plugins.
 command! PackUpdate packadd minpac | source $MYVIMRC | call minpac#update('', {'do': 'call minpac#status()'})
 command! PackClean  packadd minpac | source $MYVIMRC | call minpac#clean()
 command! PackStatus packadd minpac | source $MYVIMRC | call minpac#status()
-
 
 " Define function to setup a plugin
 let s:plug_config_dir = split(&packpath,',')[0] . '/rc.d/'
