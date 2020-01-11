@@ -123,6 +123,12 @@ set helplang=ja,en
 " vimfinfo
 set viminfo+='1000,n$XDG_CACHE_HOME/vim/viminfo
 
+" undo
+if has("persistent_undo")
+    set undodir=$XDG_CACHE_HOME/vim/.undodir
+    set undofile
+endif
+
 " grep
 if executable('rg')
   let &grepprg = 'rg --vimgrep --hidden'
@@ -269,6 +275,7 @@ let s:start_plugs_global = [
   \ ['simeji/winresizer', {}],
   \ ['tyru/open-browser.vim', {}],
   \ ['glidenote/memolist.vim', {}],
+  \ ['mbbill/undotree', {}],
   \ ]
 let s:start_plugs_lsp = [
   \ ['prabirshrestha/async.vim', {}],
