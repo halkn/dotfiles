@@ -264,6 +264,7 @@ let s:start_plugs_global = [
   \ ['kana/vim-operator-replace', {}],
   \ ['machakann/vim-sandwich', {}],
   \ ['liuchengxu/vim-clap', {}],
+  \ ['rhysd/git-messenger.vim', {}],
   \ ['mhinz/vim-signify', {}],
   \ ['simeji/winresizer', {}],
   \ ['tyru/open-browser.vim', {}],
@@ -278,9 +279,6 @@ let s:start_plugs_lsp = [
   \ ['prabirshrestha/asyncomplete-lsp.vim', {}],
   \ ['hrsh7th/vim-vsnip', {}],
   \ ['hrsh7th/vim-vsnip-integ', {}]
-  \ ]
-let s:opt_plugs_command = [
-  \ ['lambdalisue/gina.vim', {'type': 'opt'}, {'cmd': 'Gina'} ],
   \ ]
 let s:opt_plugs_dev = [
   \ ['liuchengxu/vista.vim', {'type': 'opt'}],
@@ -398,7 +396,6 @@ if exists('*minpac#init')
   call s:minpac_add([]
     \ + s:start_plugs_global
     \ + s:start_plugs_lsp
-    \ + s:opt_plugs_command
     \ + s:opt_plugs_dev
     \ + s:opt_plugs_go
     \ + s:opt_plugs_markdown
@@ -415,15 +412,6 @@ let s:plug_config_dir = split(&packpath,',')[0] . '/rc.d/'
 function! s:setup_plugins(plugs) abort
   for l:plug in a:plugs
     let l:name = split(l:plug[0], '/')[1]
-    let l:lazy_type = get(l:plug, 2, {})
-    if l:lazy_type != {}
-      if has_key(l:lazy_type, 'cmd')
-        exe 'augroup vimrc-lazy-cmd-'.l:name
-        exe 'au!'
-        exe 'autocmd CmdUndefined '.l:lazy_type['cmd']." call s:plug_load_lazy('".l:name."')"
-        exe 'augroup END'
-      endif
-    endif
     let l:setup_file = glob(s:plug_config_dir
       \ .substitute(l:name, '\.vim', '', 'g')
       \ .'.rc.vim'
@@ -437,21 +425,7 @@ endfunction
 " Setup plugins
 call s:setup_plugins(s:start_plugs_global
   \ + s:start_plugs_lsp
-  \ + s:opt_plugs_command
   \ )
-
-" Lazy load plugin
-function! s:plug_load_lazy(name) abort
-  exe 'packadd '.a:name
-  let l:setup_file = glob(s:plug_config_dir
-    \ .'post.d/'
-    \ .substitute(a:name, '\.vim', '', 'g')
-    \ .'.rc.vim'
-    \ )
-  if l:setup_file != ''
-    exe 'source '.l:setup_file
-  endif
-endfunction
 
 " Lazy load
 function! s:plug_lazyload(plugs, group)
