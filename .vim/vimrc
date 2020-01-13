@@ -302,75 +302,6 @@ let s:opt_plugs_markdown = [
   \ ]
 " }}}
 
-" settings {{{
-
-" opt_dev {{{
-" vista.vim
-function! s:setup_plug_vista() abort
-  let g:vista_default_executive = 'vim_lsp'
-  let g:vista#renderer#enable_icon = 0
-  nnoremap <silent> <c-t> :<c-u>Vista!!<CR>
-endfunction
-
-" quickrun.vim
-function! s:setup_plug_vim_quickrun() abort
-  let g:quickrun_config = {}
-  let g:quickrun_config = {
-    \ '_' : {
-      \ 'runner' : 'job',
-      \ 'outputter' : 'error',
-      \ 'outputter/error/success' : 'buffer',
-      \ 'outputter/error/error'   : 'quickfix',
-    \ }
-  \}
-endfunction
-command! -nargs=+ -complete=command Capture packadd vim-quickrun | QuickRun -type vim -src <q-args>
-
-" vim-test
-function! s:setup_plug_vim_test() abort
-  let g:test#preserve_screen = 1
-  let test#strategy = "make_bang"
-  nnoremap <silent> <Leader>t :<C-u>TestFile<CR>
-  nnoremap <silent> TN :<C-u>TestNearest<CR>
-  nnoremap <silent> TF :<C-u>TestFile<CR>
-  nnoremap <silent> TS :<C-u>TestSuite<CR>
-  nnoremap <silent> TL :<C-u>TestLast<CR>
-  nnoremap <silent> TV :<C-u>TestVisit<CR>
-endfunction
-
-" }}}
-
-" opt_markdown {{{
-" vim-markdown
-function! s:setup_plug_vim_markdown() abort
-  let g:vim_markdown_folding_disabled = 1
-  let g:vim_markdown_frontmatter = 1
-  let g:vim_markdown_conceal_code_blocks = 0
-  augroup vimrc-vim-markdown
-    au!
-    autocmd FileType markdown nnoremap <buffer> <silent> <C-t> :<C-u>Toc<CR>
-  augroup END
-endfunction
-
-" previm
-function! s:setup_plug_previm() abort
-  let g:previm_disable_default_css = 1
-  let g:previm_custom_css_path = '$HOME/.dotfiles/etc/templates/previm/markdown.css'
-  augroup vimrc-Previm
-    au!
-    autocmd FileType markdown nnoremap <buffer> <silent> <Leader>p :<C-u>PrevimOpen<CR>
-    autocmd FileType markdown nnoremap <buffer> <silent> <Leader>r :<C-u>call previm#refresh()<CR>
-  augroup END
-endfunction
-
-" vim-table-mode
-function! s:setup_plug_vim_table_mode() abort
-  let g:table_mode_corner = '|'
-endfunction
-" }}}
-
-" }}}
-
 " minpac {{{
 if exists('*minpac#init')
   " load minpac.
@@ -400,9 +331,13 @@ command! PackStatus packadd minpac | source $MYVIMRC | call minpac#status()
 
 " Define function to setup a plugin
 let s:plug_config_dir = split(&packpath,',')[0] . '/rc.d/'
-function! s:setup_plugins(plugs) abort
+function! s:setup_plugins(plugs, ...) abort
   for l:plug in a:plugs
     let l:name = split(l:plug[0], '/')[1]
+    let l:type = get(l:plug[1], 'type', 'start')
+    if l:type ==# 'opt'
+      exe 'packadd '.l:name
+    endif
     let l:setup_file = glob(s:plug_config_dir
       \ .substitute(l:name, '\.vim', '', 'g')
       \ .'.rc.vim'
@@ -411,28 +346,31 @@ function! s:setup_plugins(plugs) abort
       exe 'source '.l:setup_file
     endif
   endfor
+  if a:0 == 1 && a:1 != ''
+    echo a:1
+    exe 'au! ' . a:1
+  endif
 endfunction
 
 " Setup plugins
-call s:setup_plugins(s:start_plugs_global
+" For global plugins
+call s:setup_plugins([]
+  \ + s:start_plugs_global
   \ + s:start_plugs_lsp
   \ )
 
-" Lazy load
-function! s:plug_lazyload(plugs, group)
-  for l:plug in a:plugs
-    let l:name = split(l:plug[0], '/')[1]
-    exe 'packadd ' . l:name
-    let l:setup_func = substitute(substitute(l:name, '\.vim', '', 'g'), '-', '_', 'g')
-    if exists("*s:setup_plug_".l:setup_func)
-      exe 'call s:setup_plug_'.l:setup_func.'()'
-    endif
-  endfor
-  exe 'au! vimrc-lazy-'.a:group
-endfunction
+" For FileType plugins
+augroup vimrc-lazy-dev
+  au!
+  autocmd Filetype sh,go,python call s:setup_plugins(s:opt_plugs_dev, 'vimrc-lazy-dev')
+augroup END
+augroup vimrc-lazy-markdown
+  au!
+  autocmd BufNew,BufRead *.md call s:setup_plugins(s:opt_plugs_markdown, 'vimrc-lazy-markdown')
+augroup END
 
-augroup vimrc-lazy-dev | au! Filetype sh,go,python call s:plug_lazyload(s:opt_plugs_dev, 'dev') | augroup END
-augroup vimrc-lazy-markdown | au! BufNew,BufRead *.md call s:plug_lazyload(s:opt_plugs_markdown, 'markdown')| augroup END
+" Global command that use opt plugin.
+command! -nargs=+ -complete=command Capture packadd vim-quickrun | QuickRun -type vim -src <q-args>
 
 " }}}
 
