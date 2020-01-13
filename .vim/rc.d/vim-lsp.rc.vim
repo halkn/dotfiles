@@ -49,4 +49,6 @@ augroup vimrc-lsp-setup
   " call s:on_lsp_buffer_enabled only for languages that has the server registered.
   autocmd User lsp_buffer_enabled call s:setup_lsp()
   autocmd FileType markdown call s:setup_efm_langserver()
+  autocmd BufWritePre *.go  call execute('LspDocumentFormatSync') |
+    \ call execute('LspCodeActionSync source.organizeImports')
 augroup END
