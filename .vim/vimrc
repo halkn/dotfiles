@@ -347,7 +347,6 @@ function! s:setup_plugins(plugs, ...) abort
     endif
   endfor
   if a:0 == 1 && a:1 != ''
-    echo a:1
     exe 'au! ' . a:1
   endif
 endfunction

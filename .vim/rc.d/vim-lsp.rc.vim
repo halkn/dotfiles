@@ -10,19 +10,6 @@ let g:lsp_signs_warning = {'text': '!!'}
 let g:lsp_signs_information = {'text': '●'}
 let g:lsp_signs_hint = {'text': '▲'}
 
-let g:lsp_settings = {
-  \ 'gopls': {
-  \   'workspace_config': { 'gopls':
-  \     {
-  \       'hoverKind': 'SynopsisDocumentation',
-  \       'completeUnimported': v:true,
-  \       'usePlaceholders': v:true,
-  \       'staticcheck': v:true,
-  \     }
-  \   }
-  \ }
-  \}
-
 function! s:setup_lsp() abort
   setlocal omnifunc=lsp#complete
   nmap <silent> <buffer> gd <Plug>(lsp-definition)
@@ -42,13 +29,18 @@ function! s:setup_efm_langserver() abort
       \ 'whitelist': ['markdown'],
       \ })
   endif
+  exe 'augroup! vimrc-lsp-efm-langserver'
 endfunction
 
 augroup vimrc-lsp-setup
   au!
   " call s:on_lsp_buffer_enabled only for languages that has the server registered.
   autocmd User lsp_buffer_enabled call s:setup_lsp()
-  autocmd FileType markdown call s:setup_efm_langserver()
   autocmd BufWritePre *.go  call execute('LspDocumentFormatSync') |
     \ call execute('LspCodeActionSync source.organizeImports')
+augroup END
+
+augroup vimrc-lsp-efm-langserver
+  au!
+  autocmd FileType markdown call s:setup_efm_langserver()
 augroup END
