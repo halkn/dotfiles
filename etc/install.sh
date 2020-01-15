@@ -67,13 +67,10 @@ git clone https://github.com/k-takata/minpac.git \
 fi
 
 # go tools
-export GO111MODULE=off
-go get github.com/mattn/efm-langserver
-export GO111MODULE=on
+GO111MODULE=off go get -u golang.org/x/lint/golint
+GO111MODULE=off go get github.com/mattn/efm-langserver
 
 # npm tools
-npm install -g bash-language-server
-npm install -g vim-language-server
 npm install -g markdownlint-cli
 
 exit 0
