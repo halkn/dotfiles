@@ -180,6 +180,11 @@ if type bat > /dev/null 2>&1; then
   alias less="bat"
 fi
 
+# lazygit
+if type lazygit > /dev/null 2>&1; then
+  alias lg="lazygit"
+fi
+
 #####################################################################
 # options
 #####################################################################

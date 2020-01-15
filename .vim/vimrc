@@ -261,6 +261,16 @@ augroup END
 
 " }}}
 " ============================================================================
+" command {{{
+
+" lazygit
+if executable('lazygit')
+  command! Lazygit tabnew | terminal ++curwin ++close lazygit
+  nnoremap <silent> <Leader>gl :<C-u>Lazygit<CR>
+endif
+
+" }}}
+" ============================================================================
 " Plugin {{{
 
 " Plugin list {{{
