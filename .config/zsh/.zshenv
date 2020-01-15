@@ -45,15 +45,15 @@ export HOMEBREW_NO_INSTALL_CLEANUP=1
 # PATH
 typeset -U path
 path=(
-    /usr/local/opt/coreutils/libexec/gnubin(N-/)
-    /usr/local/bin
-    /usr/bin
-    /bin
-    /usr/sbin
-    /sbin
     $GOPATH/bin(N-/)
     $NODEBREW_ROOT/current/bin(N-/)
     $NPM_HOME/bin(N-/)
+    /usr/local/bin(N-/)
+    /usr/bin(N-/)
+    /bin(N-/)
+    /usr/local/sbin(N-/)
+    /usr/sbin(N-/)
+    /sbin(N-/)
     $path
 )
 
