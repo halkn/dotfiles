@@ -17,27 +17,12 @@ let g:clap_provider_ghq = {
   \ 'source': 'ghq list' ,
   \ 'sink': function('s:open_ghq'),
   \ }
-
 command! Ghq :Clap ghq
 nnoremap <silent> <Leader>R :<C-u>Clap ghq<CR>
 
 " clap-providor for memolist.vim
-function! s:find_memo() abort
-  let s:sep = &shellslash ? '/' : '\'
-  let l:memos = split(expand('$HOME/memo/*.md'), "\n")
-  let l:ret = []
-  for l:file in l:memos
-    call add(l:ret, fnamemodify(l:file, ':t'))
-  endfor
-  return l:ret
-endfunction
-
-function! s:open_memo(selected) abort
-  execute ":edit ". expand('$HOME/memo/'. a:selected)
-endfunction
-
 let g:clap_provider_memo = {
-  \ 'source': function('s:find_memo') ,
-  \ 'sink': function('s:open_memo'),
+  \ 'source': { -> map(split(expand('$HOME/memo/*.md'), "\n"), {_, val -> fnamemodify(val, ':t')}) },
+  \ 'sink': { a -> execute(':edit '. expand('$HOME/memo/'. a)) },
   \ }
 nnoremap <Leader>ml :<C-u>Clap memo<CR>
