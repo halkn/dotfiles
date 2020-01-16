@@ -461,6 +461,8 @@ fkill() {
 #####################################################################
 # Shell StartUp
 #####################################################################
+# Load local script
+[[ -f ${HOME}/.local.zsh ]] && source ${HOME}/.local.zsh
 # Start tmux
 [[ -z "$TMUX" && ! -z "$PS1" ]] && exec tmux -f "$XDG_CONFIG_HOME"/tmux/tmux.conf
 
