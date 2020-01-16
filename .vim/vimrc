@@ -275,7 +275,7 @@ endif
 
 " Plugin list {{{
 let s:start_plugs_global = [
-  \ ['sainnhe/edge', {}],
+  \ ['cocopon/iceberg.vim', {'type': 'opt'}],
   \ ['itchyny/lightline.vim', {}],
   \ ['vim-jp/vimdoc-ja', {}],
   \ ['cohama/lexima.vim', {}],
