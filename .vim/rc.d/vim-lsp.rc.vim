@@ -29,7 +29,7 @@ function! s:setup_efm_langserver() abort
       \ 'whitelist': ['markdown'],
       \ })
   endif
-  exe 'augroup! vimrc-lsp-efm-langserver'
+  exe 'au! vimrc-lsp-efm-langserver'
 endfunction
 
 augroup vimrc-lsp-setup
