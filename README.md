@@ -15,7 +15,7 @@ cd ~/.dotfiles/
 make list
 ```
 
-2. Make synbolic link  *<font color="DarkGray">(Ex. ~/.vimrc -> ~/.dotfiles/.vimrc)</font>*
+1. Make synbolic link  _(Ex. ~/.vimrc -> ~/.dotfiles/.vimrc)_
 
 ```sh
 make deploy
@@ -23,6 +23,5 @@ make deploy
 
 ## TODO
 
-- [ ] MultiOS support
-- [ ] Implementation to make init
-
+* [ ] MultiOS support
+* [ ] Implementation to make init
