@@ -313,7 +313,6 @@ let s:start_plugs_lsp = [
 let s:opt_plugs_dev = [
   \ ['kana/vim-altr', {'type': 'opt'}],
   \ ['liuchengxu/vista.vim', {'type': 'opt'}],
-  \ ['mattn/sonictemplate-vim', {'type': 'opt'}],
   \ ['thinca/vim-quickrun', {'type': 'opt'}],
   \ ['janko/vim-test', {'type': 'opt'}],
   \ ]
@@ -389,4 +388,5 @@ command! -nargs=+ -complete=command Capture packadd vim-quickrun | QuickRun -typ
 " }}}
 
 " }}}
+"
 " ============================================================================
