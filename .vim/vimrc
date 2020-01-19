@@ -7,7 +7,8 @@ scriptencoding utf-8
 syntax enable
 filetype plugin indent on
 
-let mapleader = "\<Space>"
+let g:mapleader = "\<Space>"
+let g:maplocalleader = ','
 
 if has('vim_starting')
   " Use vertical bar cursor in Insert mode
@@ -348,9 +349,6 @@ function! s:setup_plugins(plugs, ...) abort
   for l:plug in a:plugs
     let l:name = split(l:plug[0], '/')[1]
     let l:type = get(l:plug[1], 'type', 'start')
-    if l:type ==# 'opt'
-      exe 'packadd '.l:name
-    endif
     let l:setup_file = glob(
       \ g:my_config_dir . '/rc.d/'
       \ .substitute(l:name, '\.vim', '', 'g')
@@ -358,6 +356,9 @@ function! s:setup_plugins(plugs, ...) abort
       \ )
     if l:setup_file != ''
       exe 'source '.l:setup_file
+    endif
+    if l:type ==# 'opt'
+      exe 'packadd '.l:name
     endif
   endfor
   if a:0 == 1 && a:1 != ''
@@ -388,5 +389,4 @@ command! -nargs=+ -complete=command Capture packadd vim-quickrun | QuickRun -typ
 " }}}
 
 " }}}
-"
 " ============================================================================
