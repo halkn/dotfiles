@@ -264,6 +264,15 @@ augroup vimrc-ft-help
   autocmd FileType help nnoremap <silent> <buffer> q <C-w>c
 augroup END
 
+" markdown
+let g:markdown_fenced_languages = [
+\  'go',
+\  'sh',
+\  'json',
+\  'yaml',
+\  'java',
+\]
+
 " }}}
 " ============================================================================
 " command {{{
@@ -318,7 +327,6 @@ let s:opt_plugs_dev = [
   \ ['janko/vim-test', {'type': 'opt'}],
   \ ]
 let s:opt_plugs_markdown = [
-  \ ['plasticboy/vim-markdown', {'type': 'opt'}],
   \ ['previm/previm', {'type': 'opt'}],
   \ ['dhruvasagar/vim-table-mode', {'type': 'opt'}],
   \ ['mattn/vim-maketable', {'type': 'opt'}],
