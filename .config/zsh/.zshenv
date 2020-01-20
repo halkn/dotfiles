@@ -67,3 +67,6 @@ export FZF_DEFAULT_OPTS='--height 50% --layout=reverse --border'
 
 # ripgrep
 export RIPGREP_CONFIG_PATH=$XDG_CONFIG_HOME/ripgrep/config
+
+# Load local script
+[[ -f ${HOME}/.local.zshenv ]] && source ${HOME}/.local.zshenv
