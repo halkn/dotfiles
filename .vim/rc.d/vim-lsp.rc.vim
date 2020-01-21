@@ -20,13 +20,13 @@ function! s:setup_lsp() abort
   nmap <silent> <buffer> <F2> <Plug>(lsp-rename)
 endfunction
 
-" efm-langserver ( markdown )
+" efm-langserver
 function! s:setup_efm_langserver() abort
   if executable('efm-langserver')
     call lsp#register_server({
       \ 'name': 'efm-langserver',
       \ 'cmd': {server_info->['efm-langserver']},
-      \ 'whitelist': ['markdown'],
+      \ 'whitelist': ['go', 'markdown'],
       \ })
   endif
   exe 'au! vimrc-lsp-efm-langserver'
@@ -42,5 +42,5 @@ augroup END
 
 augroup vimrc-lsp-efm-langserver
   au!
-  autocmd FileType markdown call s:setup_efm_langserver()
+  autocmd FileType go,markdown call s:setup_efm_langserver()
 augroup END

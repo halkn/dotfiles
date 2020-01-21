@@ -384,17 +384,19 @@ call s:setup_plugins(s:start_plugs_global)
 " For FileType plugins
 augroup vimrc-lazy-lsp
   au!
-  autocmd Filetype go,sh,python,json,yaml,vim 
-    \  call s:lazy_load_plugins(s:start_plugs_lsp, &filetype, 'vimrc-lazy-lsp') |
-    \  call lsp#enable()
+  autocmd Filetype go,sh,python,json,yaml,vim,markdown
+    \ call s:lazy_load_plugins(s:start_plugs_lsp, &filetype, 'vimrc-lazy-lsp') |
+    \ call lsp#enable()
 augroup END
 augroup vimrc-lazy-dev
   au!
-  autocmd Filetype sh,go,python call s:lazy_load_plugins(s:opt_plugs_dev, &filetype, 'vimrc-lazy-dev')
+  autocmd Filetype sh,go,python 
+    \ call s:lazy_load_plugins(s:opt_plugs_dev, &filetype, 'vimrc-lazy-dev')
 augroup END
 augroup vimrc-lazy-markdown
   au!
-  autocmd Filetype markdown call s:lazy_load_plugins(s:opt_plugs_markdown, &filetype, 'vimrc-lazy-markdown')
+  autocmd Filetype markdown 
+    \ call s:lazy_load_plugins(s:opt_plugs_markdown, &filetype, 'vimrc-lazy-markdown')
 augroup END
 
 " Global command that use opt plugin.

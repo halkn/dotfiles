@@ -4,3 +4,8 @@ languages:
     lint-stdin: true
     lint-formats:
       - '%f:%l %m'
+  go:
+    lint-command: 'golint'
+    lint-ignore-exit-code: true
+    lint-formats:
+      - '%f:%l:%c: %m'
