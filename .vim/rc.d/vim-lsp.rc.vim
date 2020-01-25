@@ -17,8 +17,9 @@ function! s:setup_lsp() abort
   nmap <silent> <buffer> gy <Plug>(lsp-type-definition)
   nmap <silent> <buffer> gr <Plug>(lsp-references)
   nmap <silent> <buffer> K <Plug>(lsp-hover)
-  nmap <silent> <buffer> <Leader>k <Plug>(lsp-peek-definition)
+  nmap <silent> <buffer> <LocalLeader>k <Plug>(lsp-peek-definition)
   nmap <silent> <buffer> <F2> <Plug>(lsp-rename)
+  nmap <silent> <buffer> <LocalLeader>d <plug>(lsp-document-diagnostics)
 endfunction
 
 " efm-langserver
