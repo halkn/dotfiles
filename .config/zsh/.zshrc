@@ -365,7 +365,7 @@ gs() {
       --height='80%' \
       --preview "git diff --color=always -- {-1} | diff-so-fancy " \
       --preview-window='right:60%' \
-      --expect=ctrl-m,ctrl-d,ctrl-v \
+      --expect=ctrl-m,ctrl-d,ctrl-v,ctrl-p,space \
       --bind "ctrl-f:preview-page-down,ctrl-b:preview-page-up" \
       --bind "ctrl-o:toggle-preview" \
       --bind "q:abort"
@@ -384,6 +384,10 @@ gs() {
       git difftool $files
     elif [ "$key" = ctrl-v ]; then
       vim $files
+    elif [ "$key" = ctrl-p ]; then
+      git push
+    elif [ "$key" = space ]; then
+      tmux split-pane -v && tmux send-keys 'git commit ; exit' C-m
     fi
   done
 }
