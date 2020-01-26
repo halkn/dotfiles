@@ -306,7 +306,6 @@ let s:start_plugs_global = [
   \ ['rhysd/git-messenger.vim', {}],
   \ ['mhinz/vim-signify', {}],
   \ ['simeji/winresizer', {}],
-  \ ['tyru/open-browser.vim', {}],
   \ ['glidenote/memolist.vim', {}],
   \ ['mbbill/undotree', {}],
   \ ]
@@ -328,7 +327,7 @@ let s:opt_plugs_dev = [
 let s:opt_plugs_markdown = [
   \ ['previm/previm', {'type': 'opt'}],
   \ ['dhruvasagar/vim-table-mode', {'type': 'opt'}],
-  \ ['mattn/vim-maketable', {'type': 'opt'}],
+  \ ['tyru/open-browser.vim', {'type': 'opt'}],
   \ ]
 " }}}
 
