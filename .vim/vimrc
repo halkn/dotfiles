@@ -315,7 +315,6 @@ let s:start_plugs_lsp = [
   \ ['prabirshrestha/vim-lsp', {'type': 'opt'}],
   \ ['mattn/vim-lsp-settings', {'type': 'opt'}],
   \ ['prabirshrestha/asyncomplete.vim', {'type': 'opt'}],
-  \ ['prabirshrestha/asyncomplete-buffer.vim', {'type': 'opt'}],
   \ ['prabirshrestha/asyncomplete-lsp.vim', {'type': 'opt'}],
   \ ['hrsh7th/vim-vsnip', {'type': 'opt'}],
   \ ['hrsh7th/vim-vsnip-integ', {'type': 'opt'}]
@@ -384,7 +383,7 @@ call s:setup_plugins(s:start_plugs_global)
 " For FileType plugins
 augroup vimrc-lazy-lsp
   au!
-  autocmd Filetype go,sh,python,json,yaml,vim,markdown
+  autocmd Filetype go,sh,python,java,json,yaml,vim,markdown,dockerfile
     \ call s:lazy_load_plugins(s:start_plugs_lsp, &filetype, 'vimrc-lazy-lsp') |
     \ call lsp#enable()
 augroup END
