@@ -407,6 +407,37 @@ bua() {
 }
 
 # !!!!!!!!!!!!!!!!!!!!
+# gcloud
+# !!!!!!!!!!!!!!!!!!!!
+# Manage GKE container cluster
+# [g]cloud [c]ontainer cluster
+gc() {
+  local out cluster key n
+  out=$(
+    gcloud container clusters list |
+    fzf \
+      --ansi \
+      --multi \
+      --exit-0 \
+      --preview "gcloud container clusters describe {1} | bat -l yml" \
+      --expect=ctrl-m,ctrl-d,ctrl-y \
+      --bind "ctrl-f:preview-page-down,ctrl-b:preview-page-up" \
+      --bind "ctrl-o:toggle-preview" \
+      --bind "q:abort" \
+  )
+  key=$(head -1 <<< "$out")
+  n=$[$(wc -l <<< "$out") - 1]
+  cluster=(`echo $(tail "-$n" <<< "$out" | awk '{print $1}')`)
+  if [ "$key" = ctrl-m ]; then
+    gcloud container clusters describe "$cluster" | bat -l yml
+  elif [ "$key" = ctrl-d ]; then
+    gcloud container clusters delete "$cluster"
+  elif [ "$key" = ctrl-y ]; then
+    echo -n "$cluster" | pbcopy && echo "cluster name [$cluster] copied to clipboard." 
+  fi
+}
+
+# !!!!!!!!!!!!!!!!!!!!
 # Others
 # !!!!!!!!!!!!!!!!!!!!
 
