@@ -14,46 +14,46 @@ umask 022
 stty -ixon
 
 #####################################################################
-# zplugin
+# zinit
 #####################################################################
 # Customizing Paths
-declare -A ZPLGM
-ZPLGM[HOME_DIR]=${XDG_DATA_HOME:-$HOME/.local/share}/zplugin
-ZPLGM[BIN_DIR]=${ZPLGM[HOME_DIR]}/bin
-ZPLGM[PLUGINS_DIR]=${ZPLGM[HOME_DIR]}/plugins
-ZPLGM[COMPLETIONS_DIR]=${ZPLGM[HOME_DIR]}/completions
-ZPLGM[SNIPPETS_DIR]=${ZPLGM[HOME_DIR]}/snippets
-ZPLGM[SERVICES_DIR]=${ZPLGM[HOME_DIR]}/services
-ZPLGM[ZCOMPDUMP_PATH]=$XDG_CACHE_HOME/zsh/.zcompdump
+declare -A ZINIT
+ZINIT[HOME_DIR]=${XDG_DATA_HOME:-$HOME/.local/share}/zinit
+ZINIT[BIN_DIR]=${ZINIT[HOME_DIR]}/bin
+ZINIT[PLUGINS_DIR]=${ZINIT[HOME_DIR]}/plugins
+ZINIT[COMPLETIONS_DIR]=${ZINIT[HOME_DIR]}/completions
+ZINIT[SNIPPETS_DIR]=${ZINIT[HOME_DIR]}/snippets
+ZINIT[SERVICES_DIR]=${ZINIT[HOME_DIR]}/services
+ZINIT[ZCOMPDUMP_PATH]=$XDG_CACHE_HOME/zsh/.zcompdump
 
-# Instaling zplugin
-if [ ! -d ${ZPLGM[HOME_DIR]} ]; then
-  mkdir -p ${ZPLGM[HOME_DIR]}
-  git clone https://github.com/zdharma/zplugin ${ZPLGM[BIN_DIR]}
+# Instaling zinit
+if [ ! -d ${ZINIT[HOME_DIR]} ]; then
+  mkdir -p ${ZINIT[HOME_DIR]}
+  git clone https://github.com/zdharma/zinit ${ZINIT[BIN_DIR]}
 fi
 
 # Initialize
-source ${ZPLGM[HOME_DIR]}/bin/zplugin.zsh
-autoload -Uz _zplugin
-(( ${+_comps} )) && _comps[zplugin]=_zplugin
+source ${ZINIT[HOME_DIR]}/bin/zinit.zsh
+autoload -Uz _zinit
+(( ${+_comps} )) && _comps[zinit]=_zinit
 
 ## load plugins
-zplugin ice wait"0" blockf
-zplugin light zsh-users/zsh-completions
+zinit ice wait"0" blockf
+zinit light zsh-users/zsh-completions
 
-zplugin ice wait"0" atload"_zsh_autosuggest_start"
-zplugin light zsh-users/zsh-autosuggestions
+zinit ice wait"0" atload"_zsh_autosuggest_start"
+zinit light zsh-users/zsh-autosuggestions
 
-zplugin ice wait"0" atinit"zpcompinit; zpcdreplay"
-zplugin light zdharma/fast-syntax-highlighting
+zinit ice wait"0" atinit"zpcompinit; zpcdreplay"
+zinit light zdharma/fast-syntax-highlighting
 
 # prompt
-zplugin ice pick"async.zsh" src"pure.zsh"
-zplugin light sindresorhus/pure
+zinit ice pick"async.zsh" src"pure.zsh"
+zinit light sindresorhus/pure
 
 # add complection
-zplugin ice as"completion"
-zplugin snippet https://github.com/docker/cli/blob/master/contrib/completion/zsh/_docker
+zinit ice as"completion"
+zinit snippet https://github.com/docker/cli/blob/master/contrib/completion/zsh/_docker
 
 #####################################################################
 # Keybind
