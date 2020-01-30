@@ -20,10 +20,3 @@ let g:clap_provider_ghq = {
   \ }
 command! Ghq :Clap ghq
 nnoremap <silent> <Leader>R :<C-u>Clap ghq<CR>
-
-" clap-providor for memolist.vim
-let g:clap_provider_memo = {
-  \ 'source': { -> map(split(expand('$HOME/memo/*.md'), "\n"), {_, val -> fnamemodify(val, ':t')}) },
-  \ 'sink': { a -> execute(':edit '. expand('$HOME/memo/'. a)) },
-  \ }
-nnoremap <Leader>ml :<C-u>Clap memo<CR>
