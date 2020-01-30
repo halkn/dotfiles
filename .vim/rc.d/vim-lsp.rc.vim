@@ -28,4 +28,5 @@ augroup vimrc-lsp-setup
   autocmd User lsp_buffer_enabled call s:setup_lsp()
   autocmd BufWritePre *.go  call execute('LspDocumentFormatSync') |
     \ call execute('LspCodeActionSync source.organizeImports')
+  autocmd BufWrite *.json call execute('LspDocumentFormatSync')
 augroup END

@@ -11,7 +11,7 @@ let g:lsp_settings = {
   \ },
   \ 'efm-langserver': {
   \   'disabled': 0,
-  \   'whitelist': ['go', 'markdown']
+  \   'whitelist': ['go', 'markdown', 'json']
   \ }
   \}
 

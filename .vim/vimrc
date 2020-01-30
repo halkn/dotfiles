@@ -283,11 +283,6 @@ if executable('lazygit')
   nnoremap <silent> <Leader>gl :<C-u>Lazygit<CR>
 endif
 
-" jq
-if executable('jq')
-  command! Jq %!jq '.'
-endif
-
 " }}}
 " ============================================================================
 " Plugin {{{

@@ -9,3 +9,5 @@ languages:
     lint-ignore-exit-code: true
     lint-formats:
       - '%f:%l:%c: %m'
+  json:
+    format-command: 'jq .'
