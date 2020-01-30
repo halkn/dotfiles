@@ -8,6 +8,10 @@ let g:lsp_settings = {
   \       'staticcheck': v:true,
   \     }
   \   }
+  \ },
+  \ 'efm-langserver': {
+  \   'disabled': 0,
+  \   'whitelist': ['go', 'markdown']
   \ }
   \}
 

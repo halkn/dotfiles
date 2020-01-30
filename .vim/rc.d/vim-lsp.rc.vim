@@ -22,27 +22,10 @@ function! s:setup_lsp() abort
   nmap <silent> <buffer> <LocalLeader>d <plug>(lsp-document-diagnostics)
 endfunction
 
-" efm-langserver
-function! s:setup_efm_langserver() abort
-  if executable('efm-langserver')
-    call lsp#register_server({
-      \ 'name': 'efm-langserver',
-      \ 'cmd': {server_info->['efm-langserver']},
-      \ 'whitelist': ['go', 'markdown'],
-      \ })
-  endif
-  exe 'au! vimrc-lsp-efm-langserver'
-endfunction
-
 augroup vimrc-lsp-setup
   au!
   " call s:on_lsp_buffer_enabled only for languages that has the server registered.
   autocmd User lsp_buffer_enabled call s:setup_lsp()
   autocmd BufWritePre *.go  call execute('LspDocumentFormatSync') |
     \ call execute('LspCodeActionSync source.organizeImports')
-augroup END
-
-augroup vimrc-lsp-efm-langserver
-  au!
-  autocmd FileType go,markdown call s:setup_efm_langserver()
 augroup END
