@@ -17,7 +17,7 @@ deploy:
 	@echo ''
 	@echo '==> End to deploy dotfiles to home directory.'
 
-init:
+install:
 	@echo '==> Start to Initialize'
 	@echo ''
 	@DOTPATH=$(ROOT_PATH) bash $(ROOT_PATH)/etc/install.sh

@@ -1,6 +1,22 @@
 #!/bin/bash
 
-# brew install
+# Check install condition
+if [[ -z ${XDG_CACHE_HOME}  ]]; then
+  echo "XDG_CACHE_HOME is not defined"
+  exit 1
+fi
+
+if [[ -z ${XDG_DATA_HOME} ]]; then
+  echo "XDG_DATA_HOME is not defined"
+  exit 1
+fi
+
+if [[ ! -x /usr/local/bin/brew ]]; then
+  echo "homebrew is not installed"
+  exit 1
+fi
+
+echo 'Start for Homebrew app installation'
 declare -a BREW_APPS=(
   "bat"
   "diff-so-fancy"
@@ -25,52 +41,37 @@ for brew_app in ${BREW_APPS[@]}; do
   $(brew leaves | grep -x ${brew_app} 2>&1 > /dev/null) || brew_install_result=$?
   if [[ ! "$brew_install_result" = "0"  ]]; then
     brew install ${brew_app}
+  else
+    echo '  '${brew_app}' skipped'
   fi
 done
-
 echo 'Complete for Homebrew app installation'
 
-# except XDG_CONFIG_HOME because it is maked by dotdiles deploy
-if [[ -z ${XDG_CACHE_HOME}  ]]; then
-  echo "XDG_CACHE_HOME is not defined"
-  XDG_CACHE_HOME=$(cat .config/zsh/.zshenv | grep "export XDG_CACHE_HOME" | awk -F'=' '{print $2}')
-  echo "mkdir for" $(eval echo ${XDG_CACHE_HOME}) 
-  mkdir -p $(eval echo ${XDG_CACHE_HOME})
-fi
+echo ''
 
-if [[ -z ${XDG_DATA_HOME} ]]; then
-  echo "XDG_DATA_HOME is not defined"
-  XDG_DATA_HOME=$(cat .config/zsh/.zshenv | grep "export XDG_DATA_HOME" | awk -F'=' '{print $2}')
-  echo "mkdir for" $(eval echo ${XDG_DATA_HOME}) 
-  mkdir -p $(eval echo ${XDG_DATA_HOME})
-fi
-
+echo 'Start for mkdir xdg directory'
 declare -a XDG_DIR=(
-  "gem"
-  "go"
-  "nodebrew"
-  "npm"
-  "tig"
-  "zsh"
+  ${XDG_DATA_HOME}"/gem"
+  ${XDG_DATA_HOME}"/go"
+  ${XDG_DATA_HOME}"/nodebrew"
+  ${XDG_DATA_HOME}"/npm"
+  ${XDG_DATA_HOME}"/zsh"
+  ${XDG_CACHE_HOME}"/vim/.undodir"
 )
 
 for dir in ${XDG_DIR[@]}; do
-  mkdir -p $(eval echo ${XDG_DATA_HOME})/${dir}
+  echo '  mkdir for '${dir}
+  mkdir -p ${dir}
 done
 
 echo 'Complete for mkdir xdg directory'
 
+echo ''
+
 # vim plugin manager
 if [[ ! -e "$HOME/.vim/pack/minpac/opt/minpac" ]]; then
-git clone https://github.com/k-takata/minpac.git \
+  git clone https://github.com/k-takata/minpac.git \
     ~/.vim/pack/minpac/opt/minpac
 fi
-
-# go tools
-GO111MODULE=off go get -u golang.org/x/lint/golint
-GO111MODULE=off go get github.com/mattn/efm-langserver
-
-# npm tools
-npm install -g markdownlint-cli
 
 exit 0
