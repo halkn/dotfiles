@@ -7,9 +7,6 @@ scriptencoding utf-8
 syntax enable
 filetype plugin indent on
 
-let g:mapleader = "\<Space>"
-let g:maplocalleader = ','
-
 if has('vim_starting')
   " Use vertical bar cursor in Insert mode
   let &t_SI .= "\e[6 q"
@@ -22,30 +19,43 @@ if has('vim_starting')
     let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
     let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
   endif
-
-  " Disable default plugin
-  let g:loaded_gzip               = 1
-  let g:loaded_tar                = 1
-  let g:loaded_tarPlugin          = 1
-  let g:loaded_zip                = 1
-  let g:loaded_zipPlugin          = 1
-  let g:loaded_rrhelper           = 1
-  let g:loaded_vimball            = 1
-  let g:loaded_vimballPlugin      = 1
-  let g:loaded_getscript          = 1
-  let g:loaded_getscriptPlugin    = 1
-  let g:loaded_netrw              = 1
-  let g:loaded_netrwPlugin        = 1
-  let g:loaded_netrwSettings      = 1
-  let g:loaded_netrwFileHandlers  = 1
-  let g:did_install_default_menus = 1
-  let g:skip_loading_mswin        = 1
-  let g:did_install_syntax_menu   = 1
-  let g:loaded_2html_plugin       = 1
-
-  " config directory
-  let g:my_config_dir = fnamemodify($MYVIMRC, ":h")
 endif
+
+" Disable default plugin
+let g:loaded_gzip               = 1
+let g:loaded_tar                = 1
+let g:loaded_tarPlugin          = 1
+let g:loaded_zip                = 1
+let g:loaded_zipPlugin          = 1
+let g:loaded_rrhelper           = 1
+let g:loaded_vimball            = 1
+let g:loaded_vimballPlugin      = 1
+let g:loaded_getscript          = 1
+let g:loaded_getscriptPlugin    = 1
+let g:loaded_netrw              = 1
+let g:loaded_netrwPlugin        = 1
+let g:loaded_netrwSettings      = 1
+let g:loaded_netrwFileHandlers  = 1
+let g:did_install_default_menus = 1
+let g:skip_loading_mswin        = 1
+let g:did_install_syntax_menu   = 1
+let g:loaded_2html_plugin       = 1
+
+" map leader
+let g:mapleader = "\<Space>"
+let g:maplocalleader = ','
+
+" markdown
+let g:markdown_fenced_languages = [
+\  'go',
+\  'sh',
+\  'json',
+\  'yaml',
+\  'java',
+\]
+
+" config directory
+let g:my_config_dir = fnamemodify($MYVIMRC, ":h")
 
 " }}}
 " ============================================================================
@@ -74,15 +84,8 @@ set synmaxcol=256
 set showcmd
 set signcolumn=yes
 set noshowmode
-if has("gui_running")
-  set showtabline=2
-else
-  set showtabline=0
-endif
+set showtabline=0
 set background=dark
-if exists('&termguicolors')
-  set termguicolors
-endif
 set diffopt^=vertical
 
 " buffer
@@ -118,9 +121,7 @@ set hlsearch
 set clipboard=unnamed
 
 " Completion
-set completeopt=popup,menuone,noinsert,noselect
-
-" shortmess
+set completeopt=menuone,noinsert,noselect
 set shortmess+=c
 
 " help
@@ -131,8 +132,18 @@ set viminfo+='1000,n$XDG_CACHE_HOME/vim/viminfo
 
 " undo
 if has("persistent_undo")
-    set undodir=$XDG_CACHE_HOME/vim/.undodir
-    set undofile
+  set undodir=$XDG_CACHE_HOME/vim/.undodir
+  set undofile
+endif
+
+" Use true color in terminal
+if exists('&termguicolors')
+  set termguicolors
+endif
+
+" Use popup window with complete
+if has('textprop')
+  set completeopt+=popup
 endif
 
 " grep
@@ -263,15 +274,6 @@ augroup vimrc-ft-help
   autocmd FileType help wincmd L
   autocmd FileType help nnoremap <silent> <buffer> q <C-w>c
 augroup END
-
-" markdown
-let g:markdown_fenced_languages = [
-\  'go',
-\  'sh',
-\  'json',
-\  'yaml',
-\  'java',
-\]
 
 " }}}
 " ============================================================================
