@@ -292,7 +292,7 @@ let s:start_plugs_global = [
   \ ['cocopon/iceberg.vim', {}],
   \ ['itchyny/lightline.vim', {}],
   \ ['vim-jp/vimdoc-ja', {}],
-  \ ['cohama/lexima.vim', {}],
+  \ ['mattn/vim-lexiv', {}],
   \ ['tpope/vim-commentary', {}],
   \ ['kana/vim-operator-user', {}],
   \ ['kana/vim-operator-replace', {}],
@@ -303,6 +303,7 @@ let s:start_plugs_global = [
   \ ['simeji/winresizer', {}],
   \ ['glidenote/memolist.vim', {}],
   \ ['mbbill/undotree', {}],
+  \ ['mattn/vim-findroot', {}],
   \ ]
 let s:start_plugs_lsp = [
   \ ['prabirshrestha/async.vim', {'type': 'opt'}],
