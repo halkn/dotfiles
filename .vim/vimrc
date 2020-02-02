@@ -292,7 +292,7 @@ let s:start_plugs_global = [
   \ ['cocopon/iceberg.vim', {}],
   \ ['itchyny/lightline.vim', {}],
   \ ['vim-jp/vimdoc-ja', {}],
-  \ ['mattn/vim-lexiv', {}],
+  \ ['cpohama/lexima.vim', {}],
   \ ['tpope/vim-commentary', {}],
   \ ['kana/vim-operator-user', {}],
   \ ['kana/vim-operator-replace', {}],
