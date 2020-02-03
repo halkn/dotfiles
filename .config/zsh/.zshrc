@@ -452,6 +452,15 @@ fh() {
   print -z $( ([ -n "$ZSH_NAME" ] && fc -l 1 || history) | fzf +s --tac | sed 's/ *[0-9]* *//')
 }
 
+# [f]uzzy [rm] command
+frm() {
+  local file=$(\ls -1 | fzf -m --preview 'ls -l {}' --preview-window up:1)
+	while read line; do
+		rm $line
+	done < <(echo "$file")
+	echo "!! Print list directory contents after remove files !!" ; ls -la
+}
+
 # ssh - interactice ssh.
 function ssh() {
   if [[ "$#" != 0 ]];then
