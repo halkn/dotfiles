@@ -472,11 +472,6 @@ function ssh() {
   /usr/bin/ssh "$host"
 }
 
-# fman - Man pages finder.
-fman() {
-  man -k . | fzf --prompt='Man> ' | awk '{print $1}' | xargs -r man
-}
-
 # gmod - Change GO111MODULE interactively.
 gmod() {
   echo "!!!!! Current GO111MODULE is" $GO111MODULE "!!!!!"
