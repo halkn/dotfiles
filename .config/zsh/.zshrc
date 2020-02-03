@@ -167,8 +167,9 @@ alias zs="source $ZDOTDIR/.zshrc"
 alias zb='for i in $(seq 1 10); do time zsh -i -c exit; done'
 
 # vim
-alias v="vim"
 alias vi="vim"
+alias v.="ls -1a | fzf | xargs -o vim"
+alias vv="fd --type f --hidden | fzf | xargs -o vim"
 alias vb='for i in $(seq 1 10); do vim --startuptime ~/vim.log -c q; done && grep editing ~/vim.log && rm ~/vim.log'
 
 # dotfiles
@@ -184,6 +185,9 @@ fi
 if type lazygit > /dev/null 2>&1; then
   alias lg="lazygit"
 fi
+
+# exit
+alias :q="exit"
 
 #####################################################################
 # options
@@ -450,6 +454,24 @@ fo() {
 # fh - repeat history.
 fh() {
   print -z $( ([ -n "$ZSH_NAME" ] && fc -l 1 || history) | fzf +s --tac | sed 's/ *[0-9]* *//')
+}
+
+# v - open files viminfo by vim
+v() {
+  local file=$(
+    grep '^>' $XDG_CACHE_HOME/vim/viminfo |
+    cut -c3- |
+    while read line; do
+      [ -f "${line/\~/$HOME}"  ] && echo "$line"
+    done |
+    fzf \
+      -q "$*" \
+      --height='80%' \
+      --preview "echo {} | sed 's@\~@$HOME@g' | xargs bat --color=always" \
+      --bind "ctrl-f:preview-page-down,ctrl-b:preview-page-up" \
+      --bind "ctrl-o:toggle-preview" \
+      --preview-window='right:60%'
+  ) && [[ -n "${file}" ]] && vim ${file//\~/$HOME}
 }
 
 # [f]uzzy [rm] command
