@@ -471,7 +471,11 @@ v() {
       --bind "ctrl-f:preview-page-down,ctrl-b:preview-page-up" \
       --bind "ctrl-o:toggle-preview" \
       --preview-window='right:60%'
-  ) && [[ -n "${file}" ]] && vim ${file//\~/$HOME}
+  ) && \
+    [[ -n "${file}" ]] && \
+    cd $(dirname ${file//\~/$HOME} | head -1) && \
+    cd $(git rev-parse --show-superproject-working-tree --show-toplevel | head -1) && \
+    vim ${file//\~/$HOME}
 }
 
 # [f]uzzy [rm] command
