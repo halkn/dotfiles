@@ -169,7 +169,7 @@ alias zb='for i in $(seq 1 10); do time zsh -i -c exit; done'
 # vim
 alias vi="vim"
 alias v.="ls -1a | fzf | xargs -o vim"
-alias vv="fd --type f --hidden | fzf | xargs -o vim"
+alias vv="fd --type f --hidden | fzf --height 80% --preview 'bat --color=always {}'| xargs -o vim"
 alias vb='for i in $(seq 1 10); do vim --startuptime ~/vim.log -c q; done && grep editing ~/vim.log && rm ~/vim.log'
 
 # dotfiles
