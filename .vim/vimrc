@@ -299,13 +299,14 @@ let s:start_plugs_global = [
   \ ['kana/vim-operator-user', {}],
   \ ['kana/vim-operator-replace', {}],
   \ ['machakann/vim-sandwich', {}],
-  \ ['liuchengxu/vim-clap', {}],
   \ ['rhysd/git-messenger.vim', {}],
   \ ['mhinz/vim-signify', {}],
   \ ['simeji/winresizer', {}],
   \ ['glidenote/memolist.vim', {}],
   \ ['mbbill/undotree', {}],
   \ ['mattn/vim-findroot', {}],
+  \ ['junegunn/fzf', {}],
+  \ ['junegunn/fzf.vim', {}],
   \ ]
 let s:start_plugs_lsp = [
   \ ['prabirshrestha/async.vim', {'type': 'opt'}],
