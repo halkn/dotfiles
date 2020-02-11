@@ -343,7 +343,7 @@ gl() {
     --tiebreak=index \
     --preview "f() { 
         set -- \$(echo -- \$@ | grep -o '[a-f0-9]\{7\}');
-        [ \$# -eq 0 ] || git show --color=always \$1 $filter | diff-so-fancy;
+        [ \$# -eq 0 ] || git show --color=always \$1 $filter | delta;
       }; f {}" \
     --preview-window=right:60% \
     --bind "ctrl-f:preview-page-down,ctrl-b:preview-page-up" \
@@ -367,7 +367,7 @@ gs() {
       --multi \
       --exit-0 \
       --height='80%' \
-      --preview "git diff --color=always -- {-1} | diff-so-fancy " \
+      --preview "git diff --color=always -- {-1} | delta" \
       --preview-window='right:60%' \
       --expect=ctrl-m,ctrl-d,ctrl-v,ctrl-p,space \
       --bind "ctrl-f:preview-page-down,ctrl-b:preview-page-up" \
