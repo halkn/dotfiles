@@ -12,9 +12,8 @@ command! -bang -nargs=* FzfRg
   \ )
 
 function! s:open_ghq(selected) abort
-  let l:dir = expand(substitute(system('ghq root'), '\n', '', 'g').'/'.a:selected)
-  execute ":cd ".l:dir
-  execute ":FzfFiles"
+  execute 'cd ' . trim(system('ghq root')) . '/' . a:selected
+  execute "FzfFiles"
 endfunction
 
 command! Ghq call fzf#run({
