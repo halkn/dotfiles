@@ -215,6 +215,12 @@ nnoremap ts :<C-u>terminal<CR>
 nnoremap tv :<C-u>vsplit <BAR> terminal ++curwin<CR>
 nnoremap tt :<C-u>tabnew <BAR> terminal ++curwin<CR>
 nnoremap tw :<C-u>terminal ++curwin<CR>
+command! Terminal call popup_create(
+  \ term_start([&shell], #{ hidden: 1, term_finish: 'close'}),
+  \ #{ border: [], minwidth: float2nr(winwidth(0)*0.8), minheight: float2nr(&lines*0.8) }
+  \ )
+nnoremap tp :<C-u>Terminal<CR>
+
 
 " Use <C-w>ESC to transition to terminal normal mode
 " tnoremap <C-w><ESC> <C-w>N
