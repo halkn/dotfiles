@@ -19,7 +19,7 @@ fi
 echo 'Start for Homebrew app installation'
 declare -a BREW_APPS=(
   "bat"
-  "git-delta"
+  "diff-so-fancy"
   "exa"
   "fd"
   "fzf"

@@ -18,7 +18,7 @@ function! s:sink_git_status(selected) abort
   if l:key == 'ctrl-m'
     if l:line[0] == ' '
       execute('!git add ' . l:file)
-    else 
+    else
       execute('!git reset -q HEAD '. l:file)
     endif
     call s:fzf_git_status()
@@ -42,7 +42,7 @@ function! s:fzf_git_status() abort
   \ 'options': [
   \   '--ansi',
   \   '--expect=ctrl-m,ctrl-e,space',
-  \   '--preview', 'git diff --color=always -- {-1} | delta',
+  \   '--preview', 'git diff --color=always -- {-1} | diff-so-fancy',
   \   '--bind', 'ctrl-f:preview-page-down,ctrl-b:preview-page-up',
   \   '--bind', 'ctrl-o:toggle-preview',
   \ ]
