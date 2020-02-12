@@ -13,17 +13,31 @@ command! -bang -nargs=* FzfRg
 
 function! s:sink_git_status(selected) abort
   let l:key=a:selected[0]
-  let l:line=a:selected[1]
-  let l:file=split(l:line)[1]
+  let l:lines=a:selected[1:]
+
   if l:key == 'ctrl-m'
-    if l:line[0] == ' ' || l:line[0] == '?'
-      call system('git add '. l:file)
-    else
-      call system('git reset -q HEAD '. l:file)
-    endif
+    for l:li in l:lines
+      let l:fi=split(l:li)[1]
+      if l:li[0] == ' ' || l:li[0] == '?'
+        call system('git add ' . l:fi)
+      else
+        call system('git reset -q HEAD '. l:fi)
+      endif
+    endfor
     call s:fzf_git_status()
   endif
 
+  if len(l:lines) != 1
+      echo l:key . ' cannot use multiple selection' 
+      return
+  endif
+
+  if l:key == 'space'
+    execute('!git commit')
+    return
+  endif
+
+  let l:file=split(a:selected[1])[1]
   if l:key == 'ctrl-e'
     execute('edit ' . l:file)
     return
@@ -39,10 +53,6 @@ function! s:sink_git_status(selected) abort
     return
   endif
 
-  if l:key == 'space'
-    execute('!git commit')
-    return
-  endif
 endfunction
 
 function! s:fzf_git_status() abort
@@ -51,6 +61,7 @@ function! s:fzf_git_status() abort
   \ 'sink*': function('s:sink_git_status'),
   \ 'options': [
   \   '--ansi',
+  \   '--multi',
   \   '--expect=ctrl-m,ctrl-e,ctrl-x,ctrl-v,space',
   \   '--preview', 'git diff --color=always -- {-1} | diff-so-fancy',
   \   '--bind', 'ctrl-f:preview-page-down,ctrl-b:preview-page-up',
