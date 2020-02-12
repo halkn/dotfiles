@@ -16,16 +16,26 @@ function! s:sink_git_status(selected) abort
   let l:line=a:selected[1]
   let l:file=split(l:line)[1]
   if l:key == 'ctrl-m'
-    if l:line[0] == ' '
-      execute('!git add ' . l:file)
+    if l:line[0] == ' ' || l:line[0] == '?'
+      call system('git add '. l:file)
     else
-      execute('!git reset -q HEAD '. l:file)
+      call system('git reset -q HEAD '. l:file)
     endif
     call s:fzf_git_status()
   endif
 
   if l:key == 'ctrl-e'
     execute('edit ' . l:file)
+    return
+  endif
+
+  if l:key == 'ctrl-x'
+    execute('split ' . l:file)
+    return
+  endif
+
+  if l:key == 'ctrl-v'
+    execute('vsplit ' . l:file)
     return
   endif
 
@@ -41,7 +51,7 @@ function! s:fzf_git_status() abort
   \ 'sink*': function('s:sink_git_status'),
   \ 'options': [
   \   '--ansi',
-  \   '--expect=ctrl-m,ctrl-e,space',
+  \   '--expect=ctrl-m,ctrl-e,ctrl-x,ctrl-v,space',
   \   '--preview', 'git diff --color=always -- {-1} | diff-so-fancy',
   \   '--bind', 'ctrl-f:preview-page-down,ctrl-b:preview-page-up',
   \   '--bind', 'ctrl-o:toggle-preview',
