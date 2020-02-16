@@ -73,6 +73,54 @@ endfunction
 
 command! -bang -nargs=* FzfGStatus call s:fzf_git_status()
 
+function! s:sink_git_log(selected) abort
+  let l:tmp = split(a:selected)
+  let l:id = l:tmp[match(l:tmp, '[a-f0-9]\{7}')]
+
+  echo l:id
+  call popup_create(
+  \ term_start(
+  \   [&shell, &shellcmdflag, 'git show --color=always ' . l:id],
+  \   #{ hidden: 1, term_finish: 'close'}
+  \ ),
+  \ #{ border: [], minwidth: float2nr(winwidth(0)*0.9), minheight: float2nr(&lines*0.9) }
+  \ )
+endfunction
+
+function! s:fzf_git_log() abort
+  let l:cmd = '
+  \ git log
+  \ --graph
+  \ --color=always
+  \ --abbrev=7
+  \ --format="%C(auto)%h%d %an %C(blue)%s %C(yellow)%cr"
+  \ '
+
+  let l:preview_cmd = '
+  \ echo -- {} |
+  \ grep -o "[a-f0-9]\{7}" |
+  \ xargs -I @ git show --color=always @ |
+  \ diff-so-fancy
+  \'
+
+  let l:spec = {
+  \ 'source': l:cmd,
+  \ 'sink': function('s:sink_git_log'),
+  \ 'options': [
+  \   '--ansi',
+  \   '--exit-0',
+  \   '--no-sort',
+  \   '--tiebreak=index',
+  \   '--preview', 'echo -- {} | grep -o "[a-f0-9]\{7\}" | xargs -I @ git show --color=always @ | diff-so-fancy',
+  \   '--bind', 'ctrl-f:preview-page-down,ctrl-b:preview-page-up',
+  \   '--bind', 'ctrl-o:toggle-preview',
+  \ ]
+  \ }
+  call fzf#run(fzf#wrap(l:spec))
+endfunction
+
+command! FzfGlog call s:fzf_git_log()
+
 function! s:open_ghq(selected) abort
   execute 'cd ' . trim(system('ghq root')) . '/' . a:selected
   execute "FzfFiles"
@@ -91,4 +139,5 @@ nnoremap <silent> <Leader>b :<C-u>FzfBuffers<CR>
 nnoremap <silent> <Leader>l :<C-u>FzfBLines<CR>
 nnoremap <silent> <Leader>R :<C-u>FzfRg<CR>
 nnoremap <silent> <Leader>gs :<C-u>FzfGStatus<CR>
+nnoremap <silent> <Leader>gl :<C-u>FzfGlog<CR>
 inoremap <expr> <c-x><c-k> fzf#vim#complete#word({'left': '15%'})
