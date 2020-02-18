@@ -1,5 +1,5 @@
 let g:fzf_command_prefix = 'Fzf'
-let g:fzf_layout = { 'window': { 'width': 0.9, 'height': 0.8 } }
+let g:fzf_layout = { 'window': { 'width': 0.9, 'height': 0.9 } }
 
 command! -bang -nargs=? -complete=dir FzfFiles
   \ call fzf#vim#files(<q-args>, fzf#vim#with_preview(), <bang>0)
