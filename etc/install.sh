@@ -11,13 +11,16 @@ if [[ -z ${XDG_DATA_HOME} ]]; then
   exit 1
 fi
 
-if [[ ! -x /usr/local/bin/brew ]]; then
+# if [[ ! -x /usr/local/bin/brew ]]; then
+if !(type brew > /dev/null 2>&1); then
   echo "homebrew is not installed"
   exit 1
 fi
 
 echo 'Start for Homebrew app installation'
 declare -a BREW_APPS=(
+  "bash"
+  "bash-completion"
   "bat"
   "diff-so-fancy"
   "exa"
@@ -27,7 +30,6 @@ declare -a BREW_APPS=(
   "git"
   "go"
   "jq"
-  "lazygit"
   "nodebrew"
   "p7zip"
   "ripgrep"
@@ -51,6 +53,7 @@ echo ''
 
 echo 'Start for mkdir xdg directory'
 declare -a XDG_DIR=(
+  ${XDG_DATA_HOME}"/bash"
   ${XDG_DATA_HOME}"/gem"
   ${XDG_DATA_HOME}"/go"
   ${XDG_DATA_HOME}"/nodebrew"
@@ -67,6 +70,11 @@ done
 echo 'Complete for mkdir xdg directory'
 
 echo ''
+
+# prompt
+if [ ! -f "$XDG_DATA_HOME/gitstatus/gitstatus.prompt.sh" ]; then
+  git clone --depth=1 https://github.com/romkatv/gitstatus $XDG_DATA_HOME/gitstatus
+fi
 
 # vim plugin manager
 if [[ ! -e "$HOME/.vim/pack/minpac/opt/minpac" ]]; then
