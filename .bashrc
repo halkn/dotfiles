@@ -24,12 +24,15 @@ shopt -s histappend
 # make less more friendly for non-text input files, see lesspipe(1)
 [ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
 
+# prompt
+[[ -f "$XDG_DATA_HOME/gitstatus/gitstatus.prompt.sh" ]] && source $XDG_DATA_HOME/gitstatus/gitstatus.prompt.sh 
+
 # bash_complection
 [[ -f /usr/share/bash-completion/bash_completion ]] && . /usr/share/bash-completion/bash_completion
 [[ -f /usr/local/etc/bash_completion ]] && . /usr/local/etc/bash_completion
 
-# prompt
-[[ -f "$XDG_DATA_HOME/gitstatus/gitstatus.prompt.sh" ]] && source $XDG_DATA_HOME/gitstatus/gitstatus.prompt.sh 
+# fzf completion
+[[ -f /usr/local/opt/fzf/shell/completion.bash ]] && source /usr/local/opt/fzf/shell/completion.bash
 
 # ---------------------------------------------------------------------------
 # alias
@@ -68,9 +71,6 @@ alias rm='rm -i'
 alias du="du -h"
 alias df="df -h"
 
-# cd
-alias ..='cd ..'
-
 # vim
 alias vi="vim"
 alias v.="ls -1a | fzf | xargs -o vim"
@@ -84,8 +84,10 @@ if type bat > /dev/null 2>&1; then
 fi
 
 # useful
+alias ..='cd ..'
 alias dot="cd $HOME/.dotfiles && $EDITOR"
 alias path="echo $PATH | tr ':' '\n'"
+alias bs="source ~/.bashrc"
 
 # exit
 alias :q="exit"
@@ -146,10 +148,9 @@ alias ...=fdr
 # fuzzy-ghq-list - cd to development directory in ghq list.
 fuzzy-ghq-list() {
   local dir
-  dir=$(ghq list > /dev/null | fzf +m) && cd $(ghq root)/$dir
+  dir=$(ghq list | fzf +m --preview "exa -T $(ghq root)/{}") && cd $(ghq root)/$dir
 }
 alias dev=fuzzy-ghq-list
-alias repo=fuzzy-ghq-list
 
 ### homebrew ----------------------------------------------------------------
 # bua [B]rew [U]ninstall [A]pplication
@@ -168,11 +169,6 @@ bua() {
 fo() {
   local file
   file=$(fzf) && open "$file"
-}
-
-# fh - repeat history.
-fh() {
-  print -z $( ([ -n "$ZSH_NAME" ] && fc -l 1 || history) | fzf +s --tac | sed 's/ *[0-9]* *//')
 }
 
 # v - open files viminfo by vim
@@ -241,6 +237,31 @@ gmod() {
     export GO111MODULE=${GOMOD}
   fi
   echo "!!!!! Change  GO111MODULE is" $GO111MODULE "!!!!!"
+}
+
+# ---------------------------------------------------------------------------
+# key bind
+# ---------------------------------------------------------------------------
+# C-r : fuzzy find for command history.
+bind '"\C-r": "\C-x1\e^\er"'
+bind -x '"\C-x1": __fzf_history';
+
+__fzf_history(){
+  __ehc $(history | fzf --tac --tiebreak=index | perl -ne 'm/^\s*([0-9]+)/ and print "!$1"')
+}
+
+__ehc(){
+if
+  [[ -n $1 ]]
+then
+  bind '"\er": redraw-current-line'
+  bind '"\e^": magic-space'
+  READLINE_LINE=${READLINE_LINE:+${READLINE_LINE:0:READLINE_POINT}}${1}${READLINE_LINE:+${READLINE_LINE:READLINE_POINT}}
+  READLINE_POINT=$(( READLINE_POINT + ${#1} ))
+else
+  bind '"\er":'
+  bind '"\e^":'
+fi
 }
 
 # ---------------------------------------------------------------------------
