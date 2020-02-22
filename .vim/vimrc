@@ -78,7 +78,7 @@ set laststatus=2
 set cursorline
 set wrap
 set list
-set listchars=tab:\ \ ,trail:-,eol:↲,extends:»,precedes:«,nbsp:%
+set listchars=tab:>-,trail:-,eol:↲,extends:»,precedes:«,nbsp:%
 set scrolloff=8
 set synmaxcol=256
 set showcmd
@@ -297,7 +297,7 @@ endif
 
 " Plugin list {{{
 let s:start_plugs_global = [
-  \ ['cocopon/iceberg.vim', {}],
+  \ ['arcticicestudio/nord-vim', {}],
   \ ['itchyny/lightline.vim', {}],
   \ ['vim-jp/vimdoc-ja', {}],
   \ ['cpohama/lexima.vim', {}],

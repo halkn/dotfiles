@@ -63,7 +63,7 @@ function! s:fzf_git_status() abort
   \   '--ansi',
   \   '--multi',
   \   '--expect=ctrl-m,ctrl-e,ctrl-x,ctrl-v,space',
-  \   '--preview', 'git diff --color=always -- {-1} | delta',
+  \   '--preview', 'git diff --color=always -- {-1} | diff-so-fancy',
   \   '--bind', 'ctrl-f:preview-page-down,ctrl-b:preview-page-up',
   \   '--bind', 'ctrl-o:toggle-preview',
   \ ]
@@ -100,7 +100,7 @@ function! s:fzf_git_log() abort
   \ echo -- {} |
   \ grep -o "[a-f0-9]\{7\}" |
   \ xargs -I @ git show --color=always @ |
-  \ delta
+  \ diff-so-fancy
   \'
 
   let l:spec = {
