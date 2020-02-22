@@ -114,6 +114,7 @@ function! s:fzf_git_log() abort
   \   '--preview', l:preview_cmd,
   \   '--bind', 'ctrl-f:preview-page-down,ctrl-b:preview-page-up',
   \   '--bind', 'ctrl-o:toggle-preview',
+  \   '--bind', 'ctrl-y:execute:(echo {} | grep -o "[a-f0-9]\{7\}" | pbcopy)',
   \ ]
   \ }
   call fzf#run(fzf#wrap(l:spec))
