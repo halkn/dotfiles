@@ -104,7 +104,7 @@ function cd() {
     return
   fi
   while true; do
-    local lsd=$(ls -aaF | grep '/$' | sed 's;/$;;')
+    local lsd=$(ls -aaF1 | grep '/$' | sed 's;/$;;')
     local dir="$(printf '%s\n' "${lsd[@]}" |
       fzf --reverse --preview '
         __cd_nxt="$(echo {})";
