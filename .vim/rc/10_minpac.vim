@@ -37,22 +37,21 @@ let s:opt_plugs_markdown = [
   \ ['tyru/open-browser.vim', {'type': 'opt'}],
   \ ]
 
-if exists('*minpac#init')
-  " load minpac.
+" Define user commands for updating/cleaning the plugins.
+function! PackInit() abort
+  packadd minpac
+
   call minpac#init()
   call minpac#add('k-takata/minpac', {'type': 'opt'})
 
-  " add plugin.
   call map(
-    \ s:start_plugs_global+s:start_plugs_lsp+s:opt_plugs_dev+s:opt_plugs_markdown,
-    \ {_, val -> execute('call minpac#add("' . val[0] . '", ' . string(val[1]) . ')') }
-    \ )
-endif
-
-" Define user commands for updating/cleaning the plugins.
-command! PackUpdate packadd minpac | source $MYVIMRC | call minpac#update('', {'do': 'call minpac#status()'})
-command! PackClean  packadd minpac | source $MYVIMRC | call minpac#clean()
-command! PackStatus packadd minpac | source $MYVIMRC | call minpac#status()
+  \ s:start_plugs_global+s:start_plugs_lsp+s:opt_plugs_dev+s:opt_plugs_markdown,
+  \ {_, val -> execute('call minpac#add("' . val[0] . '", ' . string(val[1]) . ')') }
+  \ )
+endfunction
+command! PackUpdate call PackInit() | call minpac#update('', {'do': 'call minpac#status()'})
+command! PackClean  call PackInit() | call minpac#clean()
+command! PackStatus call PackInit() | call minpac#status()
 
 " Define function to setup a plugin
 function! s:setup_plugins(plugs) abort
