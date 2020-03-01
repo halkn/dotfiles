@@ -23,7 +23,7 @@ set laststatus=2
 set cursorline
 set wrap
 set list
-set listchars=tab:>-,trail:-,eol:↲,extends:»,precedes:«,nbsp:%
+set listchars=tab:\ \ ,trail:-,eol:↲,extends:»,precedes:«,nbsp:%
 set scrolloff=8
 set synmaxcol=256
 set showcmd

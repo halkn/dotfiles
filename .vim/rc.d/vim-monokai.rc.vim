@@ -1,0 +1,1 @@
+silent! colorscheme monokai

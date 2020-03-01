@@ -1,5 +1,5 @@
 let s:start_plugs_global = [
-  \ ['arcticicestudio/nord-vim', {}],
+  \ ['crusoexia/vim-monokai', {}],
   \ ['itchyny/lightline.vim', {}],
   \ ['vim-jp/vimdoc-ja', {}],
   \ ['cpohama/lexima.vim', {}],
