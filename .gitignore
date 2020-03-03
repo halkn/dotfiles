@@ -2,3 +2,4 @@
 .config/configstore
 .vim/pack
 .vim/sessions
+.vim/autoload/plug.vim

@@ -4,9 +4,6 @@
 set encoding=utf-8
 scriptencoding utf-8
 
-syntax enable
-filetype plugin indent on
-
 " Encoding
 set fileencodings=utf-8,cp932
 set fileformats=unix,dos,mac
@@ -138,6 +135,9 @@ let g:loaded_2html_plugin       = 1
 let g:mapleader = "\<Space>"
 let g:maplocalleader = ','
 
+" indent for Line continuation.(\)
+let g:vim_indent_cont = 0
+
 " markdown
 let g:markdown_fenced_languages = [
 \  'go',
@@ -148,12 +148,53 @@ let g:markdown_fenced_languages = [
 \]
 
 " ============================================================================
+" Plugin
+" ============================================================================
+call plug#begin(expand('$XDG_DATA_HOME/vim/plugged'))
+" global
+Plug 'crusoexia/vim-monokai'
+Plug 'itchyny/lightline.vim'
+Plug 'vim-jp/vimdoc-ja'
+Plug 'cohama/lexima.vim'
+Plug 'machakann/vim-sandwich'
+Plug 'mattn/vim-findroot'
+" fzf
+Plug 'junegunn/fzf'
+Plug 'junegunn/fzf.vim'
+" lsp
+Plug 'prabirshrestha/async.vim'
+Plug 'prabirshrestha/vim-lsp'
+Plug 'mattn/vim-lsp-settings'
+Plug 'prabirshrestha/asyncomplete.vim'
+Plug 'prabirshrestha/asyncomplete-lsp.vim'
+Plug 'hrsh7th/vim-vsnip'
+Plug 'hrsh7th/vim-vsnip-integ'
+" filetype
+Plug 'kana/vim-altr', { 'for': ['go', 'vim', 'sh'] }
+Plug 'thinca/vim-quickrun', { 'for': ['go', 'vim', 'sh'] }
+Plug 'janko/vim-test', { 'for': ['go', 'vim', 'sh'] }
+Plug 'liuchengxu/vista.vim', { 'for': ['go', 'vim', 'sh'] }
+Plug 'dhruvasagar/vim-table-mode', { 'for': 'markdown' }
+Plug 'iamcco/markdown-preview.nvim', {
+\ 'for': ['markdown', 'vim-plug'],
+\ 'do': { -> mkdp#util#install() }
+\ }
+" Extention
+Plug 'tyru/caw.vim', { 'on': '<Plug>(caw:zeropos:toggle)' }
+Plug 'kana/vim-operator-user', { 'on': '<Plug>(operator-replace)' }
+Plug 'kana/vim-operator-replace', { 'on': '<Plug>(operator-replace)' }
+Plug 'glidenote/memolist.vim', { 'on': ['MemoNew', 'MemoList', 'MemoGrep'] }
+Plug 'mbbill/undotree', { 'on': 'UndotreeToggle' }
+Plug 'simeji/winresizer', { 'on': 'WinResizerStartResize' }
+Plug 'mhinz/vim-signify', { 'on': ['SignifyToggle', 'SignifyDiff'] }
+call plug#end()
+" ============================================================================
 " User config
 " ============================================================================
 " config directory
 let g:my_config_dir = fnamemodify($MYVIMRC, ":h")
 
 call map(
-  \ sort(split(globpath(g:my_config_dir . '/rc/', '*.vim'))), 
-  \ {->[execute('exec "so" v:val')]}
-  \ )
+\ sort(split(globpath(g:my_config_dir . '/rc/', '*.vim'))),
+\ {->[execute('exec "so" v:val')]}
+\ )
