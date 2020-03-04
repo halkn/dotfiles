@@ -11,6 +11,16 @@ command! -bang -nargs=* FzfRg
 \   fzf#vim#with_preview(), <bang>0
 \ )
 
+function! RipgrepFzf(query, fullscreen)
+  let command_fmt = 'rg --hidden --column --line-number --no-heading --color=always --smart-case %s || true'
+  let initial_command = printf(command_fmt, shellescape(a:query))
+  let reload_command = printf(command_fmt, '{q}')
+  let spec = {'options': ['--phony', '--query', a:query, '--bind', 'change:reload:'.reload_command]}
+  call fzf#vim#grep(initial_command, 1, fzf#vim#with_preview(spec), a:fullscreen)
+endfunction
+
+command! -nargs=* -bang FzfRG call RipgrepFzf(<q-args>, <bang>0)
+
 function! s:sink_git_status(selected) abort
   let l:key=a:selected[0]
   let l:lines=a:selected[1:]
@@ -138,7 +148,7 @@ nnoremap <silent> <Leader><Leader> :<C-u>FzfHistory<CR>
 nnoremap <silent> <Leader>f :<C-u>FzfFiles<CR>
 nnoremap <silent> <Leader>b :<C-u>FzfBuffers<CR>
 nnoremap <silent> <Leader>l :<C-u>FzfBLines<CR>
-nnoremap <silent> <Leader>R :<C-u>FzfRg<CR>
+nnoremap <silent> <Leader>R :<C-u>FzfRG<CR>
 nnoremap <silent> <Leader>gs :<C-u>FzfGStatus<CR>
 nnoremap <silent> <Leader>gl :<C-u>FzfGlog<CR>
 inoremap <expr> <c-x><c-k> fzf#vim#complete#word({'left': '15%'})
