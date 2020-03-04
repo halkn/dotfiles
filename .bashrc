@@ -74,8 +74,9 @@ alias df="df -h"
 # vim
 alias vi="vim"
 alias v.="ls -1a | fzf | xargs -o vim"
-alias vv="fd --type f --hidden | fzf --height 80% --preview 'bat --color=always {}'| xargs -o vim"
-alias vb='for i in $(seq 1 10); do vim --startuptime ~/vim.log -c q; done && grep editing ~/vim.log && rm ~/vim.log'
+alias v="fd --type f --hidden | fzf --height 80% --preview 'bat --color=always {}'| xargs -o vim"
+alias vb='for i in $(seq 1 10); do vim --startuptime ~/vim.log -c q; done && grep editing ~/vim.log && rm -f ~/vim.log'
+alias vl='rm -f vim.log && vim --startuptime vim.log  -c :q && bat vim.log && rm -f vim.log'
 
 # cat to bat
 if type bat > /dev/null 2>&1; then
@@ -171,8 +172,8 @@ fo() {
   file=$(fzf) && open "$file"
 }
 
-# v - open files viminfo by vim
-v() {
+# vh - open files viminfo by vim
+vh() {
   local file=$(
     grep '^>' $XDG_CACHE_HOME/vim/viminfo |
     cut -c3- |
