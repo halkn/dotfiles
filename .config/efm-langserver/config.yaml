@@ -1,13 +1,24 @@
-languages:
-  markdown:
+version: 2
+tools:
+  markdown-markdownlint: &markdown-markdownlint
     lint-command: 'markdownlint -s'
     lint-stdin: true
     lint-formats:
       - '%f:%l %m'
-  go:
+
+  golint: &golint
     lint-command: 'golint'
     lint-ignore-exit-code: true
     lint-formats:
       - '%f:%l:%c: %m'
-  json:
+
+  json-jq: &json-jq
     format-command: 'jq .'
+
+languages:
+  markdown:
+    - <<: *markdown-markdownlint
+  go:
+    - <<: *golint
+  json:
+    - <<: *json-jq
