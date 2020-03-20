@@ -109,7 +109,7 @@ function! s:fzf_git_log() abort
   let l:preview_cmd = '
   \ echo -- {} |
   \ grep -o "[a-f0-9]\{7\}" |
-  \ xargs -I @ git show --color=always @ |
+  \ xargs -I @ git show --color=always @ $* |
   \ diff-so-fancy
   \'
 
