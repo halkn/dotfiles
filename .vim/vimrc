@@ -175,10 +175,8 @@ Plug 'thinca/vim-quickrun', { 'for': ['go', 'vim', 'sh'] }
 Plug 'janko/vim-test', { 'for': ['go', 'vim', 'sh'] }
 Plug 'liuchengxu/vista.vim', { 'for': ['go', 'vim', 'sh'] }
 Plug 'dhruvasagar/vim-table-mode', { 'for': 'markdown' }
-Plug 'iamcco/markdown-preview.nvim', {
-\ 'for': ['markdown', 'vim-plug'],
-\ 'do': { -> mkdp#util#install() }
-\ }
+Plug 'previm/previm', { 'for': 'markdown' }
+Plug 'tyru/open-browser.vim', { 'for': 'markdown' }
 " Extention
 Plug 'tyru/caw.vim', { 'on': '<Plug>(caw:zeropos:toggle)' }
 Plug 'kana/vim-operator-user', { 'on': '<Plug>(operator-replace)' }
