@@ -1,6 +1,6 @@
 " caw.vim
-nmap <Leader>c <Plug>(caw:zeropos:toggle)
-vmap <Leader>c <Plug>(caw:zeropos:toggle)
+nmap <Leader>c <Plug>(caw:hatpos:toggle)
+vmap <Leader>c <Plug>(caw:hatpos:toggle)
 
 " vim-operator-replace
 map R <Plug>(operator-replace)

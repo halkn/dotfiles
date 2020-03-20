@@ -178,7 +178,7 @@ Plug 'dhruvasagar/vim-table-mode', { 'for': 'markdown' }
 Plug 'previm/previm', { 'for': 'markdown' }
 Plug 'tyru/open-browser.vim', { 'for': 'markdown' }
 " Extention
-Plug 'tyru/caw.vim', { 'on': '<Plug>(caw:zeropos:toggle)' }
+Plug 'tyru/caw.vim', { 'on': '<Plug>(caw:hatpos:toggle)' }
 Plug 'kana/vim-operator-user', { 'on': '<Plug>(operator-replace)' }
 Plug 'kana/vim-operator-replace', { 'on': '<Plug>(operator-replace)' }
 Plug 'glidenote/memolist.vim', { 'on': ['MemoNew', 'MemoList', 'MemoGrep'] }
