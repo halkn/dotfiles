@@ -86,6 +86,7 @@ endif
 " Use popup window with complete
 if has('textprop')
   set completeopt+=popup
+  set completepopup=align:menu,border:on,highlight:Pmenu
 endif
 
 " grep
@@ -173,6 +174,7 @@ Plug 'hrsh7th/vim-vsnip-integ'
 Plug 'kana/vim-altr', { 'for': ['go', 'vim', 'sh'] }
 Plug 'thinca/vim-quickrun', { 'for': ['go', 'vim', 'sh'] }
 Plug 'janko/vim-test', { 'for': ['go', 'vim', 'sh'] }
+Plug 'skywind3000/asyncrun.vim', { 'for': ['go', 'vim', 'sh'] }
 Plug 'liuchengxu/vista.vim', { 'for': ['go', 'vim', 'sh'] }
 Plug 'dhruvasagar/vim-table-mode', { 'for': 'markdown' }
 Plug 'previm/previm', { 'for': 'markdown' }
@@ -196,3 +198,4 @@ call map(
 \ sort(split(globpath(g:my_config_dir . '/rc/', '*.vim'))),
 \ {->[execute('exec "so" v:val')]}
 \ )
+

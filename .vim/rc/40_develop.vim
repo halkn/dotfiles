@@ -15,7 +15,7 @@ command! -nargs=+ -complete=command Capture QuickRun -type vim -src <q-args>
 
 " vim-test
 let g:test#preserve_screen = 1
-let test#strategy = "make_bang"
+let test#strategy = "asyncrun_background"
 
 augroup vimrc_dev_plugin
   au!
