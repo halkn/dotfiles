@@ -152,3 +152,8 @@ nnoremap <silent> <Leader>R :<C-u>FzfRG<CR>
 nnoremap <silent> <Leader>gs :<C-u>FzfGStatus<CR>
 nnoremap <silent> <Leader>gl :<C-u>FzfGlog<CR>
 inoremap <expr> <c-x><c-k> fzf#vim#complete#word({'left': '15%'})
+
+augroup vimrc_fzf
+  au!
+  autocmd FileType fzf tnoremap <buffer> <silent> <Esc> <Esc>
+augroup END

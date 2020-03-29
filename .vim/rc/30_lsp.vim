@@ -27,6 +27,10 @@ let g:lsp_signs_error = {'text': '✗'}
 let g:lsp_signs_warning = {'text': '!!'}
 let g:lsp_signs_information = {'text': '●'}
 let g:lsp_signs_hint = {'text': '▲'}
+if has('nvim')
+  let g:lsp_diagnostics_echo_cursor = 0
+  let g:lsp_virtual_text_prefix = " ‣ "
+endif
 
 function! s:setup_lsp() abort
   setlocal omnifunc=lsp#complete
