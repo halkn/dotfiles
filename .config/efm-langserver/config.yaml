@@ -14,6 +14,19 @@ tools:
 
   json-jq: &json-jq
     format-command: 'jq .'
+    format-stdin: true
+
+  shellcheck-lint: &shellcheck-lint
+    lint-command: 'shellcheck -s bash -f gcc -x -'
+    lint-stdin: true
+    lint-formats:
+      - '%f:%l:%c: %trror: %m'
+      - '%f:%l:%c: %tarning: %m'
+      - '%f:%l:%c: %tote: %m'
+
+  shfmt-format: &shfmt-format
+    format-command: 'shfmt -ln bash -kp -i 2 -ci'
+    format-stdin: true
 
 languages:
   markdown:
@@ -22,3 +35,6 @@ languages:
     - <<: *golint
   json:
     - <<: *json-jq
+  sh:
+    - <<: *shellcheck-lint
+    - <<: *shfmt-format

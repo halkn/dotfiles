@@ -12,7 +12,7 @@ let g:lsp_settings = {
 \ },
 \ 'efm-langserver': {
 \   'disabled': 0,
-\   'whitelist': ['go', 'markdown', 'json']
+\   'whitelist': ['go', 'markdown', 'json', 'sh']
 \ }
 \}
 
@@ -50,6 +50,7 @@ augroup vimrc-lsp-setup
   autocmd BufWritePre *.go  call execute('LspDocumentFormatSync') |
     \ call execute('LspCodeActionSync source.organizeImports')
   autocmd BufWrite *.json call execute('LspDocumentFormatSync')
+  autocmd BufWrite *.sh call execute('LspDocumentFormatSync')
 augroup END
 
 " asyncomplete.vim ----------------------------------------------------------
