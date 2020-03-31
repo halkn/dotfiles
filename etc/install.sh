@@ -12,7 +12,7 @@ if [[ -z ${XDG_DATA_HOME} ]]; then
 fi
 
 # if [[ ! -x /usr/local/bin/brew ]]; then
-if !(type brew > /dev/null 2>&1); then
+if ! (type brew >/dev/null  2>&1); then
   echo "homebrew is not installed"
   exit 1
 fi
@@ -34,13 +34,14 @@ declare -a BREW_APPS=(
   "p7zip"
   "ripgrep"
   "tmux"
+  "shellcheck"
+  "shfmt"
   "vim"
-  "zsh"
 )
 
-for brew_app in ${BREW_APPS[@]}; do
+for brew_app in "${BREW_APPS[@]}"; do
   brew_install_result=0
-  $(brew leaves | grep -x ${brew_app} 2>&1 > /dev/null) || brew_install_result=$?
+  brew leaves | grep -x ${brew_app} >/dev/null 2>&1  || brew_install_result=$?
   if [[ ! "$brew_install_result" = "0"  ]]; then
     brew install ${brew_app}
   else
@@ -53,16 +54,16 @@ echo ''
 
 echo 'Start for mkdir xdg directory'
 declare -a XDG_DIR=(
-  ${XDG_DATA_HOME}"/bash"
-  ${XDG_DATA_HOME}"/gem"
-  ${XDG_DATA_HOME}"/go"
-  ${XDG_DATA_HOME}"/nodebrew"
-  ${XDG_DATA_HOME}"/npm"
-  ${XDG_DATA_HOME}"/zsh"
-  ${XDG_CACHE_HOME}"/vim/.undodir"
+  "${XDG_DATA_HOME}/bash"
+  "${XDG_DATA_HOME}/gem"
+  "${XDG_DATA_HOME}/go"
+  "${XDG_DATA_HOME}/nodebrew"
+  "${XDG_DATA_HOME}/npm"
+  "${XDG_DATA_HOME}/zsh"
+  "${XDG_CACHE_HOME}/vim/.undodir"
 )
 
-for dir in ${XDG_DIR[@]}; do
+for dir in "${XDG_DIR[@]}"; do
   echo '  mkdir for '${dir}
   mkdir -p ${dir}
 done
@@ -77,9 +78,9 @@ if [ ! -f "$XDG_DATA_HOME/gitstatus/gitstatus.prompt.sh" ]; then
 fi
 
 # vim plugin manager
-if [[ ! -e "$HOME/.vim/pack/minpac/opt/minpac" ]]; then
-  git clone https://github.com/k-takata/minpac.git \
-    ~/.vim/pack/minpac/opt/minpac
+if [[ ! -e ${HOME}/.vim/autoload/plug.vim ]]; then
+  curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
+    https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 fi
 
 exit 0
