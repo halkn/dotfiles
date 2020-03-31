@@ -14,6 +14,7 @@ augroup END
 " quickfix
 augroup vimrc-ft-quickfix
   autocmd!
+  autocmd FileType qf setlocal signcolumn=no
   autocmd Filetype qf nnoremap <silent> <buffer> p <CR>zz<C-w>p
   autocmd Filetype qf nnoremap <silent> <buffer> q <C-w>c
 augroup END
@@ -22,5 +23,6 @@ augroup END
 augroup vimrc-ft-help
   autocmd!
   autocmd FileType help wincmd L
+  autocmd FileType help setlocal signcolumn=no
   autocmd FileType help nnoremap <silent> <buffer> q <C-w>c
 augroup END
