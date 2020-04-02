@@ -11,6 +11,6 @@ npm install -g npm
 npm install -g markdownlint-cli
 
 # vim plugin
-vim -c PackUpdate -c qa
+vim -c PlugUpdate -c qa
 
 exit 0

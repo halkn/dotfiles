@@ -195,10 +195,10 @@ vh() {
 }
 
 # frm - [f]uzzy [rm] command
-frm() {
+function frm() {
   local file=$(\ls -1 | fzf -m --preview 'ls -l {}' --preview-window up:1)
 	while read line; do
-		rm $line
+		rm -f $line
 	done < <(echo "$file")
 	echo "!! Print list directory contents after remove files !!" ; ls -la
 }
