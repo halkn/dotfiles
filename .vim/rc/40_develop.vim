@@ -1,17 +1,8 @@
 " This is plugin setting for my common programing language.
 
-" vim-quickrun
-let g:quickrun_no_default_key_mappings = 1
-let g:quickrun_config = {}
-let g:quickrun_config = {
-\ '_' : {
-\   'runner' : 'job',
-\   'outputter' : 'error',
-\   'outputter/error/success' : 'buffer',
-\   'outputter/error/error'   : 'quickfix',
-\ }
-\}
-command! -nargs=+ -complete=command Capture QuickRun -type vim -src <q-args>
+" asyncrun.vim
+let g:asyncrun_open = 8
+command! -nargs=* Grep AsyncRun -program=grep -strip <f-args>
 
 " vim-test
 let g:test#preserve_screen = 1
@@ -19,8 +10,11 @@ let test#strategy = "asyncrun_background"
 
 augroup vimrc_dev_plugin
   au!
-  " vim-quickrun
-  autocmd FileType go,vim,sh nmap <buffer> <LocalLeader>r <Plug>(quickrun)
+  " asyncrun.vim
+  autocmd FileType go nnoremap <silent> <buffer> <LocalLeader>r
+  \ :<C-u>AsyncRun -mode=term -pos=right -cols=80 -focus=0 go run $VIM_RELNAME<CR>
+  autocmd FileType sh nnoremap <silent> <buffer> <LocalLeader>r
+  \ :<C-u>AsyncRun -mode=term -pos=right -cols=80 -focus=0 sh $VIM_RELNAME<CR>
   " vim-test
   autocmd FileType go,vim,sh nnoremap <silent> <buffer> <LocalLeader>t :<C-u>TestFile<CR>
   autocmd FileType go,vim,sh nnoremap <silent> <buffer> TN :<C-u>TestNearest<CR>

@@ -172,9 +172,8 @@ Plug 'hrsh7th/vim-vsnip'
 Plug 'hrsh7th/vim-vsnip-integ'
 " filetype
 Plug 'kana/vim-altr', { 'for': ['go', 'vim', 'sh'] }
-Plug 'thinca/vim-quickrun', { 'for': ['go', 'vim', 'sh'] }
 Plug 'janko/vim-test', { 'for': ['go', 'vim', 'sh'] }
-Plug 'skywind3000/asyncrun.vim', { 'for': ['go', 'vim', 'sh'] }
+Plug 'skywind3000/asyncrun.vim', { 'for': ['go', 'vim', 'sh'], 'on': 'AsyncRun' }
 Plug 'liuchengxu/vista.vim', { 'for': ['go', 'vim', 'sh'] }
 Plug 'dhruvasagar/vim-table-mode', { 'for': 'markdown' }
 Plug 'previm/previm', { 'for': 'markdown' }
