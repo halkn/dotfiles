@@ -84,20 +84,28 @@ endfunction
 command! -bang -nargs=* FzfGStatus call s:fzf_git_status()
 
 function! s:sink_git_log(selected) abort
-  let l:tmp = split(a:selected)
+  let l:key = a:selected[0]
+
+  let l:tmp = split(a:selected[1])
   let l:id = l:tmp[match(l:tmp, '[a-f0-9]\{7}')]
 
-  echo l:id
-  call popup_create(
-  \ term_start(
-  \   [&shell, &shellcmdflag, 'git show --color=always ' . l:id],
-  \   #{ hidden: 1, term_finish: 'close'}
-  \ ),
-  \ #{ border: [], minwidth: float2nr(winwidth(0)*0.9), minheight: float2nr(&lines*0.9) }
-  \ )
+  let l:term_cmd = [
+  \ &shell,
+  \ &shellcmdflag,
+  \ 'git --no-pager show --color=always ' . l:id
+  \ ]
+  let l:term_opt = {}
+  if l:key == 'ctrl-v'
+    let l:term_opt.vertical = v:true
+  elseif l:key == 'ctrl-m'
+    let l:term_opt.curwin = v:true
+  endif
+
+  call term_start(l:term_cmd, l:term_opt)
+  return
 endfunction
 
-function! s:fzf_git_log() abort
+function! s:fzf_git_log(...) abort
   let l:cmd = '
   \ git log
   \ --graph
@@ -105,6 +113,10 @@ function! s:fzf_git_log() abort
   \ --abbrev=7
   \ --format="%C(auto)%h%d %an %C(blue)%s %C(yellow)%cr"
   \ '
+
+  if a:0 >= 1
+    let l:cmd = l:cmd . a:1
+  endif
 
   let l:preview_cmd = '
   \ echo -- {} |
@@ -115,22 +127,24 @@ function! s:fzf_git_log() abort
 
   let l:spec = {
   \ 'source': l:cmd,
-  \ 'sink': function('s:sink_git_log'),
+  \ 'sink*': function('s:sink_git_log'),
   \ 'options': [
   \   '--ansi',
   \   '--exit-0',
   \   '--no-sort',
   \   '--tiebreak=index',
   \   '--preview', l:preview_cmd,
+  \   '--expect=ctrl-m,ctrl-x,ctrl-v',
   \   '--bind', 'ctrl-f:preview-page-down,ctrl-b:preview-page-up',
   \   '--bind', 'ctrl-o:toggle-preview',
-  \   '--bind', 'ctrl-y:execute:(echo {} | grep -o "[a-f0-9]\{7\}" | pbcopy)',
+  \   '--bind', 'ctrl-y:execute:(echo -- {} | grep -o "[a-f0-9]\{7\}" | tr -d \\n | pbcopy)',
   \ ]
   \ }
   call fzf#run(fzf#wrap(l:spec))
 endfunction
 
-command! FzfGlog call s:fzf_git_log()
+command! FzfCommits call s:fzf_git_log()
+command! FzfBCommits call s:fzf_git_log(expand('%'))
 
 function! s:open_ghq(selected) abort
   execute 'cd ' . trim(system('ghq root')) . '/' . a:selected
@@ -150,7 +164,7 @@ nnoremap <silent> <Leader>b :<C-u>FzfBuffers<CR>
 nnoremap <silent> <Leader>l :<C-u>FzfBLines<CR>
 nnoremap <silent> <Leader>R :<C-u>FzfRG<CR>
 nnoremap <silent> <Leader>gs :<C-u>FzfGStatus<CR>
-nnoremap <silent> <Leader>gl :<C-u>FzfGlog<CR>
+nnoremap <silent> <Leader>gl :<C-u>FzfCommits<CR>
 inoremap <expr> <c-x><c-k> fzf#vim#complete#word({'left': '15%'})
 
 augroup vimrc_fzf
