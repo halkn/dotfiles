@@ -3361,6 +3361,8 @@
 			<real>1</real>
 			<key>Idle Code</key>
 			<integer>0</integer>
+			<key>Initial Use Transparency</key>
+			<true/>
 			<key>Jobs to Ignore</key>
 			<array>
 				<string>rlogin</string>
@@ -3741,7 +3743,7 @@
 			<key>Thin Strokes</key>
 			<integer>4</integer>
 			<key>Transparency</key>
-			<real>0.0</real>
+			<real>0.0731321383248731</real>
 			<key>Unlimited Scrollback</key>
 			<false/>
 			<key>Use Bold Font</key>
@@ -3790,7 +3792,7 @@
 	<key>NoSyncLastTipTime</key>
 	<real>581859893.80546701</real>
 	<key>NoSyncLaunchExperienceControllerRunCount</key>
-	<integer>83</integer>
+	<integer>86</integer>
 	<key>NoSyncNextAnnoyanceTime</key>
 	<real>586570907.64444005</real>
 	<key>NoSyncOnboardingWindowHasBeenShown</key>
@@ -4503,6 +4505,10 @@
 			</dict>
 		</array>
 	</dict>
+	<key>NoSyncSearchHistory2</key>
+	<array>
+		<string>preview-heigh</string>
+	</array>
 	<key>NoSyncTimeOfFirstLaunchOfVersionWithTip</key>
 	<real>578188206.22346902</real>
 	<key>NoSyncTipsDisabled</key>
