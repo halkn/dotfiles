@@ -54,6 +54,10 @@ if [[ -z "$TMUX" ]]; then
     eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
   fi
 
+  # Cache result for $(brew --prefix)
+  BREW_PREFIX=$(brew --prefix)
+  export BREW_PREFIX
+
   # TMUX
   if type tmux > /dev/null 2>&1; then
     exec tmux -f "$XDG_CONFIG_HOME"/tmux/tmux.conf

@@ -28,11 +28,10 @@ shopt -s histappend
 [[ -f "$XDG_DATA_HOME/gitstatus/gitstatus.prompt.sh" ]] && source $XDG_DATA_HOME/gitstatus/gitstatus.prompt.sh 
 
 # bash_complection
-[[ -f /usr/share/bash-completion/bash_completion ]] && . /usr/share/bash-completion/bash_completion
-[[ -f /usr/local/etc/bash_completion ]] && . /usr/local/etc/bash_completion
+[[ -f $BREW_PREFIX/etc/bash_completion ]] && . /usr/local/etc/bash_completion
 
 # fzf completion
-[[ -f /usr/local/opt/fzf/shell/completion.bash ]] && source /usr/local/opt/fzf/shell/completion.bash
+[[ -f $BREW_PREFIX/opt/fzf/shell/completion.bash ]] && source /usr/local/opt/fzf/shell/completion.bash
 
 # ---------------------------------------------------------------------------
 # alias
