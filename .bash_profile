@@ -44,8 +44,21 @@ export FZF_DEFAULT_OPTS='--height 50% --layout=reverse --border --preview-window
 # ripgrep
 export RIPGREP_CONFIG_PATH=$XDG_CONFIG_HOME/ripgrep/config
 
-# PATH
-export PATH=$GOPATH/bin:$NODEBREW_ROOT/current/bin:$NPM_HOME/bin:$PATH
+# ---------------------------------------------------------------------------↲
+# start tmux↲
+# ---------------------------------------------------------------------------↲
+if [[ -z "$TMUX" ]]; then
+  # PATH
+  export PATH=$GOPATH/bin:$NODEBREW_ROOT/current/bin:$NPM_HOME/bin:$PATH
+  if [[ -f /home/linuxbrew/.linuxbrew/bin/brew  ]]; then
+    eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+  fi
+
+  # TMUX
+  if type tmux > /dev/null 2>&1; then
+    exec tmux -f "$XDG_CONFIG_HOME"/tmux/tmux.conf
+  fi
+fi
 
 # ---------------------------------------------------------------------------
 # load bashrc
