@@ -25,13 +25,13 @@ shopt -s histappend
 [ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
 
 # prompt
-[[ -f "$XDG_DATA_HOME/gitstatus/gitstatus.prompt.sh" ]] && source $XDG_DATA_HOME/gitstatus/gitstatus.prompt.sh 
+[[ -f "$XDG_DATA_HOME/gitstatus/gitstatus.prompt.sh" ]] && . $XDG_DATA_HOME/gitstatus/gitstatus.prompt.sh 
 
 # bash_complection
-[[ -f $BREW_PREFIX/etc/bash_completion ]] && . /usr/local/etc/bash_completion
+[[ -f $BREW_PREFIX/etc/profile.d/bash_completion.sh ]] && . $BREW_PREFIX/etc/profile.d/bash_completion.sh
 
 # fzf completion
-[[ -f $BREW_PREFIX/opt/fzf/shell/completion.bash ]] && source /usr/local/opt/fzf/shell/completion.bash
+[[ -f $BREW_PREFIX/opt/fzf/shell/completion.bash ]] && . $BREW_PREFIX/opt/fzf/shell/completion.bash
 
 # ---------------------------------------------------------------------------
 # alias
