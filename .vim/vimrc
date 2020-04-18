@@ -178,6 +178,7 @@ Plug 'liuchengxu/vista.vim', { 'for': ['go', 'vim', 'sh'] }
 Plug 'dhruvasagar/vim-table-mode', { 'for': 'markdown' }
 Plug 'previm/previm', { 'for': 'markdown' }
 Plug 'tyru/open-browser.vim', { 'for': 'markdown' }
+Plug 'bfrg/vim-qf-preview', { 'for': 'qf' }
 " Extention
 Plug 'tyru/caw.vim', { 'on': '<Plug>(caw:hatpos:toggle)' }
 Plug 'kana/vim-operator-user', { 'on': '<Plug>(operator-replace)' }
