@@ -158,6 +158,35 @@ command! Ghq call fzf#run({
 \ 'window': g:fzf_layout['window'],
 \ })
 
+let s:filer_dir = ''
+function! s:open_filer(selected) abort
+  " echom a:selected[len(a:selected)-1]
+  if a:selected[len(a:selected)-1] == '/'
+    " echom '#### dir ####'
+    let s:filer_dir = s:filer_dir . a:selected
+    call s:fzf_filer(s:filer_dir)
+  else
+    " echom '#### file ####'
+    execute('edit ' . s:filer_dir . a:selected)
+    let s:filer_dir = ''
+    return
+  endif
+endfunction
+
+function! s:fzf_filer(...) abort
+  call popup_clear()
+  let l:cmd = 'ls -aaF1 '
+  if a:0 >= 1
+    let l:cmd = l:cmd . a:1
+  endif
+  call fzf#run({
+  \ 'source': l:cmd,
+  \ 'sink': function('s:open_filer'),
+  \ 'window': g:fzf_layout['window'],
+  \ })
+endfunction
+command! FzfFiler call s:fzf_filer()
+
 nnoremap <silent> <Leader><Leader> :<C-u>FzfHistory<CR>
 nnoremap <silent> <Leader>f :<C-u>FzfFiles<CR>
 nnoremap <silent> <Leader>b :<C-u>FzfBuffers<CR>
@@ -165,6 +194,7 @@ nnoremap <silent> <Leader>l :<C-u>FzfBLines<CR>
 nnoremap <silent> <Leader>R :<C-u>FzfRG<CR>
 nnoremap <silent> <Leader>gs :<C-u>FzfGStatus<CR>
 nnoremap <silent> <Leader>gl :<C-u>FzfCommits<CR>
+nnoremap <silent> <Leader>F :<C-u>FzfFiler<CR>
 inoremap <expr> <c-x><c-k> fzf#vim#complete#word({'left': '15%'})
 
 augroup vimrc_fzf
