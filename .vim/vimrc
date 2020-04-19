@@ -187,6 +187,7 @@ Plug 'glidenote/memolist.vim', { 'on': ['MemoNew', 'MemoList', 'MemoGrep'] }
 Plug 'mbbill/undotree', { 'on': 'UndotreeToggle' }
 Plug 'simeji/winresizer', { 'on': 'WinResizerStartResize' }
 Plug 'mhinz/vim-signify', { 'on': ['SignifyToggle', 'SignifyDiff'] }
+Plug 'voldikss/vim-floaterm', { 'on': ['FloatermNew', 'FloatermToggle'] }
 call plug#end()
 " ============================================================================
 " User config

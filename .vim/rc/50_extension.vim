@@ -34,3 +34,16 @@ let g:vista_close_on_jump = 1
 let g:vista#renderer#enable_icon = 0
 nnoremap <silent> <c-t> :<c-u>Vista!!<CR>
 nnoremap <silent> <Leader>vf :<c-u>Vista finder<CR>
+
+" vim-floaterm
+let g:floaterm_width = 0.9
+let g:floaterm_height = 0.9
+
+nnoremap <silent> <F7>       :FloatermNew<CR>
+tnoremap <silent> <F7>       <C-\><C-n>:FloatermNew<CR>
+nnoremap <silent> <F8>       :FloatermPrev<CR>
+tnoremap <silent> <F8>       <C-\><C-n>:FloatermPrev<CR>
+nnoremap <silent> <F9>       :FloatermNext<CR>
+tnoremap <silent> <F9>       <C-\><C-n>:FloatermNext<CR>
+nnoremap <silent> <C-@>      :FloatermToggle<CR>
+tnoremap <silent> <C-@>      <C-\><C-n>:FloatermToggle<CR>

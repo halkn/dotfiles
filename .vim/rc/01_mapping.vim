@@ -56,11 +56,6 @@ nnoremap <silent> <Leader>ts :<C-u>terminal<CR>
 nnoremap <silent> <Leader>tv :<C-u>vsplit <BAR> terminal ++curwin<CR>
 nnoremap <silent> <Leader>tt :<C-u>tabnew <BAR> terminal ++curwin<CR>
 nnoremap <silent> <Leader>tw :<C-u>terminal ++curwin<CR>
-command! Terminal call popup_create(
-\ term_start([&shell], #{ hidden: 1, term_finish: 'close'}),
-\ #{ border: [], minwidth: float2nr(winwidth(0)*0.9), minheight: float2nr(&lines*0.9) }
-\ )
-nnoremap <silent> <Leader>tp :<C-u>Terminal<CR>
 
 " Toggle options
 nmap [Toggle] <Nop>
