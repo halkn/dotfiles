@@ -1,6 +1,6 @@
-silent! colorscheme monokai
+silent! colorscheme tender
 
 " lightline
 let g:lightline = {
-\ 'colorscheme': 'molokai',
+\ 'colorscheme': 'wombat',
 \ }
