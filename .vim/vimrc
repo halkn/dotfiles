@@ -17,7 +17,8 @@ set noundofile
 set wildmenu
 set display=lastline
 set laststatus=2
-set cursorline
+set nocursorcolumn
+set nocursorline
 set wrap
 set list
 set listchars=tab:\ \ ,trail:-,eol:↲,extends:»,precedes:«,nbsp:%

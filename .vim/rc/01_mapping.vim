@@ -62,6 +62,7 @@ nmap [Toggle] <Nop>
 map <Leader>o [Toggle]
 nnoremap <silent> [Toggle]n :<C-u>setlocal number! number?<CR>
 nnoremap <silent> [Toggle]rn :<C-u>setlocal relativenumber! relativenumber?<CR>
+nnoremap <silent> [Toggle]c :<C-u>setlocal cursorline! cursorcolumn!<CR>
 nnoremap <silent> [Toggle]w :<C-u>setlocal wrap! wrap?<CR>
 nnoremap <silent> [Toggle]p :<C-u>set paste! paste?<CR>
 
