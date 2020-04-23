@@ -154,8 +154,7 @@ let g:markdown_fenced_languages = [
 " ============================================================================
 call plug#begin(expand('$XDG_DATA_HOME/vim/plugged'))
 " global
-Plug 'crusoexia/vim-monokai'
-Plug 'halkn/tender.vim'
+Plug 'sainnhe/sonokai'
 Plug 'itchyny/lightline.vim'
 Plug 'vim-jp/vimdoc-ja'
 Plug 'cohama/lexima.vim'

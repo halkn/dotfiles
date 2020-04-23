@@ -1,8 +1,17 @@
-silent! colorscheme tender
+" sonokai
+let g:sonokai_disable_italic_comment = 1
+let g:sonokai_enable_italic = 0
+let g:sonokai_menu_selection_background = 'blue'
+silent! colorscheme sonokai
+
+highlight link LspErrorText CocErrorSign
+highlight link LspErrorHighlight CocErrorHighlight
+highlight link LspWarningText CocWarningSign
+highlight link LspWarningHighlight CocWarningHighlight
 
 " lightline
 let g:lightline = {
-\ 'colorscheme': 'wombat',
+\ 'colorscheme': 'sonokai',
 \ 'active': {
 \   'left': [ [ 'mode', 'paste' ],
 \             [ 'readonly', 'filename', 'modified' ],
