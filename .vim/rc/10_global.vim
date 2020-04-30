@@ -1,17 +1,18 @@
-" sonokai
-let g:sonokai_disable_italic_comment = 1
-let g:sonokai_enable_italic = 0
-let g:sonokai_menu_selection_background = 'blue'
-silent! colorscheme sonokai
+" vim-equinusocio-material
+let g:equinusocio_material_darker = 1
+colorscheme equinusocio_material
 
 highlight link LspErrorText CocErrorSign
 highlight link LspErrorHighlight CocErrorHighlight
 highlight link LspWarningText CocWarningSign
 highlight link LspWarningHighlight CocWarningHighlight
+highlight LspErrorHighlight gui=underline cterm=underline
+highlight LspWarningHighlight gui=underline cterm=underline
+hi PMenu guibg=#2f2f2f
 
 " lightline
 let g:lightline = {
-\ 'colorscheme': 'sonokai',
+\ 'colorscheme': 'equinusocio_material',
 \ 'active': {
 \   'left': [ [ 'mode', 'paste' ],
 \             [ 'readonly', 'filename', 'modified' ],

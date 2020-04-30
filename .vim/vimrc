@@ -21,7 +21,7 @@ set nocursorcolumn
 set nocursorline
 set wrap
 set list
-set listchars=tab:\ \ ,trail:-,eol:↲,extends:»,precedes:«,nbsp:%
+set listchars=tab:>-,trail:-,eol:↲,extends:»,precedes:«,nbsp:%
 set scrolloff=8
 set synmaxcol=256
 set showcmd
@@ -154,7 +154,7 @@ let g:markdown_fenced_languages = [
 " ============================================================================
 call plug#begin(expand('$XDG_DATA_HOME/vim/plugged'))
 " global
-Plug 'sainnhe/sonokai'
+Plug 'chuling/vim-equinusocio-material'
 Plug 'itchyny/lightline.vim'
 Plug 'vim-jp/vimdoc-ja'
 Plug 'cohama/lexima.vim'
