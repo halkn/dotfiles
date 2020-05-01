@@ -232,7 +232,7 @@ fkill() {
 # gmod - Change GO111MODULE interactively.
 gmod() {
   echo "!!!!! Current GO111MODULE is" $GO111MODULE "!!!!!"
-  local GOMOD=$(echo "on\noff\nauto" | fzf +m)
+  local GOMOD=$(echo -ne "on\noff\nauto" | fzf +m)
   if [ -n "${GOMOD}" ]; then
     export GO111MODULE=${GOMOD}
   fi
