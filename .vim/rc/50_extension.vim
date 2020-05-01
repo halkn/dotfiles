@@ -10,7 +10,7 @@ let g:memolist_delimiter_yaml_start = '---'
 let g:memolist_delimiter_yaml_end  = '---'
 let g:memolist_memo_suffix = 'md'
 let g:memolist_template_dir_path = '$HOME/.dotfiles/etc/templates/memotemplates'
-let g:memolist_fzf = 1
+let g:memolist_ex_cmd = 'FzfFiles'
 nnoremap <Leader>mn :<C-u>MemoNew<CR>
 nnoremap <Leader>mg :<C-u>MemoGrep<CR>
 nnoremap <Leader>ml :<C-u>MemoList<CR>
@@ -32,6 +32,7 @@ let g:signify_disable_by_default = 0
 let g:vista_default_executive = 'vim_lsp'
 let g:vista_close_on_jump = 1
 let g:vista#renderer#enable_icon = 0
+let g:vista_fzf_preview = ['right:60%']
 nnoremap <silent> <c-t> :<c-u>Vista!!<CR>
 nnoremap <silent> <Leader>vf :<c-u>Vista finder<CR>
 
