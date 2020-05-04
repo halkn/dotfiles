@@ -4,6 +4,7 @@ augroup vimrc-ft-indent
   autocmd FileType gitcommit setlocal spell spelllang=cjk,en
   autocmd FileType git setlocal nofoldenable
   autocmd FileType text setlocal textwidth=0
+  autocmd FileType go setlocal noexpandtab tabstop=4 shiftwidth=4
   autocmd FileType vim setlocal tabstop=2 shiftwidth=2
   autocmd FileType sh setlocal tabstop=2 shiftwidth=2
   autocmd FileType zsh setlocal tabstop=2 shiftwidth=2
