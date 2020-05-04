@@ -50,3 +50,11 @@ augroup LightLineOnLSP
   autocmd!
   autocmd User lsp_diagnostics_updated call lightline#update()
 augroup END
+
+" columnskip.vim
+nmap sj <Plug>(columnskip:nonblank:next)
+omap sj <Plug>(columnskip:nonblank:next)
+xmap sj <Plug>(columnskip:nonblank:next)
+nmap sk <Plug>(columnskip:nonblank:prev)
+omap sk <Plug>(columnskip:nonblank:prev)
+xmap sk <Plug>(columnskip:nonblank:prev)

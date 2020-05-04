@@ -160,6 +160,7 @@ Plug 'vim-jp/vimdoc-ja'
 Plug 'cohama/lexima.vim'
 Plug 'machakann/vim-sandwich'
 Plug 'mattn/vim-findroot'
+Plug 'tyru/columnskip.vim'
 " fzf
 Plug 'junegunn/fzf'
 Plug 'junegunn/fzf.vim'
