@@ -158,6 +158,9 @@ Plug 'chuling/vim-equinusocio-material'
 Plug 'itchyny/lightline.vim'
 Plug 'vim-jp/vimdoc-ja'
 Plug 'cohama/lexima.vim'
+Plug 'tyru/caw.vim', { 'on': '<Plug>(caw:hatpos:toggle)' }
+Plug 'kana/vim-operator-user', { 'on': '<Plug>(operator-replace)' }
+Plug 'kana/vim-operator-replace', { 'on': '<Plug>(operator-replace)' }
 Plug 'machakann/vim-sandwich'
 Plug 'mattn/vim-findroot'
 Plug 'tyru/columnskip.vim'
@@ -182,9 +185,6 @@ Plug 'previm/previm', { 'for': 'markdown' }
 Plug 'tyru/open-browser.vim', { 'for': 'markdown' }
 Plug 'bfrg/vim-qf-preview', { 'for': 'qf' }
 " Extention
-Plug 'tyru/caw.vim', { 'on': '<Plug>(caw:hatpos:toggle)' }
-Plug 'kana/vim-operator-user', { 'on': '<Plug>(operator-replace)' }
-Plug 'kana/vim-operator-replace', { 'on': '<Plug>(operator-replace)' }
 Plug 'glidenote/memolist.vim', { 'on': ['MemoNew', 'MemoList', 'MemoGrep'] }
 Plug 'mbbill/undotree', { 'on': 'UndotreeToggle' }
 Plug 'simeji/winresizer', { 'on': 'WinResizerStartResize' }

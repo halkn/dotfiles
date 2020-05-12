@@ -1,10 +1,3 @@
-" caw.vim
-nmap <Leader>c <Plug>(caw:hatpos:toggle)
-vmap <Leader>c <Plug>(caw:hatpos:toggle)
-
-" vim-operator-replace
-map R <Plug>(operator-replace)
-
 " memolist.vim
 let g:memolist_delimiter_yaml_start = '---'
 let g:memolist_delimiter_yaml_end  = '---'

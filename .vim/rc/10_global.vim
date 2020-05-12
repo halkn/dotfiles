@@ -1,4 +1,4 @@
-" vim-equinusocio-material
+" vim-equinusocio-material --------------------------------------------------
 let g:equinusocio_material_darker = 1
 colorscheme equinusocio_material
 
@@ -10,7 +10,7 @@ highlight LspErrorHighlight gui=underline cterm=underline
 highlight LspWarningHighlight gui=underline cterm=underline
 hi PMenu guibg=#2f2f2f
 
-" lightline
+" lightline -----------------------------------------------------------------
 let g:lightline = {
 \ 'colorscheme': 'equinusocio_material',
 \ 'active': {
@@ -51,7 +51,14 @@ augroup LightLineOnLSP
   autocmd User lsp_diagnostics_updated call lightline#update()
 augroup END
 
-" columnskip.vim
+" caw.vim -------------------------------------------------------------------
+nmap <Leader>c <Plug>(caw:hatpos:toggle)
+vmap <Leader>c <Plug>(caw:hatpos:toggle)
+
+" vim-operator-replace ------------------------------------------------------
+map R <Plug>(operator-replace)
+
+" columnskip.vim ------------------------------------------------------------
 nmap sj <Plug>(columnskip:nonblank:next)
 omap sj <Plug>(columnskip:nonblank:next)
 xmap sj <Plug>(columnskip:nonblank:next)
