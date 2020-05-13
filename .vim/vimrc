@@ -199,9 +199,569 @@ Plug 'voldikss/vim-floaterm', { 'on': ['FloatermNew', 'FloatermToggle'] }
 call plug#end()
 
 " ============================================================================
+" Mapping
+" ============================================================================
+" reload vimrc
+nnoremap <Space>s :source $MYVIMRC<CR>
+
+" Clear search highlight
+nnoremap <Esc><Esc> :nohlsearch<CR><Esc>
+
+" Multi line move
+noremap k gk
+noremap j gj
+noremap gk k
+noremap gj j
+noremap <Down> gj
+noremap <Up> gk
+
+" Move cursor like emacs in Insert Mode
+inoremap <C-b> <Left>
+inoremap <C-f> <Right>
+inoremap <C-a> <C-o>^
+inoremap <C-e> <End>
+inoremap <C-d> <Del>
+
+" Move cursor like emacs in Insert Mode
+cnoremap <C-b> <Left>
+cnoremap <C-f> <Right>
+cnoremap <C-a> <HOME>
+cnoremap <C-e> <END>
+
+" Move cursor the begining and end of line
+nnoremap H ^
+nnoremap L $
+vnoremap H ^
+vnoremap L $
+
+" Move between windows
+nnoremap <tab>   <c-w>w
+nnoremap <S-tab> <c-w>W
+
+" Not yank is delete operation
+nnoremap x "_x
+
+" Disable s operation
+nnoremap s <Nop>
+vnoremap s <Nop>
+
+" Indent in visual and select mode automatically re-selects.
+vnoremap > >gv
+vnoremap < <gv
+
+" Quit the current window
+nnoremap <silent> <C-q> :q<CR>
+inoremap <silent> <C-q> <Esc>:q<CR>
+tnoremap <silent> <C-q> <C-w>N:q!<CR>
+
+" open termianl in vertial split,new tab,current winddow
+nnoremap <silent> <Leader>ts :<C-u>terminal<CR>
+nnoremap <silent> <Leader>tv :<C-u>vsplit <BAR> terminal ++curwin<CR>
+nnoremap <silent> <Leader>tt :<C-u>tabnew <BAR> terminal ++curwin<CR>
+nnoremap <silent> <Leader>tw :<C-u>terminal ++curwin<CR>
+
+" Toggle options
+nmap [Toggle] <Nop>
+map <Leader>o [Toggle]
+nnoremap <silent> [Toggle]n :<C-u>setlocal number! number?<CR>
+nnoremap <silent> [Toggle]rn :<C-u>setlocal relativenumber! relativenumber?<CR>
+nnoremap <silent> [Toggle]c :<C-u>setlocal cursorline! cursorcolumn!<CR>
+nnoremap <silent> [Toggle]w :<C-u>setlocal wrap! wrap?<CR>
+nnoremap <silent> [Toggle]p :<C-u>set paste! paste?<CR>
+
+" Shortening for ++enc=
+cnoreabbrev ++u ++enc=utf8
+cnoreabbrev ++c ++enc=cp932
+cnoreabbrev ++s ++enc=sjis
+
+" quickfix
+nnoremap <silent> [q :<C-u>cprev<CR>
+nnoremap <silent> ]q :<C-u>cnext<CR>
+
+function! ToggleQuickfix()
+    let l:nr = winnr('$')
+    cwindow
+    let l:nr2 = winnr('$')
+    if l:nr == l:nr2
+        cclose
+    endif
+endfunction
+nnoremap <script> <silent> Q :call ToggleQuickfix()<CR>
+
+" ============================================================================
+" autocmd
+" ============================================================================
+" indent by FileType
+augroup vimrc-ft-indent
+  autocmd!
+  autocmd FileType gitcommit setlocal spell spelllang=cjk,en
+  autocmd FileType git setlocal nofoldenable
+  autocmd FileType text setlocal textwidth=0
+  autocmd FileType go setlocal noexpandtab tabstop=4 shiftwidth=4
+  autocmd FileType vim setlocal tabstop=2 shiftwidth=2
+  autocmd FileType sh setlocal tabstop=2 shiftwidth=2
+  autocmd FileType zsh setlocal tabstop=2 shiftwidth=2
+  autocmd FileType yaml setlocal tabstop=2 shiftwidth=2
+  autocmd FileType json setlocal tabstop=2 shiftwidth=2
+augroup END
+
+" quickfix
+augroup vimrc-ft-quickfix
+  autocmd!
+  autocmd FileType qf setlocal signcolumn=no
+  autocmd Filetype qf nnoremap <silent> <buffer> p <CR>zz<C-w>p
+  autocmd Filetype qf nnoremap <silent> <buffer> q <C-w>c
+augroup END
+
+" vim help
+augroup vimrc-ft-help
+  autocmd!
+  autocmd FileType help wincmd L
+  autocmd FileType help setlocal signcolumn=no
+  autocmd FileType help nnoremap <silent> <buffer> q <C-w>c
+augroup END
+
+" ============================================================================
+" Plugin config
+" ============================================================================
+" Global ---------------------------------------------------------------------
+" vim-equinusocio-material
+let g:equinusocio_material_darker = 1
+colorscheme equinusocio_material
+
+highlight link LspErrorText CocErrorSign
+highlight link LspErrorHighlight CocErrorHighlight
+highlight link LspWarningText CocWarningSign
+highlight link LspWarningHighlight CocWarningHighlight
+highlight LspErrorHighlight gui=underline cterm=underline
+highlight LspWarningHighlight gui=underline cterm=underline
+hi PMenu guibg=#2f2f2f
+
+" lightline
+let g:lightline = {
+\ 'colorscheme': 'equinusocio_material',
+\ 'active': {
+\   'left': [ [ 'mode', 'paste' ],
+\             [ 'readonly', 'filename', 'modified' ],
+\             [ 'lsp_errors', 'lsp_warnings', 'lsp_ok' ] ]
+\ },
+\ 'component_expand': {
+\   'lsp_warnings': 'LightlineLSPWarnings',
+\   'lsp_errors':   'LightlineLSPErrors',
+\   'lsp_ok':       'LightlineLSPOk',
+\ },
+\ 'component_type': {
+\   'lsp_warnings': 'warning',
+\   'lsp_errors':   'error',
+\   'lsp_ok':       'middle',
+\ },
+\ }
+
+function! LightlineLSPWarnings() abort
+  let l:counts = lsp#ui#vim#diagnostics#get_buffer_diagnostics_counts()
+  return l:counts.warning == 0 ? '' : printf('!!:%d', l:counts.warning)
+endfunction
+
+function! LightlineLSPErrors() abort
+  let l:counts = lsp#ui#vim#diagnostics#get_buffer_diagnostics_counts()
+  return l:counts.error == 0 ? '' : printf('✗:%d', l:counts.error)
+endfunction
+
+function! LightlineLSPOk() abort
+  let l:counts =  lsp#ui#vim#diagnostics#get_buffer_diagnostics_counts()
+  let l:total = l:counts.error + l:counts.warning
+  return l:total == 0 ? 'OK' : ''
+endfunction
+
+augroup LightLineOnLSP
+  autocmd!
+  autocmd User lsp_diagnostics_updated call lightline#update()
+augroup END
+
+" caw.vim
+nmap <Leader>c <Plug>(caw:hatpos:toggle)
+vmap <Leader>c <Plug>(caw:hatpos:toggle)
+
+" vim-operator-replace
+map R <Plug>(operator-replace)
+
+" columnskip.vim
+nmap sj <Plug>(columnskip:nonblank:next)
+omap sj <Plug>(columnskip:nonblank:next)
+xmap sj <Plug>(columnskip:nonblank:next)
+nmap sk <Plug>(columnskip:nonblank:prev)
+omap sk <Plug>(columnskip:nonblank:prev)
+xmap sk <Plug>(columnskip:nonblank:prev)
+
+" fzf ------------------------------------------------------------------------
+let g:fzf_command_prefix = 'Fzf'
+let g:fzf_layout = { 'window': { 'width': 0.95, 'height': 0.9 } }
+
+command! -bang -nargs=? -complete=dir FzfFiles
+\ call fzf#vim#files(<q-args>, fzf#vim#with_preview(), <bang>0)
+
+command! -bang -nargs=* FzfRg
+\ call fzf#vim#grep(
+\   'rg --column --line-number --no-heading --color=always --smart-case --hidden -- '.shellescape(<q-args>),
+\   1,
+\   fzf#vim#with_preview(), <bang>0
+\ )
+
+function! RipgrepFzf(query, fullscreen)
+  let command_fmt = 'rg --hidden --column --line-number --no-heading --color=always --smart-case -- %s || true'
+  let initial_command = printf(command_fmt, shellescape(a:query))
+  let reload_command = printf(command_fmt, '{q}')
+  let spec = {'options': ['--phony', '--query', a:query, '--bind', 'change:reload:'.reload_command]}
+  call fzf#vim#grep(initial_command, 1, fzf#vim#with_preview(spec), a:fullscreen)
+endfunction
+
+command! -nargs=* -bang FzfRG call RipgrepFzf(<q-args>, <bang>0)
+
+function! s:sink_git_status(selected) abort
+  let l:key=a:selected[0]
+  let l:lines=a:selected[1:]
+
+  if l:key == 'ctrl-m'
+    for l:li in l:lines
+      let l:fi=split(l:li)[1]
+      if l:li[0] == ' ' || l:li[0] == '?'
+        call system('git add ' . l:fi)
+      else
+        call system('git reset -q HEAD '. l:fi)
+      endif
+    endfor
+    call s:fzf_git_status()
+  endif
+
+  if len(l:lines) != 1
+      echo l:key . ' cannot use multiple selection' 
+      return
+  endif
+
+  if l:key == 'space'
+    execute('!git commit')
+    return
+  endif
+
+  let l:file=split(a:selected[1])[1]
+  if l:key == 'ctrl-e'
+    execute('edit ' . l:file)
+    return
+  endif
+
+  if l:key == 'ctrl-x'
+    execute('split ' . l:file)
+    return
+  endif
+
+  if l:key == 'ctrl-v'
+    execute('vsplit ' . l:file)
+    return
+  endif
+
+endfunction
+
+function! s:fzf_git_status() abort
+  let l:spec = {
+  \ 'source': 'git status -s',
+  \ 'sink*': function('s:sink_git_status'),
+  \ 'options': [
+  \   '--ansi',
+  \   '--multi',
+  \   '--expect=ctrl-m,ctrl-e,ctrl-x,ctrl-v,space',
+  \   '--preview', 'git diff --color=always -- {-1} | diff-so-fancy',
+  \   '--bind', 'ctrl-f:preview-page-down,ctrl-b:preview-page-up',
+  \   '--bind', 'ctrl-o:toggle-preview',
+  \ ]
+  \ }
+  call fzf#run(fzf#wrap(l:spec))
+endfunction
+
+command! -bang -nargs=* FzfGStatus call s:fzf_git_status()
+
+function! s:sink_git_log(selected) abort
+  let l:key = a:selected[0]
+
+  let l:tmp = split(a:selected[1])
+  let l:id = l:tmp[match(l:tmp, '[a-f0-9]\{7}')]
+
+  let l:term_cmd = [
+  \ &shell,
+  \ &shellcmdflag,
+  \ 'git --no-pager show --color=always ' . l:id
+  \ ]
+  let l:term_opt = {}
+  if l:key == 'ctrl-v'
+    let l:term_opt.vertical = v:true
+  elseif l:key == 'ctrl-m'
+    let l:term_opt.curwin = v:true
+  endif
+
+  call term_start(l:term_cmd, l:term_opt)
+  return
+endfunction
+
+function! s:fzf_git_log(...) abort
+  let l:cmd = '
+  \ git log
+  \ --graph
+  \ --color=always
+  \ --abbrev=7
+  \ --format="%C(auto)%h%d %an %C(blue)%s %C(yellow)%cr"
+  \ '
+
+  if a:0 >= 1
+    let l:cmd = l:cmd . a:1
+  endif
+
+  let l:preview_cmd = '
+  \ echo -- {} |
+  \ grep -o "[a-f0-9]\{7\}" |
+  \ xargs -I @ git show --color=always @ $* |
+  \ diff-so-fancy
+  \'
+
+  let l:spec = {
+  \ 'source': l:cmd,
+  \ 'sink*': function('s:sink_git_log'),
+  \ 'options': [
+  \   '--ansi',
+  \   '--exit-0',
+  \   '--no-sort',
+  \   '--tiebreak=index',
+  \   '--preview', l:preview_cmd,
+  \   '--expect=ctrl-m,ctrl-x,ctrl-v',
+  \   '--bind', 'ctrl-f:preview-page-down,ctrl-b:preview-page-up',
+  \   '--bind', 'ctrl-o:toggle-preview',
+  \   '--bind', 'ctrl-y:execute:(echo -- {} | grep -o "[a-f0-9]\{7\}" | tr -d \\n | pbcopy)',
+  \ ]
+  \ }
+  call fzf#run(fzf#wrap(l:spec))
+endfunction
+
+command! FzfCommits call s:fzf_git_log()
+command! FzfBCommits call s:fzf_git_log(expand('%'))
+
+let s:filer_dir = ''
+function! s:open_filer(selected) abort
+  " echom a:selected[len(a:selected)-1]
+  if a:selected[len(a:selected)-1] == '/'
+    " echom '#### dir ####'
+    let s:filer_dir = s:filer_dir . a:selected
+    call s:fzf_filer(s:filer_dir)
+  else
+    " echom '#### file ####'
+    execute('edit ' . s:filer_dir . a:selected)
+    let s:filer_dir = ''
+    return
+  endif
+endfunction
+
+function! s:fzf_filer(...) abort
+  call popup_clear()
+  let l:cmd = 'ls -aaF1 '
+  if a:0 >= 1
+    let l:cmd = l:cmd . a:1
+  endif
+  call fzf#run({
+  \ 'source': l:cmd,
+  \ 'sink': function('s:open_filer'),
+  \ 'window': g:fzf_layout['window'],
+  \ })
+endfunction
+command! FzfFiler call s:fzf_filer()
+
+nnoremap <silent> <Leader><Leader> :<C-u>FzfHistory<CR>
+nnoremap <silent> <Leader>f :<C-u>FzfFiles<CR>
+nnoremap <silent> <Leader>b :<C-u>FzfBuffers<CR>
+nnoremap <silent> <Leader>l :<C-u>FzfBLines<CR>
+nnoremap <silent> <Leader>R :<C-u>FzfRG<CR>
+nnoremap <silent> <Leader>gs :<C-u>FzfGStatus<CR>
+nnoremap <silent> <Leader>gl :<C-u>FzfCommits<CR>
+nnoremap <silent> <Leader>F :<C-u>FzfFiler<CR>
+inoremap <expr> <c-x><c-k> fzf#vim#complete#word({'left': '15%'})
+
+augroup vimrc_fzf
+  au!
+  autocmd FileType fzf tnoremap <buffer> <silent> <Esc> <Esc>
+augroup END
+
+" LSP ------------------------------------------------------------------------
+" vim-lsp-settings
+let g:lsp_settings = {
+\ 'gopls': {
+\   'workspace_config': { 'gopls':
+\     {
+\       'hoverKind': 'SynopsisDocumentation',
+\       'completeUnimported': v:true,
+\       'usePlaceholders': v:true,
+\       'staticcheck': v:true,
+\     }
+\   }
+\ },
+\ 'efm-langserver': {
+\   'disabled': 0,
+\   'whitelist': ['go', 'markdown', 'json', 'sh']
+\ }
+\}
+
+" vim-lsp
+let g:lsp_async_completion = 1
+let g:lsp_diagnostics_enabled = 1
+let g:lsp_signs_enabled = 1
+let g:lsp_diagnostics_echo_cursor = 1
+let g:lsp_diagnostics_float_cursor = 0
+let g:lsp_signs_priority = 11
+let g:lsp_signs_error = {'text': '✗'}
+let g:lsp_signs_warning = {'text': '!!'}
+let g:lsp_signs_information = {'text': '●'}
+let g:lsp_signs_hint = {'text': '▲'}
+
+function! s:setup_lsp() abort
+  setlocal omnifunc=lsp#complete
+  nmap <silent> <buffer> gd <Plug>(lsp-definition)
+  nmap <silent> <buffer> gy <Plug>(lsp-type-definition)
+  nmap <silent> <buffer> gr <Plug>(lsp-references)
+  nmap <silent> <buffer> K <Plug>(lsp-hover)
+  nmap <silent> <buffer> <LocalLeader>k <Plug>(lsp-peek-definition)
+  nmap <silent> <buffer> <F2> <Plug>(lsp-rename)
+  nmap <silent> <buffer> <LocalLeader>d <plug>(lsp-document-diagnostics)
+endfunction
+
+augroup vimrc-lsp-setup
+  au!
+  " call s:on_lsp_buffer_enabled only for languages that has the server registered.
+  autocmd User lsp_buffer_enabled call s:setup_lsp()
+  autocmd BufWritePre *.go  call execute('LspDocumentFormatSync') |
+    \ call execute('LspCodeActionSync source.organizeImports')
+  autocmd BufWrite *.json call execute('LspDocumentFormatSync')
+  autocmd BufWrite *.sh call execute('LspDocumentFormatSync')
+augroup END
+
+" asyncomplete.vim
+let g:asyncomplete_auto_completeopt = 0
+
+" vim-vsnip
+imap <expr><Tab> vsnip#available(1)    ? '<Plug>(vsnip-expand-or-jump)' : lexima#expand('<LT>Tab>', 'i')
+smap <expr><Tab> vsnip#available(1)    ? '<Plug>(vsnip-expand-or-jump)' : lexima#expand('<LT>Tab>', 'i')
+imap <expr><S-Tab> vsnip#available(-1) ? '<Plug>(vsnip-jump-prev)'      : lexima#expand('<LT>S-Tab>', 'i')
+smap <expr><S-Tab> vsnip#available(-1) ? '<Plug>(vsnip-jump-prev)'      : lexima#expand('<LT>S-Tab>', 'i')
+let g:vsnip_snippet_dir = expand(g:my_config_dir . '/snippets')
+
+" vim-vsnip-integ
+let g:vsnip_integ_config = {
+\ 'vim_lsp': v:true,
+\ 'vim_lsc': v:false,
+\ 'lamp': v:false,
+\ 'deoplete_lsp': v:false,
+\ 'nvim_lsp': v:false,
+\ 'language_client_neovim': v:false,
+\ 'asyncomplete': v:true,
+\ 'deoplete': v:false,
+\ 'mucomplete': v:false,
+\ }
+
+" Develop --------------------------------------------------------------------
+" asyncrun.vim
+let g:asyncrun_open = 8
+command! -nargs=* Grep AsyncRun -program=grep -strip <f-args>
+
+" vim-test
+let g:test#preserve_screen = 1
+let test#strategy = "asyncrun_background"
+
+augroup vimrc_dev_plugin
+  au!
+  " asyncrun.vim
+  autocmd FileType go nnoremap <silent> <buffer> <LocalLeader>r
+  \ :<C-u>AsyncRun -mode=term -pos=right -cols=80 -focus=0 go run $VIM_RELNAME<CR>
+  autocmd FileType sh nnoremap <silent> <buffer> <LocalLeader>r
+  \ :<C-u>AsyncRun -mode=term -pos=right -cols=80 -focus=0 sh $VIM_RELNAME<CR>
+  " vim-test
+  autocmd FileType go,vim,sh nnoremap <silent> <buffer> <LocalLeader>t :<C-u>TestFile<CR>
+  autocmd FileType go,vim,sh nnoremap <silent> <buffer> TN :<C-u>TestNearest<CR>
+  autocmd FileType go,vim,sh nnoremap <silent> <buffer> TF :<C-u>TestFile<CR>
+  autocmd FileType go,vim,sh nnoremap <silent> <buffer> TS :<C-u>TestSuite<CR>
+  autocmd FileType go,vim,sh nnoremap <silent> <buffer> TL :<C-u>TestLast<CR>
+  autocmd FileType go,vim,sh nnoremap <silent> <buffer> TV :<C-u>TestVisit<CR>
+  " vim-altr
+  autocmd FileType go,vim,sh nmap <buffer> <LocalLeader>a <Plug>(altr-forward)
+  autocmd FileType go,vim,sh command! -buffer A  call altr#forward()
+augroup END
+
+" ----------------------------------------------------------------------------
+" filetype
+" ----------------------------------------------------------------------------
+" vim-table-mode
+let g:table_mode_corner = '|'
+let g:table_mode_map_prefix = '<LocalLeader>'
+
+" previm
+augroup vimrc_previm
+  au!
+  autocmd FileType markdown nnoremap <buffer> <silent> <LocalLeader>p :<C-u>PrevimOpen<CR>
+augroup END
+
+" vim-qf-preview
+let g:qfpreview = {
+\ 'number': 1,
+\ 'sign': {'text': '>>', 'texthl': 'Todo'}
+\ }
+augroup vimrc_qfpreview
+  autocmd!
+  autocmd FileType qf nmap <buffer> p <plug>(qf-preview-open)
+augroup END
+
+" ----------------------------------------------------------------------------
+" Extention
+" ----------------------------------------------------------------------------
+" memolist.vim
+let g:memolist_delimiter_yaml_start = '---'
+let g:memolist_delimiter_yaml_end  = '---'
+let g:memolist_memo_suffix = 'md'
+let g:memolist_template_dir_path = '$HOME/.dotfiles/etc/templates/memotemplates'
+let g:memolist_ex_cmd = 'FzfFiles'
+nnoremap <Leader>mn :<C-u>MemoNew<CR>
+nnoremap <Leader>mg :<C-u>MemoGrep<CR>
+nnoremap <Leader>ml :<C-u>MemoList<CR>
+
+" undotree
+nnoremap <silent> <Leader>u :UndotreeToggle<cr>
+let g:undotree_WindowLayout = 2
+
+" winresizer
+let g:winresizer_start_key = '<C-w>r'
+nnoremap <silent> <C-w>r :WinResizerStartResize<CR>
+
+" vim-signify
+noremap <silent> <C-y> :SignifyToggle<CR>
+noremap <silent> <Leader>gd :SignifyDiff<CR>
+let g:signify_disable_by_default = 0
+
+" vista.vim
+let g:vista_default_executive = 'vim_lsp'
+let g:vista_close_on_jump = 1
+let g:vista#renderer#enable_icon = 0
+let g:vista_fzf_preview = ['right:60%']
+nnoremap <silent> <c-t> :<c-u>Vista!!<CR>
+nnoremap <silent> <Leader>vf :<c-u>Vista finder<CR>
+
+" vim-floaterm
+let g:floaterm_width = 0.9
+let g:floaterm_height = 0.9
+nnoremap <silent> <F7>       :FloatermNew<CR>
+tnoremap <silent> <F7>       <C-\><C-n>:FloatermNew<CR>
+nnoremap <silent> <F8>       :FloatermPrev<CR>
+tnoremap <silent> <F8>       <C-\><C-n>:FloatermPrev<CR>
+nnoremap <silent> <F9>       :FloatermNext<CR>
+tnoremap <silent> <F9>       <C-\><C-n>:FloatermNext<CR>
+nnoremap <silent> <C-@>      :FloatermToggle<CR>
+tnoremap <silent> <C-@>      <C-\><C-n>:FloatermToggle<CR>
+
+" ============================================================================
 " User config
 " ============================================================================
-call map(
-\ sort(split(globpath(g:my_config_dir . '/rc/', '*.vim'))),
-\ {->[execute('exec "so" v:val')]}
-\ )
+" call map(
+"\ sort(split(globpath(g:my_config_dir . '/rc/', '*.vim'))),
+"\ {->[execute('exec "so" v:val')]}
+"\ )
