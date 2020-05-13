@@ -185,7 +185,6 @@ Plug 'hrsh7th/vim-vsnip-integ'
 Plug 'kana/vim-altr', { 'for': ['go', 'vim', 'sh'] }
 Plug 'janko/vim-test', { 'for': ['go', 'vim', 'sh'] }
 Plug 'skywind3000/asyncrun.vim', { 'for': ['go', 'vim', 'sh'], 'on': 'AsyncRun' }
-Plug 'liuchengxu/vista.vim', { 'for': ['go', 'vim', 'sh'] }
 Plug 'dhruvasagar/vim-table-mode', { 'for': 'markdown' }
 Plug 'previm/previm', { 'for': 'markdown' }
 Plug 'tyru/open-browser.vim', { 'for': 'markdown' }
@@ -195,6 +194,7 @@ Plug 'glidenote/memolist.vim', { 'on': ['MemoNew', 'MemoList', 'MemoGrep'] }
 Plug 'mbbill/undotree', { 'on': 'UndotreeToggle' }
 Plug 'simeji/winresizer', { 'on': 'WinResizerStartResize' }
 Plug 'mhinz/vim-signify', { 'on': ['SignifyToggle', 'SignifyDiff'] }
+Plug 'liuchengxu/vista.vim', { 'on': ['Vista!!', 'Vista'] }
 Plug 'voldikss/vim-floaterm', { 'on': ['FloatermNew', 'FloatermToggle'] }
 call plug#end()
 
