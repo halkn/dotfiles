@@ -197,13 +197,13 @@ function! PackInit() abort
   call minpac#add('dhruvasagar/vim-table-mode')
   call minpac#add('previm/previm')
   call minpac#add('tyru/open-browser.vim')
-  call minpac#add('bfrg/vim-qf-preview')
   " Extension
   call minpac#add('glidenote/memolist.vim')
   call minpac#add('mbbill/undotree')
   call minpac#add('simeji/winresizer')
   call minpac#add('mhinz/vim-signify')
   call minpac#add('voldikss/vim-floaterm')
+  call minpac#add('bfrg/vim-qf-preview')
 endfunction
 
 let &packpath = g:my_data_dir .. ',' .. &packpath
@@ -677,6 +677,14 @@ let g:vsnip_integ_config = {
 \ 'mucomplete': v:false,
 \ }
 
+" vista.vim
+let g:vista_default_executive = 'vim_lsp'
+let g:vista_close_on_jump = 1
+let g:vista#renderer#enable_icon = 0
+let g:vista_fzf_preview = ['right:60%']
+nnoremap <silent> <c-t> :<c-u>Vista!!<CR>
+nnoremap <silent> <Leader>vf :<c-u>Vista finder<CR>
+
 " Develop --------------------------------------------------------------------
 " asyncrun.vim
 let g:asyncrun_open = 8
@@ -703,9 +711,6 @@ augroup vimrc_vim_test
   autocmd FileType go,vim nnoremap <silent> <buffer> TV :<C-u>TestVisit<CR>
 augroup END
 
-" ----------------------------------------------------------------------------
-" filetype
-" ----------------------------------------------------------------------------
 " vim-altr
 augroup vimrc_altr
   au!
@@ -713,6 +718,9 @@ augroup vimrc_altr
   autocmd FileType go,vim command! -buffer A  call altr#forward()
 augroup END
 
+" ----------------------------------------------------------------------------
+" FileType
+" ----------------------------------------------------------------------------
 " vim-table-mode
 let g:table_mode_corner = '|'
 let g:table_mode_map_prefix = '<LocalLeader>'
@@ -721,16 +729,6 @@ let g:table_mode_map_prefix = '<LocalLeader>'
 augroup vimrc_previm
   au!
   autocmd FileType markdown nnoremap <buffer> <silent> <LocalLeader>p :<C-u>PrevimOpen<CR>
-augroup END
-
-" vim-qf-preview
-let g:qfpreview = {
-\ 'number': 1,
-\ 'sign': {'text': '>>', 'texthl': 'Todo'}
-\ }
-augroup vimrc_qfpreview
-  autocmd!
-  autocmd FileType qf nmap <buffer> p <plug>(qf-preview-open)
 augroup END
 
 " ----------------------------------------------------------------------------
@@ -752,20 +750,11 @@ let g:undotree_WindowLayout = 2
 
 " winresizer
 let g:winresizer_start_key = '<C-w>r'
-nnoremap <silent> <C-w>r :WinResizerStartResize<CR>
 
 " vim-signify
 noremap <silent> <C-y> :SignifyToggle<CR>
 noremap <silent> <Leader>gd :SignifyDiff<CR>
 let g:signify_disable_by_default = 0
-
-" vista.vim
-let g:vista_default_executive = 'vim_lsp'
-let g:vista_close_on_jump = 1
-let g:vista#renderer#enable_icon = 0
-let g:vista_fzf_preview = ['right:60%']
-nnoremap <silent> <c-t> :<c-u>Vista!!<CR>
-nnoremap <silent> <Leader>vf :<c-u>Vista finder<CR>
 
 " vim-floaterm
 let g:floaterm_width = 0.9
@@ -778,3 +767,14 @@ nnoremap <silent> <F9>       :FloatermNext<CR>
 tnoremap <silent> <F9>       <C-\><C-n>:FloatermNext<CR>
 nnoremap <silent> <C-@>      :FloatermToggle<CR>
 tnoremap <silent> <C-@>      <C-\><C-n>:FloatermToggle<CR>
+
+" vim-qf-preview
+let g:qfpreview = {
+\ 'number': 1,
+\ 'sign': {'text': '>>', 'texthl': 'Todo'}
+\ }
+augroup vimrc_qfpreview
+  autocmd!
+  autocmd FileType qf nmap <buffer> p <plug>(qf-preview-open)
+augroup END
+
