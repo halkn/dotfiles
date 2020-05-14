@@ -54,6 +54,7 @@ let g:markdown_fenced_languages = [
 " config directory
 let g:my_config_dir = fnamemodify($MYVIMRC, ":h")
 let g:my_cache_dir = expand('$XDG_CACHE_HOME/vim')
+let g:my_data_dir = expand('$XDG_DATA_HOME/vim')
 
 " ============================================================================
 " Global options
@@ -158,46 +159,64 @@ endif
 " ============================================================================
 " Plugin
 " ============================================================================
-call plug#begin(expand('$XDG_DATA_HOME/vim/plugged'))
-" global
-Plug 'chuling/vim-equinusocio-material'
-Plug 'itchyny/lightline.vim'
-Plug 'vim-jp/vimdoc-ja'
-Plug 'cohama/lexima.vim'
-Plug 'tyru/caw.vim', { 'on': '<Plug>(caw:hatpos:toggle)' }
-Plug 'kana/vim-operator-user', { 'on': '<Plug>(operator-replace)' }
-Plug 'kana/vim-operator-replace', { 'on': '<Plug>(operator-replace)' }
-Plug 'machakann/vim-sandwich'
-Plug 'mattn/vim-findroot'
-Plug 'tyru/columnskip.vim'
-" fzf
-Plug 'junegunn/fzf'
-Plug 'junegunn/fzf.vim'
-" lsp
-Plug 'prabirshrestha/async.vim'
-Plug 'prabirshrestha/vim-lsp'
-Plug 'mattn/vim-lsp-settings'
-Plug 'prabirshrestha/asyncomplete.vim'
-Plug 'prabirshrestha/asyncomplete-lsp.vim'
-Plug 'hrsh7th/vim-vsnip'
-Plug 'hrsh7th/vim-vsnip-integ'
-" Develop
-Plug 'skywind3000/asyncrun.vim'
-Plug 'janko/vim-test'
-" filetype
-Plug 'kana/vim-altr', { 'for': ['go', 'vim'] }
-Plug 'dhruvasagar/vim-table-mode', { 'for': 'markdown' }
-Plug 'previm/previm', { 'for': 'markdown' }
-Plug 'tyru/open-browser.vim', { 'for': 'markdown' }
-Plug 'bfrg/vim-qf-preview', { 'for': 'qf' }
-" Extention
-Plug 'glidenote/memolist.vim', { 'on': ['MemoNew', 'MemoList', 'MemoGrep'] }
-Plug 'mbbill/undotree', { 'on': 'UndotreeToggle' }
-Plug 'simeji/winresizer', { 'on': 'WinResizerStartResize' }
-Plug 'mhinz/vim-signify', { 'on': ['SignifyToggle', 'SignifyDiff'] }
-Plug 'liuchengxu/vista.vim', { 'on': ['Vista!!', 'Vista'] }
-Plug 'voldikss/vim-floaterm', { 'on': ['FloatermNew', 'FloatermToggle'] }
-call plug#end()
+function! PackInit() abort
+  packadd minpac
+
+  call minpac#init()
+  call minpac#add('k-takata/minpac', {'type': 'opt'})
+
+  " global
+  call minpac#add('chuling/vim-equinusocio-material')
+  call minpac#add('itchyny/lightline.vim')
+  call minpac#add('vim-jp/vimdoc-ja')
+  call minpac#add('mattn/vim-findroot')
+  call minpac#add('tyru/columnskip.vim')
+  call minpac#add('cohama/lexima.vim')
+  call minpac#add('tyru/caw.vim')
+  call minpac#add('machakann/vim-sandwich')
+  call minpac#add('kana/vim-operator-user')
+  call minpac#add('kana/vim-operator-replace')
+  " fuzzy finder
+  call minpac#add('ichizok/fzf', { 'branch': 'patch-1' })
+  " call minpac#add('junegunn/fzf')
+  call minpac#add('junegunn/fzf.vim')
+  " LSP
+  call minpac#add('prabirshrestha/async.vim')
+  call minpac#add('prabirshrestha/vim-lsp')
+  call minpac#add('mattn/vim-lsp-settings')
+  call minpac#add('prabirshrestha/asyncomplete.vim')
+  call minpac#add('prabirshrestha/asyncomplete-lsp.vim')
+  call minpac#add('hrsh7th/vim-vsnip')
+  call minpac#add('hrsh7th/vim-vsnip-integ')
+  call minpac#add('liuchengxu/vista.vim')
+  " Develop
+  call minpac#add('skywind3000/asyncrun.vim')
+  call minpac#add('janko/vim-test')
+  call minpac#add('kana/vim-altr')
+  " FileType
+  call minpac#add('dhruvasagar/vim-table-mode')
+  call minpac#add('previm/previm')
+  call minpac#add('tyru/open-browser.vim')
+  call minpac#add('bfrg/vim-qf-preview')
+  " Extension
+  call minpac#add('glidenote/memolist.vim')
+  call minpac#add('mbbill/undotree')
+  call minpac#add('simeji/winresizer')
+  call minpac#add('mhinz/vim-signify')
+  call minpac#add('voldikss/vim-floaterm')
+endfunction
+
+" command! PackUpdate call PackInit() | call minpac#update()
+" command! PackClean  call PackInit() | call minpac#clean()
+" command! PackStatus packadd minpac | call minpac#status()
+" set packpath^=~/.local/share/vim/
+let &packpath = g:my_data_dir .. ',' .. &packpath
+command! PackUpdate source $MYVIMRC | call PackInit() | call minpac#update()
+command! PackClean  source $MYVIMRC | call PackInit() | call minpac#clean()
+command! PackStatus packadd minpac | call minpac#status()
+
+filetype plugin indent on
+syntax enable
 
 " ============================================================================
 " Mapping

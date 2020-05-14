@@ -78,9 +78,9 @@ if [ ! -f "$XDG_DATA_HOME/gitstatus/gitstatus.prompt.sh" ]; then
 fi
 
 # vim plugin manager
-if [[ ! -e ${HOME}/.vim/autoload/plug.vim ]]; then
-  curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
-    https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+if [[ ! -d "${XDG_DATA_HOME}/vim/pack/minpac/opt/minpac" ]]; then
+  git clone -b devel https://github.com/k-takata/minpac.git \
+    ~/.local/share/vim/pack/minpac/opt/minpac
 fi
 
 exit 0
