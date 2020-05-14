@@ -206,10 +206,6 @@ function! PackInit() abort
   call minpac#add('voldikss/vim-floaterm')
 endfunction
 
-" command! PackUpdate call PackInit() | call minpac#update()
-" command! PackClean  call PackInit() | call minpac#clean()
-" command! PackStatus packadd minpac | call minpac#status()
-" set packpath^=~/.local/share/vim/
 let &packpath = g:my_data_dir .. ',' .. &packpath
 command! PackUpdate source $MYVIMRC | call PackInit() | call minpac#update()
 command! PackClean  source $MYVIMRC | call PackInit() | call minpac#clean()
