@@ -51,11 +51,6 @@ let g:markdown_fenced_languages = [
 \  'java',
 \]
 
-" config directory
-let g:my_config_dir = fnamemodify($MYVIMRC, ":h")
-let g:my_cache_dir = expand('$XDG_CACHE_HOME/vim')
-let g:my_data_dir = expand('$XDG_DATA_HOME/vim')
-
 " ============================================================================
 " Global options
 " ============================================================================
@@ -130,12 +125,12 @@ set helplang=ja,en
 
 " vimfinfo
 if has('viminfo')
-  let &viminfo = &viminfo . ',n' . g:my_cache_dir . '/viminfo'
+  set viminfo+=n$XDG_CACHE_HOME/vim/viminfo
 endif
 
 " undo
 if has("persistent_undo")
-  let &undodir = g:my_cache_dir . '/.undodir'
+  set undodir=$XDG_CACHE_HOME/vim/.undodir
   set undofile
 endif
 
@@ -168,6 +163,7 @@ function! PackInit() abort
   " global
   call minpac#add('chuling/vim-equinusocio-material')
   call minpac#add('itchyny/lightline.vim')
+  call minpac#add('halkn/lightline-lsp')
   call minpac#add('vim-jp/vimdoc-ja')
   call minpac#add('mattn/vim-findroot')
   call minpac#add('tyru/columnskip.vim')
@@ -177,8 +173,7 @@ function! PackInit() abort
   call minpac#add('kana/vim-operator-user')
   call minpac#add('kana/vim-operator-replace')
   " fuzzy finder
-  call minpac#add('ichizok/fzf', { 'branch': 'patch-1' })
-  " call minpac#add('junegunn/fzf')
+  call minpac#add('junegunn/fzf')
   call minpac#add('junegunn/fzf.vim')
   " LSP
   call minpac#add('prabirshrestha/async.vim')
@@ -206,7 +201,7 @@ function! PackInit() abort
   call minpac#add('bfrg/vim-qf-preview')
 endfunction
 
-let &packpath = g:my_data_dir .. ',' .. &packpath
+set packpath^=$XDG_DATA_HOME/vim
 command! PackUpdate source $MYVIMRC | call PackInit() | call minpac#update()
 command! PackClean  source $MYVIMRC | call PackInit() | call minpac#clean()
 command! PackStatus packadd minpac | call minpac#status()
@@ -345,10 +340,6 @@ augroup END
 let g:equinusocio_material_darker = 1
 colorscheme equinusocio_material
 
-highlight link LspErrorText CocErrorSign
-highlight link LspErrorHighlight CocErrorHighlight
-highlight link LspWarningText CocWarningSign
-highlight link LspWarningHighlight CocWarningHighlight
 highlight LspErrorHighlight gui=underline cterm=underline
 highlight LspWarningHighlight gui=underline cterm=underline
 hi PMenu guibg=#2f2f2f
@@ -357,14 +348,14 @@ hi PMenu guibg=#2f2f2f
 let g:lightline = {
 \ 'colorscheme': 'equinusocio_material',
 \ 'active': {
-\   'left': [ [ 'mode', 'paste' ],
-\             [ 'readonly', 'filename', 'modified' ],
-\             [ 'lsp_errors', 'lsp_warnings', 'lsp_ok' ] ]
+\   'right': [ [ 'lsp_errors', 'lsp_warnings', 'lsp_ok', 'lineinfo' ],
+\              [ 'percent' ],
+\              [ 'fileformat', 'fileencoding', 'filetype' ] ]
 \ },
 \ 'component_expand': {
-\   'lsp_warnings': 'LightlineLSPWarnings',
-\   'lsp_errors':   'LightlineLSPErrors',
-\   'lsp_ok':       'LightlineLSPOk',
+\   'lsp_warnings': 'lightline_lsp#warnings',
+\   'lsp_errors':   'lightline_lsp#errors',
+\   'lsp_ok':       'lightline_lsp#ok',
 \ },
 \ 'component_type': {
 \   'lsp_warnings': 'warning',
@@ -372,27 +363,6 @@ let g:lightline = {
 \   'lsp_ok':       'middle',
 \ },
 \ }
-
-function! LightlineLSPWarnings() abort
-  let l:counts = lsp#ui#vim#diagnostics#get_buffer_diagnostics_counts()
-  return l:counts.warning == 0 ? '' : printf('!!:%d', l:counts.warning)
-endfunction
-
-function! LightlineLSPErrors() abort
-  let l:counts = lsp#ui#vim#diagnostics#get_buffer_diagnostics_counts()
-  return l:counts.error == 0 ? '' : printf('✗:%d', l:counts.error)
-endfunction
-
-function! LightlineLSPOk() abort
-  let l:counts =  lsp#ui#vim#diagnostics#get_buffer_diagnostics_counts()
-  let l:total = l:counts.error + l:counts.warning
-  return l:total == 0 ? 'OK' : ''
-endfunction
-
-augroup LightLineOnLSP
-  autocmd!
-  autocmd User lsp_diagnostics_updated call lightline#update()
-augroup END
 
 " caw.vim
 nmap <Leader>c <Plug>(caw:hatpos:toggle)
@@ -662,7 +632,7 @@ imap <expr><Tab> vsnip#available(1)    ? '<Plug>(vsnip-expand-or-jump)' : lexima
 smap <expr><Tab> vsnip#available(1)    ? '<Plug>(vsnip-expand-or-jump)' : lexima#expand('<LT>Tab>', 'i')
 imap <expr><S-Tab> vsnip#available(-1) ? '<Plug>(vsnip-jump-prev)'      : lexima#expand('<LT>S-Tab>', 'i')
 smap <expr><S-Tab> vsnip#available(-1) ? '<Plug>(vsnip-jump-prev)'      : lexima#expand('<LT>S-Tab>', 'i')
-let g:vsnip_snippet_dir = expand(g:my_config_dir . '/snippets')
+let g:vsnip_snippet_dir = expand(fnamemodify($MYVIMRC, ":h") . '/snippets')
 
 " vim-vsnip-integ
 let g:vsnip_integ_config = {
@@ -757,6 +727,7 @@ noremap <silent> <Leader>gd :SignifyDiff<CR>
 let g:signify_disable_by_default = 0
 
 " vim-floaterm
+let g:floaterm_autoclose = 2
 let g:floaterm_width = 0.9
 let g:floaterm_height = 0.9
 nnoremap <silent> <F7>       :FloatermNew<CR>
