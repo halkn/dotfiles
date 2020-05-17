@@ -392,6 +392,7 @@ xmap sk <Plug>(columnskip:nonblank:prev)
 
 " fzf ------------------------------------------------------------------------
 let g:fzf_command_prefix = 'Fzf'
+let g:fzf_preview_window = 'right:60%'
 let g:fzf_layout = { 'window': { 'width': 0.95, 'height': 0.9 } }
 
 command! -bang -nargs=? -complete=dir FzfFiles
