@@ -165,7 +165,6 @@ function! PackInit() abort
   call minpac#add('itchyny/lightline.vim')
   call minpac#add('halkn/lightline-lsp')
   call minpac#add('vim-jp/vimdoc-ja')
-  call minpac#add('mattn/vim-findroot')
   call minpac#add('tyru/columnskip.vim')
   call minpac#add('cohama/lexima.vim')
   call minpac#add('tyru/caw.vim')
@@ -176,15 +175,16 @@ function! PackInit() abort
   call minpac#add('junegunn/fzf')
   call minpac#add('junegunn/fzf.vim')
   " LSP
-  call minpac#add('prabirshrestha/async.vim')
-  call minpac#add('prabirshrestha/vim-lsp')
-  call minpac#add('mattn/vim-lsp-settings')
-  call minpac#add('prabirshrestha/asyncomplete.vim')
-  call minpac#add('prabirshrestha/asyncomplete-lsp.vim')
-  call minpac#add('hrsh7th/vim-vsnip')
-  call minpac#add('hrsh7th/vim-vsnip-integ')
-  call minpac#add('liuchengxu/vista.vim')
+  call minpac#add('prabirshrestha/async.vim', { 'type': 'opt' })
+  call minpac#add('prabirshrestha/vim-lsp', { 'type': 'opt' })
+  call minpac#add('mattn/vim-lsp-settings', { 'type': 'opt' })
+  call minpac#add('prabirshrestha/asyncomplete.vim', { 'type': 'opt' })
+  call minpac#add('prabirshrestha/asyncomplete-lsp.vim', { 'type': 'opt' })
+  call minpac#add('hrsh7th/vim-vsnip', { 'type': 'opt' })
+  call minpac#add('hrsh7th/vim-vsnip-integ', { 'type': 'opt' })
+  call minpac#add('liuchengxu/vista.vim', { 'type': 'opt' })
   " Develop
+  call minpac#add('mattn/vim-findroot')
   call minpac#add('skywind3000/asyncrun.vim')
   call minpac#add('janko/vim-test')
   call minpac#add('kana/vim-altr')
@@ -573,6 +573,24 @@ augroup vimrc_fzf
 augroup END
 
 " LSP ------------------------------------------------------------------------
+function! s:load_lsp() abort
+  packadd async.vim
+  packadd vim-lsp
+  packadd vim-lsp-settings
+  packadd asyncomplete.vim
+  packadd asyncomplete-lsp.vim
+  packadd vim-vsnip
+  packadd vim-vsnip-integ
+  packadd vista.vim
+  execute "doau FileType" expand("<amatch>")
+  call lsp#enable()
+endfunction
+
+augroup vimrc_load_lsp
+  au!
+  autocmd FileType go,vim,sh,json,yaml,markdown ++once call s:load_lsp()
+augroup END
+
 " vim-lsp-settings
 let g:lsp_settings = {
 \ 'gopls': {
@@ -708,7 +726,7 @@ augroup END
 let g:memolist_delimiter_yaml_start = '---'
 let g:memolist_delimiter_yaml_end  = '---'
 let g:memolist_memo_suffix = 'md'
-let g:memolist_template_dir_path = '$HOME/.dotfiles/etc/templates/memotemplates'
+let g:memolist_template_dir_path = expand(fnamemodify($MYVIMRC, ":h") . '/template/memotemplates')
 let g:memolist_ex_cmd = 'FzfFiles'
 nnoremap <Leader>mn :<C-u>MemoNew<CR>
 nnoremap <Leader>mg :<C-u>MemoGrep<CR>
