@@ -5,5 +5,4 @@
 --style="numbers,changes,header"
 
 # Add syntax
---map-syntax .zshenv:zsh
---map-syntax vimrc:vim
+--map-syntax "vimrc:VimL"
