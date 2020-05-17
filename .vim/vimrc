@@ -290,14 +290,25 @@ nnoremap <silent> [q :<C-u>cprev<CR>
 nnoremap <silent> ]q :<C-u>cnext<CR>
 
 function! ToggleQuickfix()
-    let l:nr = winnr('$')
-    cwindow
-    let l:nr2 = winnr('$')
-    if l:nr == l:nr2
-        cclose
-    endif
+  let l:nr = winnr('$')
+  cwindow
+  let l:nr2 = winnr('$')
+  if l:nr == l:nr2
+      cclose
+  endif
 endfunction
-nnoremap <script> <silent> Q :call ToggleQuickfix()<CR>
+nnoremap <script> <silent> mq :call ToggleQuickfix()<CR>
+
+" locationlist
+function! ToggleLocationList()
+  let l:nr = winnr('$')
+  lwindow
+  let l:nr2 = winnr('$')
+  if l:nr == l:nr2
+      lclose
+  endif
+endfunction
+nnoremap <script> <silent> ml :call ToggleLocationList()<CR>
 
 " ============================================================================
 " autocmd
