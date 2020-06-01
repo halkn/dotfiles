@@ -216,26 +216,8 @@ vnoremap H ^
 vnoremap L $
 
 " Move between windows
-nnoremap <C-j> <C-w>w
-nnoremap <C-k> <C-w>W
-inoremap <C-j> <C-\><C-N><C-w>w
-inoremap <C-k> <C-\><C-N><C-w>W
-tnoremap <C-j> <C-\><C-N><C-w>w
-tnoremap <C-k> <C-\><C-N><C-w>W
-
-" Move between windows by <A-*>
-tnoremap <A-h> <C-\><C-N><C-w>h
-tnoremap <A-j> <C-\><C-N><C-w>j
-tnoremap <A-k> <C-\><C-N><C-w>k
-tnoremap <A-l> <C-\><C-N><C-w>l
-inoremap <A-h> <C-\><C-N><C-w>h
-inoremap <A-j> <C-\><C-N><C-w>j
-inoremap <A-k> <C-\><C-N><C-w>k
-inoremap <A-l> <C-\><C-N><C-w>l
-nnoremap <A-h> <C-w>h
-nnoremap <A-j> <C-w>j
-nnoremap <A-k> <C-w>k
-nnoremap <A-l> <C-w>l
+nnoremap <tab>   <c-w>w
+nnoremap <S-tab> <c-w>W
 
 " Not yank is delete operation
 nnoremap x "_x
@@ -341,12 +323,6 @@ augroup vimrc-ft-help
   autocmd FileType help nnoremap <buffer> <BS> <C-T>
 augroup END
 
-" terminal in neovim
-augroup vimrc_ft_terminal
-  au!
-  autocmd TermEnter * startinsert
-augroup END
-
 " ============================================================================
 " Plugin config
 " ============================================================================
@@ -397,7 +373,7 @@ xmap sk <Plug>(columnskip:nonblank:prev)
 
 " fzf ------------------------------------------------------------------------
 let g:fzf_command_prefix = 'Fzf'
-let g:fzf_preview_window = 'right:60%'
+let g:fzf_preview_window = 'down:60%'
 let g:fzf_layout = { 'window': { 'width': 0.95, 'height': 0.9 } }
 
 command! -bang -nargs=? -complete=dir FzfFiles
@@ -430,8 +406,6 @@ inoremap <expr> <c-x><c-k> fzf#vim#complete#word({'left': '15%'})
 augroup vimrc_fzf
   au!
   autocmd FileType fzf tnoremap <buffer> <silent> <Esc> <Esc>
-  autocmd FileType fzf tnoremap <buffer> <silent> <C-j> <C-j>
-  autocmd FileType fzf tnoremap <buffer> <silent> <C-k> <C-k>
 augroup END
 
 " LSP ------------------------------------------------------------------------
@@ -608,10 +582,22 @@ tnoremap <silent> <F9>       <C-\><C-n>:FloatermNext<CR>
 nnoremap <silent> <C-t>      :FloatermToggle<CR>
 tnoremap <silent> <C-t>      <C-\><C-n>:FloatermToggle<CR>
 
+function s:floatermSettings()
+  tnoremap <silent> <buffer> <ESC> <ESC>
+endfunction
+" 
+augroup vimrc_floaterm
+  au!
+  autocmd FileType floaterm call s:floatermSettings()
+augroup END
+" 
 " git-messenger.vim
 nmap <Leader>gm <Plug>(git-messenger)
 function! s:setup_git_messenger_popup() abort
   nmap <buffer> <CR> o
   nmap <buffer> <BS> O
 endfunction
-autocmd FileType gitmessengerpopup call s:setup_git_messenger_popup()
+augroup vimrc_git_messenger
+  au!
+  autocmd FileType gitmessengerpopup call s:setup_git_messenger_popup()
+augroup END
