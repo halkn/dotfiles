@@ -375,9 +375,11 @@ let g:fzf_command_prefix = 'Fzf'
 let g:fzf_preview_window = 'down:60%'
 let g:fzf_layout = { 'window': { 'width': 0.95, 'height': 0.9 } }
 
+" files
 command! -bang -nargs=? -complete=dir FzfFiles
 \ call fzf#vim#files(<q-args>, fzf#vim#with_preview('down:60%', '?'), <bang>0)
 
+" ripgreo
 command! -bang -nargs=* FzfRg
 \ call fzf#vim#grep(
 \   'rg --column --line-number --no-heading --color=always --smart-case --hidden -- '.shellescape(<q-args>),
@@ -395,11 +397,57 @@ endfunction
 
 command! -nargs=* -bang FzfRG call RipgrepFzf(<q-args>, <bang>0)
 
+" git
+function! s:sink_git_status(selected) abort
+  let l:key=a:selected[0]
+  let l:lines=a:selected[1:]
+
+  if l:key == 'ctrl-p'
+    execute('FloatermNew git commit')
+    return
+  endif
+
+ g:floaterm_gitcommit let l:file=split(a:selected[1])[1]
+  if l:key == 'ctrl-m'
+    execute('edit ' . l:file)
+  elseif l:key == 'ctrl-x'
+    execute('split ' . l:file)
+  elseif l:key == 'ctrl-v'
+    execute('vsplit ' . l:file)
+  endif
+
+  return
+endfunction
+
+function! s:fzf_git_status() abort
+  let l:cmd = 'git -c color.status=always -c status.relativePaths=true status --short'
+  let l:spec = {
+  \ 'source': l:cmd,
+  \ 'sink*': function('s:sink_git_status'),
+  \ 'options': [
+  \   '--ansi',
+  \   '--multi',
+  \   '--expect=ctrl-m,ctrl-x,ctrl-v,ctrl-p',
+  \   '--preview', 'git diff --color=always -- {-1} | delta',
+  \   '--bind', 'ctrl-d:preview-page-down,ctrl-u:preview-page-up',
+  \   '--bind', 'alt-j:preview-down,alt-k:preview-up',
+  \   '--bind', 'alt-s:toggle-sort',
+  \   '--bind', '?:toggle-preview',
+  \   '--bind', 'space:execute-silent(git add {+-1})+down+reload:' . l:cmd,
+  \   '--bind', 'bspace:execute-silent(git reset -q HEAD {+-1})+down+reload:' . l:cmd,
+  \ ]
+  \ }
+  call fzf#run(fzf#wrap(l:spec))
+endfunction
+
+command! -bang -nargs=* FzfGStatus call s:fzf_git_status()
+
 nnoremap <silent> <Leader><Leader> :<C-u>FzfHistory<CR>
-nnoremap <silent> <Leader>f :<C-u>FzfFiles<CR>
-nnoremap <silent> <Leader>b :<C-u>FzfBuffers<CR>
-nnoremap <silent> <Leader>l :<C-u>FzfBLines<CR>
-nnoremap <silent> <Leader>R :<C-u>FzfRG<CR>
+nnoremap <silent> <Leader>f  :<C-u>FzfFiles<CR>
+nnoremap <silent> <Leader>b  :<C-u>FzfBuffers<CR>
+nnoremap <silent> <Leader>l  :<C-u>FzfBLines<CR>
+nnoremap <silent> <Leader>R  :<C-u>FzfRG<CR>
+nnoremap <silent> <Leader>gs :<C-u>FzfGStatus<CR>
 inoremap <expr> <c-x><c-k> fzf#vim#complete#word({'left': '15%'})
 
 augroup vimrc_fzf
