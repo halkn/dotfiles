@@ -202,7 +202,6 @@ inoremap <C-a> <C-o>^
 inoremap <C-e> <End>
 inoremap <C-d> <Del>
 
-
 " Move cursor like emacs in Insert Mode
 cnoremap <C-b> <Left>
 cnoremap <C-f> <Right>
