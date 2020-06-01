@@ -152,6 +152,68 @@ fuzzy-ghq-list() {
 }
 alias dev=fuzzy-ghq-list
 
+### git ---------------------------------------------------------------------
+
+# helper function
+# Function to judgement if it is git repository.
+function is_inside_repo {
+  git rev-parse --is-inside-work-tree &>/dev/null
+  return $?
+}
+
+# gl - [G]it [L]og show 
+gl() {
+  is_inside_repo || return 1
+  local cmd opts files
+  files=$(sed -nE 's/.* -- (.*)/\1/p' <<< "$*") # extract files parameters for `git show` command
+  cmd="echo {} |grep -Eo '[a-f0-9]+' |head -1 |xargs -I% git show --color=always % -- $files | delta"
+  opts="
+    $FZF_DEFAULT_OPTS
+    $FZF_GIT_DEFAULT_OPTS
+    +s +m --tiebreak=index
+    --bind=\"enter:execute($cmd | bat)\"
+    --bind=\"ctrl-y:execute-silent(echo {} |grep -Eo '[a-f0-9]+' | head -1 | tr -d '\n' | pbcopy)\"
+  "
+  eval "git log --graph --color=always --format='%C(auto)%h%d %s %C(blue)%C(yellow)%cr' $*" |
+    FZF_DEFAULT_OPTS="$opts" fzf --preview="$cmd"
+}
+
+# gs [G]it [S]tatus browser
+gs() {
+  is_inside_repo || return 1
+  local out key n files opts
+  opts="
+    $FZF_DEFAULT_OPTS
+    $FZF_GIT_DEFAULT_OPTS
+    --multi
+    --exit-0
+    --expect=ctrl-m,space
+  "
+  while out=$(
+    git -c color.status=always -c status.relativePaths=true status --short |
+    FZF_DEFAULT_OPTS="$opts" fzf --preview "git diff --color=always -- {-1} | delta"
+  ); do
+    key=$(head -1 <<< "$out")
+    n=$(($(wc -l <<< "$out") - 1))
+    files=$(tail "-$n" <<< "$out")
+    if [ "$key" = ctrl-m ]; then
+      OLDIFS=$IFS
+      IFS=$'\n'
+      for line in $files; do
+        local st file
+        st=$(echo $line | cut -b 1-1)
+        file=$(echo $line | awk '{print $2}')
+        if [ "$st" = " " ] || [ "$st" = "?" ] ; then
+          git add $file
+        else
+          git reset -q HEAD $file
+        fi
+      done
+      IFS=$OLDIFS
+    fi
+  done
+}
+
 ### homebrew ----------------------------------------------------------------
 # bua [B]rew [U]ninstall [A]pplication
 bua() {
