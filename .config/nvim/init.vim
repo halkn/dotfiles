@@ -407,7 +407,7 @@ function! s:sink_git_status(selected) abort
     return
   endif
 
- g:floaterm_gitcommit let l:file=split(a:selected[1])[1]
+ let l:file=split(a:selected[1])[1]
   if l:key == 'ctrl-m'
     execute('edit ' . l:file)
   elseif l:key == 'ctrl-x'
@@ -442,12 +442,79 @@ endfunction
 
 command! -bang -nargs=* FzfGStatus call s:fzf_git_status()
 
+function! s:sink_git_log(selected) abort
+  let l:key = a:selected[0]
+
+  let l:tmp = split(a:selected[1])
+  let l:id = l:tmp[match(l:tmp, '[a-f0-9]\{7}')]
+
+  let l:term_cmd = [
+  \ &shell,
+  \ &shellcmdflag,
+  \ 'git --no-pager show --color=always ' . l:id . ' | delta'
+  \ ]
+
+  if l:key == 'ctrl-v'
+    exe 'vnew'
+  elseif l:key == 'ctrl-m'
+    exe 'enew'
+  endif
+
+  call termopen(l:term_cmd)
+  return
+endfunction
+
+function! s:fzf_git_log(...) abort
+  let l:cmd = '
+  \ git log
+  \ --graph
+  \ --color=always
+  \ --format="%C(auto)%h%d %s %C(blue)%C(yellow)%cr"
+  \ '
+
+  if a:0 >= 1
+    let l:cmd = l:cmd . a:1
+  endif
+
+  let l:preview_cmd = '
+  \ echo {} |
+  \ grep -Eo "[a-f0-9]+"  |
+  \ head -1 |
+  \ xargs -I% git show --color=always % $* |
+  \ delta
+  \'
+
+  let l:spec = {
+  \ 'source': l:cmd,
+  \ 'sink*': function('s:sink_git_log'),
+  \ 'options': [
+  \   '--ansi',
+  \   '--exit-0',
+  \   '--no-sort',
+  \   '--tiebreak=index',
+  \   '--preview', l:preview_cmd,
+  \   '--expect=ctrl-x,ctrl-v',
+  \   '--bind', 'ctrl-d:preview-page-down,ctrl-u:preview-page-up',
+  \   '--bind', 'alt-j:preview-down,alt-k:preview-up',
+  \   '--bind', 'alt-s:toggle-sort',
+  \   '--bind', '?:toggle-preview',
+  \   '--bind', 'space:execute(bat --paging=always README.md)',
+  \   '--bind', 'ctrl-y:execute-silent(echo {} | grep -Eo "[a-f0-9]+" | head -1 | tr -d \\n | pbcopy)',
+  \ ]
+  \ }
+  call fzf#run(fzf#wrap(l:spec))
+endfunction
+
+command! FzfCommits call s:fzf_git_log()
+command! FzfBCommits call s:fzf_git_log(expand('%'))
+
 nnoremap <silent> <Leader><Leader> :<C-u>FzfHistory<CR>
 nnoremap <silent> <Leader>f  :<C-u>FzfFiles<CR>
 nnoremap <silent> <Leader>b  :<C-u>FzfBuffers<CR>
 nnoremap <silent> <Leader>l  :<C-u>FzfBLines<CR>
 nnoremap <silent> <Leader>R  :<C-u>FzfRG<CR>
 nnoremap <silent> <Leader>gs :<C-u>FzfGStatus<CR>
+nnoremap <silent> <Leader>gl :<C-u>FzfCommits<CR>
 inoremap <expr> <c-x><c-k> fzf#vim#complete#word({'left': '15%'})
 
 augroup vimrc_fzf
