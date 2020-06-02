@@ -416,8 +416,11 @@ endfunction
 command! -nargs=* -bang FzfRG call RipgrepFzf(<q-args>, <bang>0)
 
 function! s:sink_git_status(selected) abort
+  if len(a:selected) == 0
+    return
+  endif
+
   let l:key=a:selected[0]
-  let l:lines=a:selected[1:]
 
   if l:key == 'ctrl-p'
     execute('!git commit')
@@ -447,6 +450,7 @@ function! s:fzf_git_status() abort
   \   '--expect=ctrl-m,ctrl-x,ctrl-v,ctrl-p',
   \   '--preview', 'git diff --color=always -- {-1} | delta',
   \   '--bind', 'ctrl-d:preview-page-down,ctrl-u:preview-page-up',
+  \   '--bind', 'ctrl-b:preview-page-down,ctrl-f:preview-page-up',
   \   '--bind', 'alt-j:preview-down,alt-k:preview-up',
   \   '--bind', 'alt-s:toggle-sort',
   \   '--bind', '?:toggle-preview',
@@ -460,6 +464,10 @@ endfunction
 command! -bang -nargs=* FzfGStatus call s:fzf_git_status()
 
 function! s:sink_git_log(selected) abort
+  if len(a:selected) == 0
+    return
+  endif
+
   let l:key = a:selected[0]
 
   let l:tmp = split(a:selected[1])
@@ -512,6 +520,7 @@ function! s:fzf_git_log(...) abort
   \   '--preview', l:preview_cmd,
   \   '--expect=ctrl-x,ctrl-v',
   \   '--bind', 'ctrl-d:preview-page-down,ctrl-u:preview-page-up',
+  \   '--bind', 'ctrl-b:preview-page-down,ctrl-f:preview-page-up',
   \   '--bind', 'alt-j:preview-down,alt-k:preview-up',
   \   '--bind', 'alt-s:toggle-sort',
   \   '--bind', '?:toggle-preview',
@@ -757,6 +766,8 @@ tnoremap <silent> <C-@>      <C-\><C-n>:FloatermToggle<CR>
 " vim-qf-preview
 let g:qfpreview = {
 \ 'number': 1,
+\ 'height': 20,
+\ 'offset': 10,
 \ 'sign': {'text': '>>', 'texthl': 'Todo'}
 \ }
 augroup vimrc_qfpreview
