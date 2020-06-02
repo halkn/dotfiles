@@ -419,57 +419,39 @@ function! s:sink_git_status(selected) abort
   let l:key=a:selected[0]
   let l:lines=a:selected[1:]
 
-  if l:key == 'ctrl-m'
-    for l:li in l:lines
-      let l:fi=split(l:li)[1]
-      if l:li[0] == ' ' || l:li[0] == '?'
-        call system('git add ' . l:fi)
-      else
-        call system('git reset -q HEAD '. l:fi)
-      endif
-    endfor
-    call s:fzf_git_status()
-  endif
-
-  if len(l:lines) != 1
-      echo l:key . ' cannot use multiple selection' 
-      return
-  endif
-
-  if l:key == 'space'
+  if l:key == 'ctrl-p'
     execute('!git commit')
     return
   endif
 
   let l:file=split(a:selected[1])[1]
-  if l:key == 'ctrl-e'
+  if l:key == 'ctrl-m'
     execute('edit ' . l:file)
-    return
-  endif
-
-  if l:key == 'ctrl-x'
+  elseif l:key == 'ctrl-x'
     execute('split ' . l:file)
-    return
-  endif
-
-  if l:key == 'ctrl-v'
+  elseif l:key == 'ctrl-v'
     execute('vsplit ' . l:file)
-    return
   endif
 
+  return
 endfunction
 
 function! s:fzf_git_status() abort
+  let l:cmd = 'git -c color.status=always -c status.relativePaths=true status --short'
   let l:spec = {
-  \ 'source': 'git status -s',
+  \ 'source': l:cmd,
   \ 'sink*': function('s:sink_git_status'),
   \ 'options': [
   \   '--ansi',
   \   '--multi',
-  \   '--expect=ctrl-m,ctrl-e,ctrl-x,ctrl-v,space',
-  \   '--preview', 'git diff --color=always -- {-1} | diff-so-fancy',
-  \   '--bind', 'ctrl-f:preview-page-down,ctrl-b:preview-page-up',
-  \   '--bind', 'ctrl-o:toggle-preview',
+  \   '--expect=ctrl-m,ctrl-x,ctrl-v,ctrl-p',
+  \   '--preview', 'git diff --color=always -- {-1} | delta',
+  \   '--bind', 'ctrl-d:preview-page-down,ctrl-u:preview-page-up',
+  \   '--bind', 'alt-j:preview-down,alt-k:preview-up',
+  \   '--bind', 'alt-s:toggle-sort',
+  \   '--bind', '?:toggle-preview',
+  \   '--bind', 'space:execute-silent(git add {+-1})+down+reload:' . l:cmd,
+  \   '--bind', 'bspace:execute-silent(git reset -q HEAD {+-1})+down+reload:' . l:cmd,
   \ ]
   \ }
   call fzf#run(fzf#wrap(l:spec))
@@ -504,8 +486,7 @@ function! s:fzf_git_log(...) abort
   \ git log
   \ --graph
   \ --color=always
-  \ --abbrev=7
-  \ --format="%C(auto)%h%d %an %C(blue)%s %C(yellow)%cr"
+  \ --format="%C(auto)%h%d %s %C(blue)%C(yellow)%cr"
   \ '
 
   if a:0 >= 1
@@ -513,10 +494,11 @@ function! s:fzf_git_log(...) abort
   endif
 
   let l:preview_cmd = '
-  \ echo -- {} |
-  \ grep -o "[a-f0-9]\{7\}" |
-  \ xargs -I @ git show --color=always @ $* |
-  \ diff-so-fancy
+  \ echo {} |
+  \ grep -Eo "[a-f0-9]+"  |
+  \ head -1 |
+  \ xargs -I% git show --color=always % $* |
+  \ delta
   \'
 
   let l:spec = {
@@ -528,10 +510,13 @@ function! s:fzf_git_log(...) abort
   \   '--no-sort',
   \   '--tiebreak=index',
   \   '--preview', l:preview_cmd,
-  \   '--expect=ctrl-m,ctrl-x,ctrl-v',
-  \   '--bind', 'ctrl-f:preview-page-down,ctrl-b:preview-page-up',
-  \   '--bind', 'ctrl-o:toggle-preview',
-  \   '--bind', 'ctrl-y:execute:(echo -- {} | grep -o "[a-f0-9]\{7\}" | tr -d \\n | pbcopy)',
+  \   '--expect=ctrl-x,ctrl-v',
+  \   '--bind', 'ctrl-d:preview-page-down,ctrl-u:preview-page-up',
+  \   '--bind', 'alt-j:preview-down,alt-k:preview-up',
+  \   '--bind', 'alt-s:toggle-sort',
+  \   '--bind', '?:toggle-preview',
+  \   '--bind', 'space:execute(bat --paging=always README.md)',
+  \   '--bind', 'ctrl-y:execute-silent(echo {} | grep -Eo "[a-f0-9]+" | head -1 | tr -d \\n | pbcopy)',
   \ ]
   \ }
   call fzf#run(fzf#wrap(l:spec))
