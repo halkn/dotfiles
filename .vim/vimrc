@@ -297,7 +297,7 @@ function! ToggleQuickfix()
       cclose
   endif
 endfunction
-nnoremap <script> <silent> mq :call ToggleQuickfix()<CR>
+nnoremap <script> <silent> Q :call ToggleQuickfix()<CR>
 
 " locationlist
 function! ToggleLocationList()
@@ -308,7 +308,7 @@ function! ToggleLocationList()
       lclose
   endif
 endfunction
-nnoremap <script> <silent> ml :call ToggleLocationList()<CR>
+nnoremap <script> <silent> W :call ToggleLocationList()<CR>
 
 " ============================================================================
 " autocmd
@@ -673,11 +673,15 @@ let g:vsnip_integ_config = {
 
 " vista.vim
 let g:vista_default_executive = 'vim_lsp'
+let g:vista_executive_for = {
+\ 'markdown': 'toc',
+\ }
 let g:vista_close_on_jump = 1
 let g:vista#renderer#enable_icon = 0
+let g:vista_echo_cursor_strategy = 'floating_win'
 let g:vista_fzf_preview = ['right:60%']
-nnoremap <silent> <c-t> :<c-u>Vista!!<CR>
-nnoremap <silent> <Leader>vf :<c-u>Vista finder<CR>
+nnoremap <silent> <leader>vt :<c-u>Vista!!<CR>
+nnoremap <silent> <leader>vf :<c-u>Vista finder<CR>
 
 " Develop --------------------------------------------------------------------
 " asyncrun.vim
