@@ -541,7 +541,6 @@ function! s:fzf_git_log(...) abort
   \   '--bind', 'alt-j:preview-down,alt-k:preview-up',
   \   '--bind', 'alt-s:toggle-sort',
   \   '--bind', '?:toggle-preview',
-  \   '--bind', 'space:execute(bat --paging=always README.md)',
   \   '--bind', 'ctrl-y:execute-silent(echo {} | grep -Eo "[a-f0-9]+" | head -1 | tr -d \\n | pbcopy)',
   \ ]
   \ }
