@@ -175,14 +175,14 @@ function! PackInit() abort
   call minpac#add('junegunn/fzf')
   call minpac#add('junegunn/fzf.vim')
   " LSP
-  call minpac#add('prabirshrestha/async.vim', { 'type': 'opt' })
-  call minpac#add('prabirshrestha/vim-lsp', { 'type': 'opt' })
-  call minpac#add('mattn/vim-lsp-settings', { 'type': 'opt' })
-  call minpac#add('prabirshrestha/asyncomplete.vim', { 'type': 'opt' })
-  call minpac#add('prabirshrestha/asyncomplete-lsp.vim', { 'type': 'opt' })
-  call minpac#add('hrsh7th/vim-vsnip', { 'type': 'opt' })
-  call minpac#add('hrsh7th/vim-vsnip-integ', { 'type': 'opt' })
-  call minpac#add('liuchengxu/vista.vim', { 'type': 'opt' })
+  call minpac#add('prabirshrestha/async.vim')
+  call minpac#add('prabirshrestha/vim-lsp')
+  call minpac#add('mattn/vim-lsp-settings')
+  call minpac#add('prabirshrestha/asyncomplete.vim')
+  call minpac#add('prabirshrestha/asyncomplete-lsp.vim')
+  call minpac#add('hrsh7th/vim-vsnip')
+  call minpac#add('hrsh7th/vim-vsnip-integ')
+  call minpac#add('liuchengxu/vista.vim')
   " Develop
   call minpac#add('mattn/vim-findroot')
   call minpac#add('skywind3000/asyncrun.vim')
@@ -199,6 +199,7 @@ function! PackInit() abort
   call minpac#add('mhinz/vim-signify')
   call minpac#add('voldikss/vim-floaterm')
   call minpac#add('bfrg/vim-qf-preview')
+  call minpac#add('tyru/capture.vim')
 endfunction
 
 set packpath^=$XDG_DATA_HOME/vim
@@ -251,6 +252,7 @@ nnoremap <S-tab> <c-w>W
 
 " Not yank is delete operation
 nnoremap x "_x
+nnoremap X "_X
 
 " Disable s operation
 nnoremap s <Nop>
@@ -300,6 +302,9 @@ endfunction
 nnoremap <script> <silent> Q :call ToggleQuickfix()<CR>
 
 " locationlist
+nnoremap <silent> [l :lprevious<CR>
+nnoremap <silent> ]l :lnext<CR>
+
 function! ToggleLocationList()
   let l:nr = winnr('$')
   lwindow
@@ -321,6 +326,7 @@ augroup vimrc-ft-indent
   autocmd FileType text setlocal textwidth=0
   autocmd FileType go setlocal noexpandtab tabstop=4 shiftwidth=4
   autocmd FileType vim setlocal tabstop=2 shiftwidth=2
+  autocmd FileType lua setlocal tabstop=2 shiftwidth=2
   autocmd FileType sh setlocal tabstop=2 shiftwidth=2
   autocmd FileType zsh setlocal tabstop=2 shiftwidth=2
   autocmd FileType yaml setlocal tabstop=2 shiftwidth=2
@@ -341,6 +347,8 @@ augroup vimrc-ft-help
   autocmd FileType help wincmd L
   autocmd FileType help setlocal signcolumn=no
   autocmd FileType help nnoremap <silent> <buffer> q <C-w>c
+  autocmd FileType help nnoremap <buffer> <CR> <C-]>
+  autocmd FileType help nnoremap <buffer> <BS> <C-T>
 augroup END
 
 " ============================================================================
@@ -375,6 +383,9 @@ let g:lightline = {
 \ },
 \ }
 
+" lexima.vim
+let g:lexima_ctrlh_as_backspace = 1
+
 " caw.vim
 nmap <Leader>c <Plug>(caw:hatpos:toggle)
 vmap <Leader>c <Plug>(caw:hatpos:toggle)
@@ -395,9 +406,11 @@ let g:fzf_command_prefix = 'Fzf'
 let g:fzf_preview_window = 'right:60%'
 let g:fzf_layout = { 'window': { 'width': 0.95, 'height': 0.9 } }
 
+" files
 command! -bang -nargs=? -complete=dir FzfFiles
 \ call fzf#vim#files(<q-args>, fzf#vim#with_preview(), <bang>0)
 
+" ripgrep
 command! -bang -nargs=* FzfRg
 \ call fzf#vim#grep(
 \   'rg --column --line-number --no-heading --color=always --smart-case --hidden -- '.shellescape(<q-args>),
@@ -450,7 +463,7 @@ function! s:fzf_git_status() abort
   \   '--expect=ctrl-m,ctrl-x,ctrl-v,ctrl-p',
   \   '--preview', 'git diff --color=always -- {-1} | delta',
   \   '--bind', 'ctrl-d:preview-page-down,ctrl-u:preview-page-up',
-  \   '--bind', 'ctrl-b:preview-page-down,ctrl-f:preview-page-up',
+  \   '--bind', 'ctrl-f:preview-page-down,ctrl-b:preview-page-up',
   \   '--bind', 'alt-j:preview-down,alt-k:preview-up',
   \   '--bind', 'alt-s:toggle-sort',
   \   '--bind', '?:toggle-preview',
@@ -520,7 +533,7 @@ function! s:fzf_git_log(...) abort
   \   '--preview', l:preview_cmd,
   \   '--expect=ctrl-x,ctrl-v',
   \   '--bind', 'ctrl-d:preview-page-down,ctrl-u:preview-page-up',
-  \   '--bind', 'ctrl-b:preview-page-down,ctrl-f:preview-page-up',
+  \   '--bind', 'ctrl-f:preview-page-down,ctrl-b:preview-page-up',
   \   '--bind', 'alt-j:preview-down,alt-k:preview-up',
   \   '--bind', 'alt-s:toggle-sort',
   \   '--bind', '?:toggle-preview',
@@ -534,44 +547,14 @@ endfunction
 command! FzfCommits call s:fzf_git_log()
 command! FzfBCommits call s:fzf_git_log(expand('%'))
 
-let s:filer_dir = ''
-function! s:open_filer(selected) abort
-  " echom a:selected[len(a:selected)-1]
-  if a:selected[len(a:selected)-1] == '/'
-    " echom '#### dir ####'
-    let s:filer_dir = s:filer_dir . a:selected
-    call s:fzf_filer(s:filer_dir)
-  else
-    " echom '#### file ####'
-    execute('edit ' . s:filer_dir . a:selected)
-    let s:filer_dir = ''
-    return
-  endif
-endfunction
-
-function! s:fzf_filer(...) abort
-  call popup_clear()
-  let l:cmd = 'ls -aaF1 '
-  if a:0 >= 1
-    let l:cmd = l:cmd . a:1
-  endif
-  call fzf#run({
-  \ 'source': l:cmd,
-  \ 'sink': function('s:open_filer'),
-  \ 'window': g:fzf_layout['window'],
-  \ })
-endfunction
-command! FzfFiler call s:fzf_filer()
-
 nnoremap <silent> <Leader><Leader> :<C-u>FzfHistory<CR>
-nnoremap <silent> <Leader>f :<C-u>FzfFiles<CR>
-nnoremap <silent> <Leader>b :<C-u>FzfBuffers<CR>
-nnoremap <silent> <Leader>l :<C-u>FzfBLines<CR>
-nnoremap <silent> <Leader>R :<C-u>FzfRG<CR>
-nnoremap <silent> <Leader>gs :<C-u>FzfGStatus<CR>
-nnoremap <silent> <Leader>gl :<C-u>FzfCommits<CR>
-nnoremap <silent> <Leader>F :<C-u>FzfFiler<CR>
-inoremap <expr> <c-x><c-k> fzf#vim#complete#word({'left': '15%'})
+nnoremap <silent> <Leader>f        :<C-u>FzfFiles<CR>
+nnoremap <silent> <Leader>b        :<C-u>FzfBuffers<CR>
+nnoremap <silent> <Leader>l        :<C-u>FzfBLines<CR>
+nnoremap <silent> <Leader>R        :<C-u>FzfRG<CR>
+nnoremap <silent> <Leader>gs       :<C-u>FzfGStatus<CR>
+nnoremap <silent> <Leader>gl       :<C-u>FzfCommits<CR>
+inoremap <expr>   <c-x><c-k>       fzf#vim#complete#word({'left': '15%'})
 
 augroup vimrc_fzf
   au!
@@ -579,30 +562,12 @@ augroup vimrc_fzf
 augroup END
 
 " LSP ------------------------------------------------------------------------
-function! s:load_lsp() abort
-  packadd async.vim
-  packadd vim-lsp
-  packadd vim-lsp-settings
-  packadd asyncomplete.vim
-  packadd asyncomplete-lsp.vim
-  packadd vim-vsnip
-  packadd vim-vsnip-integ
-  packadd vista.vim
-  execute "doau FileType" expand("<amatch>")
-  call lsp#enable()
-endfunction
-
-augroup vimrc_load_lsp
-  au!
-  autocmd FileType go,vim,sh,json,yaml,markdown ++once call s:load_lsp()
-augroup END
-
 " vim-lsp-settings
 let g:lsp_settings = {
 \ 'gopls': {
 \   'workspace_config': { 'gopls':
 \     {
-\       'hoverKind': 'SynopsisDocumentation',
+\       'hoverKind': 'FullDocumentation',
 \       'completeUnimported': v:true,
 \       'usePlaceholders': v:true,
 \       'staticcheck': v:true,
@@ -618,9 +583,9 @@ let g:lsp_settings = {
 " vim-lsp
 let g:lsp_async_completion = 1
 let g:lsp_diagnostics_enabled = 1
-let g:lsp_signs_enabled = 1
 let g:lsp_diagnostics_echo_cursor = 1
 let g:lsp_diagnostics_float_cursor = 0
+let g:lsp_signs_enabled = 1
 let g:lsp_signs_priority = 11
 let g:lsp_signs_error = {'text': '✗'}
 let g:lsp_signs_warning = {'text': '!!'}
@@ -650,10 +615,11 @@ augroup END
 
 " asyncomplete.vim
 let g:asyncomplete_auto_completeopt = 0
+inoremap <expr> <C-y> pumvisible() ? asyncomplete#close_popup() : "\<C-y>"
 
 " vim-vsnip
-imap <expr><Tab> vsnip#available(1)    ? '<Plug>(vsnip-expand-or-jump)' : lexima#expand('<LT>Tab>', 'i')
-smap <expr><Tab> vsnip#available(1)    ? '<Plug>(vsnip-expand-or-jump)' : lexima#expand('<LT>Tab>', 'i')
+imap <expr><Tab>   vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : lexima#expand('<LT>Tab>', 'i')
+smap <expr><Tab>   vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : lexima#expand('<LT>Tab>', 'i')
 imap <expr><S-Tab> vsnip#available(-1) ? '<Plug>(vsnip-jump-prev)'      : lexima#expand('<LT>S-Tab>', 'i')
 smap <expr><S-Tab> vsnip#available(-1) ? '<Plug>(vsnip-jump-prev)'      : lexima#expand('<LT>S-Tab>', 'i')
 let g:vsnip_snippet_dir = expand(fnamemodify($MYVIMRC, ":h") . '/snippets')
@@ -678,8 +644,8 @@ let g:vista_executive_for = {
 \ }
 let g:vista_close_on_jump = 1
 let g:vista#renderer#enable_icon = 0
-let g:vista_echo_cursor_strategy = 'floating_win'
 let g:vista_fzf_preview = ['right:60%']
+let g:vista_echo_cursor_strategy = 'floating_win'
 nnoremap <silent> <leader>vt :<c-u>Vista!!<CR>
 nnoremap <silent> <leader>vf :<c-u>Vista finder<CR>
 
@@ -712,8 +678,8 @@ augroup END
 " vim-altr
 augroup vimrc_altr
   au!
-  autocmd FileType go,vim nmap <buffer> <LocalLeader>a <Plug>(altr-forward)
-  autocmd FileType go,vim command! -buffer A  call altr#forward()
+  autocmd FileType go,vim,help nmap <buffer> <LocalLeader>a <Plug>(altr-forward)
+  autocmd FileType go,vim,help nmap <buffer> <LocalLeader>b <Plug>(altr-back)
 augroup END
 
 " ----------------------------------------------------------------------------
@@ -764,8 +730,8 @@ nnoremap <silent> <F8>       :FloatermPrev<CR>
 tnoremap <silent> <F8>       <C-\><C-n>:FloatermPrev<CR>
 nnoremap <silent> <F9>       :FloatermNext<CR>
 tnoremap <silent> <F9>       <C-\><C-n>:FloatermNext<CR>
-nnoremap <silent> <C-@>      :FloatermToggle<CR>
-tnoremap <silent> <C-@>      <C-\><C-n>:FloatermToggle<CR>
+nnoremap <silent> <C-t>      :FloatermToggle<CR>
+tnoremap <silent> <C-t>      <C-\><C-n>:FloatermToggle<CR>
 
 " vim-qf-preview
 let g:qfpreview = {
