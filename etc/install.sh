@@ -25,17 +25,14 @@ declare -a BREW_APPS=(
   "exa"
   "fd"
   "fzf"
-  "ghq"
   "git"
   "git-delta"
   "go"
-  "jq"
   "nodebrew"
   "p7zip"
   "ripgrep"
   "tmux"
   "shellcheck"
-  "shfmt"
   "vim"
 )
 

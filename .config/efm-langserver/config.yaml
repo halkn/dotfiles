@@ -12,9 +12,8 @@ tools:
     lint-formats:
       - '%f:%l:%c: %m'
 
-  json-jq: &json-jq
-    format-command: 'jq .'
-    format-stdin: true
+  json-fixjson: &json-fixjson
+    format-command: 'fixjson'
 
   shellcheck-lint: &shellcheck-lint
     lint-command: 'shellcheck -s bash -f gcc -x -'
@@ -34,7 +33,7 @@ languages:
   go:
     - <<: *golint
   json:
-    - <<: *json-jq
+    - <<: *json-fixjson
   sh:
     - <<: *shellcheck-lint
     - <<: *shfmt-format
