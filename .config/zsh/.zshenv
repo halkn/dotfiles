@@ -64,6 +64,16 @@ export LESSHISTFILE=-
 # fzf
 export FZF_DEFAULT_COMMAND='fd --type file --follow --hidden -E .git -E .svn'
 export FZF_DEFAULT_OPTS='--height 50% --layout=reverse --border --preview-window=right:60%'
+export FZF_GIT_DEFAULT_OPTS=" \
+--ansi \
+--height='100%' \
+--bind='ctrl-d:preview-page-down' \
+--bind='ctrl-u:preview-page-up' \
+--bind='alt-k:preview-up' \
+--bind='alt-j:preview-down' \
+--bind='alt-s:toggle-sort' \
+--bind='?:toggle-preview' \
+"
 
 # ripgrep
 export RIPGREP_CONFIG_PATH=$XDG_CONFIG_HOME/ripgrep/config

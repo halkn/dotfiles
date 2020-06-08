@@ -1,8 +1,11 @@
+#####################################################################
+# Start tmux
+#####################################################################
+[[ -z "$TMUX" && ! -z "$PS1" ]] && exec tmux -f "$XDG_CONFIG_HOME"/tmux/tmux.conf
 
 #####################################################################
-# init
-#####################################################################
 # auto zcompile
+#####################################################################
 if [ ! -f $ZDOTDIR/.zshrc.zwc -o $ZDOTDIR/.zshrc -nt $ZDOTDIR/.zshrc.zwc ]; then
   zcompile $ZDOTDIR/.zshrc
 fi
@@ -58,15 +61,8 @@ zinit snippet https://github.com/docker/cli/blob/master/contrib/completion/zsh/_
 #####################################################################
 # Keybind
 #####################################################################
-# vim key bind
-bindkey -v
-
-# insert mode keybind (like emacs)
-bindkey -M viins '^A'  beginning-of-line
-bindkey -M viins '^B'  backward-char
-bindkey -M viins '^E'  end-of-line
-bindkey -M viins '^F'  forward-char
-bindkey -M viins '^H'  backward-delete-char
+# emacs key bind
+bindkey -e
 
 #####################################################################
 # completion
@@ -121,8 +117,9 @@ zstyle ':completion:*' completer \
   _prefix
 
 #####################################################################
-# ls setting
+# alias
 #####################################################################
+# ls
 if type exa > /dev/null 2>&1; then
   alias ls="exa"
   alias ll="ls -l --time-style=long-iso"
@@ -147,9 +144,6 @@ else
   alias ltr="ll -tr"
 fi
 
-#####################################################################
-# alias
-#####################################################################
 # nocorrect command
 alias mv='nocorrect mv'
 alias cp='nocorrect cp'
@@ -169,7 +163,7 @@ alias zb='for i in $(seq 1 10); do time zsh -i -c exit; done'
 # vim
 alias vi="vim"
 alias v.="ls -1a | fzf | xargs -o vim"
-alias vv="fd --type f --hidden | fzf --height 80% --preview 'bat --color=always {}'| xargs -o vim"
+alias v="fd --type f --hidden | fzf --height 80% --preview 'bat --color=always {}'| xargs -o vim"
 alias vb='for i in $(seq 1 10); do vim --startuptime ~/vim.log -c q; done && grep editing ~/vim.log && rm ~/vim.log'
 
 # dotfiles
@@ -181,13 +175,11 @@ if type bat > /dev/null 2>&1; then
   alias less="bat"
 fi
 
-# lazygit
-if type lazygit > /dev/null 2>&1; then
-  alias lg="lazygit"
-fi
-
 # exit
 alias :q="exit"
+
+# git
+alias gp='git pull'
 
 #####################################################################
 # options
@@ -250,10 +242,9 @@ setopt share_history
 # function
 #####################################################################
 
-# !!!!!!!!!!!!!!!!!!!!
-# cd extension
-# !!!!!!!!!!!!!!!!!!!!
-
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# improve command
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # cd - interactive cd
 function cd() {
   if [[ "$#" != 0 ]]; then
@@ -275,14 +266,28 @@ function cd() {
   done
 }
 
-# fda - including hidden directories
+# ssh - interactice ssh.
+function ssh() {
+  if [[ "$#" != 0 ]];then
+    /usr/bin/ssh "$@";
+    return
+  fi
+  local host=$(rg '^Host' ~/.ssh/config | awk '{print $2}' | fzf )
+  [[ ${#host} != 0 ]] || return 0
+  /usr/bin/ssh "$host"
+}
+
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# change directory with fzf.
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+# fda - [F]uzzy Change [D]irectory [A]ll directorys
 fda() {
   local dir
   dir=$(fd --hidden --type d --follow --exclude "{.git,.svn}" 2> /dev/null | fzf +m) && cd "$dir"
-
 }
 
-# fdr - cd to selected parent directory
+# fdr - [F]uzzy Change [D]irectory [R]everse paternt directorys
 fdr() {
   get_parent_dirs() {
     local dpath
@@ -303,209 +308,30 @@ fdr() {
 }
 alias ...=fdr
 
-# fuzzy-ghq-list - cd to development directory in ghq list.
-fuzzy-ghq-list() {
-  local dir
-  dir=$(ghq list > /dev/null | fzf +m) && cd $(ghq root)/$dir
-}
-alias dev=fuzzy-ghq-list
-alias repo=fuzzy-ghq-list
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# utiltiy command with fzf.
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-# !!!!!!!!!!!!!!!!!!!!
-# git extension
-# !!!!!!!!!!!!!!!!!!!!
-
-# Function to judgement if it is git repository.
-function is_inside_repo {
-  git rev-parse --is-inside-work-tree &>/dev/null
-  return $?
-}
-
-# gl - git log show with fzf
-gl() {
-  is_inside_repo || return 1
-  local filter
-  if [ -n $@ ] && [ -f $@ ]; then
-    filter="-- $@"
-  fi
-
-  git log \
-    --graph \
-    --color=always \
-    --abbrev=7 \
-    --format='%C(auto)%h%d %an %C(blue)%s %C(yellow)%cr' $@ |
-  fzf \
-    --ansi \
-    --exit-0 \
-    --height 80% \
-    --no-sort \
-    --reverse \
-    --tiebreak=index \
-    --preview "f() { 
-        set -- \$(echo -- \$@ | grep -o '[a-f0-9]\{7\}');
-        [ \$# -eq 0 ] || git show --color=always \$1 $filter | diff-so-fancy;
-      }; f {}" \
-    --preview-window=right:60% \
-    --bind "ctrl-f:preview-page-down,ctrl-b:preview-page-up" \
-    --bind "ctrl-o:toggle-preview" \
-    --bind "q:abort" \
-    --bind "ctrl-m:execute:
-      (grep -o '[a-f0-9]\{7\}' | head -1 |
-      xargs -I % sh -c 'git show --color=always % ') << 'FZF-EOF'
-      {}
-      FZF-EOF"
-}
-
-# gs - git status browser
-gs() {
-  is_inside_repo || return 1
-  local out key n files
-  while out=$(
-    git -c color.status=always -c status.relativePaths=true status --short |
-    fzf \
-      --ansi \
-      --multi \
-      --exit-0 \
-      --height='80%' \
-      --preview "git diff --color=always -- {-1} | diff-so-fancy" \
-      --preview-window='right:60%' \
-      --expect=ctrl-m,ctrl-d,ctrl-v,ctrl-p,space \
-      --bind "ctrl-f:preview-page-down,ctrl-b:preview-page-up" \
-      --bind "ctrl-o:toggle-preview" \
-      --bind "q:abort"
-  ); do
-    key=$(head -1 <<< "$out")
-    n=$[$(wc -l <<< "$out") - 1]
-    files=(`echo $(tail "-$n" <<< "$out" | awk '{print $2}')`)
-    state=(`echo $(tail "-$n" <<< "$out" | cut -b 1-1)`)
-    if [ "$key" = ctrl-m ]; then
-      if [ -z "$state" -o "$state" = "?" ]; then
-        git add $files
-      else
-        git reset -q HEAD $files
-      fi
-    elif [ "$key" = ctrl-d ]; then
-      git difftool $files
-    elif [ "$key" = ctrl-v ]; then
-      vim $files
-    elif [ "$key" = ctrl-p ]; then
-      git push
-    elif [ "$key" = space ]; then
-      tmux split-pane -v && tmux send-keys 'git commit ; exit' C-m
-    fi
-  done
-}
-
-# !!!!!!!!!!!!!!!!!!!!
-# homebrew
-# !!!!!!!!!!!!!!!!!!!!
-# Delete (one or multiple) selected application(s)
-# mnemonic [B]rew [U]ninstall [A]pplication
-bua() {
-  local uninst=$(brew leaves | fzf -m)
-
-  if [[ $uninst ]]; then
-    for prog in $(echo $uninst);
-    do; brew uninstall $prog; done;
-  fi
-}
-
-# !!!!!!!!!!!!!!!!!!!!
-# gcloud
-# !!!!!!!!!!!!!!!!!!!!
-# Manage GKE container cluster
-# [g]cloud [c]ontainer cluster
-gc() {
-  local out cluster key n
-  out=$(
-    gcloud container clusters list |
-    fzf \
-      --ansi \
-      --multi \
-      --exit-0 \
-      --preview "gcloud container clusters describe {1} | bat -l yml" \
-      --expect=ctrl-m,ctrl-d,ctrl-y \
-      --bind "ctrl-f:preview-page-down,ctrl-b:preview-page-up" \
-      --bind "ctrl-o:toggle-preview" \
-      --bind "q:abort" \
-  )
-  key=$(head -1 <<< "$out")
-  n=$[$(wc -l <<< "$out") - 1]
-  cluster=(`echo $(tail "-$n" <<< "$out" | awk '{print $1}')`)
-  if [ "$key" = ctrl-m ]; then
-    gcloud container clusters describe "$cluster" | bat -l yml
-  elif [ "$key" = ctrl-d ]; then
-    gcloud container clusters delete "$cluster"
-  elif [ "$key" = ctrl-y ]; then
-    echo -n "$cluster" | pbcopy && echo "cluster name [$cluster] copied to clipboard." 
-  fi
-}
-
-# !!!!!!!!!!!!!!!!!!!!
-# Others
-# !!!!!!!!!!!!!!!!!!!!
-
-# fo - Open a file with fuzzy find.
+# fo - Open a file.
 fo() {
   local file
   file=$(fzf) && open "$file"
 }
 
-# fh - repeat history.
+# fh - Searce history.
 fh() {
   print -z $( ([ -n "$ZSH_NAME" ] && fc -l 1 || history) | fzf +s --tac | sed 's/ *[0-9]* *//')
 }
+zle -N fh
+bindkey '^R' fh
 
-# v - open files viminfo by vim
-v() {
-  local file=$(
-    grep '^>' $XDG_CACHE_HOME/vim/viminfo |
-    cut -c3- |
-    while read line; do
-      [ -f "${line/\~/$HOME}"  ] && echo "$line"
-    done |
-    fzf \
-      -q "$*" \
-      --height='80%' \
-      --preview "echo {} | sed 's@\~@$HOME@g' | xargs bat --color=always" \
-      --bind "ctrl-f:preview-page-down,ctrl-b:preview-page-up" \
-      --bind "ctrl-o:toggle-preview" \
-      --preview-window='right:60%'
-  ) && \
-    [[ -n "${file}" ]] && \
-    cd $(dirname ${file//\~/$HOME} | head -1) && \
-    cd $(git rev-parse --show-superproject-working-tree --show-toplevel | head -1) && \
-    vim ${file//\~/$HOME}
-}
-
-# [f]uzzy [rm] command
+# frm - Remove a file.
 frm() {
   local file=$(\ls -1 | fzf -m --preview 'ls -l {}' --preview-window up:1)
-	while read line; do
-		rm $line
-	done < <(echo "$file")
-	echo "!! Print list directory contents after remove files !!" ; ls -la
-}
-
-# ssh - interactice ssh.
-function ssh() {
-  if [[ "$#" != 0 ]];then
-    /usr/bin/ssh "$@";
-    return
-  fi
-  local host=$(rg '^Host' ~/.ssh/config | awk '{print $2}' | fzf )
-  [[ ${#host} != 0 ]] || return 0
-  /usr/bin/ssh "$host"
-}
-
-# gmod - Change GO111MODULE interactively.
-gmod() {
-  echo "!!!!! Current GO111MODULE is" $GO111MODULE "!!!!!"
-  local GOMOD=$(echo "on\noff\nauto" | fzf +m)
-  if [ -n "${GOMOD}" ]; then
-    export GO111MODULE=${GOMOD}
-  fi
-  echo "!!!!! Change  GO111MODULE is" $GO111MODULE "!!!!!"
+  while read line; do
+    rm $line
+  done < <(echo "$file")
+  echo "!! Print list directory contents after remove files !!" ; ls -la
 }
 
 # fkill - kill processes - list only the ones you can kill.
@@ -523,13 +349,114 @@ fkill() {
   fi
 }
 
-#####################################################################
-# Shell StartUp
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# git extension
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+# Function to judgement if it is git repository.
+function is_inside_repo {
+  git rev-parse --is-inside-work-tree &>/dev/null
+  return $?
+}
+
+# gl - git log show with fzf
+gl() {
+  is_inside_repo || return 1
+  local cmd opts files
+  files=$(sed -nE 's/.* -- (.*)/\1/p' <<< "$*") # extract files parameters for `git show` command
+  cmd="echo {} |grep -Eo '[a-f0-9]+' |head -1 |xargs -I% git show --color=always % -- $files | delta"
+  opts="
+    $FZF_DEFAULT_OPTS
+    $FZF_GIT_DEFAULT_OPTS
+    +s +m --tiebreak=index
+    --bind=\"enter:execute($cmd | bat)\"
+    --bind=\"ctrl-y:execute-silent(echo {} |grep -Eo '[a-f0-9]+' | head -1 | tr -d '\n' | pbcopy)\"
+  "
+  eval "git log --graph --color=always --format='%C(auto)%h%d %s %C(blue)%C(yellow)%cr' $*" |
+    FZF_DEFAULT_OPTS="$opts" fzf --preview="$cmd"
+}
+
+# gs - git status browser
+gs() {
+  is_inside_repo || return 1
+  local out key n files opts
+  opts="
+    $FZF_DEFAULT_OPTS
+    $FZF_GIT_DEFAULT_OPTS
+    --multi
+    --exit-0
+    --expect=ctrl-m,space
+  "
+  while out=$(
+    git -c color.status=always -c status.relativePaths=true status --short |
+    FZF_DEFAULT_OPTS="$opts" fzf --preview "git diff --color=always -- {-1} | delta"
+  ); do
+    key=$(head -1 <<< "$out")
+    n=$(($(wc -l <<< "$out") - 1))
+    files=$(tail "-$n" <<< "$out")
+    if [ "$key" = ctrl-m ]; then
+      OLDIFS=$IFS
+      IFS=$'\n'
+      for line in $files; do
+        local st file
+        st=$(echo $line | cut -b 1-1)
+        file=$(echo $line | awk '{print $2}')
+        if [ "$st" = " " ] || [ "$st" = "?" ] ; then
+          git add $file
+        else
+          git reset -q HEAD $file
+        fi
+      done
+      IFS=$OLDIFS
+    fi
+  done
+}
+
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# homebrew
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# Delete (one or multiple) selected application(s)
+# mnemonic [B]rew [U]ninstall [A]pplication
+bua() {
+  local uninst=$(brew leaves | fzf -m)
+
+  if [[ $uninst ]]; then
+    for prog in $(echo $uninst);
+    do; brew uninstall $prog; done;
+  fi
+}
+
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# ghq
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# fuzzy-ghq-list - cd to development directory in ghq list.
+fuzzy-ghq-list() {
+  local dir
+  dir=$(ghq list > /dev/null | fzf +m) && cd $(ghq root)/$dir
+}
+alias dev=fuzzy-ghq-list
+alias repo=fuzzy-ghq-list
+zle -N fuzzy-ghq-list
+bindkey '^G' fuzzy-ghq-list
+
+
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# Golang
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# gmod - Change GO111MODULE interactively.
+gmod() {
+  echo "!!!!! Current GO111MODULE is" $GO111MODULE "!!!!!"
+  local GOMOD=$(echo "on\noff\nauto" | fzf +m)
+  if [ -n "${GOMOD}" ]; then
+    export GO111MODULE=${GOMOD}
+  fi
+  echo "!!!!! Change  GO111MODULE is" $GO111MODULE "!!!!!"
+}
+
 #####################################################################
 # Load local script
+#####################################################################
 [[ -f ${HOME}/.local.zshrc ]] && source ${HOME}/.local.zshrc
-# Start tmux
-[[ -z "$TMUX" && ! -z "$PS1" ]] && exec tmux -f "$XDG_CONFIG_HOME"/tmux/tmux.conf
 
 #if (which zprof > /dev/null) ;then
 #  zprof | less
