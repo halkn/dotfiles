@@ -40,21 +40,20 @@ source ${ZINIT[HOME_DIR]}/bin/zinit.zsh
 autoload -Uz _zinit
 (( ${+_comps} )) && _comps[zinit]=_zinit
 
-## load plugins
-zinit ice wait"0" blockf
-zinit light zsh-users/zsh-completions
-
-zinit ice wait"0" atload"_zsh_autosuggest_start"
-zinit light zsh-users/zsh-autosuggestions
-
-zinit ice wait"0" atinit"zpcompinit; zpcdreplay"
-zinit light zdharma/fast-syntax-highlighting
+# load plugins
+zinit wait lucid light-mode for \
+  atinit"zicompinit; zicdreplay" \
+    zdharma/fast-syntax-highlighting \
+  atload"_zsh_autosuggest_start" \
+    zsh-users/zsh-autosuggestions \
+  blockf atpull'zinit creinstall -q .' \
+    zinit light zsh-users/zsh-completions
 
 # prompt
-zinit ice pick"async.zsh" src"pure.zsh"
-zinit light sindresorhus/pure
+zinit atload'!source ~/.config/zsh/.p10k.zsh' lucid nocd for \
+  romkatv/powerlevel10k
 
-# add complection
+# complection
 zinit ice as"completion"
 zinit snippet https://github.com/docker/cli/blob/master/contrib/completion/zsh/_docker
 
@@ -180,6 +179,8 @@ alias :q="exit"
 
 # git
 alias gp='git pull'
+alias gs='vim -c FzfGStatus'
+alias gl='vim -c FzfCommits'
 
 #####################################################################
 # options
@@ -277,6 +278,19 @@ function ssh() {
   /usr/bin/ssh "$host"
 }
 
+# man - man wich color
+man() {
+    env \
+        LESS_TERMCAP_mb=$(printf "\e[1;33m") \
+        LESS_TERMCAP_md=$(printf "\e[1;36m") \
+        LESS_TERMCAP_me=$(printf "\e[0m") \
+        LESS_TERMCAP_se=$(printf "\e[0m") \
+        LESS_TERMCAP_so=$(printf "\e[1;44;33m") \
+        LESS_TERMCAP_ue=$(printf "\e[0m") \
+        LESS_TERMCAP_us=$(printf "\e[1;32m") \
+        man "$@"
+}
+
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # change directory with fzf.
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -350,69 +364,6 @@ fkill() {
 }
 
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-# git extension
-# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-# Function to judgement if it is git repository.
-function is_inside_repo {
-  git rev-parse --is-inside-work-tree &>/dev/null
-  return $?
-}
-
-# gl - git log show with fzf
-gl() {
-  is_inside_repo || return 1
-  local cmd opts files
-  files=$(sed -nE 's/.* -- (.*)/\1/p' <<< "$*") # extract files parameters for `git show` command
-  cmd="echo {} |grep -Eo '[a-f0-9]+' |head -1 |xargs -I% git show --color=always % -- $files | delta"
-  opts="
-    $FZF_DEFAULT_OPTS
-    $FZF_GIT_DEFAULT_OPTS
-    +s +m --tiebreak=index
-    --bind=\"enter:execute($cmd | bat)\"
-    --bind=\"ctrl-y:execute-silent(echo {} |grep -Eo '[a-f0-9]+' | head -1 | tr -d '\n' | pbcopy)\"
-  "
-  eval "git log --graph --color=always --format='%C(auto)%h%d %s %C(blue)%C(yellow)%cr' $*" |
-    FZF_DEFAULT_OPTS="$opts" fzf --preview="$cmd"
-}
-
-# gs - git status browser
-gs() {
-  is_inside_repo || return 1
-  local out key n files opts
-  opts="
-    $FZF_DEFAULT_OPTS
-    $FZF_GIT_DEFAULT_OPTS
-    --multi
-    --exit-0
-    --expect=ctrl-m,space
-  "
-  while out=$(
-    git -c color.status=always -c status.relativePaths=true status --short |
-    FZF_DEFAULT_OPTS="$opts" fzf --preview "git diff --color=always -- {-1} | delta"
-  ); do
-    key=$(head -1 <<< "$out")
-    n=$(($(wc -l <<< "$out") - 1))
-    files=$(tail "-$n" <<< "$out")
-    if [ "$key" = ctrl-m ]; then
-      OLDIFS=$IFS
-      IFS=$'\n'
-      for line in $files; do
-        local st file
-        st=$(echo $line | cut -b 1-1)
-        file=$(echo $line | awk '{print $2}')
-        if [ "$st" = " " ] || [ "$st" = "?" ] ; then
-          git add $file
-        else
-          git reset -q HEAD $file
-        fi
-      done
-      IFS=$OLDIFS
-    fi
-  done
-}
-
-# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # homebrew
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # Delete (one or multiple) selected application(s)
@@ -432,7 +383,7 @@ bua() {
 # fuzzy-ghq-list - cd to development directory in ghq list.
 fuzzy-ghq-list() {
   local dir
-  dir=$(ghq list > /dev/null | fzf +m) && cd $(ghq root)/$dir
+  dir=$(ghq list > /dev/null | fzf +m --preview "exa -T $(ghq root)/{}") && cd $(ghq root)/$dir
 }
 alias dev=fuzzy-ghq-list
 alias repo=fuzzy-ghq-list

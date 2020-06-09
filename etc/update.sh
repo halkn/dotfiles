@@ -3,6 +3,9 @@
 # brew upgrade
 brew upgrade
 
+# zinit
+zinit self-update
+
 # go tools
 GO111MODULE=off go get -u golang.org/x/lint/golint
 GO111MODULE=off go get -u github.com/Code-Hex/battery/cmd/battery
