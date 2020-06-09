@@ -19,8 +19,6 @@ fi
 
 echo 'Start for Homebrew app installation'
 declare -a BREW_APPS=(
-  "bash"
-  "bash-completion"
   "bat"
   "exa"
   "fd"
