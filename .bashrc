@@ -92,11 +92,17 @@ alias bs="source ~/.bashrc"
 # exit
 alias :q="exit"
 
+# git
+alias gp='git pull'
+alias gs='vim -c FzfGStatus'
+alias gl='vim -c FzfCommits'
+
 # ---------------------------------------------------------------------------
 # function
 # ---------------------------------------------------------------------------
 
-### chance directory --------------------------------------------------------
+### improve command ---------------------------------------------------------
+
 # cd - interactive cd
 function cd() {
   if [[ "$#" != 0 ]]; then
@@ -117,6 +123,32 @@ function cd() {
     builtin cd "$dir" &> /dev/null
   done
 }
+
+# ssh - interactice ssh.
+function ssh() {
+  if [[ "$#" != 0 ]];then
+    /usr/bin/ssh "$@";
+    return
+  fi
+  local host=$(rg '^Host' ~/.ssh/config | awk '{print $2}' | fzf )
+  [[ ${#host} != 0 ]] || return 0
+  /usr/bin/ssh "$host"
+}
+
+# man - man wich color
+man() {
+  env \
+    LESS_TERMCAP_mb=$(printf "\e[1;33m") \
+    LESS_TERMCAP_md=$(printf "\e[1;36m") \
+    LESS_TERMCAP_me=$(printf "\e[0m") \
+    LESS_TERMCAP_se=$(printf "\e[0m") \
+    LESS_TERMCAP_so=$(printf "\e[1;44;33m") \
+    LESS_TERMCAP_ue=$(printf "\e[0m") \
+    LESS_TERMCAP_us=$(printf "\e[1;32m") \
+    man "$@"
+}
+
+### chance directory --------------------------------------------------------
 
 # fda - including hidden directories
 fda() {
@@ -145,134 +177,21 @@ fdr() {
 }
 alias ...=fdr
 
-# fuzzy-ghq-list - cd to development directory in ghq list.
-fuzzy-ghq-list() {
-  local dir
-  dir=$(ghq list | fzf +m --preview "exa -T $(ghq root)/{}") && cd $(ghq root)/$dir
-}
-alias dev=fuzzy-ghq-list
+### utiltiy command with fzf ------------------------------------------------
 
-### git ---------------------------------------------------------------------
-
-# helper function
-# Function to judgement if it is git repository.
-function is_inside_repo {
-  git rev-parse --is-inside-work-tree &>/dev/null
-  return $?
-}
-
-# gl - [G]it [L]og show 
-gl() {
-  is_inside_repo || return 1
-  local cmd opts files
-  files=$(sed -nE 's/.* -- (.*)/\1/p' <<< "$*") # extract files parameters for `git show` command
-  cmd="echo {} |grep -Eo '[a-f0-9]+' |head -1 |xargs -I% git show --color=always % -- $files | delta"
-  opts="
-    $FZF_DEFAULT_OPTS
-    $FZF_GIT_DEFAULT_OPTS
-    +s +m --tiebreak=index
-    --bind=\"enter:execute($cmd | bat)\"
-    --bind=\"ctrl-y:execute-silent(echo {} |grep -Eo '[a-f0-9]+' | head -1 | tr -d '\n' | pbcopy)\"
-  "
-  eval "git log --graph --color=always --format='%C(auto)%h%d %s %C(blue)%C(yellow)%cr' $*" |
-    FZF_DEFAULT_OPTS="$opts" fzf --preview="$cmd"
-}
-
-# gs [G]it [S]tatus browser
-gs() {
-  is_inside_repo || return 1
-  local out key n files opts
-  opts="
-    $FZF_DEFAULT_OPTS
-    $FZF_GIT_DEFAULT_OPTS
-    --multi
-    --exit-0
-    --expect=ctrl-m,space
-  "
-  while out=$(
-    git -c color.status=always -c status.relativePaths=true status --short |
-    FZF_DEFAULT_OPTS="$opts" fzf --preview "git diff --color=always -- {-1} | delta"
-  ); do
-    key=$(head -1 <<< "$out")
-    n=$(($(wc -l <<< "$out") - 1))
-    files=$(tail "-$n" <<< "$out")
-    if [ "$key" = ctrl-m ]; then
-      OLDIFS=$IFS
-      IFS=$'\n'
-      for line in $files; do
-        local st file
-        st=$(echo $line | cut -b 1-1)
-        file=$(echo $line | awk '{print $2}')
-        if [ "$st" = " " ] || [ "$st" = "?" ] ; then
-          git add $file
-        else
-          git reset -q HEAD $file
-        fi
-      done
-      IFS=$OLDIFS
-    fi
-  done
-}
-
-### homebrew ----------------------------------------------------------------
-# bua [B]rew [U]ninstall [A]pplication
-bua() {
-  local uninst=$(brew leaves | fzf -m)
-
-  if [[ $uninst ]]; then
-    for prog in $(echo $uninst);do 
-      brew uninstall $prog
-    done;
-  fi
-}
-
-### Other -------------------------------------------------------------------
 # fo - Open a file with fuzzy find.
 fo() {
   local file
   file=$(fzf) && open "$file"
 }
 
-# vh - open files viminfo by vim
-vh() {
-  local file=$(
-    grep '^>' $XDG_CACHE_HOME/vim/viminfo |
-    cut -c3- |
-    while read line; do
-      [ -f "${line/\~/$HOME}"  ] && echo "$line"
-    done |
-    fzf \
-      -q "$*" \
-      --height='80%' \
-      --preview "echo {} | sed 's@\~@$HOME@g' | xargs bat --color=always" \
-      --bind "ctrl-f:preview-page-down,ctrl-b:preview-page-up" \
-      --bind "ctrl-o:toggle-preview" \
-      --preview-window='right:60%'
-  ) && \
-    [[ -n "${file}" ]] && \
-    cd $(dirname ${file//\~/$HOME} | head -1) && \
-    cd $(git rev-parse --show-superproject-working-tree --show-toplevel | head -1) && \
-    vim ${file//\~/$HOME}
-}
-
 # frm - [f]uzzy [rm] command
 function frm() {
   local file=$(\ls -1 | fzf -m --preview 'ls -l {}' --preview-window up:1)
-	while read line; do
-		rm -f $line
-	done < <(echo "$file")
-	echo "!! Print list directory contents after remove files !!" ; ls -la
-}
-
-# ssh - interactice ssh.
-function ssh() {
-  if [[ "$#" != 0 ]];then
-    /usr/bin/ssh "$@";
-    return
-  fi
-  local host=$(rg '^Host' ~/.ssh/config | awk '{print $2}' | fzf )
-  [[ ${#host} != 0 ]] || return 0
-  /usr/bin/ssh "$host"
+  while read line; do
+    rm -f $line
+  done < <(echo "$file")
+  echo "!! Print list directory contents after remove files !!" ; ls -la
 }
 
 # fkill - kill processes - list only the ones you can kill.
@@ -288,6 +207,27 @@ fkill() {
       echo $pid | xargs kill -${1:-9}
   fi
 }
+
+### homebrew ----------------------------------------------------------------
+
+# bua [B]rew [U]ninstall [A]pplication
+bua() {
+  local uninst=$(brew leaves | fzf -m)
+  if [[ $uninst ]]; then
+    for prog in $(echo $uninst);do 
+      brew uninstall $prog
+    done;
+  fi
+}
+
+### ghq ---------------------------------------------------------------------
+
+# fuzzy-ghq-list - cd to development directory in ghq list.
+fuzzy-ghq-list() {
+  local dir
+  dir=$(ghq list | fzf +m --preview "exa -T $(ghq root)/{}") && cd $(ghq root)/$dir
+}
+alias dev=fuzzy-ghq-list
 
 ### golang ------------------------------------------------------------------
 
