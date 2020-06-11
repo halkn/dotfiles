@@ -4,7 +4,10 @@
 brew upgrade
 
 # zinit
-zinit self-update
+if [ "$SHELL" = "zsh" ]; then
+  zinit self-update
+  zinit update --all
+fi
 
 # go tools
 GO111MODULE=off go get -u golang.org/x/lint/golint

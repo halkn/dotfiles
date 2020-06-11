@@ -55,6 +55,9 @@ export FZF_GIT_DEFAULT_OPTS=" \
 # ripgrep
 export RIPGREP_CONFIG_PATH=$XDG_CONFIG_HOME/ripgrep/config
 
+# ignore shellcheck
+export SHELLCHECK_OPTS="--exclude=SC1090"
+
 # ---------------------------------------------------------------------------↲
 # start tmux↲
 # ---------------------------------------------------------------------------↲

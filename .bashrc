@@ -46,7 +46,7 @@ if type exa > /dev/null 2>&1; then
 else
   case ${OSTYPE} in
     darwin* )
-      if [[ -x `which gls` ]]; then
+      if [[ -x $(which gls) ]]; then
         alias ls="gls --color=auto"
       else
         alias ls="ls -G"
@@ -85,8 +85,8 @@ fi
 
 # useful
 alias ..='cd ..'
-alias dot="cd $HOME/.dotfiles && $EDITOR"
-alias path="echo $PATH | tr ':' '\n'"
+alias dot='cd $HOME/.dotfiles && $EDITOR'
+alias path='echo $PATH | tr ":" "\n"'
 alias bs="source ~/.bashrc"
 
 # exit
@@ -106,12 +106,15 @@ alias gl='vim -c FzfCommits'
 # cd - interactive cd
 function cd() {
   if [[ "$#" != 0 ]]; then
-    builtin cd "$@";
+    builtin cd "$@" || return
     return
   fi
   while true; do
-    local lsd=$(ls -aaF1 | grep '/$' | sed 's;/$;;')
-    local dir="$(printf '%s\n' "${lsd[@]}" |
+    local lsd dir
+    # shellcheck disable=SC2010
+    lsd=$(ls -aaF1 | grep '/$' | sed 's;/$;;')
+    # shellcheck disable=SC2016
+    dir="$(printf '%s\n' "${lsd[@]}" |
       fzf --reverse --preview '
         __cd_nxt="$(echo {})";
         __cd_path="$(echo $(pwd)/${__cd_nxt} | sed "s;//;/;")";
@@ -120,7 +123,7 @@ function cd() {
         ls -aF "${__cd_path}";
     ')"
     [[ ${#dir} != 0 ]] || return 0
-    builtin cd "$dir" &> /dev/null
+    builtin cd "$dir" &> /dev/null || return
   done
 }
 
@@ -130,7 +133,8 @@ function ssh() {
     /usr/bin/ssh "$@";
     return
   fi
-  local host=$(rg '^Host' ~/.ssh/config | awk '{print $2}' | fzf )
+  local host
+  host=$(rg '^Host' ~/.ssh/config | awk '{print $2}' | fzf )
   [[ ${#host} != 0 ]] || return 0
   /usr/bin/ssh "$host"
 }
@@ -138,13 +142,13 @@ function ssh() {
 # man - man wich color
 man() {
   env \
-    LESS_TERMCAP_mb=$(printf "\e[1;33m") \
-    LESS_TERMCAP_md=$(printf "\e[1;36m") \
-    LESS_TERMCAP_me=$(printf "\e[0m") \
-    LESS_TERMCAP_se=$(printf "\e[0m") \
-    LESS_TERMCAP_so=$(printf "\e[1;44;33m") \
-    LESS_TERMCAP_ue=$(printf "\e[0m") \
-    LESS_TERMCAP_us=$(printf "\e[1;32m") \
+    LESS_TERMCAP_mb="$(printf "\e[1;33m")" \
+    LESS_TERMCAP_md="$(printf "\e[1;36m")" \
+    LESS_TERMCAP_me="$(printf "\e[0m")" \
+    LESS_TERMCAP_se="$(printf "\e[0m")" \
+    LESS_TERMCAP_so="$(printf "\e[1;44;33m")" \
+    LESS_TERMCAP_ue="$(printf "\e[0m")" \
+    LESS_TERMCAP_us="$(printf "\e[1;32m")" \
     man "$@"
 }
 
@@ -153,7 +157,8 @@ man() {
 # fda - including hidden directories
 fda() {
   local dir
-  dir=$(fd --hidden --type d --follow --exclude "{.git,.svn}" 2> /dev/null | fzf +m) && cd "$dir"
+  dir=$(fd --hidden --type d --follow --exclude "{.git,.svn}" 2> /dev/null | fzf +m) 
+  cd "$dir" || return
 }
 
 # fdr - cd to selected parent directory
@@ -165,7 +170,9 @@ fdr() {
       dpath+="/"$dir && echo "${dpath}"
     done
   }
-  local DIR="$( get_parent_dirs |
+  local DIR
+  # shellcheck disable=SC2016
+  DIR="$( get_parent_dirs |
     fzf --reverse --preview '
       __cd_nxt="$(echo {})";
       __cd_path="$(echo ${__cd_nxt} | sed "s;//;/;")";
@@ -173,7 +180,7 @@ fdr() {
       echo;
       ls -aF "${__cd_path}";
   ')"
-  cd "${DIR}"
+  cd "${DIR}" || return
 }
 alias ...=fdr
 
@@ -187,9 +194,19 @@ fo() {
 
 # frm - [f]uzzy [rm] command
 function frm() {
-  local file=$(\ls -1 | fzf -m --preview 'ls -l {}' --preview-window up:1)
-  while read line; do
-    rm -f $line
+  getopts 'r' opts
+  local file fcmd rcmd
+  if [ "$opts" != "r"  ]; then
+    fcmd="fd --hidden -d 1 --type f"
+    rcmd="rm -f"
+  else
+    fcmd="fd --hidden -d 1"
+    rcmd="rm -fr"
+  fi
+
+  file=$($fcmd | fzf -m --preview 'ls -l {}' --preview-window up:1)
+  while read -r line; do
+    $rcmd $line
   done < <(echo "$file")
   echo "!! Print list directory contents after remove files !!" ; ls -la
 }
@@ -212,9 +229,10 @@ fkill() {
 
 # bua [B]rew [U]ninstall [A]pplication
 bua() {
-  local uninst=$(brew leaves | fzf -m)
+  local uninst
+  uninst=$(brew leaves | fzf -m)
   if [[ $uninst ]]; then
-    for prog in $(echo $uninst);do 
+    for prog in $uninst;do 
       brew uninstall $prog
     done;
   fi
@@ -225,7 +243,8 @@ bua() {
 # fuzzy-ghq-list - cd to development directory in ghq list.
 fuzzy-ghq-list() {
   local dir
-  dir=$(ghq list | fzf +m --preview "exa -T $(ghq root)/{}") && cd $(ghq root)/$dir
+  dir=$(ghq list | fzf +m --preview "exa -T $(ghq root)/{}")
+  cd "$(ghq root)/$dir" || return
 }
 alias dev=fuzzy-ghq-list
 
@@ -234,7 +253,8 @@ alias dev=fuzzy-ghq-list
 # gmod - Change GO111MODULE interactively.
 gmod() {
   echo "!!!!! Current GO111MODULE is" $GO111MODULE "!!!!!"
-  local GOMOD=$(echo -ne "on\noff\nauto" | fzf +m)
+  local GOMOD
+  GOMOD=$(echo -ne "on\noff\nauto" | fzf +m)
   if [ -n "${GOMOD}" ]; then
     export GO111MODULE=${GOMOD}
   fi
@@ -249,7 +269,7 @@ bind '"\C-r": "\C-x1\e^\er"'
 bind -x '"\C-x1": __fzf_history';
 
 __fzf_history(){
-  __ehc $(history | fzf --tac --tiebreak=index | perl -ne 'm/^\s*([0-9]+)/ and print "!$1"')
+  __ehc "$(history | fzf --tac --tiebreak=index | perl -ne 'm/^\s*([0-9]+)/ and print "!$1"')"
 }
 
 __ehc(){
