@@ -627,19 +627,6 @@ imap <expr><S-Tab> vsnip#available(-1) ? '<Plug>(vsnip-jump-prev)'      : lexima
 smap <expr><S-Tab> vsnip#available(-1) ? '<Plug>(vsnip-jump-prev)'      : lexima#expand('<LT>S-Tab>', 'i')
 let g:vsnip_snippet_dir = expand(fnamemodify($MYVIMRC, ":h") . '/snippets')
 
-" vim-vsnip-integ
-let g:vsnip_integ_config = {
-\ 'vim_lsp': v:true,
-\ 'vim_lsc': v:false,
-\ 'lamp': v:false,
-\ 'deoplete_lsp': v:false,
-\ 'nvim_lsp': v:false,
-\ 'language_client_neovim': v:false,
-\ 'asyncomplete': v:true,
-\ 'deoplete': v:false,
-\ 'mucomplete': v:false,
-\ }
-
 " vista.vim
 let g:vista_default_executive = 'vim_lsp'
 let g:vista_executive_for = {
