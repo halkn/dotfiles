@@ -118,7 +118,10 @@ set clipboard=unnamed
 
 " Completion
 set completeopt=menuone,noinsert,noselect
+
+" shortmess
 set shortmess+=c
+set shortmess-=S
 
 " help
 set helplang=ja,en
