@@ -6,12 +6,6 @@ tools:
     lint-formats:
       - '%f:%l %m'
 
-  golint: &golint
-    lint-command: 'golint'
-    lint-ignore-exit-code: true
-    lint-formats:
-      - '%f:%l:%c: %m'
-
   json-fixjson: &json-fixjson
     format-command: 'fixjson'
 
@@ -24,14 +18,12 @@ tools:
       - '%f:%l:%c: %tote: %m'
 
   shfmt-format: &shfmt-format
-    format-command: 'shfmt -ln bash -kp -i 2 -ci'
+    format-command: 'shfmt -ln bash -kr -i 2 -ci'
     format-stdin: true
 
 languages:
   markdown:
     - <<: *markdown-markdownlint
-  go:
-    - <<: *golint
   json:
     - <<: *json-fixjson
   sh:
