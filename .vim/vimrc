@@ -600,6 +600,7 @@ let g:lsp_signs_hint = {'text': '▲'}
 
 function! s:setup_lsp() abort
   setlocal omnifunc=lsp#complete
+  setlocal tagfunc=lsp#tagfunc
   nmap <silent> <buffer> gd <Plug>(lsp-definition)
   nmap <silent> <buffer> gy <Plug>(lsp-type-definition)
   nmap <silent> <buffer> gr <Plug>(lsp-references)
