@@ -178,7 +178,6 @@ function! PackInit() abort
   call minpac#add('junegunn/fzf')
   call minpac#add('junegunn/fzf.vim')
   " LSP
-  call minpac#add('prabirshrestha/async.vim')
   call minpac#add('prabirshrestha/vim-lsp')
   call minpac#add('mattn/vim-lsp-settings')
   call minpac#add('prabirshrestha/asyncomplete.vim')
