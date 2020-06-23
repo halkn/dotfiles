@@ -244,7 +244,9 @@ bua() {
 fuzzy-ghq-list() {
   local dir
   dir=$(ghq list | fzf +m --preview "exa -T $(ghq root)/{}")
-  cd "$(ghq root)/$dir" || return
+  if [[ $dir ]]; then
+    cd "$(ghq root)/$dir" || return
+  fi
 }
 alias dev=fuzzy-ghq-list
 
