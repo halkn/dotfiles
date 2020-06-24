@@ -177,6 +177,7 @@ function! PackInit() abort
   " fuzzy finder
   call minpac#add('junegunn/fzf')
   call minpac#add('junegunn/fzf.vim')
+  call minpac#add('prabirshrestha/vim-fz', { 'branch': 'rg-column' })
   " LSP
   call minpac#add('prabirshrestha/vim-lsp')
   call minpac#add('mattn/vim-lsp-settings')
@@ -199,6 +200,7 @@ function! PackInit() abort
   call minpac#add('mbbill/undotree')
   call minpac#add('simeji/winresizer')
   call minpac#add('mhinz/vim-signify')
+  call minpac#add('lambdalisue/gina.vim', { 'type': 'opt' })
   call minpac#add('voldikss/vim-floaterm')
   call minpac#add('bfrg/vim-qf-preview')
   call minpac#add('tyru/capture.vim')
@@ -566,6 +568,25 @@ augroup vimrc_fzf
   autocmd FileType fzf tnoremap <buffer> <silent> <Esc> <Esc>
 augroup END
 
+" FuzzyFinder ----------------------------------------------------------------
+" vim-fz
+command! -bang -nargs=* Files
+\ call fz#run({
+\   'type': 'cmd',
+\   'cmd': 'fd --type file --follow --hidden -E .git -E .svn',
+\ })
+
+command! -bang -nargs=* Rg
+\ call fz#run({
+\   'type': 'cmd',
+\   'output': 'rgcolumn',
+\   'cmd': 'rg --hidden --column --line-number --no-heading --color=auto '.shellescape(<q-args>),
+\ })
+
+nmap    <silent> <Leader>f       :<C-u>Files<CR>
+noremap <silent> <leader>R       :Rg 
+nmap    <silent> <Leader><space> <Plug>(fz-mru)
+
 " LSP ------------------------------------------------------------------------
 " vim-lsp-settings
 let g:lsp_settings = {
@@ -738,3 +759,30 @@ augroup vimrc_qfpreview
   autocmd FileType qf nmap <buffer> p <plug>(qf-preview-open)
 augroup END
 
+" gina.vim
+packadd gina.vim
+
+let s:gina_cmd_opt = {'noremap': 1, 'silent': 1}
+call gina#custom#command#option('status','-s')
+call gina#custom#command#option('commit', '-v')
+call gina#custom#command#option('show','--show-signature')
+
+call gina#custom#mapping#nmap('/.*', 'q', ':<C-U>bd<CR>', s:gina_cmd_opt)
+call gina#custom#mapping#nmap('status', '<C-^>', ':<C-u>Gina commit<CR>', s:gina_cmd_opt)
+call gina#custom#mapping#nmap('commit', '<C-^>', ':<C-u>Gina status<CR>', s:gina_cmd_opt)
+
+" call gina#custom#action#alias(
+"\ '/\%(blame\|log\|reflog\)',
+"\ 'preview',
+"\ 'show:commit:vsplit',
+"\ )
+call gina#custom#mapping#nmap(
+\ '/\%(blame\|log\|reflog\)',
+\ 'p',
+\ ':<C-u>call gina#action#call(''show:commit:vsplit'')<CR>',
+\ s:gina_cmd_opt,
+\ )
+
+nnoremap <silent> <Leader>gs :<C-u>Gina status<CR>
+nnoremap <silent> <Leader>gl :<C-u>Gina log --graph<CR>
+nnoremap <silent> <Leader>gd :<C-u>Gina compare<CR>
