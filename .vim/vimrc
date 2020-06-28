@@ -177,7 +177,8 @@ function! PackInit() abort
   " fuzzy finder
   call minpac#add('junegunn/fzf')
   call minpac#add('junegunn/fzf.vim')
-  call minpac#add('prabirshrestha/vim-fz', { 'branch': 'rg-column' })
+  call minpac#add('mattn/vim-fz')
+  call minpac#add('prabirshrestha/vim-fz-extras')
   " LSP
   call minpac#add('prabirshrestha/vim-lsp')
   call minpac#add('mattn/vim-lsp-settings')
@@ -576,16 +577,9 @@ command! -bang -nargs=* Files
 \   'cmd': 'fd --type file --follow --hidden -E .git -E .svn',
 \ })
 
-command! -bang -nargs=* Rg
-\ call fz#run({
-\   'type': 'cmd',
-\   'output': 'rgcolumn',
-\   'cmd': 'rg --hidden --column --line-number --no-heading --color=auto '.shellescape(<q-args>),
-\ })
-
-nmap    <silent> <Leader>f       :<C-u>Files<CR>
-noremap <silent> <leader>R       :Rg 
-nmap    <silent> <Leader><space> <Plug>(fz-mru)
+nmap <silent> <Leader>f       :<C-u>Files<CR>
+nmap <silent> <Leader><space> <Plug>(fz-mru)
+nmap <leader>R <Plug>(fz-extras-rg)
 
 " LSP ------------------------------------------------------------------------
 " vim-lsp-settings
@@ -771,11 +765,12 @@ call gina#custom#mapping#nmap('/.*', 'q', ':<C-U>bd<CR>', s:gina_cmd_opt)
 call gina#custom#mapping#nmap('status', '<C-^>', ':<C-u>Gina commit<CR>', s:gina_cmd_opt)
 call gina#custom#mapping#nmap('commit', '<C-^>', ':<C-u>Gina status<CR>', s:gina_cmd_opt)
 
-" call gina#custom#action#alias(
-"\ '/\%(blame\|log\|reflog\)',
-"\ 'preview',
-"\ 'show:commit:vsplit',
-"\ )
+call gina#custom#mapping#nmap(
+\ 'status',
+\ 'p',
+\ ':<C-u>call gina#action#call(''diff:vsplit'')<CR>',
+\ s:gina_cmd_opt,
+\ )
 call gina#custom#mapping#nmap(
 \ '/\%(blame\|log\|reflog\)',
 \ 'p',
