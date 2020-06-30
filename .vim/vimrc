@@ -177,8 +177,6 @@ function! PackInit() abort
   " fuzzy finder
   call minpac#add('junegunn/fzf')
   call minpac#add('junegunn/fzf.vim')
-  call minpac#add('mattn/vim-fz')
-  call minpac#add('prabirshrestha/vim-fz-extras')
   " LSP
   call minpac#add('prabirshrestha/vim-lsp')
   call minpac#add('mattn/vim-lsp-settings')
@@ -410,7 +408,7 @@ xmap sk <Plug>(columnskip:nonblank:prev)
 let g:fzf_command_prefix = 'Fzf'
 let g:fzf_preview_window = 'right:60%'
 if exists('$TMUX')
-  let g:fzf_layout = { 'tmux': '-p95%,90%' }
+  let g:fzf_layout = { 'tmux': '-p100%,50% -y'.&lines }
 else
   let g:fzf_layout = { 'window': { 'width': 0.95, 'height': 0.9 } }
 endif
@@ -478,7 +476,8 @@ function! s:fzf_git_status() abort
   \   '--bind', '?:toggle-preview',
   \   '--bind', 'space:execute-silent(git add {+-1})+down+reload:' . l:cmd,
   \   '--bind', 'bspace:execute-silent(git reset -q HEAD {+-1})+down+reload:' . l:cmd,
-  \ ]
+  \ ],
+  \ 'tmux': '-p100%,95% -y'.&lines,
   \ }
   call fzf#run(fzf#wrap(l:spec))
 endfunction
@@ -547,7 +546,8 @@ function! s:fzf_git_log(...) abort
   \   '--bind', 'alt-s:toggle-sort',
   \   '--bind', '?:toggle-preview',
   \   '--bind', 'ctrl-y:execute-silent(echo {} | grep -Eo "[a-f0-9]+" | head -1 | tr -d \\n | pbcopy)',
-  \ ]
+  \ ],
+  \ 'tmux': '-p100%,95% -y'.&lines,
   \ }
   call fzf#run(fzf#wrap(l:spec))
 endfunction
@@ -568,18 +568,6 @@ augroup vimrc_fzf
   au!
   autocmd FileType fzf tnoremap <buffer> <silent> <Esc> <Esc>
 augroup END
-
-" FuzzyFinder ----------------------------------------------------------------
-" vim-fz
-command! -bang -nargs=* Files
-\ call fz#run({
-\   'type': 'cmd',
-\   'cmd': 'fd --type file --follow --hidden -E .git -E .svn',
-\ })
-
-nmap <silent> <Leader>f       :<C-u>Files<CR>
-nmap <silent> <Leader><space> <Plug>(fz-mru)
-nmap <leader>R <Plug>(fz-extras-rg)
 
 " LSP ------------------------------------------------------------------------
 " vim-lsp-settings
