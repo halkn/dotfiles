@@ -166,6 +166,7 @@ function! PackInit() abort
   " global
   call minpac#add('chuling/vim-equinusocio-material')
   call minpac#add('itchyny/lightline.vim')
+  call minpac#add('itchyny/vim-gitbranch')
   call minpac#add('halkn/lightline-lsp')
   call minpac#add('vim-jp/vimdoc-ja')
   call minpac#add('tyru/columnskip.vim')
@@ -370,9 +371,14 @@ hi PMenu guibg=#2f2f2f
 let g:lightline = {
 \ 'colorscheme': 'equinusocio_material',
 \ 'active': {
+\   'left': [ [ 'mode', 'paste'],
+\             [ 'readonly', 'filename', 'modified' ], ['gitbranch'] ],
 \   'right': [ [ 'lsp_errors', 'lsp_warnings', 'lsp_ok', 'lineinfo' ],
 \              [ 'percent' ],
 \              [ 'fileformat', 'fileencoding', 'filetype' ] ]
+\ },
+\ 'component_function': {
+\   'gitbranch': 'gitbranch#name'
 \ },
 \ 'component_expand': {
 \   'lsp_warnings': 'lightline_lsp#warnings',
