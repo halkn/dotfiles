@@ -361,6 +361,7 @@ augroup END
 " Global ---------------------------------------------------------------------
 " vim-equinusocio-material
 let g:equinusocio_material_darker = 1
+let g:equinusocio_material_bracket_improved = 1
 colorscheme equinusocio_material
 
 highlight LspErrorHighlight gui=underline cterm=underline
