@@ -197,7 +197,6 @@ function! PackInit() abort
   call minpac#add('tyru/open-browser.vim')
   " Extension
   call minpac#add('glidenote/memolist.vim')
-  call minpac#add('mbbill/undotree')
   call minpac#add('simeji/winresizer')
   call minpac#add('mhinz/vim-signify')
   call minpac#add('lambdalisue/gina.vim', { 'type': 'opt' })
@@ -710,10 +709,6 @@ let g:memolist_ex_cmd = 'FzfFiles'
 nnoremap <Leader>mn :<C-u>MemoNew<CR>
 nnoremap <Leader>mg :<C-u>MemoGrep<CR>
 nnoremap <Leader>ml :<C-u>MemoList<CR>
-
-" undotree
-nnoremap <silent> <Leader>u :UndotreeToggle<cr>
-let g:undotree_WindowLayout = 2
 
 " winresizer
 let g:winresizer_start_key = '<C-w>r'
