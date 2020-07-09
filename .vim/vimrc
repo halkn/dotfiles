@@ -203,6 +203,7 @@ function! PackInit() abort
   call minpac#add('voldikss/vim-floaterm')
   call minpac#add('bfrg/vim-qf-preview')
   call minpac#add('tyru/capture.vim')
+  call minpac#add('skanehira/translate.vim')
 endfunction
 
 set packpath^=$XDG_DATA_HOME/vim
@@ -771,3 +772,10 @@ call gina#custom#mapping#nmap(
 nnoremap <silent> <Leader>gs :<C-u>Gina status<CR>
 nnoremap <silent> <Leader>gl :<C-u>Gina log --graph<CR>
 nnoremap <silent> <Leader>gd :<C-u>Gina compare<CR>
+
+" translate.vim
+let g:translate_source = "en"
+let g:translate_target = "ja"
+let g:translate_winsize = 10
+xmap T <Plug>(VTranslate)
+xmap <Leader>tR <Plug>(VTranslateBang)
