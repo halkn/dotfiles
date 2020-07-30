@@ -735,9 +735,13 @@ tnoremap <silent> <C-t>      <C-\><C-n>:FloatermToggle<CR>
 
 " vim-qf-preview
 let g:qfpreview = {
+\ 'top': 'g',
+\ 'bottom': 'G',
 \ 'number': 1,
 \ 'height': 20,
 \ 'offset': 10,
+\ 'next': 'n',
+\ 'previous': 'p',
 \ 'sign': {'text': '>>', 'texthl': 'Todo'}
 \ }
 augroup vimrc_qfpreview
