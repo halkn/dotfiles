@@ -204,6 +204,8 @@ function! PackInit() abort
   call minpac#add('bfrg/vim-qf-preview')
   call minpac#add('tyru/capture.vim')
   call minpac#add('skanehira/translate.vim')
+  call minpac#add('thinca/vim-qfreplace')
+  call minpac#add('t9md/vim-quickhl')
 endfunction
 
 set packpath^=$XDG_DATA_HOME/vim
@@ -784,3 +786,9 @@ let g:translate_target = "ja"
 let g:translate_winsize = 10
 xmap T <Plug>(VTranslate)
 xmap <Leader>tR <Plug>(VTranslateBang)
+
+" vim-quickhl
+nmap <Space>m <Plug>(quickhl-manual-this)
+xmap <Space>m <Plug>(quickhl-manual-this)
+nmap <Space>M <Plug>(quickhl-manual-reset)
+xmap <Space>M <Plug>(quickhl-manual-reset)
