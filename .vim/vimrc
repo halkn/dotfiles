@@ -418,7 +418,7 @@ xmap sk <Plug>(columnskip:nonblank:prev)
 let g:fzf_command_prefix = 'Fzf'
 let g:fzf_preview_window = 'right:60%'
 if exists('$TMUX')
-  let g:fzf_layout = { 'tmux': '-p100%,50% -y'.&lines }
+  let g:fzf_layout = { 'tmux': '-p95%,90%' }
 else
   let g:fzf_layout = { 'window': { 'width': 0.95, 'height': 0.9 } }
 endif
@@ -487,7 +487,7 @@ function! s:fzf_git_status() abort
   \   '--bind', 'space:execute-silent(git add {+-1})+down+reload:' . l:cmd,
   \   '--bind', 'bspace:execute-silent(git reset -q HEAD {+-1})+down+reload:' . l:cmd,
   \ ],
-  \ 'tmux': '-p100%,95% -y'.&lines,
+  \ 'tmux': '-p95%,90%',
   \ }
   call fzf#run(fzf#wrap(l:spec))
 endfunction
@@ -557,7 +557,7 @@ function! s:fzf_git_log(...) abort
   \   '--bind', '?:toggle-preview',
   \   '--bind', 'ctrl-y:execute-silent(echo {} | grep -Eo "[a-f0-9]+" | head -1 | tr -d \\n | pbcopy)',
   \ ],
-  \ 'tmux': '-p100%,95% -y'.&lines,
+  \ 'tmux': '-p95%,90%',
   \ }
   call fzf#run(fzf#wrap(l:spec))
 endfunction
@@ -637,10 +637,10 @@ let g:asyncomplete_auto_completeopt = 0
 inoremap <expr> <C-y> pumvisible() ? asyncomplete#close_popup() : "\<C-y>"
 
 " vim-vsnip
-imap <expr><Tab>   vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : lexima#expand('<LT>Tab>', 'i')
-smap <expr><Tab>   vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : lexima#expand('<LT>Tab>', 'i')
-imap <expr><S-Tab> vsnip#available(-1) ? '<Plug>(vsnip-jump-prev)'      : lexima#expand('<LT>S-Tab>', 'i')
-smap <expr><S-Tab> vsnip#available(-1) ? '<Plug>(vsnip-jump-prev)'      : lexima#expand('<LT>S-Tab>', 'i')
+imap <expr> <Tab>   vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : '<Tab>'
+smap <expr> <Tab>   vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : '<Tab>'
+imap <expr> <S-Tab> vsnip#available(-1) ? '<Plug>(vsnip-jump-prev)'      : '<S-Tab>'
+smap <expr> <S-Tab> vsnip#available(-1) ? '<Plug>(vsnip-jump-prev)'      : '<S-Tab>'
 let g:vsnip_snippet_dir = expand(fnamemodify($MYVIMRC, ":h") . '/snippets')
 
 " vista.vim
