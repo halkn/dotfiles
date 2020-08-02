@@ -141,6 +141,7 @@ call plug#begin(stdpath('data') . '/plugged')
 " global
 Plug 'chuling/vim-equinusocio-material'
 Plug 'itchyny/lightline.vim'
+Plug 'itchyny/vim-gitbranch'
 Plug 'halkn/lightline-lsp'
 Plug 'tyru/columnskip.vim'
 Plug 'cohama/lexima.vim'
@@ -152,7 +153,6 @@ Plug 'kana/vim-operator-replace'
 Plug 'junegunn/fzf'
 Plug 'junegunn/fzf.vim'
 " LSP
-Plug 'prabirshrestha/async.vim'
 Plug 'prabirshrestha/vim-lsp'
 Plug 'mattn/vim-lsp-settings'
 Plug 'prabirshrestha/asyncomplete.vim'
@@ -177,8 +177,10 @@ Plug 'simeji/winresizer', { 'on': 'WinResizerStartResize' }
 Plug 'voldikss/vim-floaterm', { 'on': ['FloatermToggle', 'FloatermNew'] }
 Plug 'tyru/capture.vim', { 'on': 'Capture' }
 Plug 'mhinz/vim-signify', { 'on': ['SignifyToggle', 'SignifyDiff'] } 
-Plug 'rhysd/committia.vim'
 Plug 'rhysd/git-messenger.vim', { 'on': '<Plug>(git-messenger)' }
+Plug 'lambdalisue/gina.vim', { 'on': 'Gina' }
+Plug 'thinca/vim-qfreplace', { 'on': 'Qfreplace' }
+Plug 't9md/vim-quickhl', { 'on': '<Plug>(quickhl-manual-this)' }
 call plug#end()
 
 " ============================================================================
@@ -325,12 +327,19 @@ augroup vimrc-ft-help
   autocmd FileType help nnoremap <buffer> <BS> <C-T>
 augroup END
 
+" yank hightlight
+augroup vimrc_LuaHighlight
+  au!
+  au TextYankPost * silent! lua return (not vim.v.event.visual) and require'vim.highlight'.on_yank()
+augroup END
+
 " ============================================================================
 " Plugin config
 " ============================================================================
 " Global ---------------------------------------------------------------------
 " vim-equinusocio-material
-let g:equinusocio_material_darker = 1
+let g:equinusocio_material_style = 'darker'
+let g:equinusocio_material_bracket_improved = 1
 colorscheme equinusocio_material
 hi PMenu guibg=#2f2f2f
 
@@ -338,9 +347,14 @@ hi PMenu guibg=#2f2f2f
 let g:lightline = {
 \ 'colorscheme': 'equinusocio_material',
 \ 'active': {
+\   'left': [ [ 'mode', 'paste'],
+\             [ 'readonly', 'filename', 'modified' ], ['gitbranch'] ],
 \   'right': [ [ 'lsp_errors', 'lsp_warnings', 'lsp_ok', 'lineinfo' ],
 \              [ 'percent' ],
 \              [ 'fileformat', 'fileencoding', 'filetype' ] ]
+\ },
+\ 'component_function': {
+\   'gitbranch': 'gitbranch#name'
 \ },
 \ 'component_expand': {
 \   'lsp_warnings': 'lightline_lsp#warnings',
@@ -355,7 +369,6 @@ let g:lightline = {
 \ }
 
 " lexima.vim
-let g:lexima_nvim_accept_pum_with_enter = 0
 let g:lexima_ctrlh_as_backspace = 1
 
 " caw.vim
@@ -395,12 +408,11 @@ function! RipgrepFzf(query, fullscreen)
   let initial_command = printf(command_fmt, shellescape(a:query))
   let reload_command = printf(command_fmt, '{q}')
   let spec = {'options': ['--phony', '--query', a:query, '--bind', 'change:reload:'.reload_command]}
-  call fzf#vim#grep(initial_command, 1, fzf#vim#with_preview(spec, 'down:60%', '?'), a:fullscreen)
+  call fzf#vim#grep(initial_command, 1, fzf#vim#with_preview(spec), a:fullscreen)
 endfunction
 
 command! -nargs=* -bang FzfRG call RipgrepFzf(<q-args>, <bang>0)
 
-" git
 function! s:sink_git_status(selected) abort
   if len(a:selected) == 0
     return
@@ -462,7 +474,7 @@ function! s:sink_git_log(selected) abort
   let l:term_cmd = [
   \ &shell,
   \ &shellcmdflag,
-  \ 'git --no-pager show --color=always ' . l:id . ' | delta'
+  \ 'git --no-pager show --color=always ' . l:id
   \ ]
 
   if l:key == 'ctrl-v'
@@ -593,10 +605,10 @@ let g:asyncomplete_auto_completeopt = 0
 inoremap <expr> <C-y> pumvisible() ? asyncomplete#close_popup() : "\<C-y>"
 
 " vim-vsnip
-imap <expr><Tab>   vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : lexima#expand('<LT>Tab>', 'i')
-smap <expr><Tab>   vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : lexima#expand('<LT>Tab>', 'i')
-imap <expr><S-Tab> vsnip#available(-1) ? '<Plug>(vsnip-jump-prev)'      : lexima#expand('<LT>S-Tab>', 'i')
-smap <expr><S-Tab> vsnip#available(-1) ? '<Plug>(vsnip-jump-prev)'      : lexima#expand('<LT>S-Tab>', 'i')
+imap <expr> <Tab>   vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : '<Tab>'
+smap <expr> <Tab>   vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : '<Tab>'
+imap <expr> <S-Tab> vsnip#available(-1) ? '<Plug>(vsnip-jump-prev)'      : '<S-Tab>'
+smap <expr> <S-Tab> vsnip#available(-1) ? '<Plug>(vsnip-jump-prev)'      : '<S-Tab>'
 let g:vsnip_snippet_dir = expand(fnamemodify($MYVIMRC, ":h") . '/snippets')
 
 " vista.vim
@@ -670,13 +682,10 @@ nnoremap <Leader>mn :<C-u>MemoNew<CR>
 nnoremap <Leader>mg :<C-u>MemoGrep<CR>
 nnoremap <Leader>ml :<C-u>MemoList<CR>
 
-" undotree
-nnoremap <silent> <Leader>u :UndotreeToggle<cr>
-let g:undotree_WindowLayout = 2
-
 " winresizer
 let g:winresizer_start_key = '<C-w>r'
 nnoremap <silent> <C-w>r :WinResizerStartResize<CR>
+
 " vim-signify
 noremap <silent> <C-y> :SignifyToggle<CR>
 noremap <silent> <Leader>gd :SignifyDiff<CR>
@@ -715,3 +724,43 @@ augroup vimrc_git_messenger
   autocmd FileType gitmessengerpopup call s:setup_git_messenger_popup()
 augroup END
 
+" Gina.vim
+
+function s:gina_settings() abort
+  let s:gina_cmd_opt = {'noremap': 1, 'silent': 1}
+  call gina#custom#command#option('status','-s')
+  call gina#custom#command#option('commit', '-v')
+  call gina#custom#command#option('show','--show-signature')
+
+  call gina#custom#mapping#nmap('/.*', 'q', ':<C-U>bd<CR>', s:gina_cmd_opt)
+  call gina#custom#mapping#nmap('status', '<C-^>', ':<C-u>Gina commit<CR>', s:gina_cmd_opt)
+  call gina#custom#mapping#nmap('commit', '<C-^>', ':<C-u>Gina status<CR>', s:gina_cmd_opt)
+
+  call gina#custom#mapping#nmap(
+  \ 'status',
+  \ 'p',
+  \ ':<C-u>call gina#action#call(''diff:vsplit'')<CR>',
+  \ s:gina_cmd_opt,
+  \ )
+  call gina#custom#mapping#nmap(
+  \ '/\%(blame\|log\|reflog\)',
+  \ 'p',
+  \ ':<C-u>call gina#action#call(''show:commit:vsplit'')<CR>',
+  \ s:gina_cmd_opt,
+  \ )
+endfunction
+
+augroup vimrc_gina
+  au!
+  autocmd User gina.vim call s:gina_settings()
+augroup END
+
+nnoremap <silent> <Leader>gs :<C-u>Gina status<CR>
+nnoremap <silent> <Leader>gl :<C-u>Gina log --graph<CR>
+nnoremap <silent> <Leader>gd :<C-u>Gina compare<CR>
+
+" vim-quickhl
+nmap <Space>m <Plug>(quickhl-manual-this)
+xmap <Space>m <Plug>(quickhl-manual-this)
+nmap <Space>M <Plug>(quickhl-manual-reset)
+xmap <Space>M <Plug>(quickhl-manual-reset)
