@@ -39,8 +39,8 @@ shopt -s histappend
 # ls
 if type exa > /dev/null 2>&1; then
   alias ls="exa"
-  alias ll="ls -l --time-style=long-iso"
-  alias la="exa -la --git --time-style=long-iso"
+  alias ll="ls -l --sort=type --time-style=long-iso"
+  alias la="ls -la --git --time-style=long-iso"
   alias ltr="ll --sort=modified"
   alias tree="exa -laT --time-style=long-iso --git-ignore --ignore-glob='.git|.svn'"
 else
