@@ -9,11 +9,18 @@
     prompt = false
 [mergetool]
     prompt = false
+[color]
+    ui = true
+[fetch]
+    prune = true
+[push]
+    default = current
 [ghq]
     root = ~/dev
 [alias]
-    st = status
-    cm =commit
+    st = status -s
+    cm = commit
     dt = difftool
+    br = branch
 [core]
     pager = delta
