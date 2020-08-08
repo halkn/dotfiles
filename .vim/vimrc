@@ -588,6 +588,9 @@ let g:lsp_settings = {
 \       'completeUnimported': v:true,
 \       'usePlaceholders': v:true,
 \       'staticcheck': v:true,
+\       'analyses': {
+\         'fillstruct': v:true,
+\       },
 \     }
 \   }
 \ },
