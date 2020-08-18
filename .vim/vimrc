@@ -205,6 +205,7 @@ function! PackInit() abort
   call minpac#add('skanehira/translate.vim')
   call minpac#add('thinca/vim-qfreplace')
   call minpac#add('t9md/vim-quickhl')
+  call minpac#add('tweekmonster/startuptime.vim')
 endfunction
 
 set packpath^=$XDG_DATA_HOME/vim
@@ -616,6 +617,7 @@ function! s:setup_lsp() abort
   setlocal omnifunc=lsp#complete
   setlocal tagfunc=lsp#tagfunc
   nmap <silent> <buffer> gd <Plug>(lsp-definition)
+  nmap <silent> <buffer> gD :<C-u>tab LspDefinition<CR>
   nmap <silent> <buffer> gy <Plug>(lsp-type-definition)
   nmap <silent> <buffer> gr <Plug>(lsp-references)
   nmap <silent> <buffer> K <Plug>(lsp-hover)
