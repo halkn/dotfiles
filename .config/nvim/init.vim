@@ -139,7 +139,8 @@ endif
 " ============================================================================
 call plug#begin(stdpath('data') . '/plugged')
 " global
-Plug 'chuling/vim-equinusocio-material'
+Plug 'tomasiser/vim-code-dark'
+Plug 'junegunn/rainbow_parentheses.vim'
 Plug 'itchyny/lightline.vim'
 Plug 'itchyny/vim-gitbranch'
 Plug 'halkn/lightline-lsp'
@@ -338,15 +339,19 @@ augroup END
 " Plugin config
 " ============================================================================
 " Global ---------------------------------------------------------------------
-" vim-equinusocio-material
-let g:equinusocio_material_style = 'darker'
-let g:equinusocio_material_bracket_improved = 1
-colorscheme equinusocio_material
-hi PMenu guibg=#2f2f2f
+" vim-code-dark
+colorscheme codedark
+
+" rainbow_parentheses.vim
+let g:rainbow#pairs = [['(', ')'], ['[', ']']]
+augroup rainbow_lisp
+  autocmd!
+  autocmd FileType go RainbowParentheses
+augroup END
 
 " lightline
 let g:lightline = {
-\ 'colorscheme': 'equinusocio_material',
+\ 'colorscheme': 'codedark',
 \ 'active': {
 \   'left': [ [ 'mode', 'paste'],
 \             [ 'readonly', 'filename', 'modified' ], ['gitbranch'] ],
