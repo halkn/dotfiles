@@ -771,29 +771,35 @@ augroup vimrc_qfpreview
 augroup END
 
 " gina.vim
-packadd gina.vim
+function s:gina_settings() abort
+  packadd gina.vim
+  let s:gina_cmd_opt = {'noremap': 1, 'silent': 1}
+  call gina#custom#command#option('status','-s')
+  call gina#custom#command#option('commit', '-v')
+  call gina#custom#command#option('show','--show-signature')
 
-let s:gina_cmd_opt = {'noremap': 1, 'silent': 1}
-call gina#custom#command#option('status','-s')
-call gina#custom#command#option('commit', '-v')
-call gina#custom#command#option('show','--show-signature')
+  call gina#custom#mapping#nmap('/.*', 'q', ':<C-U>bd<CR>', s:gina_cmd_opt)
+  call gina#custom#mapping#nmap('status', '<C-^>', ':<C-u>Gina commit<CR>', s:gina_cmd_opt)
+  call gina#custom#mapping#nmap('commit', '<C-^>', ':<C-u>Gina status<CR>', s:gina_cmd_opt)
 
-call gina#custom#mapping#nmap('/.*', 'q', ':<C-U>bd<CR>', s:gina_cmd_opt)
-call gina#custom#mapping#nmap('status', '<C-^>', ':<C-u>Gina commit<CR>', s:gina_cmd_opt)
-call gina#custom#mapping#nmap('commit', '<C-^>', ':<C-u>Gina status<CR>', s:gina_cmd_opt)
+  call gina#custom#mapping#nmap(
+  \ 'status',
+  \ 'p',
+  \ ':<C-u>call gina#action#call(''diff:vsplit'')<CR>',
+  \ s:gina_cmd_opt,
+  \ )
+  call gina#custom#mapping#nmap(
+  \ '/\%(blame\|log\|reflog\)',
+  \ 'p',
+  \ ':<C-u>call gina#action#call(''show:commit:vsplit'')<CR>',
+  \ s:gina_cmd_opt,
+  \ )
+endfunction
 
-call gina#custom#mapping#nmap(
-\ 'status',
-\ 'p',
-\ ':<C-u>call gina#action#call(''diff:vsplit'')<CR>',
-\ s:gina_cmd_opt,
-\ )
-call gina#custom#mapping#nmap(
-\ '/\%(blame\|log\|reflog\)',
-\ 'p',
-\ ':<C-u>call gina#action#call(''show:commit:vsplit'')<CR>',
-\ s:gina_cmd_opt,
-\ )
+augroup vimrc_gina
+  autocmd!
+  autocmd CmdUndefined Gina call s:gina_settings()
+augroup END
 
 nnoremap <silent> <Leader>gs :<C-u>Gina status<CR>
 nnoremap <silent> <Leader>gl :<C-u>Gina log --graph<CR>
