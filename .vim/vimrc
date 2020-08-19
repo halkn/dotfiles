@@ -763,7 +763,7 @@ let g:qfpreview = {
 \ 'offset': 10,
 \ 'next': 'n',
 \ 'previous': 'p',
-\ 'sign': {'text': '>>', 'texthl': 'Todo'}
+\ 'sign': {'linehl': 'CursorLine'}
 \ }
 augroup vimrc_qfpreview
   autocmd!
