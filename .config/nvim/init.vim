@@ -163,7 +163,6 @@ Plug 'liuchengxu/vista.vim', { 'on': ['Vista!!', 'Vista'] }
 " Develop
 Plug 'mattn/vim-findroot'
 Plug 'skywind3000/asyncrun.vim'
-Plug 'janko/vim-test'
 Plug 'kana/vim-altr'
 " FileType
 Plug 'mattn/vim-goaddtags', { 'for': 'go' }
@@ -180,7 +179,9 @@ Plug 'mhinz/vim-signify', { 'on': ['SignifyToggle', 'SignifyDiff'] }
 Plug 'rhysd/git-messenger.vim', { 'on': '<Plug>(git-messenger)' }
 Plug 'lambdalisue/gina.vim', { 'on': 'Gina' }
 Plug 'thinca/vim-qfreplace', { 'on': 'Qfreplace' }
+Plug 'voldikss/vim-translator', { 'on': ['<Plug>TranslateW', '<Plug>TranslateWV'] }
 Plug 't9md/vim-quickhl', { 'on': '<Plug>(quickhl-manual-this)' }
+Plug 'tweekmonster/startuptime.vim', {'on': 'StartupTime'}
 call plug#end()
 
 " ============================================================================
@@ -555,6 +556,9 @@ let g:lsp_settings = {
 \       'completeUnimported': v:true,
 \       'usePlaceholders': v:true,
 \       'staticcheck': v:true,
+\       'analyses': {
+\         'fillstruct': v:true,
+\       },
 \     }
 \   }
 \ },
@@ -582,6 +586,7 @@ function! s:setup_lsp() abort
   setlocal omnifunc=lsp#complete
   setlocal tagfunc=lsp#tagfunc
   nmap <silent> <buffer> gd <Plug>(lsp-definition)
+  nmap <silent> <buffer> gD :<C-u>tab LspDefinition<CR>
   nmap <silent> <buffer> gy <Plug>(lsp-type-definition)
   nmap <silent> <buffer> gr <Plug>(lsp-references)
   nmap <silent> <buffer> K <Plug>(lsp-hover)
@@ -605,10 +610,15 @@ let g:asyncomplete_auto_completeopt = 0
 inoremap <expr> <C-y> pumvisible() ? asyncomplete#close_popup() : "\<C-y>"
 
 " vim-vsnip
-imap <expr> <Tab>   vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : '<Tab>'
-smap <expr> <Tab>   vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : '<Tab>'
-imap <expr> <S-Tab> vsnip#available(-1) ? '<Plug>(vsnip-jump-prev)'      : '<S-Tab>'
-smap <expr> <S-Tab> vsnip#available(-1) ? '<Plug>(vsnip-jump-prev)'      : '<S-Tab>'
+imap <expr> <C-j>   vsnip#expandable()  ? '<Plug>(vsnip-expand)'         : '<C-j>'
+smap <expr> <C-j>   vsnip#expandable()  ? '<Plug>(vsnip-expand)'         : '<C-j>'
+imap <expr> <C-l>   vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : '<C-l>'
+smap <expr> <C-l>   vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : '<C-l>'
+" Jump forward or backward
+imap <expr> <Tab>   vsnip#jumpable(1)   ? '<Plug>(vsnip-jump-next)'      : '<Tab>'
+smap <expr> <Tab>   vsnip#jumpable(1)   ? '<Plug>(vsnip-jump-next)'      : '<Tab>'
+imap <expr> <S-Tab> vsnip#jumpable(-1)  ? '<Plug>(vsnip-jump-prev)'      : '<S-Tab>'
+smap <expr> <S-Tab> vsnip#jumpable(-1)  ? '<Plug>(vsnip-jump-prev)'      : '<S-Tab>'
 let g:vsnip_snippet_dir = expand(fnamemodify($MYVIMRC, ":h") . '/snippets')
 
 " vista.vim
@@ -627,26 +637,39 @@ nnoremap <silent> <leader>vf :<c-u>Vista finder<CR>
 " asyncrun.vim
 let g:asyncrun_open = 8
 command! -nargs=* Grep AsyncRun -program=grep -strip <f-args>
+
+function s:asyncrun_gotest_func() abort
+  let l:test = search('func \(Test\|Example\)', "bcnW")
+
+  if l:test == 0
+    echo "[test] no test found immediate to cursor"
+    return
+  end
+
+  let l:line = getline(test)
+  let l:name = split(split(line, " ")[1], "(")[0]
+  execute('AsyncRun -mode=term -pos=right -cols=80 -focus=0 -cwd=$(VIM_FILEDIR) go test -v -run ' . l:name)
+endfunction
+
+function s:asyncrun_go_setup() abort
+  command! -buffer -nargs=* -complete=dir GoRun
+  \ AsyncRun -mode=term -pos=right -cols=80 -focus=0  go run $VIM_RELNAME
+  command! -buffer -nargs=* -complete=dir GoTest
+  \ AsyncRun -mode=term -pos=right -cols=80 -focus=0 go test <f-args>
+  command! -buffer -nargs=0 GoTestPackage GoTest ./$VIM_RELDIR
+  command! -buffer -nargs=0 GoTestFunc call s:asyncrun_gotest_func()
+
+  nnoremap <silent> <buffer> <LocalLeader>r :<C-u>GoRun<CR>
+  nnoremap <silent> <buffer> <LocalLeader>t :<C-u>GoTest ./...<CR>
+  nnoremap <silent> <buffer> <LocalLeader>p :<C-u>GoTestPackage<CR>
+  nnoremap <silent> <buffer> <LocalLeader>f :<C-u>GoTestFunc<CR>
+endfunction
+
 augroup vimrc_asyncrun
   au!
-  autocmd FileType go nnoremap <silent> <buffer> <LocalLeader>r
-  \ :<C-u>AsyncRun -mode=term -pos=right -cols=80 -focus=0 go run $VIM_RELNAME<CR>
+  autocmd FileType go call s:asyncrun_go_setup()
   autocmd FileType sh nnoremap <silent> <buffer> <LocalLeader>r
   \ :<C-u>AsyncRun -mode=term -pos=right -cols=80 -focus=0 sh $VIM_RELNAME<CR>
-augroup END
-
-" vim-test
-let g:test#preserve_screen = 1
-let test#strategy = "asyncrun_background"
-
-augroup vimrc_vim_test
-  au!
-  autocmd FileType go,vim nnoremap <silent> <buffer> <LocalLeader>t :<C-u>TestLast<CR>
-  autocmd FileType go,vim nnoremap <silent> <buffer> TN :<C-u>TestNearest<CR>
-  autocmd FileType go,vim nnoremap <silent> <buffer> TF :<C-u>TestFile<CR>
-  autocmd FileType go,vim nnoremap <silent> <buffer> TS :<C-u>TestSuite<CR>
-  autocmd FileType go,vim nnoremap <silent> <buffer> TL :<C-u>TestLast<CR>
-  autocmd FileType go,vim nnoremap <silent> <buffer> TV :<C-u>TestVisit<CR>
 augroup END
 
 " vim-altr
@@ -758,6 +781,13 @@ augroup END
 nnoremap <silent> <Leader>gs :<C-u>Gina status<CR>
 nnoremap <silent> <Leader>gl :<C-u>Gina log --graph<CR>
 nnoremap <silent> <Leader>gd :<C-u>Gina compare<CR>
+
+" vim-translator
+let g:translator_source_lang = 'en'
+let g:translator_target_lang = 'ja'
+let g:translator_default_engines = ['google']
+nmap <silent> T <Plug>TranslateW
+vmap <silent> T <Plug>TranslateWV
 
 " vim-quickhl
 nmap <Space>m <Plug>(quickhl-manual-this)
