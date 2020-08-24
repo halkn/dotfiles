@@ -74,7 +74,7 @@ set nocursorcolumn
 set nocursorline
 set wrap
 set list
-set listchars=tab:>-,trail:-,eol:↲,extends:»,precedes:«,nbsp:%
+set listchars=tab:»-,trail:-,eol:↲,extends:»,precedes:«,nbsp:%
 set scrolloff=8
 set synmaxcol=256
 set showcmd
@@ -194,6 +194,7 @@ function! PackInit() abort
   call minpac#add('dhruvasagar/vim-table-mode')
   call minpac#add('previm/previm')
   call minpac#add('tyru/open-browser.vim')
+  call minpac#add('skanehira/preview-markdown.vim')
   " Extension
   call minpac#add('glidenote/memolist.vim')
   call minpac#add('simeji/winresizer')
@@ -355,6 +356,12 @@ augroup vimrc-ft-help
   autocmd FileType help nnoremap <silent> <buffer> q <C-w>c
   autocmd FileType help nnoremap <buffer> <CR> <C-]>
   autocmd FileType help nnoremap <buffer> <BS> <C-T>
+augroup END
+
+" terminal
+augroup vimrc_terminal_setting
+  autocmd!
+  autocmd TerminalOpen * if &buftype == 'terminal' | setlocal signcolumn=no | endif
 augroup END
 
 " ============================================================================
@@ -718,6 +725,15 @@ let g:table_mode_map_prefix = '<LocalLeader>'
 augroup vimrc_previm
   au!
   autocmd FileType markdown nnoremap <buffer> <silent> <LocalLeader>p :<C-u>PrevimOpen<CR>
+augroup END
+
+" preview-markdown.vim
+let g:preview_markdown_vertical = 1
+let g:preview_markdown_parser = 'mdcat'
+let g:preview_markdown_auto_update = 1
+augroup vimrc_preview_markdown
+  au!
+  autocmd FileType markdown nnoremap <buffer> <silent> mp :<C-u>PreviewMarkdown<CR><BAR><C-w>w
 augroup END
 
 " ----------------------------------------------------------------------------
