@@ -604,7 +604,7 @@ let g:lsp_settings = {
 \ },
 \ 'efm-langserver': {
 \   'disabled': 0,
-\   'whitelist': ['markdown', 'json', 'sh']
+\   'allowlist': ['markdown', 'json', 'sh']
 \ }
 \}
 
