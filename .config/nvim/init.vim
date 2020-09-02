@@ -66,7 +66,7 @@ set synmaxcol=256
 set showcmd
 set signcolumn=yes
 set noshowmode
-set showtabline=0
+set showtabline=2
 set background=dark
 set diffopt^=vertical
 
@@ -139,46 +139,31 @@ endif
 " ============================================================================
 call plug#begin(stdpath('data') . '/plugged')
 " global
-Plug 'tomasiser/vim-code-dark'
-Plug 'junegunn/rainbow_parentheses.vim'
+Plug 'chuling/vim-equinusocio-material'
 Plug 'itchyny/lightline.vim'
 Plug 'itchyny/vim-gitbranch'
-Plug 'halkn/lightline-lsp'
 Plug 'tyru/columnskip.vim'
 Plug 'cohama/lexima.vim'
 Plug 'tyru/caw.vim'
 Plug 'machakann/vim-sandwich'
 Plug 'kana/vim-operator-user'
 Plug 'kana/vim-operator-replace'
-" fzf
-Plug 'junegunn/fzf'
-Plug 'junegunn/fzf.vim'
 " LSP
-Plug 'prabirshrestha/vim-lsp'
-Plug 'mattn/vim-lsp-settings'
-Plug 'prabirshrestha/asyncomplete.vim'
-Plug 'prabirshrestha/asyncomplete-lsp.vim'
-Plug 'hrsh7th/vim-vsnip'
-Plug 'hrsh7th/vim-vsnip-integ'
-Plug 'liuchengxu/vista.vim', { 'on': ['Vista!!', 'Vista'] }
+Plug 'neoclide/coc.nvim', {'branch': 'release'}
 " Develop
+Plug 'liuchengxu/vista.vim', { 'on': ['Vista!!', 'Vista'] }
 Plug 'mattn/vim-findroot'
 Plug 'skywind3000/asyncrun.vim'
-Plug 'kana/vim-altr'
 " FileType
-Plug 'mattn/vim-goaddtags', { 'for': 'go' }
 Plug 'dhruvasagar/vim-table-mode', { 'for': 'markdown' }
 Plug 'previm/previm', { 'for': 'markdown' }
 Plug 'tyru/open-browser.vim', { 'for': 'markdown' }
 " Extension
 Plug 'glidenote/memolist.vim', { 'on': ['MemoNew', 'MemoList', 'MemoGrep'] }
-Plug 'mbbill/undotree', { 'on': 'UndotreeToggle' }
 Plug 'simeji/winresizer', { 'on': 'WinResizerStartResize' }
 Plug 'voldikss/vim-floaterm', { 'on': ['FloatermToggle', 'FloatermNew'] }
 Plug 'tyru/capture.vim', { 'on': 'Capture' }
-Plug 'mhinz/vim-signify', { 'on': ['SignifyToggle', 'SignifyDiff'] } 
 Plug 'rhysd/git-messenger.vim', { 'on': '<Plug>(git-messenger)' }
-Plug 'lambdalisue/gina.vim', { 'on': 'Gina' }
 Plug 'thinca/vim-qfreplace', { 'on': 'Qfreplace' }
 Plug 'voldikss/vim-translator', { 'on': ['<Plug>TranslateW', '<Plug>TranslateWV'] }
 Plug 't9md/vim-quickhl', { 'on': '<Plug>(quickhl-manual-this)' }
@@ -340,18 +325,15 @@ augroup END
 " ============================================================================
 " Global ---------------------------------------------------------------------
 " vim-code-dark
-colorscheme codedark
-
-" rainbow_parentheses.vim
-let g:rainbow#pairs = [['(', ')'], ['[', ']']]
-augroup rainbow_lisp
-  autocmd!
-  autocmd FileType go RainbowParentheses
-augroup END
+" colorscheme codedark
+let g:equinusocio_material_style = 'darker'
+let g:equinusocio_material_bracket_improved = 1
+colorscheme equinusocio_material
+hi PMenu guibg=#2f2f2f
 
 " lightline
 let g:lightline = {
-\ 'colorscheme': 'codedark',
+\ 'colorscheme': 'equinusocio_material',
 \ 'active': {
 \   'left': [ [ 'mode', 'paste'],
 \             [ 'readonly', 'filename', 'modified' ], ['gitbranch'] ],
@@ -392,242 +374,75 @@ nmap sk <Plug>(columnskip:nonblank:prev)
 omap sk <Plug>(columnskip:nonblank:prev)
 xmap sk <Plug>(columnskip:nonblank:prev)
 
-" fzf ------------------------------------------------------------------------
-let g:fzf_command_prefix = 'Fzf'
-let g:fzf_preview_window = 'right:60%'
-let g:fzf_layout = { 'window': { 'width': 0.95, 'height': 0.9 } }
+" coc.nvim -------------------------------------------------------------------
+" global
+let g:coc_data_home = expand('$XDG_DATA_HOME/coc/')
+let g:coc_global_extensions = [
+\ 'coc-json',
+\ 'coc-git',
+\ 'coc-lists',
+\ 'coc-snippets',
+\ 'coc-go',
+\ 'coc-markdownlint',
+\ 'coc-vimlsp',
+\ ]
 
-" files
-command! -bang -nargs=? -complete=dir FzfFiles
-\ call fzf#vim#files(<q-args>, fzf#vim#with_preview(), <bang>0)
+nmap <silent> gd          <Plug>(coc-definition)
+nmap <silent> gy          <Plug>(coc-type-definition)
+nmap <silent> gi          <Plug>(coc-implementation)
+nmap <silent> gr          <Plug>(coc-references)
+nmap <silent> <F2>        <Plug>(coc-rename)
+nmap <silent> <leader>ac  <Plug>(coc-codeaction)
 
-" ripgrep
-command! -bang -nargs=* FzfRg
-\ call fzf#vim#grep(
-\   'rg --column --line-number --no-heading --color=always --smart-case --hidden -- '.shellescape(<q-args>),
-\   1,
-\   fzf#vim#with_preview(), <bang>0
-\ )
-
-function! RipgrepFzf(query, fullscreen)
-  let command_fmt = 'rg --hidden --column --line-number --no-heading --color=always --smart-case -- %s || true'
-  let initial_command = printf(command_fmt, shellescape(a:query))
-  let reload_command = printf(command_fmt, '{q}')
-  let spec = {'options': ['--phony', '--query', a:query, '--bind', 'change:reload:'.reload_command]}
-  call fzf#vim#grep(initial_command, 1, fzf#vim#with_preview(spec), a:fullscreen)
+" Use K to show documentation in preview window.
+nnoremap <silent> K :call <SID>show_documentation()<CR>
+function! s:show_documentation()
+  if (index(['vim','help'], &filetype) >= 0)
+    execute 'h '.expand('<cword>')
+  else
+    call CocAction('doHover')
+  endif
 endfunction
 
-command! -nargs=* -bang FzfRG call RipgrepFzf(<q-args>, <bang>0)
+nnoremap <silent> <LocalLeader>d  :<C-u>CocList diagnostics<CR>
+nnoremap <silent> <LocalLeader>o :<C-u>CocList outline<CR>
+nnoremap <silent> <LocalLeader>w :<C-u>CocList -I symbols<CR>
 
-function! s:sink_git_status(selected) abort
-  if len(a:selected) == 0
-    return
-  endif
+" coc-lists
+nnoremap <silent> <Leader><Leader> :<C-u>CocList mru<CR>
+nnoremap <silent> <Leader>f        :<C-u>CocList --no-resize files<CR>
+nnoremap <silent> <Leader>b        :<C-u>CocList buffers<CR>
+nnoremap <silent> <Leader>l        :<C-u>CocList lines<CR>
+nnoremap <silent> <Leader>R        :<C-u>CocList grep<CR>
+nnoremap <silent> <Leader>q        :<C-u>CocList quickfix<CR>
 
-  let l:key=a:selected[0]
+" coc-snippet
+let g:coc_snippet_next = '<tab>'
+let g:coc_snippet_prev = '<S-Tab>'
+imap <C-l> <Plug>(coc-snippets-expand)
+vmap <C-j> <Plug>(coc-snippets-select)
 
-  if l:key == 'ctrl-p'
-    execute('FloatermNew git commit')
-    return
-  endif
+" coc-git
+nmap <silent> [c <Plug>(coc-git-prevchunk)
+nmap <silent> ]c <Plug>(coc-git-nextchunk)
+nnoremap <silent> <C-y> :<C-u>CocCommand git.toggleGutters<CR>
+nnoremap <silent> <Leader>gs :<C-u>CocList --tab --normal -A gstatus<CR>
+nnoremap <silent> <Leader>gl :<C-u>CocList --tab -A commits<CR>
+nnoremap <silent> <Leader>gb :<C-u>CocList --tab --normal -A bcommits<CR>
 
- let l:file=split(a:selected[1])[1]
-  if l:key == 'ctrl-m'
-    execute('edit ' . l:file)
-  elseif l:key == 'ctrl-x'
-    execute('split ' . l:file)
-  elseif l:key == 'ctrl-v'
-    execute('vsplit ' . l:file)
-  endif
-
-  return
-endfunction
-
-function! s:fzf_git_status() abort
-  let l:cmd = 'git -c color.status=always -c status.relativePaths=true status --short'
-  let l:spec = {
-  \ 'source': l:cmd,
-  \ 'sink*': function('s:sink_git_status'),
-  \ 'options': [
-  \   '--ansi',
-  \   '--multi',
-  \   '--expect=ctrl-m,ctrl-x,ctrl-v,ctrl-p',
-  \   '--preview', 'git diff --color=always -- {-1} | delta',
-  \   '--bind', 'ctrl-d:preview-page-down,ctrl-u:preview-page-up',
-  \   '--bind', 'ctrl-f:preview-page-down,ctrl-b:preview-page-up',
-  \   '--bind', 'alt-j:preview-down,alt-k:preview-up',
-  \   '--bind', 'alt-s:toggle-sort',
-  \   '--bind', '?:toggle-preview',
-  \   '--bind', 'space:execute-silent(git add {+-1})+down+reload:' . l:cmd,
-  \   '--bind', 'bspace:execute-silent(git reset -q HEAD {+-1})+down+reload:' . l:cmd,
-  \ ]
-  \ }
-  call fzf#run(fzf#wrap(l:spec))
-endfunction
-
-command! -bang -nargs=* FzfGStatus call s:fzf_git_status()
-
-function! s:sink_git_log(selected) abort
-  if len(a:selected) == 0
-    return
-  endif
-
-  let l:key = a:selected[0]
-
-  let l:tmp = split(a:selected[1])
-  let l:id = l:tmp[match(l:tmp, '[a-f0-9]\{7}')]
-
-  let l:term_cmd = [
-  \ &shell,
-  \ &shellcmdflag,
-  \ 'git --no-pager show --color=always ' . l:id
-  \ ]
-
-  if l:key == 'ctrl-v'
-    exe 'vnew'
-  elseif l:key == 'ctrl-m'
-    exe 'enew'
-  endif
-
-  call termopen(l:term_cmd)
-  return
-endfunction
-
-function! s:fzf_git_log(...) abort
-  let l:cmd = '
-  \ git log
-  \ --graph
-  \ --color=always
-  \ --format="%C(auto)%h%d %s %C(blue)%C(yellow)%cr"
-  \ '
-
-  if a:0 >= 1
-    let l:cmd = l:cmd . a:1
-  endif
-
-  let l:preview_cmd = '
-  \ echo {} |
-  \ grep -Eo "[a-f0-9]+"  |
-  \ head -1 |
-  \ xargs -I% git show --color=always % $* |
-  \ delta
-  \'
-
-  let l:spec = {
-  \ 'source': l:cmd,
-  \ 'sink*': function('s:sink_git_log'),
-  \ 'options': [
-  \   '--ansi',
-  \   '--exit-0',
-  \   '--no-sort',
-  \   '--tiebreak=index',
-  \   '--preview', l:preview_cmd,
-  \   '--expect=ctrl-x,ctrl-v',
-  \   '--bind', 'ctrl-d:preview-page-down,ctrl-u:preview-page-up',
-  \   '--bind', 'ctrl-f:preview-page-down,ctrl-b:preview-page-up',
-  \   '--bind', 'alt-j:preview-down,alt-k:preview-up',
-  \   '--bind', 'alt-s:toggle-sort',
-  \   '--bind', '?:toggle-preview',
-  \   '--bind', 'ctrl-y:execute-silent(echo {} | grep -Eo "[a-f0-9]+" | head -1 | tr -d \\n | pbcopy)',
-  \ ]
-  \ }
-  call fzf#run(fzf#wrap(l:spec))
-endfunction
-
-command! FzfCommits call s:fzf_git_log()
-command! FzfBCommits call s:fzf_git_log(expand('%'))
-
-nnoremap <silent> <Leader><Leader> :<C-u>FzfHistory<CR>
-nnoremap <silent> <Leader>f        :<C-u>FzfFiles<CR>
-nnoremap <silent> <Leader>b        :<C-u>FzfBuffers<CR>
-nnoremap <silent> <Leader>l        :<C-u>FzfBLines<CR>
-nnoremap <silent> <Leader>R        :<C-u>FzfRG<CR>
-nnoremap <silent> <Leader>gs       :<C-u>FzfGStatus<CR>
-nnoremap <silent> <Leader>gl       :<C-u>FzfCommits<CR>
-inoremap <expr>   <c-x><c-k>       fzf#vim#complete#word({'left': '15%'})
-
-augroup vimrc_fzf
-  au!
-  autocmd FileType fzf tnoremap <buffer> <silent> <Esc> <Esc>
+" coc-go
+augroup vimrc_coc_go
+  autocmd!
+  autocmd BufWritePre *.go :call CocAction('runCommand', 'editor.action.organizeImport')
+  autocmd FileType go nnoremap <silent> <buffer> <LocalLeader>a :<C-u>CocCommand go.test.toggle<CR>
+  autocmd FileType go nnoremap <silent> <buffer> <LocalLeader>tj :<C-u>CocCommand go.tags.add json<cr>
+  autocmd FileType go nnoremap <silent> <buffer> <LocalLeader>ty :<C-u>CocCommand go.tags.add yaml<cr>
+  autocmd FileType go nnoremap <silent> <buffer> <LocalLeader>tx :<C-u>CocCommand go.tags.clear<cr>
 augroup END
 
-" LSP ------------------------------------------------------------------------
-" vim-lsp-settings
-let g:lsp_settings = {
-\ 'gopls': {
-\   'workspace_config': { 'gopls':
-\     {
-\       'hoverKind': 'FullDocumentation',
-\       'completeUnimported': v:true,
-\       'usePlaceholders': v:true,
-\       'staticcheck': v:true,
-\       'analyses': {
-\         'fillstruct': v:true,
-\       },
-\     }
-\   }
-\ },
-\ 'efm-langserver': {
-\   'disabled': 0,
-\   'whitelist': ['markdown', 'json', 'sh']
-\ }
-\}
-
-" vim-lsp
-let g:lsp_async_completion = 1
-let g:lsp_diagnostics_enabled = 1
-let g:lsp_diagnostics_echo_cursor = 1
-let g:lsp_diagnostics_float_cursor = 0
-let g:lsp_virtual_text_enabled = 1
-let g:lsp_virtual_text_prefix = " ‣ "
-let g:lsp_signs_enabled = 1
-let g:lsp_signs_priority = 11
-let g:lsp_signs_error = {'text': '✗'}
-let g:lsp_signs_warning = {'text': '!!'}
-let g:lsp_signs_information = {'text': '●'}
-let g:lsp_signs_hint = {'text': '▲'}
-
-function! s:setup_lsp() abort
-  setlocal omnifunc=lsp#complete
-  setlocal tagfunc=lsp#tagfunc
-  nmap <silent> <buffer> gd <Plug>(lsp-definition)
-  nmap <silent> <buffer> gD :<C-u>tab LspDefinition<CR>
-  nmap <silent> <buffer> gy <Plug>(lsp-type-definition)
-  nmap <silent> <buffer> gr <Plug>(lsp-references)
-  nmap <silent> <buffer> K <Plug>(lsp-hover)
-  nmap <silent> <buffer> <LocalLeader>k <Plug>(lsp-peek-definition)
-  nmap <silent> <buffer> <F2> <Plug>(lsp-rename)
-  nmap <silent> <buffer> <LocalLeader>d <plug>(lsp-document-diagnostics)
-endfunction
-
-augroup vimrc-lsp-setup
-  au!
-  " call s:on_lsp_buffer_enabled only for languages that has the server registered.
-  autocmd User lsp_buffer_enabled call s:setup_lsp()
-  autocmd BufWritePre *.go  call execute('LspDocumentFormatSync') |
-    \ call execute('LspCodeActionSync source.organizeImports')
-  autocmd BufWrite *.json call execute('LspDocumentFormatSync')
-  autocmd BufWrite *.sh call execute('LspDocumentFormatSync')
-augroup END
-
-" asyncomplete.vim
-let g:asyncomplete_auto_completeopt = 0
-inoremap <expr> <C-y> pumvisible() ? asyncomplete#close_popup() : "\<C-y>"
-
-" vim-vsnip
-imap <expr> <C-j>   vsnip#expandable()  ? '<Plug>(vsnip-expand)'         : '<C-j>'
-smap <expr> <C-j>   vsnip#expandable()  ? '<Plug>(vsnip-expand)'         : '<C-j>'
-imap <expr> <C-l>   vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : '<C-l>'
-smap <expr> <C-l>   vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : '<C-l>'
-" Jump forward or backward
-imap <expr> <Tab>   vsnip#jumpable(1)   ? '<Plug>(vsnip-jump-next)'      : '<Tab>'
-smap <expr> <Tab>   vsnip#jumpable(1)   ? '<Plug>(vsnip-jump-next)'      : '<Tab>'
-imap <expr> <S-Tab> vsnip#jumpable(-1)  ? '<Plug>(vsnip-jump-prev)'      : '<S-Tab>'
-smap <expr> <S-Tab> vsnip#jumpable(-1)  ? '<Plug>(vsnip-jump-prev)'      : '<S-Tab>'
-let g:vsnip_snippet_dir = expand(fnamemodify($MYVIMRC, ":h") . '/snippets')
-
+" Develop --------------------------------------------------------------------
 " vista.vim
-let g:vista_default_executive = 'vim_lsp'
+let g:vista_default_executive = 'coc'
 let g:vista_executive_for = {
 \ 'markdown': 'toc',
 \ }
@@ -636,9 +451,7 @@ let g:vista#renderer#enable_icon = 0
 let g:vista_fzf_preview = ['right:60%']
 let g:vista_echo_cursor_strategy = 'floating_win'
 nnoremap <silent> <leader>vt :<c-u>Vista!!<CR>
-nnoremap <silent> <leader>vf :<c-u>Vista finder<CR>
 
-" Develop --------------------------------------------------------------------
 " asyncrun.vim
 let g:asyncrun_open = 8
 command! -nargs=* Grep AsyncRun -program=grep -strip <f-args>
@@ -677,13 +490,6 @@ augroup vimrc_asyncrun
   \ :<C-u>AsyncRun -mode=term -pos=right -cols=80 -focus=0 sh $VIM_RELNAME<CR>
 augroup END
 
-" vim-altr
-augroup vimrc_altr
-  au!
-  autocmd FileType go,vim,help nmap <buffer> <LocalLeader>a <Plug>(altr-forward)
-  autocmd FileType go,vim,help nmap <buffer> <LocalLeader>b <Plug>(altr-back)
-augroup END
-
 " ----------------------------------------------------------------------------
 " FileType
 " ----------------------------------------------------------------------------
@@ -713,11 +519,6 @@ nnoremap <Leader>ml :<C-u>MemoList<CR>
 " winresizer
 let g:winresizer_start_key = '<C-w>r'
 nnoremap <silent> <C-w>r :WinResizerStartResize<CR>
-
-" vim-signify
-noremap <silent> <C-y> :SignifyToggle<CR>
-noremap <silent> <Leader>gd :SignifyDiff<CR>
-let g:signify_disable_by_default = 0
 
 " vim-floaterm
 let g:floaterm_autoclose = 2
@@ -751,41 +552,6 @@ augroup vimrc_git_messenger
   au!
   autocmd FileType gitmessengerpopup call s:setup_git_messenger_popup()
 augroup END
-
-" Gina.vim
-
-function s:gina_settings() abort
-  let s:gina_cmd_opt = {'noremap': 1, 'silent': 1}
-  call gina#custom#command#option('status','-s')
-  call gina#custom#command#option('commit', '-v')
-  call gina#custom#command#option('show','--show-signature')
-
-  call gina#custom#mapping#nmap('/.*', 'q', ':<C-U>bd<CR>', s:gina_cmd_opt)
-  call gina#custom#mapping#nmap('status', '<C-^>', ':<C-u>Gina commit<CR>', s:gina_cmd_opt)
-  call gina#custom#mapping#nmap('commit', '<C-^>', ':<C-u>Gina status<CR>', s:gina_cmd_opt)
-
-  call gina#custom#mapping#nmap(
-  \ 'status',
-  \ 'p',
-  \ ':<C-u>call gina#action#call(''diff:vsplit'')<CR>',
-  \ s:gina_cmd_opt,
-  \ )
-  call gina#custom#mapping#nmap(
-  \ '/\%(blame\|log\|reflog\)',
-  \ 'p',
-  \ ':<C-u>call gina#action#call(''show:commit:vsplit'')<CR>',
-  \ s:gina_cmd_opt,
-  \ )
-endfunction
-
-augroup vimrc_gina
-  au!
-  autocmd User gina.vim call s:gina_settings()
-augroup END
-
-nnoremap <silent> <Leader>gs :<C-u>Gina status<CR>
-nnoremap <silent> <Leader>gl :<C-u>Gina log --graph<CR>
-nnoremap <silent> <Leader>gd :<C-u>Gina compare<CR>
 
 " vim-translator
 let g:translator_source_lang = 'en'

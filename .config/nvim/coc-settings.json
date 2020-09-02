@@ -1,0 +1,25 @@
+{
+  "coc.preferences.formatOnSaveFiletypes": [ "go" ],
+  "list.insertMappings": {
+    "<C-v>": "action:vsplit",
+    "<C-x>": "action:split",
+    "<C-t>": "action:tabe",
+    "<C-w>": "command:wincmd k"
+  },
+  "list.autoResize": true,
+  "list.source.files.command": "rg",
+  "list.source.files.args": ["--hidden", "--files"],
+  "list.source.grep.args": [
+    "--hidden"
+  ],
+  "git.enableGutters": true,
+  "go.goplsOptions": {
+    "hoverKind": "FullDocumentation",
+    "completeUnimported": true,
+    "usePlaceholders": true,
+    "staticcheck": true,
+    "analyses": {
+      "fillreturns": true
+    }
+  }
+}
