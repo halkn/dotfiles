@@ -1,4 +1,5 @@
 {
+  "coc.preferences.extensionUpdateCheck": "never",
   "coc.preferences.formatOnSaveFiletypes": [ "go" ],
   "list.insertMappings": {
     "<C-v>": "action:vsplit",

@@ -30,7 +30,7 @@ ZINIT[SERVICES_DIR]=${ZINIT[HOME_DIR]}/services
 ZINIT[ZCOMPDUMP_PATH]=$XDG_CACHE_HOME/zsh/.zcompdump
 
 # Instaling zinit
-if [ ! -d ${ZINIT[HOME_DIR]} ]; then
+if [ ! -d ${ZINIT[BIN_DIR]} ]; then
   mkdir -p ${ZINIT[HOME_DIR]}
   git clone https://github.com/zdharma/zinit ${ZINIT[BIN_DIR]}
 fi
@@ -47,7 +47,14 @@ zinit wait lucid light-mode for \
   atload"_zsh_autosuggest_start" \
     zsh-users/zsh-autosuggestions \
   blockf atpull'zinit creinstall -q .' \
-    zinit light zsh-users/zsh-completions
+    zsh-users/zsh-completions
+
+zinit wait'0' lucid \
+  from'gh-r' ver'nightly' as'program' pick'nvim*/bin/nvim' \
+  atclone'echo "" > ._zinit/is_release' \
+  atpull'%atclone' \
+  run-atpull \
+  light-mode for @neovim/neovim
 
 # prompt
 zinit atload'!source ~/.config/zsh/.p10k.zsh' lucid nocd for \
@@ -361,6 +368,19 @@ fkill() {
   then
       echo $pid | xargs kill -${1:-9}
   fi
+}
+
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# git
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# fbr - checkout git branch (including remote branches),
+#       sorted by most recent commit, limit 30 last branches.
+fbr() {
+  local branches branch
+  branches=$(git for-each-ref --count=30 --sort=-committerdate refs/heads/ --format="%(refname:short)") &&
+  branch=$(echo "$branches" |
+           fzf -d $(( 2 + $(wc -l <<< "$branches") )) +m) &&
+  git switch "$(echo "$branch" | sed "s/.* //" | sed "s#remotes/[^/]*/##")"
 }
 
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
