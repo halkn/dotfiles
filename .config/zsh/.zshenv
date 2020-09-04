@@ -45,9 +45,11 @@ export HOMEBREW_NO_INSTALL_CLEANUP=1
 # PATH
 typeset -U path
 path=(
+    /usr/local/go/bin(N-/)
     $GOPATH/bin(N-/)
     $NODEBREW_ROOT/current/bin(N-/)
     $NPM_HOME/bin(N-/)
+    $HOME/google-cloud-sdk/bin(N-/)
     /usr/local/bin(N-/)
     /usr/bin(N-/)
     /bin(N-/)

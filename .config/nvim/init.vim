@@ -156,8 +156,8 @@ Plug 'mattn/vim-findroot'
 Plug 'skywind3000/asyncrun.vim'
 " FileType
 Plug 'dhruvasagar/vim-table-mode', { 'for': 'markdown' }
-Plug 'previm/previm', { 'for': 'markdown' }
-Plug 'tyru/open-browser.vim', { 'for': 'markdown' }
+Plug 'iamcco/markdown-preview.nvim', 
+\ { 'do': { -> mkdp#util#install() }, 'for': ['markdown', 'vim-plug']}
 " Extension
 Plug 'glidenote/memolist.vim', { 'on': ['MemoNew', 'MemoList', 'MemoGrep'] }
 Plug 'simeji/winresizer', { 'on': 'WinResizerStartResize' }
@@ -497,10 +497,10 @@ augroup END
 let g:table_mode_corner = '|'
 let g:table_mode_map_prefix = '<LocalLeader>'
 
-" previm
-augroup vimrc_previm
+" markdown-preview.nvim
+augroup vimrc_markdown_preview.nvim
   au!
-  autocmd FileType markdown nnoremap <buffer> <silent> <LocalLeader>p :<C-u>PrevimOpen<CR>
+  autocmd FileType markdown nnoremap <buffer> <silent> <LocalLeader>p :<C-u>MarkdownPreview<CR>
 augroup END
 
 " ----------------------------------------------------------------------------

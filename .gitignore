@@ -3,3 +3,4 @@
 .vim/pack
 .vim/sessions
 .vim/autoload/plug.vim
+.config/gcloud

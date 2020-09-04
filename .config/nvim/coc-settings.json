@@ -13,7 +13,6 @@
   "list.source.grep.args": [
     "--hidden"
   ],
-  "git.enableGutters": true,
   "go.goplsOptions": {
     "hoverKind": "FullDocumentation",
     "completeUnimported": true,
@@ -21,6 +20,13 @@
     "staticcheck": true,
     "analyses": {
       "fillreturns": true
+    }
+  },
+  "markdownlint.config": {
+    "MD013": false,
+    "MD033": false,
+    "MD024": {
+      "siblings_only":true
     }
   }
 }
