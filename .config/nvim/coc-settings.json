@@ -1,4 +1,13 @@
 {
+  "suggest.detailField": "preview",
+  "diagnostic.errorSign": "×",
+  "diagnostic.infoSign": "!!",
+  "diagnostic.hintSign": "??",
+  "diagnostic.messageTarget": "echo",
+  "diagnostic.virtualText": true,
+  "diagnostic.virtualTextPrefix": " ■ ",
+  "signature.hideOnTextChange": true,
+  "coc.preferences.bracketEnterImprove": false,
   "coc.preferences.extensionUpdateCheck": "never",
   "coc.preferences.formatOnSaveFiletypes": [ "go" ],
   "list.insertMappings": {
