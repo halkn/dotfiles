@@ -34,7 +34,7 @@ let g:markdown_fenced_languages = [
 \  'sh',
 \  'json',
 \  'yaml',
-\  'java',
+\  'lua',
 \]
 
 " ============================================================================
@@ -60,7 +60,7 @@ set nocursorcolumn
 set nocursorline
 set wrap
 set list
-set listchars=tab:>-,trail:-,eol:↲,extends:»,precedes:«,nbsp:%
+set listchars=tab:»-,trail:-,eol:↲,extends:»,precedes:«,nbsp:%
 set scrolloff=8
 set synmaxcol=256
 set showcmd
@@ -140,6 +140,7 @@ endif
 call plug#begin(stdpath('data') . '/plugged')
 " global
 Plug 'chuling/vim-equinusocio-material'
+Plug 'sainnhe/edge'
 Plug 'itchyny/lightline.vim'
 Plug 'mattn/vim-findroot'
 Plug 'cohama/lexima.vim'
@@ -423,6 +424,8 @@ vmap <C-j> <Plug>(coc-snippets-select)
 nmap <silent> [c <Plug>(coc-git-prevchunk)
 nmap <silent> ]c <Plug>(coc-git-nextchunk)
 nmap <silent> <Leader>gd <Plug>(coc-git-chunkinfo)
+nnoremap <silent> <Leader>ga :CocCommand git.chunkStage<CR>
+nnoremap <silent> <Leader>gu :CocCommand git.chunkUndo<CR>
 nnoremap <silent> <C-y> :<C-u>CocCommand git.toggleGutters<CR>
 nnoremap <silent> <Leader>gr :<C-u>CocCommand git.refresh<CR>
 nnoremap <silent> <Leader>gs :<C-u>CocList --tab --normal -A gstatus<CR>
@@ -513,7 +516,7 @@ let g:memolist_delimiter_yaml_start = '---'
 let g:memolist_delimiter_yaml_end  = '---'
 let g:memolist_memo_suffix = 'md'
 let g:memolist_template_dir_path = expand(fnamemodify($MYVIMRC, ":h") . '/template/memotemplates')
-let g:memolist_ex_cmd = 'FzfFiles'
+let g:memolist_ex_cmd = 'CocList files'
 nnoremap <Leader>mn :<C-u>MemoNew<CR>
 nnoremap <Leader>mg :<C-u>MemoGrep<CR>
 nnoremap <Leader>ml :<C-u>MemoList<CR>
