@@ -141,7 +141,6 @@ call plug#begin(stdpath('data') . '/plugged')
 " global
 Plug 'chuling/vim-equinusocio-material'
 Plug 'itchyny/lightline.vim'
-Plug 'itchyny/vim-gitbranch'
 Plug 'tyru/columnskip.vim'
 Plug 'cohama/lexima.vim'
 Plug 'tyru/caw.vim'
@@ -337,24 +336,19 @@ let g:lightline = {
 \ 'active': {
 \   'left': [ [ 'mode', 'paste'],
 \             [ 'readonly', 'filename', 'modified' ], ['gitbranch'] ],
-\   'right': [ [ 'lsp_errors', 'lsp_warnings', 'lsp_ok', 'lineinfo' ],
+\   'right': [ [ 'lineinfo', 'cocstatus' ],
 \              [ 'percent' ],
 \              [ 'fileformat', 'fileencoding', 'filetype' ] ]
 \ },
 \ 'component_function': {
-\   'gitbranch': 'gitbranch#name'
-\ },
-\ 'component_expand': {
-\   'lsp_warnings': 'lightline_lsp#warnings',
-\   'lsp_errors':   'lightline_lsp#errors',
-\   'lsp_ok':       'lightline_lsp#ok',
-\ },
-\ 'component_type': {
-\   'lsp_warnings': 'warning',
-\   'lsp_errors':   'error',
-\   'lsp_ok':       'middle',
+\   'cocstatus': 'coc#status',
+\   'gitbranch': 'LightlineGitBranch',
 \ },
 \ }
+
+function! LightlineGitBranch() abort
+  return get(g:, 'coc_git_status', '')
+endfunction
 
 " lexima.vim
 let g:lexima_ctrlh_as_backspace = 1
@@ -425,7 +419,9 @@ vmap <C-j> <Plug>(coc-snippets-select)
 " coc-git
 nmap <silent> [c <Plug>(coc-git-prevchunk)
 nmap <silent> ]c <Plug>(coc-git-nextchunk)
+nmap <silent> <Leader>gd <Plug>(coc-git-chunkinfo)
 nnoremap <silent> <C-y> :<C-u>CocCommand git.toggleGutters<CR>
+nnoremap <silent> <Leader>gr :<C-u>CocCommand git.refresh<CR>
 nnoremap <silent> <Leader>gs :<C-u>CocList --tab --normal -A gstatus<CR>
 nnoremap <silent> <Leader>gl :<C-u>CocList --tab -A commits<CR>
 nnoremap <silent> <Leader>gb :<C-u>CocList --tab --normal -A bcommits<CR>
