@@ -9,7 +9,7 @@ setopt no_global_rcs
 #####################################################################
 # common
 export LANG=en_US.UTF-8
-export EDITOR=vim
+export EDITOR=nvim
 export PAGER=less
 export SHELL=zsh
 

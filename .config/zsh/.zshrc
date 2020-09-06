@@ -167,10 +167,9 @@ alias zs="source $ZDOTDIR/.zshrc"
 alias zb='for i in $(seq 1 10); do time zsh -i -c exit; done'
 
 # vim
-alias vi="vim"
-alias v.="ls -1a | fzf | xargs -o vim"
-alias v="fd --type f --hidden | fzf --height 80% --preview 'bat --color=always {}'| xargs -o vim"
-alias vb='for i in $(seq 1 10); do vim --startuptime ~/vim.log -c q; done && grep editing ~/vim.log && rm ~/vim.log'
+alias vi="nvim"
+alias v.="ls -1a | fzf | xargs -o nvim"
+alias v="fd --type f --hidden | fzf --height 80% --preview 'bat --color=always {}'| xargs -o nvim"
 
 # dotfiles
 alias dot="cd $HOME/.dotfiles && $EDITOR"
@@ -186,8 +185,6 @@ alias :q="exit"
 
 # git
 alias gp='git pull'
-alias gs='vim -c FzfGStatus'
-alias gl='vim -c FzfCommits'
 
 #####################################################################
 # options
