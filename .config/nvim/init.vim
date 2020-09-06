@@ -164,7 +164,6 @@ Plug 'voldikss/vim-floaterm', { 'on': ['FloatermToggle', 'FloatermNew'] }
 Plug 'tyru/capture.vim', { 'on': 'Capture' }
 Plug 'rhysd/git-messenger.vim', { 'on': '<Plug>(git-messenger)' }
 Plug 'thinca/vim-qfreplace', { 'on': 'Qfreplace' }
-Plug 'voldikss/vim-translator', { 'on': ['<Plug>TranslateW', '<Plug>TranslateWV'] }
 Plug 't9md/vim-quickhl', { 'on': '<Plug>(quickhl-manual-this)' }
 Plug 'tweekmonster/startuptime.vim', {'on': 'StartupTime'}
 call plug#end()
@@ -376,6 +375,7 @@ let g:coc_global_extensions = [
 \ 'coc-git',
 \ 'coc-lists',
 \ 'coc-snippets',
+\ 'coc-translator',
 \ 'coc-go',
 \ 'coc-markdownlint',
 \ 'coc-vimlsp',
@@ -425,6 +425,9 @@ nnoremap <silent> <Leader>gr :<C-u>CocCommand git.refresh<CR>
 nnoremap <silent> <Leader>gs :<C-u>CocList --tab --normal -A gstatus<CR>
 nnoremap <silent> <Leader>gl :<C-u>CocList --tab -A commits<CR>
 nnoremap <silent> <Leader>gb :<C-u>CocList --tab --normal -A bcommits<CR>
+
+" coc-translator
+vmap <silent> T <Plug>(coc-translator-pv)
 
 " coc-go
 augroup vimrc_coc_go
@@ -548,13 +551,6 @@ augroup vimrc_git_messenger
   au!
   autocmd FileType gitmessengerpopup call s:setup_git_messenger_popup()
 augroup END
-
-" vim-translator
-let g:translator_source_lang = 'en'
-let g:translator_target_lang = 'ja'
-let g:translator_default_engines = ['google']
-nmap <silent> T <Plug>TranslateW
-vmap <silent> T <Plug>TranslateWV
 
 " vim-quickhl
 nmap <Space>m <Plug>(quickhl-manual-this)

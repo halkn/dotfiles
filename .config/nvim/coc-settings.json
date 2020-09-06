@@ -14,6 +14,9 @@
     "--hidden"
   ],
   "git.enableGutters": true,
+  "translator.toLang": "ja",
+  "translator.engines": ["google"],
+  "translator.maxsize": 1000,
   "go.goplsOptions": {
     "hoverKind": "FullDocumentation",
     "completeUnimported": true,
