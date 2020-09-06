@@ -141,8 +141,9 @@ call plug#begin(stdpath('data') . '/plugged')
 " global
 Plug 'chuling/vim-equinusocio-material'
 Plug 'itchyny/lightline.vim'
-Plug 'tyru/columnskip.vim'
+Plug 'mattn/vim-findroot'
 Plug 'cohama/lexima.vim'
+Plug 'tyru/columnskip.vim'
 Plug 'tyru/caw.vim'
 Plug 'machakann/vim-sandwich'
 Plug 'kana/vim-operator-user'
@@ -151,8 +152,7 @@ Plug 'kana/vim-operator-replace'
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 " Develop
 Plug 'liuchengxu/vista.vim', { 'on': ['Vista!!', 'Vista'] }
-Plug 'mattn/vim-findroot'
-Plug 'skywind3000/asyncrun.vim'
+Plug 'skywind3000/asyncrun.vim', { 'on': 'AsyncRun' }
 " FileType
 Plug 'dhruvasagar/vim-table-mode', { 'for': 'markdown' }
 Plug 'iamcco/markdown-preview.nvim', 
@@ -328,6 +328,7 @@ let g:equinusocio_material_style = 'darker'
 let g:equinusocio_material_bracket_improved = 1
 colorscheme equinusocio_material
 hi PMenu guibg=#2f2f2f
+hi CocFloating guibg=#2f2f2f
 
 " lightline
 let g:lightline = {
