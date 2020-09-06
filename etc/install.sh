@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Check install condition
-if [[ -z ${XDG_CACHE_HOME}  ]]; then
+if [[ -z ${XDG_CACHE_HOME} ]]; then
   echo "XDG_CACHE_HOME is not defined"
   exit 1
 fi
@@ -12,7 +12,7 @@ if [[ -z ${XDG_DATA_HOME} ]]; then
 fi
 
 # if [[ ! -x /usr/local/bin/brew ]]; then
-if ! (type brew >/dev/null  2>&1); then
+if ! (type brew > /dev/null 2>&1); then
   echo "homebrew is not installed"
   exit 1
 fi
@@ -36,8 +36,8 @@ declare -a BREW_APPS=(
 
 for brew_app in "${BREW_APPS[@]}"; do
   brew_install_result=0
-  brew leaves | grep -x ${brew_app} >/dev/null 2>&1  || brew_install_result=$?
-  if [[ ! "$brew_install_result" = "0"  ]]; then
+  brew leaves | grep -x ${brew_app} > /dev/null 2>&1 || brew_install_result=$?
+  if [[ ! "$brew_install_result" = "0" ]]; then
     brew install ${brew_app}
   else
     echo '  '${brew_app}' skipped'

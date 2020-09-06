@@ -9,7 +9,7 @@
   "signature.hideOnTextChange": true,
   "coc.preferences.bracketEnterImprove": false,
   "coc.preferences.extensionUpdateCheck": "never",
-  "coc.preferences.formatOnSaveFiletypes": [ "go" ],
+  "coc.preferences.formatOnSaveFiletypes": [ "go", "sh"],
   "list.insertMappings": {
     "<C-v>": "action:vsplit",
     "<C-x>": "action:split",
@@ -42,6 +42,18 @@
     "MD033": false,
     "MD024": {
       "siblings_only":true
+    }
+  },
+  "diagnostic-languageserver.filetypes": {
+    "sh": "shellcheck"
+  },
+  "diagnostic-languageserver.formatFiletypes": {
+    "sh": "shfmt"
+  },
+  "diagnostic-languageserver.formatters": {
+    "shfmt": {
+      "command": "shfmt",
+      "args": ["-i", "2", "-bn", "-ci", "-sr"]
     }
   }
 }
