@@ -383,6 +383,7 @@ let g:coc_global_extensions = [
 \ 'coc-vimlsp',
 \ 'coc-sh',
 \ 'coc-diagnostic',
+\ 'coc-yaml',
 \ ]
 
 nmap <silent> gd          <Plug>(coc-definition)
