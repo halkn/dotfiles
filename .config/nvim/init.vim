@@ -386,12 +386,12 @@ let g:coc_global_extensions = [
 \ 'coc-yaml',
 \ ]
 
-nmap <silent> gd          <Plug>(coc-definition)
-nmap <silent> gy          <Plug>(coc-type-definition)
-nmap <silent> gi          <Plug>(coc-implementation)
-nmap <silent> gr          <Plug>(coc-references)
-nmap <silent> <F2>        <Plug>(coc-rename)
-nmap <silent> <leader>ac  <Plug>(coc-codeaction)
+nmap <silent> gd             <Plug>(coc-definition)
+nmap <silent> gy             <Plug>(coc-type-definition)
+nmap <silent> gi             <Plug>(coc-implementation)
+nmap <silent> gr             <Plug>(coc-references)
+nmap <silent> <F2>           <Plug>(coc-rename)
+nmap <silent> <leader>ac     <Plug>(coc-codeaction)
 nmap <silent> <LocalLeader>f <Plug>(coc-format)
 
 " Use K to show documentation in preview window.
@@ -404,7 +404,7 @@ function! s:show_documentation()
   endif
 endfunction
 
-nnoremap <silent> <LocalLeader>d  :<C-u>CocList diagnostics<CR>
+nnoremap <silent> <LocalLeader>d :<C-u>CocList diagnostics<CR>
 nnoremap <silent> <LocalLeader>o :<C-u>CocList outline<CR>
 nnoremap <silent> <LocalLeader>w :<C-u>CocList -I symbols<CR>
 
