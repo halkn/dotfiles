@@ -80,5 +80,8 @@ export FZF_GIT_DEFAULT_OPTS=" \
 # ripgrep
 export RIPGREP_CONFIG_PATH=$XDG_CONFIG_HOME/ripgrep/config
 
+# ignore shellcheck
+export SHELLCHECK_OPTS="--exclude=SC1090,SC2086"
+
 # Load local script
 [[ -f ${HOME}/.local.zshenv ]] && source ${HOME}/.local.zshenv

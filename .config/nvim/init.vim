@@ -140,7 +140,6 @@ endif
 call plug#begin(stdpath('data') . '/plugged')
 " global
 Plug 'chuling/vim-equinusocio-material'
-Plug 'sainnhe/edge'
 Plug 'itchyny/lightline.vim'
 Plug 'mattn/vim-findroot'
 Plug 'cohama/lexima.vim'
@@ -323,8 +322,6 @@ augroup END
 " Plugin config
 " ============================================================================
 " Global ---------------------------------------------------------------------
-" vim-code-dark
-" colorscheme codedark
 let g:equinusocio_material_style = 'darker'
 let g:equinusocio_material_bracket_improved = 1
 colorscheme equinusocio_material
@@ -531,23 +528,14 @@ nnoremap <silent> <C-w>r :WinResizerStartResize<CR>
 let g:floaterm_autoclose = 2
 let g:floaterm_width = 0.9
 let g:floaterm_height = 0.9
-nnoremap <silent> <F7>       :FloatermNew<CR>
-tnoremap <silent> <F7>       <C-\><C-n>:FloatermNew<CR>
-nnoremap <silent> <F8>       :FloatermPrev<CR>
-tnoremap <silent> <F8>       <C-\><C-n>:FloatermPrev<CR>
-nnoremap <silent> <F9>       :FloatermNext<CR>
-tnoremap <silent> <F9>       <C-\><C-n>:FloatermNext<CR>
-nnoremap <silent> <C-t>      :FloatermToggle<CR>
-tnoremap <silent> <C-t>      <C-\><C-n>:FloatermToggle<CR>
-
-function s:floatermSettings()
-  tnoremap <silent> <buffer> <ESC> <ESC>
-endfunction
-" 
-augroup vimrc_floaterm
-  au!
-  autocmd FileType floaterm call s:floatermSettings()
-augroup END
+nnoremap <silent> <F7>  :FloatermNew<CR>
+tnoremap <silent> <F7>  <C-\><C-n>:FloatermNew<CR>
+nnoremap <silent> <F8>  :FloatermPrev<CR>
+tnoremap <silent> <F8>  <C-\><C-n>:FloatermPrev<CR>
+nnoremap <silent> <F9>  :FloatermNext<CR>
+tnoremap <silent> <F9>  <C-\><C-n>:FloatermNext<CR>
+nnoremap <silent> <C-t> :FloatermToggle<CR>
+tnoremap <silent> <C-t> <C-\><C-n>:FloatermToggle<CR>
 " 
 " git-messenger.vim
 nmap <Leader>gm <Plug>(git-messenger)
