@@ -424,11 +424,7 @@ xmap sk <Plug>(columnskip:nonblank:prev)
 " fzf ------------------------------------------------------------------------
 let g:fzf_command_prefix = 'Fzf'
 let g:fzf_preview_window = 'right:60%'
-if exists('$TMUX')
-  let g:fzf_layout = { 'tmux': '-p95%,90%' }
-else
-  let g:fzf_layout = { 'window': { 'width': 0.95, 'height': 0.9 } }
-endif
+let g:fzf_layout = { 'window': { 'width': 0.95, 'height': 0.9 } }
 
 " files
 command! -bang -nargs=? -complete=dir FzfFiles
@@ -599,6 +595,19 @@ let g:lsp_settings = {
 \       'analyses': {
 \         'fillstruct': v:true,
 \       },
+\     }
+\   }
+\ },
+\ 'yaml-language-server': {
+\   'workspace_config': {
+\     'yaml': {
+\       'schemas': {
+\         'http://json.schemastore.org/cloudbuild': '/cloudbuild*.yaml'
+\       },
+\       'format': {
+\         'enable': v:true,
+\         'singleQuote': v:true,
+\       }
 \     }
 \   }
 \ },
