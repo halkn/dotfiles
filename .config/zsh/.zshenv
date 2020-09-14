@@ -49,7 +49,7 @@ path=(
     $GOPATH/bin(N-/)
     $NODEBREW_ROOT/current/bin(N-/)
     $NPM_HOME/bin(N-/)
-    $HOME/google-cloud-sdk/bin(N-/)
+    $HOME/.local/bin(N-/)
     /usr/local/bin(N-/)
     /usr/bin(N-/)
     /bin(N-/)
@@ -82,6 +82,10 @@ export RIPGREP_CONFIG_PATH=$XDG_CONFIG_HOME/ripgrep/config
 
 # ignore shellcheck
 export SHELLCHECK_OPTS="--exclude=SC1090,SC2086"
+
+# gcloud
+[[ -f ${HOME}/google-cloud-sdk/path.zsh.inc ]] && source ${HOME}/google-cloud-sdk/path.zsh.inc
+[[ -f ${HOME}/google-cloud-sdk/completion.zsh.inc ]] && source ${HOME}/google-cloud-sdk/completion.zsh.inc
 
 # Load local script
 [[ -f ${HOME}/.local.zshenv ]] && source ${HOME}/.local.zshenv
