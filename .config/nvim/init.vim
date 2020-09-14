@@ -139,7 +139,9 @@ endif
 " ============================================================================
 call plug#begin(stdpath('data') . '/plugged')
 " global
-Plug 'chuling/vim-equinusocio-material'
+" Plug 'chuling/vim-equinusocio-material'
+Plug '/Users/haruki/dev/github.com/halkn/vim-equinusocio-material'
+Plug 'halkn/tender.vim'
 Plug 'itchyny/lightline.vim'
 Plug 'mattn/vim-findroot'
 Plug 'cohama/lexima.vim'
@@ -148,16 +150,29 @@ Plug 'tyru/caw.vim'
 Plug 'machakann/vim-sandwich'
 Plug 'kana/vim-operator-user'
 Plug 'kana/vim-operator-replace'
+Plug 'junegunn/fzf'
+Plug 'junegunn/fzf.vim'
 " LSP
-Plug 'neoclide/coc.nvim', {'branch': 'release'}
+" Plug 'neoclide/coc.nvim', {'branch': 'release'}
+" Plug 'prabirshrestha/vim-lsp'
+" Plug 'mattn/vim-lsp-settings'
+" Plug 'prabirshrestha/asyncomplete.vim'
+" Plug 'prabirshrestha/asyncomplete-lsp.vim'
+
+Plug 'neovim/nvim-lspconfig'
+Plug 'nvim-lua/completion-nvim'
+Plug 'hrsh7th/vim-vsnip'
+Plug 'hrsh7th/vim-vsnip-integ'
 " Develop
 Plug 'liuchengxu/vista.vim', { 'on': ['Vista!!', 'Vista'] }
 Plug 'skywind3000/asyncrun.vim', { 'on': 'AsyncRun' }
+Plug 'kana/vim-altr'
 " FileType
 Plug 'dhruvasagar/vim-table-mode', { 'for': 'markdown' }
 Plug 'iamcco/markdown-preview.nvim', 
 \ { 'do': { -> mkdp#util#install() }, 'for': ['markdown', 'vim-plug']}
 " Extension
+Plug 'mhinz/vim-signify'
 Plug 'glidenote/memolist.vim', { 'on': ['MemoNew', 'MemoList', 'MemoGrep'] }
 Plug 'simeji/winresizer', { 'on': 'WinResizerStartResize' }
 Plug 'voldikss/vim-floaterm', { 'on': ['FloatermToggle', 'FloatermNew'] }
@@ -366,87 +381,64 @@ nmap sk <Plug>(columnskip:nonblank:prev)
 omap sk <Plug>(columnskip:nonblank:prev)
 xmap sk <Plug>(columnskip:nonblank:prev)
 
-" coc.nvim -------------------------------------------------------------------
-" global
-let g:coc_data_home = expand('$XDG_DATA_HOME/coc/')
-let g:coc_global_extensions = [
-\ 'coc-json',
-\ 'coc-git',
-\ 'coc-lists',
-\ 'coc-snippets',
-\ 'coc-translator',
-\ 'coc-go',
-\ 'coc-markdownlint',
-\ 'coc-vimlsp',
-\ 'coc-sh',
-\ 'coc-diagnostic',
-\ 'coc-yaml',
-\ ]
+" fzf.vim --------------------------------------------------------------------
+let g:fzf_command_prefix = 'Fzf'
+let g:fzf_preview_window = 'right:60%'
+let g:fzf_layout = { 'window': { 'width': 0.95, 'height': 0.9 } }
 
-nmap <silent> gd             <Plug>(coc-definition)
-nmap <silent> gy             <Plug>(coc-type-definition)
-nmap <silent> gi             <Plug>(coc-implementation)
-nmap <silent> gr             <Plug>(coc-references)
-nmap <silent> <F2>           <Plug>(coc-rename)
-nmap <silent> <leader>ac     <Plug>(coc-codeaction)
-nmap <silent> <LocalLeader>f <Plug>(coc-format)
+" files
+command! -bang -nargs=? -complete=dir FzfFiles
+\ call fzf#vim#files(<q-args>, fzf#vim#with_preview(), <bang>0)
 
-" Use K to show documentation in preview window.
-nnoremap <silent> K :call <SID>show_documentation()<CR>
-function! s:show_documentation()
-  if (index(['vim','help'], &filetype) >= 0)
-    execute 'h '.expand('<cword>')
-  else
-    call CocAction('doHover')
-  endif
+" ripgrep
+command! -bang -nargs=* FzfRg
+\ call fzf#vim#grep(
+\   'rg --column --line-number --no-heading --color=always --smart-case --hidden -- '.shellescape(<q-args>),
+\   1,
+\   fzf#vim#with_preview(), <bang>0
+\ )
+
+function! RipgrepFzf(query, fullscreen)
+  let command_fmt = 'rg --hidden --column --line-number --no-heading --color=always --smart-case -- %s || true'
+  let initial_command = printf(command_fmt, shellescape(a:query))
+  let reload_command = printf(command_fmt, '{q}')
+  let spec = {'options': ['--phony', '--query', a:query, '--bind', 'change:reload:'.reload_command]}
+  call fzf#vim#grep(initial_command, 1, fzf#vim#with_preview(spec), a:fullscreen)
 endfunction
 
-nnoremap <silent> <LocalLeader>d :<C-u>CocList diagnostics<CR>
-nnoremap <silent> <LocalLeader>o :<C-u>CocList outline<CR>
-nnoremap <silent> <LocalLeader>w :<C-u>CocList -I symbols<CR>
+command! -nargs=* -bang FzfRG call RipgrepFzf(<q-args>, <bang>0)
 
-" coc-lists
-nnoremap <silent> <Leader><Leader> :<C-u>CocList mru<CR>
-nnoremap <silent> <Leader>f        :<C-u>CocList --no-resize files<CR>
-nnoremap <silent> <Leader>b        :<C-u>CocList buffers<CR>
-nnoremap <silent> <Leader>l        :<C-u>CocList lines<CR>
-nnoremap <silent> <Leader>R        :<C-u>CocList grep<CR>
-nnoremap <silent> <Leader>q        :<C-u>CocList quickfix<CR>
+nnoremap <silent> <Leader><Leader> :<C-u>FzfHistory<CR>
+nnoremap <silent> <Leader>f        :<C-u>FzfFiles<CR>
+nnoremap <silent> <Leader>b        :<C-u>FzfBuffers<CR>
+nnoremap <silent> <Leader>l        :<C-u>FzfBLines<CR>
+nnoremap <silent> <Leader>R        :<C-u>FzfRG<CR>
+nnoremap <silent> <Leader>gs       :<C-u>FzfGStatus<CR>
+nnoremap <silent> <Leader>gl       :<C-u>FzfCommits<CR>
+inoremap <expr>   <c-x><c-k>       fzf#vim#complete#word({'left': '15%'})
 
-" coc-snippet
-let g:coc_snippet_next = '<tab>'
-let g:coc_snippet_prev = '<S-Tab>'
-imap <C-l> <Plug>(coc-snippets-expand)
-vmap <C-j> <Plug>(coc-snippets-select)
-
-" coc-git
-nmap <silent> [c <Plug>(coc-git-prevchunk)
-nmap <silent> ]c <Plug>(coc-git-nextchunk)
-nmap <silent> <Leader>gd <Plug>(coc-git-chunkinfo)
-nnoremap <silent> <Leader>ga :CocCommand git.chunkStage<CR>
-nnoremap <silent> <Leader>gu :CocCommand git.chunkUndo<CR>
-nnoremap <silent> <C-y> :<C-u>CocCommand git.toggleGutters<CR>
-nnoremap <silent> <Leader>gr :<C-u>CocCommand git.refresh<CR>
-nnoremap <silent> <Leader>gs :<C-u>CocList --tab --normal -A gstatus<CR>
-nnoremap <silent> <Leader>gl :<C-u>CocList --tab -A commits<CR>
-nnoremap <silent> <Leader>gb :<C-u>CocList --tab --normal -A bcommits<CR>
-
-" coc-translator
-vmap <silent> T <Plug>(coc-translator-pv)
-
-" coc-go
-augroup vimrc_coc_go
-  autocmd!
-  autocmd BufWritePre *.go :call CocAction('runCommand', 'editor.action.organizeImport')
-  autocmd FileType go nnoremap <silent> <buffer> <LocalLeader>a :<C-u>CocCommand go.test.toggle<CR>
-  autocmd FileType go nnoremap <silent> <buffer> <LocalLeader>tj :<C-u>CocCommand go.tags.add json<cr>
-  autocmd FileType go nnoremap <silent> <buffer> <LocalLeader>ty :<C-u>CocCommand go.tags.add yaml<cr>
-  autocmd FileType go nnoremap <silent> <buffer> <LocalLeader>tx :<C-u>CocCommand go.tags.clear<cr>
+augroup vimrc_fzf
+  au!
+  autocmd FileType fzf tnoremap <buffer> <silent> <Esc> <Esc>
 augroup END
+
+" LSP ------------------------------------------------------------------------
+lua require('lsp_config')
+let g:completion_enable_snippet = 'vim-vsnip'
+let g:completion_confirm_key = "\<C-l>"
+
+" vim-vsnip
+imap <expr> <C-j>   vsnip#expandable()  ? '<Plug>(vsnip-expand)'         : '<C-j>'
+smap <expr> <C-j>   vsnip#expandable()  ? '<Plug>(vsnip-expand)'         : '<C-j>'
+imap <expr> <Tab>   vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : '<Tab>'
+smap <expr> <Tab>   vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : '<Tab>'
+imap <expr> <S-Tab> vsnip#jumpable(-1)  ? '<Plug>(vsnip-jump-prev)'      : '<S-Tab>'
+smap <expr> <S-Tab> vsnip#jumpable(-1)  ? '<Plug>(vsnip-jump-prev)'      : '<S-Tab>'
+let g:vsnip_snippet_dir = expand(fnamemodify($MYVIMRC, ":h") . '/snippets')
 
 " Develop --------------------------------------------------------------------
 " vista.vim
-let g:vista_default_executive = 'coc'
+let g:vista_default_executive = 'vim_lsp'
 let g:vista_executive_for = {
 \ 'markdown': 'toc',
 \ }
@@ -494,6 +486,13 @@ augroup vimrc_asyncrun
   \ :<C-u>AsyncRun -mode=term -pos=right -cols=80 -focus=0 sh $VIM_RELNAME<CR>
 augroup END
 
+" vim-altr
+augroup vimrc_altr
+  au!
+  autocmd FileType go,vim,help nmap <buffer> <LocalLeader>a <Plug>(altr-forward)
+  autocmd FileType go,vim,help nmap <buffer> <LocalLeader>b <Plug>(altr-back)
+augroup END
+
 " ----------------------------------------------------------------------------
 " FileType
 " ----------------------------------------------------------------------------
@@ -515,7 +514,7 @@ let g:memolist_delimiter_yaml_start = '---'
 let g:memolist_delimiter_yaml_end  = '---'
 let g:memolist_memo_suffix = 'md'
 let g:memolist_template_dir_path = expand(fnamemodify($MYVIMRC, ":h") . '/template/memotemplates')
-let g:memolist_ex_cmd = 'CocList files'
+let g:memolist_ex_cmd = 'FzfFiles'
 nnoremap <Leader>mn :<C-u>MemoNew<CR>
 nnoremap <Leader>mg :<C-u>MemoGrep<CR>
 nnoremap <Leader>ml :<C-u>MemoList<CR>
@@ -523,6 +522,10 @@ nnoremap <Leader>ml :<C-u>MemoList<CR>
 " winresizer
 let g:winresizer_start_key = '<C-w>r'
 nnoremap <silent> <C-w>r :WinResizerStartResize<CR>
+
+" vim-signify
+noremap <silent> <C-y> :SignifyToggle<CR>
+noremap <silent> <Leader>gd :SignifyDiff<CR>
 
 " vim-floaterm
 let g:floaterm_autoclose = 2
