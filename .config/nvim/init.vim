@@ -139,8 +139,8 @@ endif
 " ============================================================================
 call plug#begin(stdpath('data') . '/plugged')
 " global
-" Plug 'chuling/vim-equinusocio-material'
-Plug '/Users/haruki/dev/github.com/halkn/vim-equinusocio-material'
+Plug 'chuling/vim-equinusocio-material'
+" Plug '/Users/haruki/dev/github.com/halkn/vim-equinusocio-material'
 Plug 'halkn/tender.vim'
 Plug 'itchyny/lightline.vim'
 Plug 'mattn/vim-findroot'
