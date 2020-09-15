@@ -113,9 +113,6 @@ set smartcase
 set incsearch
 set hlsearch
 
-" clipborad
-set clipboard=unnamed
-
 " Completion
 set completeopt=menuone,noinsert,noselect
 
@@ -129,6 +126,18 @@ set helplang=ja,en
 " vimfinfo
 if has('viminfo')
   set viminfo+=n$XDG_CACHE_HOME/vim/viminfo
+endif
+
+" clipborad
+if has('clipboard')
+  set clipboard=unnamed
+elseif executable('win32yank.exe')
+  augroup Yank
+    au!
+    autocmd TextYankPost * :call system('win32yank.exe -i', @")
+  augroup END
+  noremap <silent> p :call setreg('"',system('win32yank.exe -o'))<CR>""p
+  noremap <silent> P :call setreg('"',system('win32yank.exe -o'))<CR>""P
 endif
 
 " undo
