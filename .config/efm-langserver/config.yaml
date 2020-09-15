@@ -18,7 +18,7 @@ tools:
       - '%f:%l:%c: %tote: %m'
 
   shfmt-format: &shfmt-format
-    format-command: 'shfmt -ln bash -kr -i 2 -ci'
+    format-command: 'shfmt -ln bash -sr -i 2 -ci'
     format-stdin: true
 
 languages:
