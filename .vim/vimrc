@@ -169,7 +169,7 @@ endif
 function! PackInit() abort
   packadd minpac
 
-  call minpac#init()
+  call minpac#init({'progress_open': 'vertical'})
   call minpac#add('k-takata/minpac', {'type': 'opt'})
 
   " global
