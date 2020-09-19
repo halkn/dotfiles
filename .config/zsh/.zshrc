@@ -174,9 +174,9 @@ alias zs="source $ZDOTDIR/.zshrc"
 alias zb='for i in $(seq 1 10); do time zsh -i -c exit; done'
 
 # vim
-alias vi="nvim"
-alias v.="ls -1a | fzf | xargs -o nvim"
-alias v="fd --type f --hidden | fzf --height 80% --preview 'bat --color=always {}'| xargs -o nvim"
+alias vi=$EDITOR
+alias v.="find . -maxdepth 1 -type f | fzf | xargs -o $EDITOR"
+alias v="fd --type f --hidden | fzf --height 80% --preview 'bat --color=always {}'| xargs -o $EDITOR"
 
 # dotfiles
 alias dot="cd $HOME/.dotfiles && $EDITOR"
