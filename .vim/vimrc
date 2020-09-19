@@ -388,6 +388,10 @@ hi PMenu guibg=#2f2f2f
 " lightline
 let g:lightline = {
 \ 'colorscheme': 'equinusocio_material',
+\ 'tabline': {
+\   'left':  [ ['tabs'] ],
+\   'right': [ ['close'], ['cwd', 'gitbranch'] ],
+\ },
 \ 'active': {
 \   'left': [ [ 'mode', 'paste'],
 \             [ 'readonly', 'filename', 'modified' ], ['gitbranch'] ],
@@ -396,7 +400,8 @@ let g:lightline = {
 \              [ 'fileformat', 'fileencoding', 'filetype' ] ]
 \ },
 \ 'component_function': {
-\   'gitbranch': 'gitbranch#name'
+\   'gitbranch': 'gitbranch#name',
+\   'cwd':       'getcwd'
 \ },
 \ 'component_expand': {
 \   'lsp_warnings': 'lightline_lsp#warnings',
