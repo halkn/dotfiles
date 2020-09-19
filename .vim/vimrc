@@ -394,8 +394,9 @@ let g:lightline = {
 \ },
 \ 'active': {
 \   'left': [ [ 'mode', 'paste'],
-\             [ 'readonly', 'filename', 'modified' ], ['gitbranch'] ],
-\   'right': [ [ 'lsp_errors', 'lsp_warnings', 'lsp_ok', 'lineinfo' ],
+\             [ 'readonly', 'filename', 'modified' ],
+\             ['lsp_errors', 'lsp_warnings', 'lsp_ok'] ],
+\   'right': [ [ 'lineinfo' ],
 \              [ 'percent' ],
 \              [ 'fileformat', 'fileencoding', 'filetype' ] ]
 \ },
