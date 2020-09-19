@@ -138,7 +138,7 @@ if type exa > /dev/null 2>&1; then
   alias ll="ls -l --time-style=long-iso"
   alias la="exa -la --git --time-style=long-iso"
   alias ltr="ll --sort=modified"
-  alias tree="exa -laT --time-style=long-iso --git-ignore --ignore-glob='.git|.svn'"
+  alias tree="exa -aT --time-style=long-iso --git-ignore --ignore-glob='.git|.svn'"
 else
   case ${OSTYPE} in
     darwin* )
