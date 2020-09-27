@@ -377,18 +377,19 @@ augroup END
 " ============================================================================
 " Global ---------------------------------------------------------------------
 " vim-equinusocio-material
-packadd vim-equinusocio-material
-let g:equinusocio_material_style = 'darker'
-let g:equinusocio_material_bracket_improved = 1
-colorscheme equinusocio_material
-
-highlight LspErrorHighlight gui=underline cterm=underline
-highlight LspWarningHighlight gui=underline cterm=underline
-hi PMenu guibg=#2f2f2f
+" packadd vim-equinusocio-material
+" let g:equinusocio_material_style = 'darker'
+" let g:equinusocio_material_bracket_improved = 1
+" colorscheme equinusocio_material
+" 
+" highlight LspErrorHighlight gui=underline cterm=underline
+" highlight LspWarningHighlight gui=underline cterm=underline
+" hi PMenu guibg=#2f2f2f
+colorscheme tender
 
 " lightline
 let g:lightline = {
-\ 'colorscheme': 'equinusocio_material',
+\ 'colorscheme': 'wombat',
 \ 'tabline': {
 \   'left':  [ ['tabs'] ],
 \   'right': [ ['close'], ['cwd', 'gitbranch'] ],
