@@ -55,7 +55,6 @@ nvim_lsp.gopls.setup{
     completionDocumentation=true;
     completeUnimported=true;
     deepCompletion=true;
-    fuzzyMatching=true;
     staticcheck=true;
   },
   on_attach=custom_attach

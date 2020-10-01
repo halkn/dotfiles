@@ -438,7 +438,7 @@ let g:vsnip_snippet_dir = expand(fnamemodify($MYVIMRC, ":h") . '/snippets')
 
 " Develop --------------------------------------------------------------------
 " vista.vim
-let g:vista_default_executive = 'vim_lsp'
+let g:vista_default_executive = 'nvim_lsp'
 let g:vista_executive_for = {
 \ 'markdown': 'toc',
 \ }
