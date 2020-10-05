@@ -179,6 +179,7 @@ function! PackInit() abort
   call minpac#add('halkn/lightline-lsp')
   call minpac#add('vim-jp/vimdoc-ja')
   call minpac#add('tyru/columnskip.vim')
+  call minpac#add('hrsh7th/vim-eft')
   call minpac#add('cohama/lexima.vim')
   call minpac#add('tyru/caw.vim')
   call minpac#add('machakann/vim-sandwich')
@@ -357,9 +358,14 @@ augroup vimrc-ft-quickfix
 augroup END
 
 " vim help
+function! s:helptab()
+  if &buftype == 'help'
+    wincmd T
+  endif
+endfunction
 augroup vimrc-ft-help
   autocmd!
-  autocmd FileType help wincmd L
+  autocmd BufEnter *.txt,*.jax call s:helptab()
   autocmd FileType help setlocal signcolumn=no
   autocmd FileType help nnoremap <silent> <buffer> q <C-w>c
   autocmd FileType help nnoremap <buffer> <CR> <C-]>
@@ -436,6 +442,22 @@ nmap sk <Plug>(columnskip:nonblank:prev)
 omap sk <Plug>(columnskip:nonblank:prev)
 xmap sk <Plug>(columnskip:nonblank:prev)
 
+" vim-eft
+nmap ; <Plug>(eft-repeat)
+xmap ; <Plug>(eft-repeat)
+nmap f <Plug>(eft-f)
+xmap f <Plug>(eft-f)
+omap f <Plug>(eft-f)
+nmap F <Plug>(eft-F)
+xmap F <Plug>(eft-F)
+omap F <Plug>(eft-F)
+nmap t <Plug>(eft-t)
+xmap t <Plug>(eft-t)
+omap t <Plug>(eft-t)
+nmap T <Plug>(eft-T)
+xmap T <Plug>(eft-T)
+omap T <Plug>(eft-T)
+
 " ctrlp.vim
 let g:ctrlp_map = '<space>f'
 let g:ctrlp_working_path_mode = 'rw'
@@ -507,6 +529,9 @@ function! s:setup_lsp() abort
   nmap <silent> <buffer> <LocalLeader>k <Plug>(lsp-peek-definition)
   nmap <silent> <buffer> <F2> <Plug>(lsp-rename)
   nmap <silent> <buffer> <LocalLeader>d <plug>(lsp-document-diagnostics)
+  nmap <silent> <buffer> <LocalLeader>f <plug>(lsp-document-format)
+  nmap <silent> <buffer> <LocalLeader>s <plug>(lsp-document-symbol)
+  nmap <silent> <buffer> <LocalLeader>w <plug>(lsp-workspace-symbol)
 endfunction
 
 augroup vimrc-lsp-setup
@@ -524,12 +549,12 @@ let g:asyncomplete_auto_completeopt = 0
 inoremap <expr> <C-y> pumvisible() ? asyncomplete#close_popup() : "\<C-y>"
 
 " vim-vsnip
-imap <expr><C-l> complete_info(['selected']).selected == -1 && vsnip#available(1) ? '<Plug>(vsnip-expand)'         : '<C-l>'
-smap <expr><C-l> complete_info(['selected']).selected == -1 && vsnip#available(1) ? '<Plug>(vsnip-expand)'         : '<C-l>'
-imap <expr><Tab> complete_info(['selected']).selected == -1 && vsnip#available(1) ? '<Plug>(vsnip-expand-or-jump)' : '<Tab>'
-smap <expr><Tab> complete_info(['selected']).selected == -1 && vsnip#jumpable(1)  ? '<Plug>(vsnip-jump-next)'      : '<Tab>'
-imap <expr><S-Tab> vsnip#available(-1)                                            ? '<Plug>(vsnip-jump-prev)'      : '<S-Tab>'
-smap <expr><S-Tab> vsnip#available(-1)                                            ? '<Plug>(vsnip-jump-prev)'      : '<S-Tab>'
+imap <expr> <C-l>   vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : '<C-l>'
+smap <expr> <C-l>   vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : '<C-l>'
+imap <expr> <Tab>   vsnip#jumpable(1)   ? '<Plug>(vsnip-jump-next)'      : '<Tab>'
+smap <expr> <Tab>   vsnip#jumpable(1)   ? '<Plug>(vsnip-jump-next)'      : '<Tab>'
+imap <expr> <S-Tab> vsnip#jumpable(-1)  ? '<Plug>(vsnip-jump-prev)'      : '<S-Tab>'
+smap <expr> <S-Tab> vsnip#jumpable(-1)  ? '<Plug>(vsnip-jump-prev)'      : '<S-Tab>'
 let g:vsnip_snippet_dir = expand(fnamemodify($MYVIMRC, ":h") . '/snippets')
 
 " vista.vim
