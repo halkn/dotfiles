@@ -523,6 +523,7 @@ function! s:setup_lsp() abort
   setlocal tagfunc=lsp#tagfunc
   nmap <silent> <buffer> gd <Plug>(lsp-definition)
   nmap <silent> <buffer> gD :<C-u>tab LspDefinition<CR>
+  nmap <silent> <buffer> gi <Plug>(lsp-implementation)
   nmap <silent> <buffer> gy <Plug>(lsp-type-definition)
   nmap <silent> <buffer> gr <Plug>(lsp-references)
   nmap <silent> <buffer> K <Plug>(lsp-hover)
@@ -549,8 +550,8 @@ let g:asyncomplete_auto_completeopt = 0
 inoremap <expr> <C-y> pumvisible() ? asyncomplete#close_popup() : "\<C-y>"
 
 " vim-vsnip
-imap <expr> <C-l>   vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : '<C-l>'
-smap <expr> <C-l>   vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : '<C-l>'
+imap <expr> <C-l>   vsnip#expandable()  ? '<Plug>(vsnip-expand)'         : '<C-l>'
+smap <expr> <C-l>   vsnip#expandable()  ? '<Plug>(vsnip-expand)'         : '<C-l>'
 imap <expr> <Tab>   vsnip#jumpable(1)   ? '<Plug>(vsnip-jump-next)'      : '<Tab>'
 smap <expr> <Tab>   vsnip#jumpable(1)   ? '<Plug>(vsnip-jump-next)'      : '<Tab>'
 imap <expr> <S-Tab> vsnip#jumpable(-1)  ? '<Plug>(vsnip-jump-prev)'      : '<S-Tab>'
