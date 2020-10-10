@@ -679,8 +679,8 @@ let g:qfpreview = {
 \ 'number': 1,
 \ 'height': 20,
 \ 'offset': 10,
-\ 'next': 'n',
-\ 'previous': 'p',
+\ 'next': 'j',
+\ 'previous': 'k',
 \ 'sign': {'linehl': 'CursorLine'}
 \ }
 augroup vimrc_qfpreview
