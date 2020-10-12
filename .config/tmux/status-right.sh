@@ -1,13 +1,19 @@
 #! /bin/bash
 if [ -f $HOME/.config/gcloud/active_config ]; then
+  _pj=$(cat $HOME/.config/gcloud/active_config)
   _gcp_proj=$(
-    cat $HOME/.config/gcloud/active_config |
+    echo ${_pj} |
       xargs -I@ awk '/project/{print $3}' $HOME/.config/gcloud/configurations/config_@
   )
-  echo -n "#[fg=#b3deef,bg=#3e4249] [GCP:"
+  if [ ${_pj} == "default" ]; then
+    echo -n "#[fg=colour4,bg=colour238] "
+  else
+    echo -n "#[fg=colour7,bg=colour1] "
+  fi
+  echo -n "[GCP:"
   echo -n ${_gcp_proj}
   echo -n "]"
-  echo -n "#[fg=#b7bec9,bg=#3e4249]|"
+  echo -n "#[fg=colour246,bg=colour238]|"
 fi
 if type battery > /dev/null 2>&1; then
   echo -n " "
