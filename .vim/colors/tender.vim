@@ -61,8 +61,8 @@ hi WarningMsg guifg=#f43753 ctermfg=203 guibg=NONE ctermbg=NONE gui=NONE cterm=N
 hi WildMenu guifg=#242424 ctermfg=235 guibg=#c9d05c ctermbg=185 gui=bold cterm=bold
 
 "+--- Search ---+
-hi IncSearch guifg=#242424 ctermfg=235 guibg=#ffffff ctermbg=15 gui=NONE cterm=NONE
-hi Search guifg=#ffffff ctermfg=15 guibg=NONE ctermbg=NONE gui=underline,bold cterm=underline,bold
+hi IncSearch guifg=#323232 ctermfg=15 guibg=#d3b987 ctermbg=NONE gui=NONE cterm=NONE
+hi Search guifg=#323232 ctermfg=15 guibg=#ffc24b ctermbg=NONE gui=NONE cterm=NONE
 
 "+--- Tabs ---+
 hi TabLine guifg=#999999 ctermfg=246 guibg=#444444 ctermbg=238 gui=NONE cterm=NONE
@@ -294,7 +294,7 @@ hi SignifySignChange guifg=#b3deef ctermfg=153 guibg=NONE ctermbg=NONE gui=NONE 
 hi SignifySignDelete guifg=#f43753 ctermfg=203 guibg=NONE ctermbg=NONE gui=NONE cterm=NONE
 hi SignifySignDeleteFirstLine guifg=#f43753 ctermfg=203 guibg=NONE ctermbg=NONE gui=NONE cterm=NONE
 
-augroup equinusocio_material_hi_parentheses
+augroup tender_hi_parentheses
   autocmd!
   " autocmd Syntax * syntax match MaterialThemeParens '[(){}\[\]]'
   autocmd Syntax * syntax match TenderParens '[()]'
