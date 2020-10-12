@@ -12,6 +12,8 @@ export LANG=en_US.UTF-8
 export EDITOR=vim
 export PAGER=less
 export SHELL=zsh
+export LOCAL_BIN=$HOME/.local/bin
+export LOCAL_FBIN=$HOME/.local/fbin
 
 # XDG Base Directory
 export XDG_CONFIG_HOME=~/.config
@@ -23,6 +25,7 @@ export ZDOTDIR=$XDG_CONFIG_HOME/zsh
 
 # golang
 export GOPATH=$XDG_DATA_HOME/go
+export GOBIN=$LOCAL_BIN
 export GO111MODULE=on
 
 # nodebrew
@@ -49,7 +52,7 @@ path=(
     $GOPATH/bin(N-/)
     $NODEBREW_ROOT/current/bin(N-/)
     $NPM_HOME/bin(N-/)
-    $HOME/.local/bin(N-/)
+    $LOCAL_BIN(N-/)
     /usr/local/bin(N-/)
     /usr/bin(N-/)
     /bin(N-/)
@@ -57,6 +60,12 @@ path=(
     /usr/sbin(N-/)
     /sbin(N-/)
     $path
+)
+
+typeset -U fpath
+fpath=(
+  $LOCAL_FBIN(N-/)
+  $fpath
 )
 
 # less
