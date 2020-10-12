@@ -128,6 +128,7 @@ zstyle ':completion:*' completer \
 #####################################################################
 [[ -f ${HOME}/google-cloud-sdk/path.zsh.inc ]] && source ${HOME}/google-cloud-sdk/path.zsh.inc
 [[ -f ${HOME}/google-cloud-sdk/completion.zsh.inc ]] && source ${HOME}/google-cloud-sdk/completion.zsh.inc
+[[ -f ${XDG_CONFIG_HOME}/zsh/rc.d/gcloud.zsh ]] && source ${XDG_CONFIG_HOME}/zsh/rc.d/gcloud.zsh
 
 #####################################################################
 # alias
@@ -436,4 +437,3 @@ gmod() {
 #if (which zprof > /dev/null) ;then
 #  zprof | less
 #fi
-
