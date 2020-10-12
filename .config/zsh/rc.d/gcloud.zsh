@@ -39,5 +39,3 @@ gca() {
   fi
   gcloud config configurations activate ${selected}
 }
-
-source ${HOME}/google-cloud-sdk/completion.zsh.inc
