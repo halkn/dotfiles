@@ -188,11 +188,12 @@ if type bat > /dev/null 2>&1; then
   alias less="bat"
 fi
 
-# exit
-alias :q="exit"
-
 # git
 alias gp='git pull'
+
+# etc
+alias :q="exit"
+alias color='for i in {0..255}; do printf "\x1b[38;5;${i}mcolour${i}\n" ;done'
 
 #####################################################################
 # options
@@ -408,7 +409,7 @@ bua() {
 # fuzzy-ghq-list - cd to development directory in ghq list.
 fuzzy-ghq-list() {
   local dir
-  dir=$(ghq list > /dev/null | fzf +m --preview "exa -T $(ghq root)/{}") && cd $(ghq root)/$dir
+  dir=$(ghq list > /dev/null | fzf --height 100% --preview="glow $(ghq root)/{}") && cd $(ghq root)/$dir
 }
 alias dev=fuzzy-ghq-list
 alias repo=fuzzy-ghq-list
