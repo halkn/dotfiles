@@ -15,6 +15,7 @@ local custom_attach = function(client)
   end
 
   mapper('n', 'gd', '<cmd>lua vim.lsp.buf.definition()<CR>')
+  mapper('n', 'gD', '<Cmd>tabe<CR><cmd>lua vim.lsp.buf.definition()<CR>')
   mapper('n', '<c-]>', '<cmd>lua vim.lsp.buf.definition()<CR>')
   mapper('n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>')
   mapper('n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>')
@@ -137,5 +138,17 @@ nvim_lsp.sumneko_lua.setup{
 
 -- efm-langserver
 nvim_lsp.efm.setup{
-  filetypes = {"markdown", "json", "sh"};
+  filetypes = {"markdown", "sh"};
 }
+
+-- ###########################################################################
+-- nvim-lsputils
+-- ###########################################################################
+vim.lsp.callbacks['textDocument/codeAction'] = require'lsputil.codeAction'.code_action_handler
+vim.lsp.callbacks['textDocument/references'] = require'lsputil.locations'.references_handler
+vim.lsp.callbacks['textDocument/definition'] = require'lsputil.locations'.definition_handler
+vim.lsp.callbacks['textDocument/declaration'] = require'lsputil.locations'.declaration_handler
+vim.lsp.callbacks['textDocument/typeDefinition'] = require'lsputil.locations'.typeDefinition_handler
+vim.lsp.callbacks['textDocument/implementation'] = require'lsputil.locations'.implementation_handler
+vim.lsp.callbacks['textDocument/documentSymbol'] = require'lsputil.symbols'.document_handler
+vim.lsp.callbacks['workspace/symbol'] = require'lsputil.symbols'.workspace_handler
