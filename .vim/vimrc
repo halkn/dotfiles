@@ -187,6 +187,7 @@ function! PackInit() abort
   call minpac#add('kana/vim-operator-replace')
   call minpac#add('ctrlpvim/ctrlp.vim')
   call minpac#add('mattn/ctrlp-matchfuzzy')
+  call minpac#add('mattn/ctrlp-lsp')
   " LSP
   call minpac#add('prabirshrestha/vim-lsp')
   call minpac#add('mattn/vim-lsp-settings')
@@ -531,8 +532,8 @@ function! s:setup_lsp() abort
   nmap <silent> <buffer> <F2> <Plug>(lsp-rename)
   nmap <silent> <buffer> <LocalLeader>d <plug>(lsp-document-diagnostics)
   nmap <silent> <buffer> <LocalLeader>f <plug>(lsp-document-format)
-  nmap <silent> <buffer> <LocalLeader>s <plug>(lsp-document-symbol)
-  nmap <silent> <buffer> <LocalLeader>w <plug>(lsp-workspace-symbol)
+  nmap <silent> <buffer> <LocalLeader>s :<C-u>CtrlPLspDocumentSymbol<CR>
+  nmap <silent> <buffer> <LocalLeader>w :<C-u>CtrlPLspWorkspaceSymbol<CR>
 endfunction
 
 augroup vimrc-lsp-setup
