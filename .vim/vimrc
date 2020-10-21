@@ -210,7 +210,6 @@ function! PackInit() abort
   call minpac#add('simeji/winresizer')
   call minpac#add('mhinz/vim-signify')
   call minpac#add('lambdalisue/gina.vim', { 'type': 'opt' })
-  call minpac#add('voldikss/vim-floaterm')
   call minpac#add('bfrg/vim-qf-preview')
   call minpac#add('tyru/capture.vim')
   call minpac#add('skanehira/translate.vim')
@@ -289,6 +288,27 @@ nnoremap <silent> <Leader>ts :<C-u>terminal<CR>
 nnoremap <silent> <Leader>tv :<C-u>vertical terminal<CR>
 nnoremap <silent> <Leader>tt :<C-u>tab terminal<CR>
 nnoremap <silent> <Leader>tw :<C-u>terminal ++curwin<CR>
+
+" toggle terminal buffer.
+function s:ToggleTerminal()
+  let l:bufferNum = bufnr('ToggleTerminal')
+  if l:bufferNum == -1 || bufloaded(l:bufferNum) != 1
+    execute 'tab terminal ++close ++kill=term'
+    file ToggleTerminal
+  else
+    let l:windowNum = bufwinnr(l:bufferNum)
+    if l:windowNum == -1
+      execute 'tab sbuffer '.l:bufferNum
+    else
+      execute l:windowNum.'wincmd w'
+      hide
+    endif
+  endif
+endfunction
+
+command! ToggleTerm call s:ToggleTerminal()
+nnoremap <silent> <C-t> :ToggleTerm<CR>
+tnoremap <silent> <C-t> <C-w>:ToggleTerm<CR>
 
 " Toggle options
 nmap [Toggle] <Nop>
@@ -659,19 +679,6 @@ let g:winresizer_start_key = '<C-w>r'
 noremap <silent> <C-y> :SignifyToggle<CR>
 noremap <silent> <Leader>gd :SignifyDiff<CR>
 let g:signify_disable_by_default = 0
-
-" vim-floaterm
-let g:floaterm_autoclose = 2
-let g:floaterm_width = 0.9
-let g:floaterm_height = 0.9
-nnoremap <silent> <F7>  :FloatermNew<CR>
-tnoremap <silent> <F7>  <C-\><C-n>:FloatermNew<CR>
-nnoremap <silent> <F8>  :FloatermPrev<CR>
-tnoremap <silent> <F8>  <C-\><C-n>:FloatermPrev<CR>
-nnoremap <silent> <F9>  :FloatermNext<CR>
-tnoremap <silent> <F9>  <C-\><C-n>:FloatermNext<CR>
-nnoremap <silent> <C-t> :FloatermToggle<CR>
-tnoremap <silent> <C-t> <C-\><C-n>:FloatermToggle<CR>
 
 " vim-qf-preview
 let g:qfpreview = {
