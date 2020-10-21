@@ -164,69 +164,6 @@ if executable('rg')
 endif
 
 " ============================================================================
-" Plugin
-" ============================================================================
-function! PackInit() abort
-  packadd minpac
-
-  call minpac#init({'progress_open': 'vertical'})
-  call minpac#add('k-takata/minpac', {'type': 'opt'})
-
-  " global
-  call minpac#add('chuling/vim-equinusocio-material', {'type': 'opt'})
-  call minpac#add('itchyny/lightline.vim')
-  call minpac#add('itchyny/vim-gitbranch')
-  call minpac#add('halkn/lightline-lsp')
-  call minpac#add('vim-jp/vimdoc-ja')
-  call minpac#add('tyru/columnskip.vim')
-  call minpac#add('hrsh7th/vim-eft')
-  call minpac#add('cohama/lexima.vim')
-  call minpac#add('tyru/caw.vim')
-  call minpac#add('machakann/vim-sandwich')
-  call minpac#add('kana/vim-operator-user')
-  call minpac#add('kana/vim-operator-replace')
-  call minpac#add('ctrlpvim/ctrlp.vim')
-  call minpac#add('mattn/ctrlp-matchfuzzy')
-  call minpac#add('mattn/ctrlp-lsp')
-  " LSP
-  call minpac#add('prabirshrestha/vim-lsp')
-  call minpac#add('mattn/vim-lsp-settings')
-  call minpac#add('prabirshrestha/asyncomplete.vim')
-  call minpac#add('prabirshrestha/asyncomplete-lsp.vim')
-  call minpac#add('hrsh7th/vim-vsnip')
-  call minpac#add('hrsh7th/vim-vsnip-integ')
-  call minpac#add('liuchengxu/vista.vim')
-  " Develop
-  call minpac#add('mattn/vim-findroot')
-  call minpac#add('skywind3000/asyncrun.vim')
-  call minpac#add('kana/vim-altr')
-  " FileType
-  call minpac#add('dhruvasagar/vim-table-mode')
-  call minpac#add('previm/previm')
-  call minpac#add('tyru/open-browser.vim')
-  call minpac#add('skanehira/preview-markdown.vim')
-  " Extension
-  call minpac#add('glidenote/memolist.vim')
-  call minpac#add('simeji/winresizer')
-  call minpac#add('mhinz/vim-signify')
-  call minpac#add('lambdalisue/gina.vim', { 'type': 'opt' })
-  call minpac#add('bfrg/vim-qf-preview')
-  call minpac#add('tyru/capture.vim')
-  call minpac#add('skanehira/translate.vim')
-  call minpac#add('thinca/vim-qfreplace')
-  call minpac#add('t9md/vim-quickhl')
-  call minpac#add('tweekmonster/startuptime.vim')
-endfunction
-
-set packpath^=$XDG_DATA_HOME/vim
-command! PackUpdate source $MYVIMRC | call PackInit() | call minpac#update()
-command! PackClean  source $MYVIMRC | call PackInit() | call minpac#clean()
-command! PackStatus packadd minpac | call minpac#status()
-
-filetype plugin indent on
-syntax enable
-
-" ============================================================================
 " Mapping
 " ============================================================================
 " reload vimrc
@@ -355,8 +292,13 @@ nnoremap <script> <silent> W :call ToggleLocationList()<CR>
 " ============================================================================
 " autocmd
 " ============================================================================
-" indent by FileType
-augroup vimrc-ft-indent
+" open help in new tab.
+function! s:helptab()
+  if &buftype == 'help'
+    wincmd T
+  endif
+endfunction
+augroup vimrc_filetype
   autocmd!
   autocmd FileType gitcommit setlocal spell spelllang=cjk,en
   autocmd FileType git setlocal nofoldenable
@@ -368,36 +310,84 @@ augroup vimrc-ft-indent
   autocmd FileType zsh setlocal tabstop=2 shiftwidth=2
   autocmd FileType yaml setlocal tabstop=2 shiftwidth=2
   autocmd FileType json setlocal tabstop=2 shiftwidth=2
-augroup END
-
-" quickfix
-augroup vimrc-ft-quickfix
-  autocmd!
   autocmd FileType qf setlocal signcolumn=no
   autocmd Filetype qf nnoremap <silent> <buffer> p <CR>zz<C-w>p
   autocmd Filetype qf nnoremap <silent> <buffer> q <C-w>c
-augroup END
-
-" vim help
-function! s:helptab()
-  if &buftype == 'help'
-    wincmd T
-  endif
-endfunction
-augroup vimrc-ft-help
-  autocmd!
   autocmd BufEnter *.txt,*.jax call s:helptab()
   autocmd FileType help setlocal signcolumn=no
   autocmd FileType help nnoremap <silent> <buffer> q <C-w>c
   autocmd FileType help nnoremap <buffer> <CR> <C-]>
   autocmd FileType help nnoremap <buffer> <BS> <C-T>
+  autocmd TerminalOpen * if &buftype == 'terminal' | setlocal signcolumn=no nolist | endif
 augroup END
 
-" terminal
-augroup vimrc_terminal_setting
-  autocmd!
-  autocmd TerminalOpen * if &buftype == 'terminal' | setlocal signcolumn=no nolist| endif
-augroup END
+" ============================================================================
+" Plugin
+" ============================================================================
+function! PackInit() abort
+  packadd minpac
+
+  call minpac#init({'progress_open': 'vertical'})
+  call minpac#add('k-takata/minpac', {'type': 'opt'})
+
+  " global
+  call minpac#add('chuling/vim-equinusocio-material', {'type': 'opt'})
+  call minpac#add('itchyny/lightline.vim')
+  call minpac#add('itchyny/vim-gitbranch')
+  call minpac#add('halkn/lightline-lsp')
+  call minpac#add('vim-jp/vimdoc-ja')
+  call minpac#add('tyru/columnskip.vim')
+  call minpac#add('hrsh7th/vim-eft')
+  call minpac#add('cohama/lexima.vim')
+  call minpac#add('tyru/caw.vim')
+  call minpac#add('machakann/vim-sandwich')
+  call minpac#add('kana/vim-operator-user')
+  call minpac#add('kana/vim-operator-replace')
+  call minpac#add('ctrlpvim/ctrlp.vim')
+  call minpac#add('mattn/ctrlp-matchfuzzy')
+  call minpac#add('mattn/ctrlp-lsp')
+  " LSP
+  call minpac#add('prabirshrestha/vim-lsp')
+  call minpac#add('mattn/vim-lsp-settings')
+  call minpac#add('prabirshrestha/asyncomplete.vim')
+  call minpac#add('prabirshrestha/asyncomplete-lsp.vim')
+  call minpac#add('hrsh7th/vim-vsnip')
+  call minpac#add('hrsh7th/vim-vsnip-integ')
+  call minpac#add('liuchengxu/vista.vim')
+  " Develop
+  call minpac#add('mattn/vim-findroot')
+  call minpac#add('skywind3000/asyncrun.vim')
+  call minpac#add('kana/vim-altr')
+  " FileType
+  call minpac#add('dhruvasagar/vim-table-mode')
+  call minpac#add('previm/previm')
+  call minpac#add('tyru/open-browser.vim')
+  call minpac#add('skanehira/preview-markdown.vim')
+  " Extension
+  call minpac#add('glidenote/memolist.vim')
+  call minpac#add('simeji/winresizer')
+  call minpac#add('mhinz/vim-signify')
+  call minpac#add('lambdalisue/gina.vim', { 'type': 'opt' })
+  call minpac#add('bfrg/vim-qf-preview')
+  call minpac#add('tyru/capture.vim')
+  call minpac#add('skanehira/translate.vim')
+  call minpac#add('thinca/vim-qfreplace')
+  call minpac#add('t9md/vim-quickhl')
+  call minpac#add('tweekmonster/startuptime.vim')
+endfunction
+
+set packpath^=$XDG_DATA_HOME/vim
+command! PackUpdate source $MYVIMRC | call PackInit() | call minpac#update()
+command! PackClean  source $MYVIMRC | call PackInit() | call minpac#clean()
+command! PackStatus packadd minpac | call minpac#status()
+
+filetype plugin indent on
+syntax enable
+
+if !isdirectory(expand('$XDG_DATA_HOME/vim/pack/minpac'))
+  colorscheme desert
+  finish
+endif
 
 " ============================================================================
 " Plugin config
@@ -556,7 +546,7 @@ function! s:setup_lsp() abort
   nmap <silent> <buffer> <LocalLeader>w :<C-u>CtrlPLspWorkspaceSymbol<CR>
 endfunction
 
-augroup vimrc-lsp-setup
+augroup vimrc_lsp_setup
   au!
   " call s:on_lsp_buffer_enabled only for languages that has the server registered.
   autocmd User lsp_buffer_enabled call s:setup_lsp()
