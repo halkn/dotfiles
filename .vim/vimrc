@@ -376,7 +376,7 @@ augroup END
 " terminal
 augroup vimrc_terminal_setting
   autocmd!
-  autocmd TerminalOpen * if &buftype == 'terminal' | setlocal signcolumn=no | endif
+  autocmd TerminalOpen * if &buftype == 'terminal' | setlocal signcolumn=no nolist| endif
 augroup END
 
 " ============================================================================
@@ -632,7 +632,7 @@ augroup END
 
 " preview-markdown.vim
 let g:preview_markdown_vertical = 1
-let g:preview_markdown_parser = 'mdcat'
+let g:preview_markdown_parser = 'glow'
 let g:preview_markdown_auto_update = 1
 augroup vimrc_preview_markdown
   au!
