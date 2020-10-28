@@ -354,11 +354,22 @@ bindkey '^R' fh
 
 # frm - Remove a file.
 frm() {
-  local file=$(\ls -1 | fzf -m --preview 'ls -l {}' --preview-window up:1)
-  while read line; do
-    rm $line
+  local -A opthash
+  zparseopts -D -A opthash -- d r
+  local file fcmd ropt 
+
+  if [[ -n "${opthash[(i)-d]}" ]]; then
+    fcmd=$(fd --hidden --type d)
+  elif [[ -n "${opthash[(i)-r]}" ]]; then
+    fcmd=$(fd --hidden)
+  else
+    fcmd=$(fd --hidden -d 1)
+  fi
+
+  file=$(echo "$fcmd" | fzf -m --preview 'ls -l {}' --preview-window up:1)
+  while read -r line; do
+    rm -frv $line
   done < <(echo "$file")
-  echo "!! Print list directory contents after remove files !!" ; ls -la
 }
 
 # fkill - kill processes - list only the ones you can kill.
