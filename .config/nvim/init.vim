@@ -294,7 +294,7 @@ augroup END
 " ============================================================================
 call plug#begin(stdpath('data') . '/plugged')
 " global
-Plug 'sainnhe/sonokai'
+Plug 'chuling/vim-equinusocio-material'
 Plug 'itchyny/lightline.vim'
 Plug 'itchyny/vim-gitbranch'
 Plug 'junegunn/fzf'
@@ -313,6 +313,7 @@ Plug 'hrsh7th/vim-vsnip-integ'
 " filetype
 Plug 'kana/vim-altr', { 'for': [ 'go', 'vim' ] }
 " extension
+Plug 'glidenote/memolist.vim', { 'on': ['MemoNew', 'MemoList', 'MemoGrep'] }
 Plug 'simeji/winresizer', { 'on': 'WinResizerStartResize' }
 Plug 't9md/vim-quickhl', { 'on': '<Plug>(quickhl-manual-this)' }
 Plug 'thinca/vim-qfreplace', { 'on': 'Qfreplace' }
@@ -325,21 +326,20 @@ Plug 'nvim-lua/completion-nvim'
 Plug 'nvim-lua/diagnostic-nvim'
 Plug 'RishabhRD/popfix'
 Plug 'RishabhRD/nvim-lsputils'
-Plug 'npxbr/glow.nvim'
 call plug#end()
 
 " ============================================================================
 " Plugin Config
 " ============================================================================
 " global ---------------------------------------------------------------------
-let g:sonokai_menu_selection_background = 'blue'
-let g:sonokai_diagnostic_line_highlight = 1
-let g:sonokai_better_performance = 1
-colorscheme sonokai
+" vim-equinusocio-material
+let g:equinusocio_material_style = 'darker'
+let g:equinusocio_material_bracket_improved = 1
+colorscheme equinusocio_material
 
 " lightline.vim
 let g:lightline = {
-\ 'colorscheme': 'sonokai',
+\ 'colorscheme': 'equinusocio_material',
 \ 'tabline': {
 \   'left':  [ ['tabs'] ],
 \   'right': [ ['close'], ['cwd', 'gitbranch'] ],
@@ -469,6 +469,17 @@ augroup vimrc_altr
 augroup END
 
 " extension ------------------------------------------------------------------
+
+" memolist.vim
+let g:memolist_delimiter_yaml_start = '---'
+let g:memolist_delimiter_yaml_end  = '---'
+let g:memolist_memo_suffix = 'md'
+let g:memolist_template_dir_path = expand(fnamemodify($MYVIMRC, ":h") . '/template/memotemplates')
+let g:memolist_ex_cmd = 'CtrlP'
+nnoremap <Leader>mn :<C-u>MemoNew<CR>
+nnoremap <Leader>mg :<C-u>MemoGrep<CR>
+nnoremap <Leader>ml :<C-u>MemoList<CR>
+
 " caw.vim
 nmap <Leader>c <Plug>(caw:hatpos:toggle)
 vmap <Leader>c <Plug>(caw:hatpos:toggle)
@@ -485,8 +496,3 @@ xmap <Space>M <Plug>(quickhl-manual-reset)
 
 " lua ------------------------------------------------------------------------
 luafile ~/.config/nvim/init.lua
-
-" call sign_define("LspDiagnosticsErrorSign", {"text" : "✗", "texthl" : "LspDiagnosticsError"})
-" call sign_define("LspDiagnosticsWarningSign", {"text" : "!!", "texthl" : "LspDiagnosticsWarning"})
-" call sign_define("LspDiagnosticsInformationSign", {"text" : "●", "texthl" : "LspDiagnosticsInformation"})
-" call sign_define("LspDiagnosticsHintSign", {"text" : "▲", "texthl" : "LspDiagnosticsHint"})

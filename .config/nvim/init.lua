@@ -1,17 +1,15 @@
 -- ===========================================================================
 -- plugin config
 -- ===========================================================================
-
 -- completion-nvim
 vim.g.completion_enable_snippet = 'vim-vsnip'
 vim.g.completion_confirm_key = '<C-l>'
 vim.g.completion_sorting = 'none'
 
 -- diagnostic-nvim
-vim.g.diagnostic_enable_virtual_text = 0
+vim.g.diagnostic_enable_virtual_text = 1
 vim.g.diagnostic_sign_priority = 11
 vim.g.diagnostic_insert_delay =  1
-
 vim.call('sign_define', "LspDiagnosticsErrorSign", {text = "✗", texthl = "LspDiagnosticsError"})
 vim.call('sign_define', "LspDiagnosticsWarningSign", {text = "!!", texthl = "LspDiagnosticsWarning"})
 vim.call('sign_define', "LspDiagnosticsInformationSign", {text = "●", texthl = "LspDiagnosticsInformation"})
@@ -20,6 +18,7 @@ vim.call('sign_define', "LspDiagnosticsHintSign", {text = "▲", texthl = "LspDi
 -- nvim-lspconfig
 local nvim_lsp = require('nvim_lsp')
 local completion = require('completion')
+local diagnostics = require('diagnostic')
 
 local custom_attach = function(client)
   completion.on_attach({
@@ -28,18 +27,19 @@ local custom_attach = function(client)
     auto_change_source = 1,
     trigger_on_delete = 1,
   })
-  require'diagnostic'.on_attach(client)
+  diagnostics.on_attach(client)
 
   local mapper = function(mode, key, result)
     vim.fn.nvim_buf_set_keymap(0, mode, key, result, {noremap=true, silent=true})
   end
 
   mapper('n', 'gd', '<cmd>lua vim.lsp.buf.definition()<CR>')
-  mapper('n', 'gD', '<Cmd>tabe<CR><cmd>lua vim.lsp.buf.definition()<CR>')
+  mapper('n', 'gD', '<Cmd>vsplit<CR><cmd>lua vim.lsp.buf.definition()<CR>')
   mapper('n', '<c-]>', '<cmd>lua vim.lsp.buf.definition()<CR>')
   mapper('n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>')
   mapper('n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>')
   mapper('n', '<F2>', '<cmd>lua vim.lsp.buf.rename()<CR>')
+  mapper('n', '<LocalLeader>ca', '<cmd>lua vim.lsp.buf.code_action()<CR>')
   mapper('n', '<LocalLeader>s', '<cmd>lua vim.lsp.buf.document_symbol()<CR>')
   mapper('n', '<LocalLeader>w', '<cmd>lua vim.lsp.buf.workspace_symbol()<CR>')
   mapper('n', '<LocalLeader>f', '<cmd>lua vim.lsp.buf.formatting()<CR>')
@@ -98,8 +98,6 @@ nvim_lsp.jsonls.setup{
 }
 
 -- yaml
-local yamlshemas = {}
-yamlshemas["http://json.schemastore.org/cloudbuild"] = "/cloudbuild*.yaml"
 nvim_lsp.yamlls.setup{
   on_attach=custom_attach,
   settings = {
