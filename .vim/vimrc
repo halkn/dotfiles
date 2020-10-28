@@ -535,6 +535,7 @@ function! s:setup_lsp() abort
   nmap <silent> <buffer> K <Plug>(lsp-hover)
   nmap <silent> <buffer> <LocalLeader>k <Plug>(lsp-peek-definition)
   nmap <silent> <buffer> <F2> <Plug>(lsp-rename)
+  nmap <silent> <buffer> <LocalLeader>ca <plug>(lsp-code-action)
   nmap <silent> <buffer> <LocalLeader>d <plug>(lsp-document-diagnostics)
   nmap <silent> <buffer> <LocalLeader>f <plug>(lsp-document-format)
   nmap <silent> <buffer> <LocalLeader>s :<C-u>CtrlPLspDocumentSymbol<CR>
