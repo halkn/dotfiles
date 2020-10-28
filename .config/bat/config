@@ -1,5 +1,5 @@
 # Theme
---theme="base16"
+--theme="OneHalfDark"
 
 # Show line numbers, Git modifications and file header (but no grid)
 --style="numbers,changes,header"

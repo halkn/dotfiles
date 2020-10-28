@@ -1,3 +1,23 @@
+-- ===========================================================================
+-- plugin config
+-- ===========================================================================
+
+-- completion-nvim
+vim.g.completion_enable_snippet = 'vim-vsnip'
+vim.g.completion_confirm_key = '<C-l>'
+vim.g.completion_sorting = 'none'
+
+-- diagnostic-nvim
+vim.g.diagnostic_enable_virtual_text = 0
+vim.g.diagnostic_sign_priority = 11
+vim.g.diagnostic_insert_delay =  1
+
+vim.call('sign_define', "LspDiagnosticsErrorSign", {text = "✗", texthl = "LspDiagnosticsError"})
+vim.call('sign_define', "LspDiagnosticsWarningSign", {text = "!!", texthl = "LspDiagnosticsWarning"})
+vim.call('sign_define', "LspDiagnosticsInformationSign", {text = "●", texthl = "LspDiagnosticsInformation"})
+vim.call('sign_define', "LspDiagnosticsHintSign", {text = "▲", texthl = "LspDiagnosticsHint"})
+
+-- nvim-lspconfig
 local nvim_lsp = require('nvim_lsp')
 local completion = require('completion')
 
@@ -8,7 +28,7 @@ local custom_attach = function(client)
     auto_change_source = 1,
     trigger_on_delete = 1,
   })
-  -- require'diagnostic'.on_attach(client)
+  require'diagnostic'.on_attach(client)
 
   local mapper = function(mode, key, result)
     vim.fn.nvim_buf_set_keymap(0, mode, key, result, {noremap=true, silent=true})
@@ -27,26 +47,6 @@ local custom_attach = function(client)
 
   vim.cmd("setlocal omnifunc=v:lua.vim.lsp.omnifunc")
 end
-
-
--- do
---   local method = "textDocument/publishDiagnostics"
---   local default_callback = vim.lsp.callbacks[method]
---   vim.lsp.callbacks[method] = function(err, method, result, client_id)
---     default_callback(err, method, result, client_id)
---     if result and result.diagnostics then
---       for _, v in ipairs(result.diagnostics) do
---         v.uri = v.uri or result.uri
---         v.bufnr = vim.uri_to_bufnr(v.uri)
---         v.lnum = v.range.start.line + 1
---         v.col = v.range.start.character + 1
---         v.text = v.message
---       end
---       vim.lsp.util.set_qflist(result.diagnostics)
---       -- vim.lsp.util.set_loclist(result.diagnostics)
---     end
---   end
--- end
 
 -- go
 nvim_lsp.gopls.setup{

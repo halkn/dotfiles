@@ -99,9 +99,6 @@ set smartcase
 set incsearch
 set hlsearch
 
-" clipborad
-set clipboard=unnamedplus
-
 " Completion
 set completeopt=menuone,noinsert,noselect
 
@@ -110,7 +107,12 @@ set shortmess+=c
 set shortmess-=S
 
 " help
-set helplang=en
+set helplang=ja,en
+
+" clipborad
+if has('clipboard')
+  set clipboard=unnamedplus
+endif
 
 " undo
 if has("persistent_undo")
@@ -133,55 +135,6 @@ if has('nvim')
   set inccommand=split
   set pumblend=20
 endif
-
-" ============================================================================
-" Plugin
-" ============================================================================
-call plug#begin(stdpath('data') . '/plugged')
-" global
-Plug 'chuling/vim-equinusocio-material'
-" Plug '/Users/haruki/dev/github.com/halkn/vim-equinusocio-material'
-Plug 'halkn/tender.vim'
-Plug 'itchyny/lightline.vim'
-Plug 'mattn/vim-findroot'
-Plug 'cohama/lexima.vim'
-Plug 'tyru/columnskip.vim'
-Plug 'tyru/caw.vim'
-Plug 'machakann/vim-sandwich'
-Plug 'kana/vim-operator-user'
-Plug 'kana/vim-operator-replace'
-Plug 'junegunn/fzf'
-Plug 'junegunn/fzf.vim'
-" LSP
-" Plug 'neoclide/coc.nvim', {'branch': 'release'}
-" Plug 'prabirshrestha/vim-lsp'
-" Plug 'mattn/vim-lsp-settings'
-" Plug 'prabirshrestha/asyncomplete.vim'
-" Plug 'prabirshrestha/asyncomplete-lsp.vim'
-
-Plug 'neovim/nvim-lspconfig'
-Plug 'nvim-lua/completion-nvim'
-Plug 'hrsh7th/vim-vsnip'
-Plug 'hrsh7th/vim-vsnip-integ'
-" Develop
-Plug 'liuchengxu/vista.vim', { 'on': ['Vista!!', 'Vista'] }
-Plug 'skywind3000/asyncrun.vim', { 'on': 'AsyncRun' }
-Plug 'kana/vim-altr'
-" FileType
-Plug 'dhruvasagar/vim-table-mode', { 'for': 'markdown' }
-Plug 'iamcco/markdown-preview.nvim', 
-\ { 'do': { -> mkdp#util#install() }, 'for': ['markdown', 'vim-plug']}
-" Extension
-Plug 'mhinz/vim-signify'
-Plug 'glidenote/memolist.vim', { 'on': ['MemoNew', 'MemoList', 'MemoGrep'] }
-Plug 'simeji/winresizer', { 'on': 'WinResizerStartResize' }
-Plug 'voldikss/vim-floaterm', { 'on': ['FloatermToggle', 'FloatermNew'] }
-Plug 'tyru/capture.vim', { 'on': 'Capture' }
-Plug 'rhysd/git-messenger.vim', { 'on': '<Plug>(git-messenger)' }
-Plug 'thinca/vim-qfreplace', { 'on': 'Qfreplace' }
-Plug 't9md/vim-quickhl', { 'on': '<Plug>(quickhl-manual-this)' }
-Plug 'tweekmonster/startuptime.vim', {'on': 'StartupTime'}
-call plug#end()
 
 " ============================================================================
 " Mapping
@@ -227,10 +180,6 @@ nnoremap <S-tab> <c-w>W
 nnoremap x "_x
 nnoremap X "_X
 
-" Disable s operation
-nnoremap s <Nop>
-vnoremap s <Nop>
-
 " Indent in visual and select mode automatically re-selects.
 vnoremap > >gv
 vnoremap < <gv
@@ -241,10 +190,10 @@ inoremap <silent> <C-q> <Esc>:q<CR>
 tnoremap <silent> <C-q> <C-\><C-n>:q!<CR>
 
 " open termianl in vertial split,new tab,current winddow
-nnoremap <silent> <Leader>ts :<C-u>split <BAR> terminal<CR> i
-nnoremap <silent> <Leader>tv :<C-u>vsplit <BAR> terminal<CR> i
-nnoremap <silent> <Leader>tt :<C-u>tabnew <BAR> terminal<CR> i
-nnoremap <silent> <Leader>tw :<C-u>terminal<CR> i
+nnoremap <silent> <Leader>ts :<C-u>split term://$SHELL<CR>
+nnoremap <silent> <Leader>tv :<C-u>vsplit term://$SHELL<CR>
+nnoremap <silent> <Leader>tt :<C-u>tabnew term://$SHELL<CR>
+nnoremap <silent> <Leader>tw :<C-u>terminal<CR>
 
 " ESC in terminal-mode.
 tnoremap <silent> <Esc> <C-\><C-n>
@@ -327,6 +276,13 @@ augroup vimrc-ft-help
   autocmd FileType help nnoremap <buffer> <BS> <C-T>
 augroup END
 
+" terminal
+augroup vimrc_terminal_setting
+  autocmd!
+  autocmd TermOpen * setlocal signcolumn=no nolist
+  autocmd TermOpen * startinsert
+augroup END
+
 " yank hightlight
 augroup vimrc_LuaHighlight
   au!
@@ -334,44 +290,113 @@ augroup vimrc_LuaHighlight
 augroup END
 
 " ============================================================================
-" Plugin config
+" Plugin
 " ============================================================================
-" Global ---------------------------------------------------------------------
-let g:equinusocio_material_style = 'darker'
-let g:equinusocio_material_bracket_improved = 1
-colorscheme equinusocio_material
-hi PMenu guibg=#2f2f2f
-hi CocFloating guibg=#2f2f2f
+call plug#begin(stdpath('data') . '/plugged')
+" global
+Plug 'sainnhe/sonokai'
+Plug 'itchyny/lightline.vim'
+Plug 'itchyny/vim-gitbranch'
+Plug 'junegunn/fzf'
+Plug 'junegunn/fzf.vim'
+Plug 'machakann/vim-sandwich'
+Plug 'kana/vim-operator-user'
+Plug 'kana/vim-operator-replace'
+Plug 'hrsh7th/vim-eft'
+Plug 'tyru/columnskip.vim'
+Plug 'cohama/lexima.vim'
+" develop
+Plug 'mhinz/vim-signify'
+Plug 'skywind3000/asyncrun.vim', { 'on': 'AsyncRun' }
+Plug 'hrsh7th/vim-vsnip'
+Plug 'hrsh7th/vim-vsnip-integ'
+" filetype
+Plug 'kana/vim-altr', { 'for': [ 'go', 'vim' ] }
+" extension
+Plug 'simeji/winresizer', { 'on': 'WinResizerStartResize' }
+Plug 't9md/vim-quickhl', { 'on': '<Plug>(quickhl-manual-this)' }
+Plug 'thinca/vim-qfreplace', { 'on': 'Qfreplace' }
+Plug 'tweekmonster/startuptime.vim', { 'on': 'StartupTime' }
+Plug 'tyru/caw.vim', { 'on': '<Plug>(caw:hatpos:toggle)' }
+Plug 'tyru/capture.vim', { 'on': 'Capture' }
+" lua
+Plug 'neovim/nvim-lspconfig'
+Plug 'nvim-lua/completion-nvim'
+Plug 'nvim-lua/diagnostic-nvim'
+Plug 'RishabhRD/popfix'
+Plug 'RishabhRD/nvim-lsputils'
+Plug 'npxbr/glow.nvim'
+call plug#end()
 
-" lightline
+" ============================================================================
+" Plugin Config
+" ============================================================================
+" global ---------------------------------------------------------------------
+let g:sonokai_menu_selection_background = 'blue'
+let g:sonokai_diagnostic_line_highlight = 1
+let g:sonokai_better_performance = 1
+colorscheme sonokai
+
+" lightline.vim
 let g:lightline = {
-\ 'colorscheme': 'equinusocio_material',
+\ 'colorscheme': 'sonokai',
+\ 'tabline': {
+\   'left':  [ ['tabs'] ],
+\   'right': [ ['close'], ['cwd', 'gitbranch'] ],
+\ },
 \ 'active': {
 \   'left': [ [ 'mode', 'paste'],
-\             [ 'readonly', 'filename', 'modified' ], ['gitbranch'] ],
-\   'right': [ [ 'lineinfo', 'cocstatus' ],
+\             [ 'readonly', 'filename', 'modified' ] ],
+\   'right': [ [ 'lineinfo' ],
 \              [ 'percent' ],
 \              [ 'fileformat', 'fileencoding', 'filetype' ] ]
 \ },
 \ 'component_function': {
-\   'cocstatus': 'coc#status',
-\   'gitbranch': 'LightlineGitBranch',
+\   'gitbranch': 'gitbranch#name',
+\   'cwd':       'getcwd'
 \ },
 \ }
 
-function! LightlineGitBranch() abort
-  return get(g:, 'coc_git_status', '')
+" fzf.vim
+let g:fzf_preview_window = 'right:60%'
+
+nnoremap <silent> <Leader>f :<C-u>Files<CR>
+nnoremap <silent> <Leader>b :<C-u>Buffers<CR>
+nnoremap <silent> <Leader>l :<C-u>BLines<CR>
+
+function! RipgrepFzf(query, fullscreen)
+  let command_fmt = 'rg --hidden --column --line-number --no-heading --color=always --smart-case -- %s || true'
+  let initial_command = printf(command_fmt, shellescape(a:query))
+  let reload_command = printf(command_fmt, '{q}')
+  let spec = {'options': ['--phony', '--query', a:query, '--bind', 'change:reload:'.reload_command, '--preview-window='.g:fzf_preview_window]}
+  call fzf#vim#grep(initial_command, 1, fzf#vim#with_preview(spec), a:fullscreen)
 endfunction
+command! -nargs=* -bang RG call RipgrepFzf(<q-args>, <bang>0)
+nnoremap <silent> <Leader>R :<C-u>RG<CR>
 
-" lexima.vim
-let g:lexima_ctrlh_as_backspace = 1
-
-" caw.vim
-nmap <Leader>c <Plug>(caw:hatpos:toggle)
-vmap <Leader>c <Plug>(caw:hatpos:toggle)
+augroup vim_fzf
+  au!
+  autocmd FileType fzf tnoremap <buffer> <silent> <Esc> <Esc>
+augroup END
 
 " vim-operator-replace
 map R <Plug>(operator-replace)
+
+" vim-eft
+nmap ; <Plug>(eft-repeat)
+xmap ; <Plug>(eft-repeat)
+nmap f <Plug>(eft-f)
+xmap f <Plug>(eft-f)
+omap f <Plug>(eft-f)
+nmap F <Plug>(eft-F)
+xmap F <Plug>(eft-F)
+omap F <Plug>(eft-F)
+nmap t <Plug>(eft-t)
+xmap t <Plug>(eft-t)
+omap t <Plug>(eft-t)
+nmap T <Plug>(eft-T)
+xmap T <Plug>(eft-T)
+omap T <Plug>(eft-T)
 
 " columnskip.vim
 nmap sj <Plug>(columnskip:nonblank:next)
@@ -381,72 +406,12 @@ nmap sk <Plug>(columnskip:nonblank:prev)
 omap sk <Plug>(columnskip:nonblank:prev)
 xmap sk <Plug>(columnskip:nonblank:prev)
 
-" fzf.vim --------------------------------------------------------------------
-let g:fzf_command_prefix = 'Fzf'
-let g:fzf_preview_window = 'right:60%'
-let g:fzf_layout = { 'window': { 'width': 0.95, 'height': 0.9 } }
+" lexima.vim
+let g:lexima_ctrlh_as_backspace = 1
 
-" files
-command! -bang -nargs=? -complete=dir FzfFiles
-\ call fzf#vim#files(<q-args>, fzf#vim#with_preview(), <bang>0)
-
-" ripgrep
-command! -bang -nargs=* FzfRg
-\ call fzf#vim#grep(
-\   'rg --column --line-number --no-heading --color=always --smart-case --hidden -- '.shellescape(<q-args>),
-\   1,
-\   fzf#vim#with_preview(), <bang>0
-\ )
-
-function! RipgrepFzf(query, fullscreen)
-  let command_fmt = 'rg --hidden --column --line-number --no-heading --color=always --smart-case -- %s || true'
-  let initial_command = printf(command_fmt, shellescape(a:query))
-  let reload_command = printf(command_fmt, '{q}')
-  let spec = {'options': ['--phony', '--query', a:query, '--bind', 'change:reload:'.reload_command]}
-  call fzf#vim#grep(initial_command, 1, fzf#vim#with_preview(spec), a:fullscreen)
-endfunction
-
-command! -nargs=* -bang FzfRG call RipgrepFzf(<q-args>, <bang>0)
-
-nnoremap <silent> <Leader><Leader> :<C-u>FzfHistory<CR>
-nnoremap <silent> <Leader>f        :<C-u>FzfFiles<CR>
-nnoremap <silent> <Leader>b        :<C-u>FzfBuffers<CR>
-nnoremap <silent> <Leader>l        :<C-u>FzfBLines<CR>
-nnoremap <silent> <Leader>R        :<C-u>FzfRG<CR>
-nnoremap <silent> <Leader>gs       :<C-u>FzfGStatus<CR>
-nnoremap <silent> <Leader>gl       :<C-u>FzfCommits<CR>
-inoremap <expr>   <c-x><c-k>       fzf#vim#complete#word({'left': '15%'})
-
-augroup vimrc_fzf
-  au!
-  autocmd FileType fzf tnoremap <buffer> <silent> <Esc> <Esc>
-augroup END
-
-" LSP ------------------------------------------------------------------------
-lua require('lsp_config')
-let g:completion_enable_snippet = 'vim-vsnip'
-let g:completion_confirm_key = "\<C-l>"
-
-" vim-vsnip
-imap <expr> <C-j>   vsnip#expandable()  ? '<Plug>(vsnip-expand)'         : '<C-j>'
-smap <expr> <C-j>   vsnip#expandable()  ? '<Plug>(vsnip-expand)'         : '<C-j>'
-imap <expr> <Tab>   vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : '<Tab>'
-smap <expr> <Tab>   vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : '<Tab>'
-imap <expr> <S-Tab> vsnip#jumpable(-1)  ? '<Plug>(vsnip-jump-prev)'      : '<S-Tab>'
-smap <expr> <S-Tab> vsnip#jumpable(-1)  ? '<Plug>(vsnip-jump-prev)'      : '<S-Tab>'
-let g:vsnip_snippet_dir = expand(fnamemodify($MYVIMRC, ":h") . '/snippets')
-
-" Develop --------------------------------------------------------------------
-" vista.vim
-let g:vista_default_executive = 'nvim_lsp'
-let g:vista_executive_for = {
-\ 'markdown': 'toc',
-\ }
-let g:vista_close_on_jump = 1
-let g:vista#renderer#enable_icon = 0
-let g:vista_fzf_preview = ['right:60%']
-let g:vista_echo_cursor_strategy = 'floating_win'
-nnoremap <silent> <leader>vt :<c-u>Vista!!<CR>
+" develop --------------------------------------------------------------------
+" vim-signify
+noremap <silent> <C-y> :SignifyToggle<CR>
 
 " asyncrun.vim
 let g:asyncrun_open = 8
@@ -483,9 +448,19 @@ augroup vimrc_asyncrun
   au!
   autocmd FileType go call s:asyncrun_go_setup()
   autocmd FileType sh nnoremap <silent> <buffer> <LocalLeader>r
-  \ :<C-u>AsyncRun -mode=term -pos=right -cols=80 -focus=0 sh $VIM_RELNAME<CR>
+  \ :<C-u>AsyncRun -mode=term -pos=right -cols=80 -focus=0 bash $VIM_RELNAME<CR>
 augroup END
 
+" vim-vsnip
+imap <expr> <C-l>   vsnip#expandable()  ? '<Plug>(vsnip-expand)'         : '<C-l>'
+smap <expr> <C-l>   vsnip#expandable()  ? '<Plug>(vsnip-expand)'         : '<C-l>'
+imap <expr> <Tab>   vsnip#jumpable(1)   ? '<Plug>(vsnip-jump-next)'      : '<Tab>'
+smap <expr> <Tab>   vsnip#jumpable(1)   ? '<Plug>(vsnip-jump-next)'      : '<Tab>'
+imap <expr> <S-Tab> vsnip#jumpable(-1)  ? '<Plug>(vsnip-jump-prev)'      : '<S-Tab>'
+smap <expr> <S-Tab> vsnip#jumpable(-1)  ? '<Plug>(vsnip-jump-prev)'      : '<S-Tab>'
+let g:vsnip_snippet_dir = expand(fnamemodify($MYVIMRC, ":h") . '/snippets')
+
+" filetype --------------------------------------------------------------------
 " vim-altr
 augroup vimrc_altr
   au!
@@ -493,66 +468,25 @@ augroup vimrc_altr
   autocmd FileType go,vim,help nmap <buffer> <LocalLeader>b <Plug>(altr-back)
 augroup END
 
-" ----------------------------------------------------------------------------
-" FileType
-" ----------------------------------------------------------------------------
-" vim-table-mode
-let g:table_mode_corner = '|'
-let g:table_mode_map_prefix = '<LocalLeader>'
-
-" markdown-preview.nvim
-augroup vimrc_markdown_preview.nvim
-  au!
-  autocmd FileType markdown nnoremap <buffer> <silent> <LocalLeader>p :<C-u>MarkdownPreview<CR>
-augroup END
-
-" ----------------------------------------------------------------------------
-" Extention
-" ----------------------------------------------------------------------------
-" memolist.vim
-let g:memolist_delimiter_yaml_start = '---'
-let g:memolist_delimiter_yaml_end  = '---'
-let g:memolist_memo_suffix = 'md'
-let g:memolist_template_dir_path = expand(fnamemodify($MYVIMRC, ":h") . '/template/memotemplates')
-let g:memolist_ex_cmd = 'FzfFiles'
-nnoremap <Leader>mn :<C-u>MemoNew<CR>
-nnoremap <Leader>mg :<C-u>MemoGrep<CR>
-nnoremap <Leader>ml :<C-u>MemoList<CR>
+" extension ------------------------------------------------------------------
+" caw.vim
+nmap <Leader>c <Plug>(caw:hatpos:toggle)
+vmap <Leader>c <Plug>(caw:hatpos:toggle)
 
 " winresizer
 let g:winresizer_start_key = '<C-w>r'
 nnoremap <silent> <C-w>r :WinResizerStartResize<CR>
-
-" vim-signify
-noremap <silent> <C-y> :SignifyToggle<CR>
-noremap <silent> <Leader>gd :SignifyDiff<CR>
-
-" vim-floaterm
-let g:floaterm_autoclose = 2
-let g:floaterm_width = 0.9
-let g:floaterm_height = 0.9
-nnoremap <silent> <F7>  :FloatermNew<CR>
-tnoremap <silent> <F7>  <C-\><C-n>:FloatermNew<CR>
-nnoremap <silent> <F8>  :FloatermPrev<CR>
-tnoremap <silent> <F8>  <C-\><C-n>:FloatermPrev<CR>
-nnoremap <silent> <F9>  :FloatermNext<CR>
-tnoremap <silent> <F9>  <C-\><C-n>:FloatermNext<CR>
-nnoremap <silent> <C-t> :FloatermToggle<CR>
-tnoremap <silent> <C-t> <C-\><C-n>:FloatermToggle<CR>
-" 
-" git-messenger.vim
-nmap <Leader>gm <Plug>(git-messenger)
-function! s:setup_git_messenger_popup() abort
-  nmap <buffer> <CR> o
-  nmap <buffer> <BS> O
-endfunction
-augroup vimrc_git_messenger
-  au!
-  autocmd FileType gitmessengerpopup call s:setup_git_messenger_popup()
-augroup END
 
 " vim-quickhl
 nmap <Space>m <Plug>(quickhl-manual-this)
 xmap <Space>m <Plug>(quickhl-manual-this)
 nmap <Space>M <Plug>(quickhl-manual-reset)
 xmap <Space>M <Plug>(quickhl-manual-reset)
+
+" lua ------------------------------------------------------------------------
+luafile ~/.config/nvim/init.lua
+
+" call sign_define("LspDiagnosticsErrorSign", {"text" : "✗", "texthl" : "LspDiagnosticsError"})
+" call sign_define("LspDiagnosticsWarningSign", {"text" : "!!", "texthl" : "LspDiagnosticsWarning"})
+" call sign_define("LspDiagnosticsInformationSign", {"text" : "●", "texthl" : "LspDiagnosticsInformation"})
+" call sign_define("LspDiagnosticsHintSign", {"text" : "▲", "texthl" : "LspDiagnosticsHint"})
