@@ -342,6 +342,7 @@ function! PackInit() abort
   call minpac#add('ctrlpvim/ctrlp.vim')
   call minpac#add('mattn/ctrlp-matchfuzzy')
   call minpac#add('mattn/ctrlp-lsp')
+  call minpac#add('mattn/vim-findroot')
   " LSP
   call minpac#add('prabirshrestha/vim-lsp')
   call minpac#add('mattn/vim-lsp-settings')
@@ -350,16 +351,14 @@ function! PackInit() abort
   call minpac#add('hrsh7th/vim-vsnip')
   call minpac#add('hrsh7th/vim-vsnip-integ')
   call minpac#add('liuchengxu/vista.vim')
-  " Develop
-  call minpac#add('mattn/vim-findroot')
-  call minpac#add('skywind3000/asyncrun.vim')
-  call minpac#add('kana/vim-altr')
   " FileType
+  call minpac#add('kana/vim-altr')
   call minpac#add('dhruvasagar/vim-table-mode')
   call minpac#add('previm/previm')
   call minpac#add('skanehira/preview-markdown.vim')
   call minpac#add('bfrg/vim-qf-preview')
   " Extension
+  call minpac#add('skywind3000/asyncrun.vim')
   call minpac#add('glidenote/memolist.vim')
   call minpac#add('simeji/winresizer')
   call minpac#add('mhinz/vim-signify')
@@ -576,45 +575,9 @@ let g:vista_echo_cursor_strategy = 'floating_win'
 nnoremap <silent> <leader>vt :<c-u>Vista!!<CR>
 nnoremap <silent> <leader>vf :<c-u>Vista finder<CR>
 
-" Develop --------------------------------------------------------------------
-" asyncrun.vim
-let g:asyncrun_open = 8
-command! -nargs=* Grep AsyncRun -program=grep -strip <f-args>
-
-function s:asyncrun_gotest_func() abort
-  let l:test = search('func \(Test\|Example\)', "bcnW")
-
-  if l:test == 0
-    echo "[test] no test found immediate to cursor"
-    return
-  end
-
-  let l:line = getline(test)
-  let l:name = split(split(line, " ")[1], "(")[0]
-  execute('AsyncRun -mode=term -pos=right -cols=80 -focus=0 -cwd=$(VIM_FILEDIR) go test -v -run ' . l:name)
-endfunction
-
-function s:asyncrun_go_setup() abort
-  command! -buffer -nargs=* -complete=dir GoRun
-  \ AsyncRun -mode=term -pos=right -cols=80 -focus=0  go run $VIM_RELNAME
-  command! -buffer -nargs=* -complete=dir GoTest
-  \ AsyncRun -mode=term -pos=right -cols=80 -focus=0 go test <f-args>
-  command! -buffer -nargs=0 GoTestPackage GoTest ./$VIM_RELDIR
-  command! -buffer -nargs=0 GoTestFunc call s:asyncrun_gotest_func()
-
-  nnoremap <silent> <buffer> <LocalLeader>r :<C-u>GoRun<CR>
-  nnoremap <silent> <buffer> <LocalLeader>t :<C-u>GoTest ./...<CR>
-  nnoremap <silent> <buffer> <LocalLeader>p :<C-u>GoTestPackage<CR>
-  nnoremap <silent> <buffer> <LocalLeader>f :<C-u>GoTestFunc<CR>
-endfunction
-
-augroup vimrc_asyncrun
-  au!
-  autocmd FileType go call s:asyncrun_go_setup()
-  autocmd FileType sh nnoremap <silent> <buffer> <LocalLeader>r
-  \ :<C-u>AsyncRun -mode=term -pos=right -cols=80 -focus=0 bash $VIM_RELNAME<CR>
-augroup END
-
+" ----------------------------------------------------------------------------
+" FileType
+" ----------------------------------------------------------------------------
 " vim-altr
 augroup vimrc_altr
   au!
@@ -622,9 +585,6 @@ augroup vimrc_altr
   autocmd FileType go,vim,help nmap <buffer> <LocalLeader>b <Plug>(altr-back)
 augroup END
 
-" ----------------------------------------------------------------------------
-" FileType
-" ----------------------------------------------------------------------------
 " vim-table-mode
 let g:table_mode_corner = '|'
 let g:table_mode_map_prefix = '<LocalLeader>'
@@ -664,6 +624,44 @@ augroup END
 " ----------------------------------------------------------------------------
 " Extention
 " ----------------------------------------------------------------------------
+" asyncrun.vim
+let g:asyncrun_open = 8
+command! -nargs=* Grep AsyncRun -program=grep -strip <f-args>
+
+function s:asyncrun_gotest_func() abort
+  let l:test = search('func \(Test\|Example\)', "bcnW")
+
+  if l:test == 0
+    echo "[test] no test found immediate to cursor"
+    return
+  end
+
+  let l:line = getline(test)
+  let l:name = split(split(line, " ")[1], "(")[0]
+  execute('AsyncRun -mode=term -pos=right -cols=80 -focus=0 -cwd=$(VIM_FILEDIR) go test -v -run ' . l:name)
+endfunction
+
+function s:asyncrun_go_setup() abort
+  command! -buffer -nargs=* -complete=dir GoRun
+  \ AsyncRun -mode=term -pos=right -cols=80 -focus=0  go run $VIM_RELNAME
+  command! -buffer -nargs=* -complete=dir GoTest
+  \ AsyncRun -mode=term -pos=right -cols=80 -focus=0 go test <f-args>
+  command! -buffer -nargs=0 GoTestPackage GoTest ./$VIM_RELDIR
+  command! -buffer -nargs=0 GoTestFunc call s:asyncrun_gotest_func()
+
+  nnoremap <silent> <buffer> <LocalLeader>r :<C-u>GoRun<CR>
+  nnoremap <silent> <buffer> <LocalLeader>t :<C-u>GoTest ./...<CR>
+  nnoremap <silent> <buffer> <LocalLeader>p :<C-u>GoTestPackage<CR>
+  nnoremap <silent> <buffer> <LocalLeader>f :<C-u>GoTestFunc<CR>
+endfunction
+
+augroup vimrc_asyncrun
+  au!
+  autocmd FileType go call s:asyncrun_go_setup()
+  autocmd FileType sh nnoremap <silent> <buffer> <LocalLeader>r
+  \ :<C-u>AsyncRun -mode=term -pos=right -cols=80 -focus=0 bash $VIM_RELNAME<CR>
+augroup END
+
 " memolist.vim
 let g:memolist_delimiter_yaml_start = '---'
 let g:memolist_delimiter_yaml_end  = '---'
