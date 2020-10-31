@@ -288,10 +288,10 @@ nnoremap <script> <silent> W :call ToggleLocationList()<CR>
 " ============================================================================
 " autocmd
 " ============================================================================
-" open help in new tab.
-function! s:helptab()
+" open help in vertical window.
+function! s:helpvert()
   if &buftype == 'help'
-    wincmd T
+    wincmd L
   endif
 endfunction
 augroup vimrc_filetype
@@ -309,7 +309,7 @@ augroup vimrc_filetype
   autocmd FileType qf setlocal signcolumn=no
   autocmd Filetype qf nnoremap <silent> <buffer> p <CR>zz<C-w>p
   autocmd Filetype qf nnoremap <silent> <buffer> q <C-w>c
-  autocmd BufEnter *.txt,*.jax call s:helptab()
+  autocmd BufEnter *.txt,*.jax call s:helpvert()
   autocmd FileType help setlocal signcolumn=no
   autocmd FileType help nnoremap <silent> <buffer> q <C-w>c
   autocmd FileType help nnoremap <buffer> <CR> <C-]>
