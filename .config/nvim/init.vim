@@ -243,8 +243,13 @@ nnoremap <script> <silent> W :call ToggleLocationList()<CR>
 " ============================================================================
 " autocmd
 " ============================================================================
-" indent by FileType
-augroup vimrc-ft-indent
+" open help in vertical window.
+function! s:helpvert()
+  if &buftype == 'help'
+    wincmd L
+  endif
+endfunction
+augroup vimrc_au
   autocmd!
   autocmd FileType gitcommit setlocal spell spelllang=cjk,en
   autocmd FileType git setlocal nofoldenable
@@ -256,37 +261,17 @@ augroup vimrc-ft-indent
   autocmd FileType zsh setlocal tabstop=2 shiftwidth=2
   autocmd FileType yaml setlocal tabstop=2 shiftwidth=2
   autocmd FileType json setlocal tabstop=2 shiftwidth=2
-augroup END
-
-" quickfix
-augroup vimrc-ft-quickfix
-  autocmd!
   autocmd FileType qf setlocal signcolumn=no
   autocmd Filetype qf nnoremap <silent> <buffer> p <CR>zz<C-w>p
   autocmd Filetype qf nnoremap <silent> <buffer> q <C-w>c
-augroup END
-
-" vim help
-augroup vimrc-ft-help
-  autocmd!
-  autocmd FileType help wincmd L
+  autocmd BufEnter *.txt,*.jax call s:helpvert()
   autocmd FileType help setlocal signcolumn=no
   autocmd FileType help nnoremap <silent> <buffer> q <C-w>c
   autocmd FileType help nnoremap <buffer> <CR> <C-]>
   autocmd FileType help nnoremap <buffer> <BS> <C-T>
-augroup END
-
-" terminal
-augroup vimrc_terminal_setting
-  autocmd!
   autocmd TermOpen * setlocal signcolumn=no nolist
   autocmd TermOpen * startinsert
-augroup END
-
-" yank hightlight
-augroup vimrc_LuaHighlight
-  au!
-  au TextYankPost * silent! lua return (not vim.v.event.visual) and require'vim.highlight'.on_yank()
+  autocmd TextYankPost * silent! lua return (not vim.v.event.visual) and require'vim.highlight'.on_yank()
 augroup END
 
 " ============================================================================
@@ -475,7 +460,7 @@ let g:memolist_delimiter_yaml_start = '---'
 let g:memolist_delimiter_yaml_end  = '---'
 let g:memolist_memo_suffix = 'md'
 let g:memolist_template_dir_path = expand(fnamemodify($MYVIMRC, ":h") . '/template/memotemplates')
-let g:memolist_ex_cmd = 'CtrlP'
+let g:memolist_ex_cmd = 'Files'
 nnoremap <Leader>mn :<C-u>MemoNew<CR>
 nnoremap <Leader>mg :<C-u>MemoGrep<CR>
 nnoremap <Leader>ml :<C-u>MemoList<CR>
