@@ -3584,7 +3584,7 @@
 	<key>HapticFeedbackForEsc</key>
 	<false/>
 	<key>Hotkey</key>
-	<true/>
+	<false/>
 	<key>HotkeyChar</key>
 	<integer>32</integer>
 	<key>HotkeyCode</key>
@@ -3593,12 +3593,18 @@
 	<true/>
 	<key>HotkeyModifiers</key>
 	<integer>524576</integer>
+	<key>ILMediaBrowserImageSplitViewPosition</key>
+	<integer>140</integer>
+	<key>ILMediaBrowserMediaType</key>
+	<integer>1</integer>
 	<key>LoadPrefsFromCustomFolder</key>
 	<true/>
 	<key>NSNavLastRootDirectory</key>
 	<string>~/Downloads</string>
 	<key>NSNavPanelExpandedSizeForOpenMode</key>
 	<string>{799, 448}</string>
+	<key>NSNavPanelMediaBrowserTypeForOpenModeKey</key>
+	<integer>1</integer>
 	<key>NSQuotedKeystrokeBinding</key>
 	<string></string>
 	<key>NSRepeatCountBinding</key>
@@ -3641,7 +3647,7 @@
 		<integer>1</integer>
 	</dict>
 	<key>NSWindow Frame NSNavPanelAutosaveName</key>
-	<string>320 321 799 448 0 0 1440 877 </string>
+	<string>353 209 799 448 0 0 1440 877 </string>
 	<key>NSWindow Frame ProfilesPanel</key>
 	<string>205 479 735 382 0 0 1440 900 </string>
 	<key>NSWindow Frame SharedPreferences</key>
@@ -3649,7 +3655,7 @@
 	<key>NSWindow Frame UKCrashReporter</key>
 	<string>99 293 592 584 0 0 1440 877 </string>
 	<key>NSWindow Frame iTerm Window 0</key>
-	<string>0 0 1440 900 0 0 1440 900 </string>
+	<string>155 93 650 504 0 0 1440 877 </string>
 	<key>NeverWarnAboutShortLivedSessions_6E66D705-D430-467E-AAC0-05DB16ACC6F3</key>
 	<true/>
 	<key>NeverWarnAboutShortLivedSessions_6E66D705-D430-467E-AAC0-05DB16ACC6F3_selection</key>
@@ -3886,8 +3892,8 @@
 				<key>Red Component</key>
 				<real>0.12941177189350128</real>
 			</dict>
-			<key>Background Image Location</key>
-			<string></string>
+			<key>Background Image Mode</key>
+			<integer>0</integer>
 			<key>Badge Color</key>
 			<dict>
 				<key>Alpha Component</key>
@@ -3901,12 +3907,16 @@
 				<key>Red Component</key>
 				<real>1</real>
 			</dict>
+			<key>Blend</key>
+			<real>0.082920223904639184</real>
 			<key>Blink Allowed</key>
 			<false/>
 			<key>Blinking Cursor</key>
 			<false/>
 			<key>Blur</key>
 			<false/>
+			<key>Blur Radius</key>
+			<real>13.124754124365481</real>
 			<key>Bold Color</key>
 			<dict>
 				<key>Alpha Component</key>
@@ -4310,13 +4320,15 @@
 			<key>Name</key>
 			<string>Default</string>
 			<key>Non Ascii Font</key>
-			<string>Cica-Regular 16</string>
+			<string>HackGenNerdConsole-Regular 16</string>
 			<key>Non-ASCII Anti Aliased</key>
 			<true/>
 			<key>Non-ASCII Ligatures</key>
 			<false/>
 			<key>Normal Font</key>
-			<string>Sarasa-Mono-J-Regular 14</string>
+			<string>Sarasa-Mono-J-Regular 16</string>
+			<key>Only The Default BG Color Uses Transparency</key>
+			<false/>
 			<key>Option Key Sends</key>
 			<integer>2</integer>
 			<key>Prompt Before Closing 2</key>
@@ -4386,7 +4398,9 @@
 			<key>Thin Strokes</key>
 			<integer>4</integer>
 			<key>Transparency</key>
-			<real>0.0731321383248731</real>
+			<real>0.2308891180203046</real>
+			<key>Unicode Normalization</key>
+			<integer>0</integer>
 			<key>Unlimited Scrollback</key>
 			<false/>
 			<key>Use Bold Font</key>
@@ -4396,7 +4410,7 @@
 			<key>Use Italic Font</key>
 			<true/>
 			<key>Use Non-ASCII Font</key>
-			<false/>
+			<true/>
 			<key>Vertical Spacing</key>
 			<real>1</real>
 			<key>Visual Bell</key>
@@ -4416,10 +4430,16 @@
 	</array>
 	<key>NoSyncBFPRecents</key>
 	<array>
-		<string>Sarasa Mono J</string>
 		<string>HackGenNerd Console</string>
-		<string>HackGen Console for Powerline</string>
+		<string>Sarasa Mono J</string>
 	</array>
+	<key>NoSyncFrame_SessionsPreferences</key>
+	<dict>
+		<key>screenFrame</key>
+		<string>{{0, 0}, {1440, 900}}</string>
+		<key>topLeft</key>
+		<string>{417, 804}</string>
+	</dict>
 	<key>NoSyncFrame_SharedPreferences</key>
 	<dict>
 		<key>screenFrame</key>
@@ -4434,7 +4454,7 @@
 	<key>NoSyncLastTipTime</key>
 	<real>581859893.80546701</real>
 	<key>NoSyncLaunchExperienceControllerRunCount</key>
-	<integer>89</integer>
+	<integer>93</integer>
 	<key>NoSyncNextAnnoyanceTime</key>
 	<real>586570907.64444005</real>
 	<key>NoSyncOnboardingWindowHasBeenShown</key>
