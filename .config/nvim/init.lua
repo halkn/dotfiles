@@ -50,6 +50,15 @@ end
 
 -- go
 nvim_lsp.gopls.setup{
+  capabilities = {
+    textDocument = {
+      completion = {
+        completionItem = {
+          snippetSupport = true
+        }
+      }
+    }
+  },
   init_options = {
     usePlaceholders=true;
     linkTarget="pkg.go.dev";
@@ -89,6 +98,15 @@ nvim_lsp.bashls.setup{
 
 -- vim
 nvim_lsp.vimls.setup{
+  capabilities = {
+    textDocument = {
+      completion = {
+        completionItem = {
+          snippetSupport = true
+        }
+      }
+    }
+  },
   on_attach=custom_attach
 }
 
