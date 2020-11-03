@@ -441,6 +441,20 @@ gmod() {
   echo "!!!!! Change  GO111MODULE is" $GO111MODULE "!!!!!"
 }
 
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# vim
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+vpr() {
+  local dir base selected
+  base="${XDG_DATA_HOME}/vim/pack/minpac/"
+  dir=$(fd --type d --max-depth=2 . "${base}" | sed "s@${base}@@")
+
+  selected=$(echo "${dir}" | fzf --height=100% --preview="glow ${base}{}")
+  if [ -n "${selected}" ]; then
+    glow -p "${base}${selected}"
+  fi
+}
+
 #####################################################################
 # Load local script
 #####################################################################
