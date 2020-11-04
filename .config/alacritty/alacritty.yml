@@ -43,3 +43,11 @@ colors:
     magenta: '#d3b987'
     cyan:    '#73cef4'
     white:   '#feffff'
+
+  cursor:
+   text: '#4c4c4c'
+   cursor: '#ffc24b'
+
+cursor:
+  style: Block
+  thickness: 0.2
