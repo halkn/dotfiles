@@ -455,6 +455,25 @@ vpr() {
   fi
 }
 
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# lab
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+fli() {
+  local selected
+  selected=$(lab issue search |\
+      fzf \
+      --height=100% \
+      --preview="echo {1} | sed 's/#//' | xargs -I@ lab issue show @"\
+  )
+  if [ -n "${selected}"  ]; then
+    echo "${selected}" |\
+      awk '{print $1}' |\
+      sed 's/#//' |\
+      xargs -I@ lab issue show @ |\
+      bat --language markdown --paging always --style=plain
+  fi
+}
+
 #####################################################################
 # Load local script
 #####################################################################
