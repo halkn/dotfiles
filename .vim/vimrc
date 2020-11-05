@@ -526,19 +526,19 @@ let g:lsp_signs_hint = {'text': '▲'}
 function! s:setup_lsp() abort
   setlocal omnifunc=lsp#complete
   setlocal tagfunc=lsp#tagfunc
-  nmap <silent> <buffer> gd <Plug>(lsp-definition)
-  nmap <silent> <buffer> gD :<C-u>tab LspDefinition<CR>
-  nmap <silent> <buffer> gi <Plug>(lsp-implementation)
-  nmap <silent> <buffer> gy <Plug>(lsp-type-definition)
-  nmap <silent> <buffer> gr <Plug>(lsp-references)
-  nmap <silent> <buffer> K <Plug>(lsp-hover)
-  nmap <silent> <buffer> <LocalLeader>k <Plug>(lsp-peek-definition)
-  nmap <silent> <buffer> <F2> <Plug>(lsp-rename)
+  nmap <silent> <buffer> gd              <Plug>(lsp-definition)
+  nmap <silent> <buffer> gD              :<C-u>tab LspDefinition<CR>
+  nmap <silent> <buffer> gi              <Plug>(lsp-implementation)
+  nmap <silent> <buffer> gy              <Plug>(lsp-type-definition)
+  nmap <silent> <buffer> gr              <Plug>(lsp-references)
+  nmap <silent> <buffer> K               <Plug>(lsp-hover)
+  nmap <silent> <buffer> <F2>            <Plug>(lsp-rename)
+  nmap <silent> <buffer> <LocalLeader>k  <Plug>(lsp-peek-definition)
   nmap <silent> <buffer> <LocalLeader>ca <plug>(lsp-code-action)
-  nmap <silent> <buffer> <LocalLeader>d <plug>(lsp-document-diagnostics)
-  nmap <silent> <buffer> <LocalLeader>f <plug>(lsp-document-format)
-  nmap <silent> <buffer> <LocalLeader>s :<C-u>CtrlPLspDocumentSymbol<CR>
-  nmap <silent> <buffer> <LocalLeader>w :<C-u>CtrlPLspWorkspaceSymbol<CR>
+  nmap <silent> <buffer> <LocalLeader>d  <plug>(lsp-document-diagnostics)
+  nmap <silent> <buffer> <LocalLeader>m  <plug>(lsp-document-format)
+  nmap <silent> <buffer> <LocalLeader>s  :<C-u>CtrlPLspDocumentSymbol<CR>
+  nmap <silent> <buffer> <LocalLeader>w  :<C-u>CtrlPLspWorkspaceSymbol<CR>
 endfunction
 
 augroup vimrc_lsp_setup
