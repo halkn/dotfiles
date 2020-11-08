@@ -226,12 +226,12 @@ nnoremap <silent> <Leader>tw :<C-u>terminal ++curwin<CR>
 function s:ToggleTerminal()
   let l:bufferNum = bufnr('ToggleTerminal')
   if l:bufferNum == -1 || bufloaded(l:bufferNum) != 1
-    execute 'tab terminal ++close ++kill=term'
+    execute 'bel terminal ++close ++kill=term'
     file ToggleTerminal
   else
     let l:windowNum = bufwinnr(l:bufferNum)
     if l:windowNum == -1
-      execute 'tab sbuffer '.l:bufferNum
+      execute 'bel sbuffer '.l:bufferNum
     else
       execute l:windowNum.'wincmd w'
       hide

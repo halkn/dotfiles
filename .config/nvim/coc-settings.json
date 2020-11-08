@@ -9,20 +9,24 @@
   "signature.hideOnTextChange": true,
   "coc.preferences.bracketEnterImprove": false,
   "coc.preferences.extensionUpdateCheck": "never",
-  "coc.preferences.formatOnSaveFiletypes": [ "go", "sh"],
+  "coc.preferences.formatOnSaveFiletypes": [ "go", "sh", "yaml"],
   "list.insertMappings": {
     "<C-v>": "action:vsplit",
     "<C-x>": "action:split",
     "<C-t>": "action:tabe",
     "<C-w>": "command:wincmd k"
   },
-  "list.autoResize": true,
   "list.source.files.command": "rg",
   "list.source.files.args": ["--hidden", "--files"],
   "list.source.grep.args": [
     "--hidden"
   ],
   "git.enableGutters": true,
+  "git.addedSign.hlGroup": "SignifySignAdd",
+  "git.changedSign.hlGroup": "SignifySignChange",
+  "git.removedSign.hlGroup": "SignifySignDelete",
+  "git.topRemovedSign.hlGroup": "SignifySignDelete",
+  "git.changeRemovedSign.hlGroup": "SignifySignDeleteFirstLine",
   "snippets.ultisnips.enable": false,
   "snippets.snipmate.enable": false,
   "translator.toLang": "ja",

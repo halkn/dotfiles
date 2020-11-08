@@ -42,7 +42,7 @@ local custom_attach = function(client)
   mapper('n', '<LocalLeader>ca', '<cmd>lua vim.lsp.buf.code_action()<CR>')
   mapper('n', '<LocalLeader>s', '<cmd>lua vim.lsp.buf.document_symbol()<CR>')
   mapper('n', '<LocalLeader>w', '<cmd>lua vim.lsp.buf.workspace_symbol()<CR>')
-  mapper('n', '<LocalLeader>f', '<cmd>lua vim.lsp.buf.formatting()<CR>')
+  mapper('n', '<LocalLeader>m', '<cmd>lua vim.lsp.buf.formatting()<CR>')
   mapper('n', '<LocalLeader>sl', '<cmd>lua vim.lsp.util.show_line_diagnostics()<CR>')
 
   vim.cmd("setlocal omnifunc=v:lua.vim.lsp.omnifunc")
