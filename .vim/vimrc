@@ -692,8 +692,8 @@ function s:gina_settings() abort
   call gina#custom#command#option('show','--show-signature')
 
   call gina#custom#mapping#nmap('/.*', 'q', ':<C-U>bd<CR>', s:gina_cmd_opt)
-  call gina#custom#mapping#nmap('status', '<C-^>', ':<C-u>Gina commit<CR>', s:gina_cmd_opt)
-  call gina#custom#mapping#nmap('commit', '<C-^>', ':<C-u>Gina status<CR>', s:gina_cmd_opt)
+  call gina#custom#mapping#nmap('status', '<C-c>', ':<C-u>Gina commit<CR>', s:gina_cmd_opt)
+  call gina#custom#mapping#nmap('commit', '<C-c>', ':<C-u>Gina status<CR>', s:gina_cmd_opt)
 
   call gina#custom#mapping#nmap(
   \ 'status',
