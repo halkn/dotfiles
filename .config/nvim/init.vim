@@ -35,6 +35,7 @@ let g:markdown_fenced_languages = [
 \  'json',
 \  'yaml',
 \  'lua',
+\  'vim',
 \]
 
 " ============================================================================
@@ -292,12 +293,12 @@ Plug 'tyru/columnskip.vim'
 Plug 'cohama/lexima.vim'
 " develop
 Plug 'mhinz/vim-signify'
-Plug 'skywind3000/asyncrun.vim', { 'on': 'AsyncRun' }
 Plug 'hrsh7th/vim-vsnip'
 Plug 'hrsh7th/vim-vsnip-integ'
 " filetype
 Plug 'kana/vim-altr', { 'for': [ 'go', 'vim' ] }
 " extension
+Plug 'skywind3000/asyncrun.vim', { 'on': 'AsyncRun' }
 Plug 'glidenote/memolist.vim', { 'on': ['MemoNew', 'MemoList', 'MemoGrep'] }
 Plug 'simeji/winresizer', { 'on': 'WinResizerStartResize' }
 Plug 't9md/vim-quickhl', { 'on': '<Plug>(quickhl-manual-this)' }
@@ -398,6 +399,24 @@ let g:lexima_ctrlh_as_backspace = 1
 " vim-signify
 noremap <silent> <C-y> :SignifyToggle<CR>
 
+" vim-vsnip
+imap <expr> <C-l>   vsnip#expandable()  ? '<Plug>(vsnip-expand)'         : '<C-l>'
+smap <expr> <C-l>   vsnip#expandable()  ? '<Plug>(vsnip-expand)'         : '<C-l>'
+imap <expr> <Tab>   vsnip#jumpable(1)   ? '<Plug>(vsnip-jump-next)'      : '<Tab>'
+smap <expr> <Tab>   vsnip#jumpable(1)   ? '<Plug>(vsnip-jump-next)'      : '<Tab>'
+imap <expr> <S-Tab> vsnip#jumpable(-1)  ? '<Plug>(vsnip-jump-prev)'      : '<S-Tab>'
+smap <expr> <S-Tab> vsnip#jumpable(-1)  ? '<Plug>(vsnip-jump-prev)'      : '<S-Tab>'
+let g:vsnip_snippet_dir = expand(fnamemodify($MYVIMRC, ":h") . '/snippets')
+
+" filetype --------------------------------------------------------------------
+" vim-altr
+augroup vimrc_altr
+  au!
+  autocmd FileType go,vim,help nmap <buffer> <LocalLeader>a <Plug>(altr-forward)
+  autocmd FileType go,vim,help nmap <buffer> <LocalLeader>b <Plug>(altr-back)
+augroup END
+
+" extension ------------------------------------------------------------------
 " asyncrun.vim
 let g:asyncrun_open = 8
 command! -nargs=* Grep AsyncRun -program=grep -strip <f-args>
@@ -435,25 +454,6 @@ augroup vimrc_asyncrun
   autocmd FileType sh nnoremap <silent> <buffer> <LocalLeader>r
   \ :<C-u>AsyncRun -mode=term -pos=right -cols=80 -focus=0 bash $VIM_RELNAME<CR>
 augroup END
-
-" vim-vsnip
-imap <expr> <C-l>   vsnip#expandable()  ? '<Plug>(vsnip-expand)'         : '<C-l>'
-smap <expr> <C-l>   vsnip#expandable()  ? '<Plug>(vsnip-expand)'         : '<C-l>'
-imap <expr> <Tab>   vsnip#jumpable(1)   ? '<Plug>(vsnip-jump-next)'      : '<Tab>'
-smap <expr> <Tab>   vsnip#jumpable(1)   ? '<Plug>(vsnip-jump-next)'      : '<Tab>'
-imap <expr> <S-Tab> vsnip#jumpable(-1)  ? '<Plug>(vsnip-jump-prev)'      : '<S-Tab>'
-smap <expr> <S-Tab> vsnip#jumpable(-1)  ? '<Plug>(vsnip-jump-prev)'      : '<S-Tab>'
-let g:vsnip_snippet_dir = expand(fnamemodify($MYVIMRC, ":h") . '/snippets')
-
-" filetype --------------------------------------------------------------------
-" vim-altr
-augroup vimrc_altr
-  au!
-  autocmd FileType go,vim,help nmap <buffer> <LocalLeader>a <Plug>(altr-forward)
-  autocmd FileType go,vim,help nmap <buffer> <LocalLeader>b <Plug>(altr-back)
-augroup END
-
-" extension ------------------------------------------------------------------
 
 " memolist.vim
 let g:memolist_delimiter_yaml_start = '---'
