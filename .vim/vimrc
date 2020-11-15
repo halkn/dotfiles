@@ -677,8 +677,9 @@ nnoremap <Leader>ml :<C-u>MemoList<CR>
 let g:winresizer_start_key = '<C-w>r'
 
 " vim-signify
-noremap <silent> <C-y> :SignifyToggle<CR>
-noremap <silent> <Leader>gd :SignifyDiff<CR>
+nnoremap <silent> <C-y> :SignifyToggle<CR>
+nnoremap <silent> <Leader>gd :SignifyDiff<CR>
+nnoremap <silent> <leader>gu :SignifyHunkUndo<cr>
 let g:signify_disable_by_default = 0
 
 " gina.vim
