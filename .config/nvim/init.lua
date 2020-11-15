@@ -1,4 +1,44 @@
 -- ===========================================================================
+-- util function
+-- ===========================================================================
+local nmap = function(key, result)
+  vim.fn.nvim_set_keymap('n', key, result, {noremap=true, silent=true})
+end
+
+-- ###########################################################################
+-- telescope.nvim
+-- ###########################################################################
+local actions = require('telescope.actions')
+require('telescope').setup {
+  defaults = {
+    layout_strategy = "flex",
+    generic_sorter = require'telescope.sorters'.get_fzy_sorter,
+    file_sorter = require'telescope.sorters'.get_fzy_sorter,
+    vimgrep_arguments = {
+      'rg',
+      '--color=never',
+      '--no-heading',
+      '--with-filename',
+      '--line-number',
+      '--column',
+      '--smart-case',
+      '--hidden'
+    },
+    mappings = {
+      i = {
+        ["<C-j>"] = actions.move_selection_next,
+        ["<C-k>"] = actions.move_selection_previous,
+        ["<esc>"] = actions.close,
+      },
+    },
+  }
+}
+nmap('<Leader>f', '<cmd>lua require"telescope.builtin".find_files{find_command = { "rg", "-i", "--hidden", "--files", "-g", "!.git" }}<CR>')
+nmap('<Leader>b', '<cmd>lua require"telescope.builtin".buffers{}<CR>')
+nmap('<Leader>R', '<cmd>lua require"telescope.builtin".live_grep{}<CR>')
+nmap('<Leader>q', '<cmd>lua require"telescope.builtin".quickfix{}<CR>')
+
+-- ===========================================================================
 -- plugin config
 -- ===========================================================================
 -- completion-nvim
@@ -6,19 +46,14 @@ vim.g.completion_enable_snippet = 'vim-vsnip'
 vim.g.completion_confirm_key = '<C-l>'
 vim.g.completion_sorting = 'none'
 
--- diagnostic-nvim
-vim.g.diagnostic_enable_virtual_text = 1
-vim.g.diagnostic_sign_priority = 11
-vim.g.diagnostic_insert_delay =  1
+-- nvim-lspconfig
 vim.call('sign_define', "LspDiagnosticsErrorSign", {text = "✗", texthl = "LspDiagnosticsError"})
 vim.call('sign_define', "LspDiagnosticsWarningSign", {text = "!!", texthl = "LspDiagnosticsWarning"})
 vim.call('sign_define', "LspDiagnosticsInformationSign", {text = "●", texthl = "LspDiagnosticsInformation"})
 vim.call('sign_define', "LspDiagnosticsHintSign", {text = "▲", texthl = "LspDiagnosticsHint"})
 
--- nvim-lspconfig
-local nvim_lsp = require('nvim_lsp')
+local nvim_lsp = require('lspconfig')
 local completion = require('completion')
-local diagnostics = require('diagnostic')
 
 local custom_attach = function(client)
   completion.on_attach({
@@ -27,7 +62,6 @@ local custom_attach = function(client)
     auto_change_source = 1,
     trigger_on_delete = 1,
   })
-  diagnostics.on_attach(client)
 
   local mapper = function(mode, key, result)
     vim.fn.nvim_buf_set_keymap(0, mode, key, result, {noremap=true, silent=true})
@@ -37,11 +71,11 @@ local custom_attach = function(client)
   mapper('n', 'gD', '<Cmd>vsplit<CR><cmd>lua vim.lsp.buf.definition()<CR>')
   mapper('n', '<c-]>', '<cmd>lua vim.lsp.buf.definition()<CR>')
   mapper('n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>')
-  mapper('n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>')
+  mapper('n', 'gr', '<cmd>lua require"telescope.builtin".lsp_references{}<CR>')
   mapper('n', '<F2>', '<cmd>lua vim.lsp.buf.rename()<CR>')
   mapper('n', '<LocalLeader>ca', '<cmd>lua vim.lsp.buf.code_action()<CR>')
-  mapper('n', '<LocalLeader>s', '<cmd>lua vim.lsp.buf.document_symbol()<CR>')
-  mapper('n', '<LocalLeader>w', '<cmd>lua vim.lsp.buf.workspace_symbol()<CR>')
+  mapper('n', '<LocalLeader>s', '<cmd>lua require"telescope.builtin".lsp_document_symbols{}<CR>')
+  mapper('n', '<LocalLeader>w', '<cmd>lua require"telescope.builtin".lsp_workspace_symbols{}<CR>')
   mapper('n', '<LocalLeader>m', '<cmd>lua vim.lsp.buf.formatting()<CR>')
   mapper('n', '<LocalLeader>sl', '<cmd>lua vim.lsp.util.show_line_diagnostics()<CR>')
 

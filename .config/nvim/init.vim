@@ -283,8 +283,6 @@ call plug#begin(stdpath('data') . '/plugged')
 Plug 'chuling/vim-equinusocio-material'
 Plug 'itchyny/lightline.vim'
 Plug 'itchyny/vim-gitbranch'
-Plug 'junegunn/fzf'
-Plug 'junegunn/fzf.vim'
 Plug 'machakann/vim-sandwich'
 Plug 'kana/vim-operator-user'
 Plug 'kana/vim-operator-replace'
@@ -307,9 +305,11 @@ Plug 'tweekmonster/startuptime.vim', { 'on': 'StartupTime' }
 Plug 'tyru/caw.vim', { 'on': '<Plug>(caw:hatpos:toggle)' }
 Plug 'tyru/capture.vim', { 'on': 'Capture' }
 " lua
+Plug 'nvim-lua/popup.nvim'
+Plug 'nvim-lua/plenary.nvim'
+Plug 'nvim-telescope/telescope.nvim'
 Plug 'neovim/nvim-lspconfig'
 Plug 'nvim-lua/completion-nvim'
-Plug 'nvim-lua/diagnostic-nvim'
 Plug 'RishabhRD/popfix'
 Plug 'RishabhRD/nvim-lsputils'
 call plug#end()
@@ -343,28 +343,6 @@ let g:lightline = {
 \ },
 \ }
 
-" fzf.vim
-let g:fzf_preview_window = 'right:60%'
-
-nnoremap <silent> <Leader>f :<C-u>Files<CR>
-nnoremap <silent> <Leader>b :<C-u>Buffers<CR>
-nnoremap <silent> <Leader>l :<C-u>BLines<CR>
-
-function! RipgrepFzf(query, fullscreen)
-  let command_fmt = 'rg --hidden --column --line-number --no-heading --color=always --smart-case -- %s || true'
-  let initial_command = printf(command_fmt, shellescape(a:query))
-  let reload_command = printf(command_fmt, '{q}')
-  let spec = {'options': ['--phony', '--query', a:query, '--bind', 'change:reload:'.reload_command, '--preview-window='.g:fzf_preview_window]}
-  call fzf#vim#grep(initial_command, 1, fzf#vim#with_preview(spec), a:fullscreen)
-endfunction
-command! -nargs=* -bang RG call RipgrepFzf(<q-args>, <bang>0)
-nnoremap <silent> <Leader>R :<C-u>RG<CR>
-
-augroup vim_fzf
-  au!
-  autocmd FileType fzf tnoremap <buffer> <silent> <Esc> <Esc>
-augroup END
-
 " vim-operator-replace
 map R <Plug>(operator-replace)
 
@@ -397,7 +375,10 @@ let g:lexima_ctrlh_as_backspace = 1
 
 " develop --------------------------------------------------------------------
 " vim-signify
-noremap <silent> <C-y> :SignifyToggle<CR>
+nnoremap <silent> <C-y>      :SignifyToggle<CR>
+nnoremap <silent> <leader>gd :SignifyDiff<cr>
+nnoremap <silent> <leader>gp :SignifyHunkDiff<cr>
+nnoremap <silent> <leader>gu :SignifyHunkUndo<cr>
 
 " vim-vsnip
 imap <expr> <C-l>   vsnip#expandable()  ? '<Plug>(vsnip-expand)'         : '<C-l>'
