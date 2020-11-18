@@ -37,6 +37,7 @@ nmap('<Leader>f', '<cmd>lua require"telescope.builtin".find_files{find_command =
 nmap('<Leader>b', '<cmd>lua require"telescope.builtin".buffers{}<CR>')
 nmap('<Leader>R', '<cmd>lua require"telescope.builtin".live_grep{}<CR>')
 nmap('<Leader>q', '<cmd>lua require"telescope.builtin".quickfix{}<CR>')
+nmap('<Leader>ml', '<cmd>lua require"telescope.builtin".find_files{cwd="~/memo"}<CR>')
 
 -- ===========================================================================
 -- plugin config
