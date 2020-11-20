@@ -1,51 +1,8 @@
--- ===========================================================================
--- util function
--- ===========================================================================
-local nmap = function(key, result)
-  vim.fn.nvim_set_keymap('n', key, result, {noremap=true, silent=true})
-end
+vim.cmd("packadd nvim-lspconfig")
+vim.cmd("packadd completion-nvim")
+vim.cmd("packadd nvim-lsputils")
+vim.cmd("packadd popfix")
 
--- ###########################################################################
--- telescope.nvim
--- ###########################################################################
-local actions = require('telescope.actions')
-require('telescope').setup {
-  defaults = {
-    layout_strategy = "flex",
-    generic_sorter = require'telescope.sorters'.get_fzy_sorter,
-    file_sorter = require'telescope.sorters'.get_fzy_sorter,
-    vimgrep_arguments = {
-      'rg',
-      '--color=never',
-      '--no-heading',
-      '--with-filename',
-      '--line-number',
-      '--column',
-      '--smart-case',
-      '--hidden'
-    },
-    mappings = {
-      i = {
-        ["<C-j>"] = actions.move_selection_next,
-        ["<C-k>"] = actions.move_selection_previous,
-        ["<esc>"] = actions.close,
-      },
-    },
-  }
-}
-nmap('<Leader>f', '<cmd>lua require"telescope.builtin".find_files{find_command = { "rg", "-i", "--hidden", "--files", "-g", "!.git" }}<CR>')
-nmap('<Leader>b', '<cmd>lua require"telescope.builtin".buffers{}<CR>')
-nmap('<Leader>R', '<cmd>lua require"telescope.builtin".live_grep{}<CR>')
-nmap('<Leader>q', '<cmd>lua require"telescope.builtin".quickfix{}<CR>')
-nmap('<Leader>ml', '<cmd>lua require"telescope.builtin".find_files{cwd="~/memo"}<CR>')
-
--- ===========================================================================
--- plugin config
--- ===========================================================================
--- completion-nvim
-vim.g.completion_enable_snippet = 'vim-vsnip'
-vim.g.completion_confirm_key = '<C-l>'
-vim.g.completion_sorting = 'none'
 
 -- nvim-lspconfig
 vim.call('sign_define', "LspDiagnosticsErrorSign", {text = "✗", texthl = "LspDiagnosticsError"})
@@ -203,3 +160,11 @@ vim.lsp.callbacks['textDocument/typeDefinition'] = require'lsputil.locations'.ty
 vim.lsp.callbacks['textDocument/implementation'] = require'lsputil.locations'.implementation_handler
 vim.lsp.callbacks['textDocument/documentSymbol'] = require'lsputil.symbols'.document_handler
 vim.lsp.callbacks['workspace/symbol'] = require'lsputil.symbols'.workspace_handler
+
+-- ###########################################################################
+-- completion-nvim
+-- ###########################################################################
+vim.g.completion_enable_snippet = 'vim-vsnip'
+vim.g.completion_confirm_key = '<C-l>'
+vim.g.completion_sorting = 'none'
+

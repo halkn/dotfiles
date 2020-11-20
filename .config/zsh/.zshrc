@@ -49,12 +49,12 @@ zinit wait lucid light-mode for \
   blockf atpull'zinit creinstall -q .' \
     zsh-users/zsh-completions
 
-zinit wait'0' lucid \
-  from'gh-r' ver'nightly' as'program' pick'nvim*/bin/nvim' \
-  atclone'echo "" > ._zinit/is_release' \
-  atpull'%atclone' \
-  run-atpull \
-  light-mode for @neovim/neovim
+# zinit wait'0' lucid \
+#   from'gh-r' ver'nightly' as'program' pick'nvim*/bin/nvim' \
+#   atclone'echo "" > ._zinit/is_release' \
+#   atpull'%atclone' \
+#   run-atpull \
+#   light-mode for @neovim/neovim
 
 # prompt
 zinit atload'!source ~/.config/zsh/.p10k.zsh' lucid nocd for \
