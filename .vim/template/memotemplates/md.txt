@@ -1,4 +1,1 @@
----
-title: {{_title_}}
-date: {{_date_}}
----
+# {{_title_}}
