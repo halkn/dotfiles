@@ -466,6 +466,7 @@ omap T <Plug>(eft-T)
 
 " ctrlp.vim
 let g:ctrlp_map = '<space>f'
+let g:ctrlp_user_command = 'fd --type file --follow --hidden -E .git -E .svn'
 let g:ctrlp_working_path_mode = 'rw'
 let g:ctrlp_match_window = 'bottom,order:btt,min:12,max:12,results:12'
 let g:ctrlp_reuse_window = 'help\|quickfix'
