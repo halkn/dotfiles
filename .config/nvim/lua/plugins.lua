@@ -267,21 +267,13 @@ local function init()
       require('lsp_config')
     end
   }
-  use {'nvim-lua/completion-nvim',opt = true}
+  -- use {'hrsh7th/nvim-compe', opt =true}
+  -- use {'nvim-lua/completion-nvim',opt = true}
   -- use {'RishabhRD/nvim-lsputils',opt = true, requires = 'RishabhRD/popfix'}
   use {
-    'hrsh7th/vim-vsnip',
-    requires = 'hrsh7th/vim-vsnip-integ',
-    event = 'InsertEnter *',
-    config = function()
-      vim.g.vsnip_snippet_dir = '~/.config/nvim/snippets'
-      vim.fn.nvim_set_keymap('i', '<C-l>', 'vsnip#expandable() ? "<Plug>(vsnip-expand)" : "<C-l>"', {noremap=false, expr=true})
-      vim.fn.nvim_set_keymap('s', '<C-l>', 'vsnip#expandable() ? "<Plug>(vsnip-expand)" : "<C-l>"', {noremap=false, expr=true})
-      vim.fn.nvim_set_keymap('i', '<Tab>', 'vsnip#jumpable(1) ? "<Plug>(vsnip-jump-next)" : "<Tab>"', {noremap=false, expr=true})
-      vim.fn.nvim_set_keymap('s', '<Tab>', 'vsnip#jumpable(1) ? "<Plug>(vsnip-jump-next)" : "<Tab>"', {noremap=false, expr=true})
-      vim.fn.nvim_set_keymap('i', '<S-Tab>', 'vsnip#jumpable(-1) ? "<Plug>(vsnip-jump-prev)" : "<S-Tab>"', {noremap=false, expr=true})
-      vim.fn.nvim_set_keymap('s', '<S-Tab>', 'vsnip#jumpable(-1) ? "<Plug>(vsnip-jump-prev)" : "<S-Tab>"', {noremap=false, expr=true})
-    end
+    'hrsh7th/nvim-compe',
+    opt = true,
+    requires = {{'hrsh7th/vim-vsnip'},{'hrsh7th/vim-vsnip-integ'}},
   }
 
 end

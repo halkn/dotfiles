@@ -1,3 +1,28 @@
+" nvim-compe
+" vim-vsnip
+" vim-vsnip-integ
+packadd nvim-compe
+packadd vim-vsnip
+packadd vim-vsnip-integ
+smap <expr> <C-l>   vsnip#expandable() ? '<Plug>(vsnip-expand)'    : '<C-l>'
+imap <expr> <Tab>   vsnip#jumpable(1)  ? '<Plug>(vsnip-jump-next)' : '<Tab>'
+smap <expr> <Tab>   vsnip#jumpable(1)  ? '<Plug>(vsnip-jump-next)' : '<Tab>'
+imap <expr> <S-Tab> vsnip#jumpable(-1) ? '<Plug>(vsnip-jump-prev)' : '<S-Tab>'
+smap <expr> <S-Tab> vsnip#jumpable(-1) ? '<Plug>(vsnip-jump-prev)' : '<S-Tab>'
+let g:vsnip_snippet_dir = expand(fnamemodify($MYVIMRC, ":h") . '/snippets')
+
+let g:compe_enabled = v:true
+let g:compe_min_length = 1
+let g:compe_auto_preselect = v:true " or v:false
+let g:compe_source_timeout = 200
+let g:compe_incomplete_delay = 400
+lua require'compe_nvim_lsp'.attach()
+call compe#source#vim_bridge#register('path', compe_path#source#create())
+call compe#source#vim_bridge#register('vsnip', compe_vsnip#source#create())
+inoremap <expr><C-l> compe#confirm(lexima#expand('<LT>CR>', 'i'))
+inoremap <expr><CR>  compe#confirm(lexima#expand('<LT>CR>', 'i'))
+inoremap <expr><C-e> compe#close('<C-e>')
+
 " asyncrun.vim
 let g:asyncrun_open = 8
 command! -nargs=* Grep AsyncRun -program=grep -strip <f-args>

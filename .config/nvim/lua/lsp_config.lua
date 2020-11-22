@@ -1,8 +1,7 @@
 vim.cmd("packadd nvim-lspconfig")
-vim.cmd("packadd completion-nvim")
 vim.cmd("packadd nvim-lsputils")
 vim.cmd("packadd popfix")
-
+vim.cmd("packadd nvim-compe")
 
 -- nvim-lspconfig
 vim.call('sign_define', "LspDiagnosticsErrorSign", {text = "✗", texthl = "LspDiagnosticsError"})
@@ -11,15 +10,8 @@ vim.call('sign_define', "LspDiagnosticsInformationSign", {text = "●", texthl =
 vim.call('sign_define', "LspDiagnosticsHintSign", {text = "▲", texthl = "LspDiagnosticsHint"})
 
 local nvim_lsp = require('lspconfig')
-local completion = require('completion')
 
 local custom_attach = function(client)
-  completion.on_attach({
-    client,
-    sorting = 'none',
-    auto_change_source = 1,
-    trigger_on_delete = 1,
-  })
 
   local mapper = function(mode, key, result)
     vim.fn.nvim_buf_set_keymap(0, mode, key, result, {noremap=true, silent=true})
@@ -160,11 +152,3 @@ vim.lsp.callbacks['textDocument/typeDefinition'] = require'lsputil.locations'.ty
 vim.lsp.callbacks['textDocument/implementation'] = require'lsputil.locations'.implementation_handler
 vim.lsp.callbacks['textDocument/documentSymbol'] = require'lsputil.symbols'.document_handler
 vim.lsp.callbacks['workspace/symbol'] = require'lsputil.symbols'.workspace_handler
-
--- ###########################################################################
--- completion-nvim
--- ###########################################################################
-vim.g.completion_enable_snippet = 'vim-vsnip'
-vim.g.completion_confirm_key = '<C-l>'
-vim.g.completion_sorting = 'none'
-
