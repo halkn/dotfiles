@@ -38,6 +38,9 @@ let g:markdown_fenced_languages = [
 \  'vim',
 \]
 
+" use lua syntax in .vim file
+let g:vimsyn_embed = 'l'
+
 " ============================================================================
 " Global options
 " ============================================================================
@@ -134,7 +137,7 @@ endif
 
 if has('nvim')
   set inccommand=split
-  set pumblend=20
+  set pumblend=10
 endif
 
 " ============================================================================
@@ -275,3 +278,207 @@ augroup vimrc_au
   autocmd TextYankPost * silent! lua return (not vim.v.event.visual) and require'vim.highlight'.on_yank()
 augroup END
 
+" ============================================================================
+" Plugin
+" ============================================================================
+call plug#begin(stdpath('data') . '/plugged')
+" colorscheme
+Plug 'christianchiarulli/nvcode-color-schemes.vim'
+
+" enhanced
+Plug 'itchyny/lightline.vim'
+Plug 'hrsh7th/vim-eft'
+Plug 'tyru/columnskip.vim'
+Plug 'cohama/lexima.vim'
+Plug 'machakann/vim-sandwich'
+Plug 'kana/vim-operator-user'
+Plug 'kana/vim-operator-replace'
+Plug 'mattn/vim-findroot'
+
+" filetype
+Plug 'kana/vim-altr', { 'for': [ 'go', 'vim', 'help' ] }
+Plug 'mattn/vim-maketable', { 'for': 'markdown' }
+Plug 'dhruvasagar/vim-table-mode', { 'for': 'markdown' }
+Plug 'iamcco/markdown-preview.nvim', 
+\ { 'do': { -> mkdp#util#install() }, 'for': ['markdown', 'vim-plug']}
+
+" extension
+Plug 'glidenote/memolist.vim', { 'on': [ 'MemoNew', 'MemoGrep', 'MemoList' ] }
+Plug 'skywind3000/asyncrun.vim', { 'on': 'AsyncRun' }
+Plug 'skanehira/translate.vim', { 'on': [ '<Plug>(VTranslate)', '<Plug>(VTranslateBang)' ] }
+Plug 'simeji/winresizer', { 'on': 'WinResizerStartResize' }
+Plug 't9md/vim-quickhl', { 'on': '<Plug>(quickhl-manual-this)' }
+Plug 'thinca/vim-qfreplace', { 'on': 'Qfreplace' }
+Plug 'tyru/caw.vim', { 'on': '<Plug>(caw:hatpos:toggle)' }
+Plug 'tyru/capture.vim', { 'on': 'Capture' }
+Plug 'tweekmonster/startuptime.vim', { 'on': 'StartupTime' }
+
+" completion
+Plug 'hrsh7th/nvim-compe'
+Plug 'hrsh7th/vim-vsnip'
+Plug 'hrsh7th/vim-vsnip-integ'
+
+" Lua
+Plug 'nvim-lua/popup.nvim'
+Plug 'nvim-lua/plenary.nvim'
+Plug 'nvim-telescope/telescope.nvim'
+Plug 'lewis6991/gitsigns.nvim'
+Plug 'neovim/nvim-lspconfig'
+Plug 'RishabhRD/popfix'
+Plug 'RishabhRD/nvim-lsputils'
+call plug#end()
+
+" colorscheme ----------------------------------------------------------------
+colorscheme nvcode
+hi! GitGutterAdd guifg=#B5CEA8
+hi! GitGutterChange guifg=#9CDCFE
+hi! GitGutterDelete guifg=#F44747
+hi! link GitGutterChabgeDelete GitGutterDelete
+
+" enhanced -------------------------------------------------------------------
+" lightline.vim
+let g:lightline = {}
+let g:lightline.colorscheme = 'wombat'
+
+" vim-eft
+nmap ; <Plug>(eft-repeat)
+xmap ; <Plug>(eft-repeat)
+nmap f <Plug>(eft-f)
+xmap f <Plug>(eft-f)
+omap f <Plug>(eft-f)
+nmap F <Plug>(eft-F)
+xmap F <Plug>(eft-F)
+omap F <Plug>(eft-F)
+nmap t <Plug>(eft-t)
+xmap t <Plug>(eft-t)
+omap t <Plug>(eft-t)
+nmap T <Plug>(eft-T)
+xmap T <Plug>(eft-T)
+omap T <Plug>(eft-T)
+
+" columnskip.vim
+nmap sj <Plug>(columnskip:nonblank:next)
+omap sj <Plug>(columnskip:nonblank:next)
+xmap sj <Plug>(columnskip:nonblank:next)
+nmap sk <Plug>(columnskip:nonblank:prev)
+omap sk <Plug>(columnskip:nonblank:prev)
+xmap sk <Plug>(columnskip:nonblank:prev)
+
+" lexima.vim
+let g:lexima_ctrlh_as_backspace = 1
+
+" vim-operator-replace
+map R <Plug>(operator-replace)
+
+" filetype -------------------------------------------------------------------
+" vim-altr
+augroup vimrc_altr
+  au!
+  autocmd FileType go,vim,help nmap <buffer> <LocalLeader>a <Plug>(altr-forward)
+  autocmd FileType go,vim,help nmap <buffer> <LocalLeader>b <Plug>(altr-back)
+augroup END
+
+" vim-table-mode
+let g:table_mode_corner = '|'
+let g:table_mode_map_prefix = '<LocalLeader>'
+
+" markdown-preview.nvim
+augroup vimrc_markdown_preview
+  au!
+  autocmd FileType markdown nnoremap <buffer> <silent> <LocalLeader>p :<C-u>MarkdownPreview<CR>
+augroup END
+
+" extension ------------------------------------------------------------------
+" memolist.vim
+let g:memolist_memo_suffix = 'md'
+let g:memolist_template_dir_path =
+\ expand(fnamemodify($MYVIMRC, ":h") . '/template/memotemplates')
+nnoremap <Leader>mn :<C-u>MemoNew<CR>
+nnoremap <Leader>mg :<C-u>MemoGrep<CR>
+nnoremap <Leader>ml :<C-u>MemoList<CR>
+
+" asyncrun.vim
+let g:asyncrun_open = 8
+command! -nargs=* Grep AsyncRun -program=grep -strip <f-args>
+
+function s:asyncrun_gotest_func() abort
+  let l:test = search('func \(Test\|Example\)', "bcnW")
+
+  if l:test == 0
+    echo "[test] no test found immediate to cursor"
+    return
+  end
+
+  let l:line = getline(test)
+  let l:name = split(split(line, " ")[1], "(")[0]
+  execute('AsyncRun -mode=term -pos=right -cols=80 -focus=0 -cwd=$(VIM_FILEDIR) go test -v -run ' . l:name)
+endfunction
+
+function s:asyncrun_go_setup() abort
+  command! -buffer -nargs=* -complete=dir GoRun
+  \ AsyncRun -mode=term -pos=right -cols=80 -focus=0  go run $VIM_RELNAME
+  command! -buffer -nargs=* -complete=dir GoTest
+  \ AsyncRun -mode=term -pos=right -cols=80 -focus=0 go test <f-args>
+  command! -buffer -nargs=0 GoTestPackage GoTest ./$VIM_RELDIR
+  command! -buffer -nargs=0 GoTestFunc call s:asyncrun_gotest_func()
+
+  nnoremap <silent> <buffer> <LocalLeader>r :<C-u>GoRun<CR>
+  nnoremap <silent> <buffer> <LocalLeader>t :<C-u>GoTest ./...<CR>
+  nnoremap <silent> <buffer> <LocalLeader>p :<C-u>GoTestPackage<CR>
+  nnoremap <silent> <buffer> <LocalLeader>f :<C-u>GoTestFunc<CR>
+endfunction
+
+augroup vimrc_asyncrun
+  au!
+  autocmd FileType go call s:asyncrun_go_setup()
+  autocmd FileType sh nnoremap <silent> <buffer> <LocalLeader>r
+  \ :<C-u>AsyncRun -mode=term -pos=right -cols=80 -focus=0 bash $VIM_RELNAME<CR>
+augroup END
+
+" translate.vim
+let g:translate_source = "en"
+let g:translate_target = "ja"
+let g:translate_popup_window = 1
+let g:translate_winsize = 10
+xmap T <Plug>(VTranslate)
+xmap <Leader>tR <Plug>(VTranslateBang)
+
+" winresizer
+let g:winresizer_start_key = '<C-w>r'
+nnoremap <silent> <C-w>r <cmd>WinResizerStartResize<cr>
+
+" vim-quickhl
+nmap <Space>m <Plug>(quickhl-manual-this)
+xmap <Space>m <Plug>(quickhl-manual-this)
+nmap <Space>M <Plug>(quickhl-manual-reset)
+xmap <Space>M <Plug>(quickhl-manual-reset)
+
+" caw.vim
+nmap <Leader>c <Plug>(caw:hatpos:toggle)
+vmap <Leader>c <Plug>(caw:hatpos:toggle)
+
+" completion -----------------------------------------------------------------
+" nvim-compe
+let g:compe_enabled = v:true
+let g:compe_min_length = 1
+let g:compe_auto_preselect = v:true
+let g:compe_source_timeout = 200
+let g:compe_incomplete_delay = 400
+inoremap <expr><C-l> compe#confirm('<C-l>')
+inoremap <expr><CR>  compe#confirm(lexima#expand('<LT>CR>', 'i'))
+inoremap <expr><C-e> compe#close('<C-e>')
+lua require'compe_nvim_lsp'.attach()
+lua require'compe':register_lua_source('buffer', require'compe_buffer')
+call compe#source#vim_bridge#register('path', compe_path#source#create())
+call compe#source#vim_bridge#register('vsnip', compe_vsnip#source#create())
+
+" vim-vsnip
+smap <expr> <C-l>   vsnip#expandable() ? '<Plug>(vsnip-expand)'    : '<C-l>'
+imap <expr> <Tab>   vsnip#jumpable(1)  ? '<Plug>(vsnip-jump-next)' : '<Tab>'
+smap <expr> <Tab>   vsnip#jumpable(1)  ? '<Plug>(vsnip-jump-next)' : '<Tab>'
+imap <expr> <S-Tab> vsnip#jumpable(-1) ? '<Plug>(vsnip-jump-prev)' : '<S-Tab>'
+smap <expr> <S-Tab> vsnip#jumpable(-1) ? '<Plug>(vsnip-jump-prev)' : '<S-Tab>'
+let g:vsnip_snippet_dir = expand(fnamemodify($MYVIMRC, ":h") . '/snippets')
+
+" Lua ------------------------------------------------------------------------
+lua require('plugins')

@@ -1,0 +1,215 @@
+-- ===========================================================================
+-- utility function
+-- ===========================================================================
+local bmapper = function(mode, key, result)
+  vim.fn.nvim_buf_set_keymap(0, mode, key, result, {noremap=true, silent=true})
+end
+
+local nmap = function(key, result)
+  vim.fn.nvim_set_keymap('n', key, result, {noremap=true, silent=true})
+end
+
+-- ===========================================================================
+-- telescope
+-- ===========================================================================
+local actions = require('telescope.actions')
+require('telescope').setup {
+  defaults = {
+    layout_strategy = "flex",
+    generic_sorter = require'telescope.sorters'.get_fzy_sorter,
+    file_sorter = require'telescope.sorters'.get_fzy_sorter,
+    vimgrep_arguments = {
+      'rg',
+      '--color=never',
+      '--no-heading',
+      '--with-filename',
+      '--line-number',
+      '--column',
+      '--smart-case',
+      '--hidden'
+    },
+    mappings = {
+      i = {
+        ["<C-j>"] = actions.move_selection_next,
+        ["<C-k>"] = actions.move_selection_previous,
+        ["<esc>"] = actions.close,
+      },
+    },
+  }
+}
+
+nmap('<Leader>f',  '<cmd>Telescope find_files find_command=rg,--ignore,--hidden,--files<CR>')
+nmap('<Leader>b',  '<cmd>Telescope buffers<CR>')
+nmap('<Leader>R',  '<cmd>Telescope live_grep<CR>')
+nmap('<Leader>q',  '<cmd>Telescope quickfix<CR>')
+nmap('<Leader>ml', '<cmd>Telescope find_files cwd=~/memo<CR>')
+
+-- ===========================================================================
+-- gitsigns.nvim
+-- ===========================================================================
+require('gitsigns').setup {
+  signs = {
+    add          = {hl = 'GitGutterAdd'   , text = '+'},
+    change       = {hl = 'GitGutterChange', text = '!'},
+    delete       = {hl = 'GitGutterDelete', text = '_'},
+    topdelete    = {hl = 'GitGutterDelete', text = '‾'},
+    changedelete = {hl = 'GitGutterChangeDelete', text = '~'},
+  },
+  keymaps = {
+    noremap = true,
+    buffer = true,
+    ['n ]c'] = { expr = true, "&diff ? ']c' : '<cmd>lua require\"gitsigns\".next_hunk()<CR>'"},
+    ['n [c'] = { expr = true, "&diff ? '[c' : '<cmd>lua require\"gitsigns\".prev_hunk()<CR>'"},
+    ['n <leader>ga'] = '<cmd>lua require"gitsigns".stage_hunk()<CR>',
+    ['n <leader>gr'] = '<cmd>lua require"gitsigns".undo_stage_hunk()<CR>',
+    ['n <leader>gu'] = '<cmd>lua require"gitsigns".reset_hunk()<CR>',
+    ['n <leader>gs'] = '<cmd>lua require"gitsigns".preview_hunk()<CR>',
+  },
+  watch_index = {
+    interval = 1000
+  },
+  sign_priority = 6,
+  status_formatter = nil, -- Use default
+}
+
+-- ===========================================================================
+-- nvim-lspconfig
+-- ===========================================================================
+vim.cmd("sign define LspDiagnosticsSignError text=✗  texthl=LspDiagnosticsSignError linehl= numhl=")
+vim.cmd("sign define LspDiagnosticsSignWarning text=!! texthl=LspDiagnosticsSignWarning linehl= numhl=")
+vim.cmd("sign define LspDiagnosticsSignInformation text=● texthl=LspDiagnosticsSignInformation linehl= numhl=")
+vim.cmd("sign define LspDiagnosticsSignHint text=▲ texthl=LspDiagnosticsSignHint linehl= numhl=")
+
+local nvim_lsp = require('lspconfig')
+local custom_attach = function()
+  bmapper('n', 'gd', '<cmd>lua vim.lsp.buf.definition()<CR>')
+  bmapper('n', 'gD', '<Cmd>vsplit<CR><cmd>lua vim.lsp.buf.definition()<CR>')
+  bmapper('n', '<c-]>', '<cmd>lua vim.lsp.buf.definition()<CR>')
+  bmapper('n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>')
+  bmapper('n', 'gr', '<cmd>lua require"telescope.builtin".lsp_references{}<CR>')
+  bmapper('n', '<F2>', '<cmd>lua vim.lsp.buf.rename()<CR>')
+  bmapper('n', '<LocalLeader>ca', '<cmd>lua vim.lsp.buf.code_action()<CR>')
+  bmapper('n', '<LocalLeader>s', '<cmd>lua require"telescope.builtin".lsp_document_symbols{}<CR>')
+  bmapper('n', '<LocalLeader>w', '<cmd>lua require"telescope.builtin".lsp_workspace_symbols{}<CR>')
+  bmapper('n', '<LocalLeader>m', '<cmd>lua vim.lsp.buf.formatting()<CR>')
+  bmapper('n', '<LocalLeader>sl', '<cmd>lua vim.lsp.util.show_line_diagnostics()<CR>')
+
+  vim.cmd("setlocal omnifunc=v:lua.vim.lsp.omnifunc")
+end
+
+local cap = {
+  textDocument = {
+    completion = {
+      completionItem = {
+        snippetSupport = true
+      }
+    }
+  }
+}
+-- go
+nvim_lsp.gopls.setup{
+  capabilities = cap,
+  init_options = {
+    usePlaceholders=true;
+    linkTarget="pkg.go.dev";
+    completionDocumentation=true;
+    completeUnimported=true;
+    deepCompletion=true;
+    staticcheck=true;
+  },
+  on_attach=custom_attach
+}
+
+-- Synchronously organise (Go) imports.
+function Go_organize_imports_sync(timeout_ms)
+  vim.lsp.buf.formatting_sync(nil, 1000)
+  local context = { source = { organizeImports = true } }
+  vim.validate { context = { context, 't', true } }
+  local params = vim.lsp.util.make_range_params()
+  params.context = context
+
+  local result = vim.lsp.buf_request_sync(0, "textDocument/codeAction", params, timeout_ms)
+  if not result then return end
+  result = result[1].result
+  if not result then return end
+  local edit = result[1].edit
+  vim.lsp.util.apply_workspace_edit(edit)
+end
+
+vim.api.nvim_command("augroup vimrc_go_org_imports")
+vim.api.nvim_command("au!")
+vim.api.nvim_command("au BufWritePre *.go lua Go_organize_imports_sync(1000)")
+vim.api.nvim_command("augroup END")
+
+-- bash
+nvim_lsp.bashls.setup{
+  on_attach=custom_attach
+}
+
+-- vim
+nvim_lsp.vimls.setup{
+  capabilities = cap,
+  on_attach=custom_attach
+}
+
+--json
+nvim_lsp.jsonls.setup{
+  on_attach=custom_attach
+}
+
+-- yaml
+nvim_lsp.yamlls.setup{
+  capabilities = cap,
+  on_attach=custom_attach,
+  settings = {
+    yaml = {
+      schemas = {
+        ['https://json.schemastore.org/cloudbuild'] = 'cloudbuild*.yaml',
+        ['http://json.schemastore.org/github-workflow'] = '.github/workflows/*.{yml,yaml}',
+      },
+      format = {
+        enable = true,
+        singleQuote = true
+      },
+      completion = true,
+    }
+  }
+}
+
+-- docker
+nvim_lsp.dockerls.setup{
+  capabilities = cap,
+  on_attach=custom_attach
+}
+
+--lua
+nvim_lsp.sumneko_lua.setup{
+  on_attach=custom_attach,
+  settings = {
+    Lua = {
+      diagnostics={
+        enable=true,
+        globals={
+          "vim"
+        },
+      },
+    }
+  }
+}
+
+-- efm-langserver
+nvim_lsp.efm.setup{
+  filetypes = {"markdown", "sh"};
+}
+
+-- ===========================================================================
+-- nvim-lsputils
+-- ===========================================================================
+vim.lsp.callbacks['textDocument/codeAction'] = require'lsputil.codeAction'.code_action_handler
+vim.lsp.callbacks['textDocument/references'] = require'lsputil.locations'.references_handler
+vim.lsp.callbacks['textDocument/definition'] = require'lsputil.locations'.definition_handler
+vim.lsp.callbacks['textDocument/declaration'] = require'lsputil.locations'.declaration_handler
+vim.lsp.callbacks['textDocument/typeDefinition'] = require'lsputil.locations'.typeDefinition_handler
+vim.lsp.callbacks['textDocument/implementation'] = require'lsputil.locations'.implementation_handler
+vim.lsp.callbacks['textDocument/documentSymbol'] = require'lsputil.symbols'.document_handler
+vim.lsp.callbacks['workspace/symbol'] = require'lsputil.symbols'.workspace_handler
