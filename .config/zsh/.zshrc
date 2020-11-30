@@ -421,13 +421,8 @@ bua() {
 fuzzy-ghq-list() {
   local dir
   dir=$(ghq list > /dev/null | fzf --height 100% --preview="glow $(ghq root)/{}")
-  echo ${dir}
   if [[ ${dir} ]]; then
-    if [[ ${TMUX} ]]; then
-      tmux new-window -c $(ghq root)/${dir}
-    else
-      cd $(ghq root)/${dir}
-    fi
+    cd $(ghq root)/${dir}
   fi
 }
 alias dev=fuzzy-ghq-list
