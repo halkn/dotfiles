@@ -420,7 +420,15 @@ bua() {
 # fuzzy-ghq-list - cd to development directory in ghq list.
 fuzzy-ghq-list() {
   local dir
-  dir=$(ghq list > /dev/null | fzf --height 100% --preview="glow $(ghq root)/{}") && cd $(ghq root)/$dir
+  dir=$(ghq list > /dev/null | fzf --height 100% --preview="glow $(ghq root)/{}")
+  echo ${dir}
+  if [[ ${dir} ]]; then
+    if [[ ${TMUX} ]]; then
+      tmux new-window -c $(ghq root)/${dir}
+    else
+      cd $(ghq root)/${dir}
+    fi
+  fi
 }
 alias dev=fuzzy-ghq-list
 alias repo=fuzzy-ghq-list
@@ -454,6 +462,29 @@ vpr() {
     glow -p "${base}${selected}"
   fi
 }
+
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# tmux
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ftpane() {
+  local panes current_window current_pane target target_window target_pane
+  panes=$(tmux list-panes -s -F '#I:#P - #{pane_current_path} #{pane_current_command}')
+  current_pane=$(tmux display-message -p '#I:#P')
+  current_window=$(tmux display-message -p '#I')
+
+  target=$(echo "$panes" | grep -v "$current_pane" | fzf +m --reverse) || return
+
+  target_window=$(echo $target | awk 'BEGIN{FS=":|-"} {print$1}')
+  target_pane=$(echo $target | awk 'BEGIN{FS=":|-"} {print$2}' | cut -c 1)
+
+  if [[ $current_window -eq $target_window ]]; then
+    tmux select-pane -t ${target_window}.${target_pane}
+  else
+    tmux select-pane -t ${target_window}.${target_pane} &&
+    tmux select-window -t $target_window
+  fi
+}
+
 
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # lab
