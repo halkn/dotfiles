@@ -553,7 +553,6 @@ augroup vimrc_lsp_setup
 augroup END
 
 " asyncomplete.vim
-let g:asyncomplete_auto_completeopt = 0
 inoremap <expr> <C-y> pumvisible() ? asyncomplete#close_popup() : "\<C-y>"
 
 " vim-vsnip
@@ -590,6 +589,7 @@ augroup END
 " vim-table-mode
 let g:table_mode_corner = '|'
 let g:table_mode_map_prefix = '<LocalLeader>'
+let g:table_mode_toggle_map = 'tm'
 
 " previm
 let g:previm_open_cmd = 'open'
