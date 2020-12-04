@@ -10,11 +10,23 @@ local nmap = function(key, result)
 end
 
 -- ===========================================================================
+-- treesitter
+-- ===========================================================================
+require'nvim-treesitter.configs'.setup {
+  ensure_installed = "maintained",
+  highlight = {
+    enable = true,
+  },
+}
+
+-- ===========================================================================
 -- telescope
 -- ===========================================================================
 local actions = require('telescope.actions')
 require('telescope').setup {
   defaults = {
+    prompt_position = "top",
+    sorting_strategy = "ascending",
     layout_strategy = "flex",
     generic_sorter = require'telescope.sorters'.get_fzy_sorter,
     file_sorter = require'telescope.sorters'.get_fzy_sorter,
@@ -43,6 +55,8 @@ nmap('<Leader>b',  '<cmd>Telescope buffers<CR>')
 nmap('<Leader>R',  '<cmd>Telescope live_grep<CR>')
 nmap('<Leader>q',  '<cmd>Telescope quickfix<CR>')
 nmap('<Leader>ml', '<cmd>Telescope find_files cwd=~/memo<CR>')
+nmap('<Leader>gs', '<cmd>Telescope git_status<CR>')
+nmap('<Leader>gl', '<cmd>Telescope git_commits<CR>')
 
 -- ===========================================================================
 -- gitsigns.nvim
@@ -86,11 +100,11 @@ local custom_attach = function()
   bmapper('n', 'gD', '<Cmd>vsplit<CR><cmd>lua vim.lsp.buf.definition()<CR>')
   bmapper('n', '<c-]>', '<cmd>lua vim.lsp.buf.definition()<CR>')
   bmapper('n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>')
-  bmapper('n', 'gr', '<cmd>lua require"telescope.builtin".lsp_references{}<CR>')
+  bmapper('n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>')
   bmapper('n', '<F2>', '<cmd>lua vim.lsp.buf.rename()<CR>')
   bmapper('n', '<LocalLeader>ca', '<cmd>lua vim.lsp.buf.code_action()<CR>')
-  bmapper('n', '<LocalLeader>s', '<cmd>lua require"telescope.builtin".lsp_document_symbols{}<CR>')
-  bmapper('n', '<LocalLeader>w', '<cmd>lua require"telescope.builtin".lsp_workspace_symbols{}<CR>')
+  bmapper('n', '<LocalLeader>s', '<cmd>lua vim.lsp.buf.document_symbol()<CR>')
+  bmapper('n', '<LocalLeader>w', '<cmd>lua vim.lsp.buf.workspace_symbol()<CR>')
   bmapper('n', '<LocalLeader>m', '<cmd>lua vim.lsp.buf.formatting()<CR>')
   bmapper('n', '<LocalLeader>sl', '<cmd>lua vim.lsp.util.show_line_diagnostics()<CR>')
 
@@ -187,10 +201,20 @@ nvim_lsp.sumneko_lua.setup{
   on_attach=custom_attach,
   settings = {
     Lua = {
+      runtime = {
+        version = 'LuaJIT',
+        path = vim.split(package.path, ';'),
+      },
       diagnostics={
         enable=true,
         globals={
           "vim"
+        },
+      },
+      workspace = {
+        library = {
+            [vim.fn.expand('$VIMRUNTIME/lua')] = true,
+            [vim.fn.expand('$VIMRUNTIME/lua/vim/lsp')] = true,
         },
       },
     }

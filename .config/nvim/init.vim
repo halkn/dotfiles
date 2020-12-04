@@ -284,6 +284,7 @@ augroup END
 call plug#begin(stdpath('data') . '/plugged')
 " colorscheme
 Plug 'christianchiarulli/nvcode-color-schemes.vim'
+Plug 'nvim-treesitter/nvim-treesitter'
 
 " enhanced
 Plug 'itchyny/lightline.vim'
