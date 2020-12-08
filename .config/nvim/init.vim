@@ -460,26 +460,38 @@ vmap <Leader>c <Plug>(caw:hatpos:toggle)
 
 " completion -----------------------------------------------------------------
 " nvim-compe
-let g:compe_enabled = v:true
-let g:compe_min_length = 1
-let g:compe_auto_preselect = v:true
-let g:compe_source_timeout = 200
-let g:compe_incomplete_delay = 400
-inoremap <expr><C-l> compe#confirm('<C-l>')
-inoremap <expr><CR>  compe#confirm(lexima#expand('<LT>CR>', 'i'))
-inoremap <expr><C-e> compe#close('<C-e>')
-lua require'compe_nvim_lsp'.attach()
-lua require'compe':register_lua_source('buffer', require'compe_buffer')
-call compe#source#vim_bridge#register('path', compe_path#source#create())
-call compe#source#vim_bridge#register('vsnip', compe_vsnip#source#create())
+let g:compe = {}
+let g:compe.enabled = v:true
+let g:compe.auto_preselect = v:true
+let g:compe.allow_prefix_unmatch = v:true
+let g:compe.source = {}
+let g:compe.source.path = v:true
+let g:compe.source.buffer = v:true
+let g:compe.source.vsnip = v:true
+let g:compe.source.nvim_lsp = v:true
+inoremap <silent><expr> <CR>  compe#confirm('<CR>')
+inoremap <silent><expr> <C-e> compe#close('<C-e>')
 
 " vim-vsnip
-smap <expr> <C-l>   vsnip#expandable() ? '<Plug>(vsnip-expand)'    : '<C-l>'
+imap <expr> <C-l>   vsnip#available(1) ? '<Plug>(vsnip-expand-or-jump)' : '<C-l>'
+smap <expr> <C-l>   vsnip#available(1) ? '<Plug>(vsnip-expand-or-jump)' : '<C-l>'
 imap <expr> <Tab>   vsnip#jumpable(1)  ? '<Plug>(vsnip-jump-next)' : '<Tab>'
 smap <expr> <Tab>   vsnip#jumpable(1)  ? '<Plug>(vsnip-jump-next)' : '<Tab>'
 imap <expr> <S-Tab> vsnip#jumpable(-1) ? '<Plug>(vsnip-jump-prev)' : '<S-Tab>'
 smap <expr> <S-Tab> vsnip#jumpable(-1) ? '<Plug>(vsnip-jump-prev)' : '<S-Tab>'
 let g:vsnip_snippet_dir = expand(fnamemodify($MYVIMRC, ":h") . '/snippets')
+
+" Make <tab> used for
+" trigger completion, completion confirm, snippet expand and jump like VSCode.
+function! s:check_back_space() abort
+  let col = col('.') - 1
+  return !col || getline('.')[col - 1]  =~# '\s'
+endfunction
+imap <silent><expr> <Tab>
+\ pumvisible() ? compe#confirm('<Tab>') :
+\ vsnip#jumpable(1)  ? '<Plug>(vsnip-jump-next)' :
+\ <SID>check_back_space() ? "\<TAB>" :
+\ compe#complete()
 
 " Lua ------------------------------------------------------------------------
 lua require('plugins')
