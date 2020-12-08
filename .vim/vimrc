@@ -553,16 +553,29 @@ augroup vimrc_lsp_setup
 augroup END
 
 " asyncomplete.vim
-inoremap <expr> <C-y> pumvisible() ? asyncomplete#close_popup() : "\<C-y>"
+inoremap <expr> <CR>  pumvisible() ? asyncomplete#close_popup()  : "\<CR>"
+inoremap <expr> <C-y> pumvisible() ? asyncomplete#close_popup()  : "\<C-y>"
+inoremap <expr> <C-e> pumvisible() ? asyncomplete#cancel_popup() : "\<C-e>"
 
 " vim-vsnip
-imap <expr> <C-l>   vsnip#expandable() ? '<Plug>(vsnip-expand)'    : '<C-l>'
-smap <expr> <C-l>   vsnip#expandable() ? '<Plug>(vsnip-expand)'    : '<C-l>'
-imap <expr> <Tab>   vsnip#jumpable(1)  ? '<Plug>(vsnip-jump-next)' : '<Tab>'
+imap <expr> <C-l>   vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : '<C-l>'
+smap <expr> <C-l>   vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : '<C-l>'
 smap <expr> <Tab>   vsnip#jumpable(1)  ? '<Plug>(vsnip-jump-next)' : '<Tab>'
 imap <expr> <S-Tab> vsnip#jumpable(-1) ? '<Plug>(vsnip-jump-prev)' : '<S-Tab>'
 smap <expr> <S-Tab> vsnip#jumpable(-1) ? '<Plug>(vsnip-jump-prev)' : '<S-Tab>'
 let g:vsnip_snippet_dir = expand(fnamemodify($MYVIMRC, ":h") . '/snippets')
+
+" Make <tab> used for
+" trigger completion, completion confirm, snippet expand and jump like VSCode.
+function! s:check_back_space() abort
+  let col = col('.') - 1
+  return !col || getline('.')[col - 1]  =~# '\s'
+endfunction
+imap <silent><expr> <TAB>
+\ pumvisible() ? asyncomplete#close_popup() :
+\ vsnip#jumpable(1)  ? '<Plug>(vsnip-jump-next)' : 
+\ <SID>check_back_space() ? "\<TAB>" :
+\ asyncomplete#force_refresh()
 
 " vista.vim
 let g:vista_default_executive = 'vim_lsp'
