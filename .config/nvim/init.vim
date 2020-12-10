@@ -382,6 +382,7 @@ augroup END
 " vim-table-mode
 let g:table_mode_corner = '|'
 let g:table_mode_map_prefix = '<LocalLeader>'
+let g:table_mode_toggle_map = 'tm'
 
 " markdown-preview.nvim
 augroup vimrc_markdown_preview
