@@ -188,11 +188,15 @@ inoremap <C-a> <C-o>^
 inoremap <C-e> <End>
 inoremap <C-d> <Del>
 
-" Move cursor like emacs in Insert Mode
+" Move cursor like emacs in Cmdline-mode
 cnoremap <C-b> <Left>
 cnoremap <C-f> <Right>
 cnoremap <C-a> <HOME>
 cnoremap <C-e> <END>
+
+" forward match from cmdline history
+cnoremap <C-p> <Up>
+cnoremap <C-n> <Down>
 
 " Move cursor the begining and end of line
 nnoremap H ^
