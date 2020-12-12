@@ -329,6 +329,7 @@ function! PackInit() abort
 
   " global
   call minpac#add('chuling/vim-equinusocio-material', {'type': 'opt'})
+  call minpac#add('aonemd/kuroi.vim')
   call minpac#add('itchyny/lightline.vim')
   call minpac#add('itchyny/vim-gitbranch')
   call minpac#add('halkn/lightline-lsp')
@@ -397,11 +398,11 @@ endif
 " highlight LspErrorHighlight gui=underline cterm=underline
 " highlight LspWarningHighlight gui=underline cterm=underline
 " hi PMenu guibg=#2f2f2f
-colorscheme tender
+colorscheme kuroi
 
 " lightline
 let g:lightline = {
-\ 'colorscheme': 'wombat',
+\ 'colorscheme': 'selenized_black',
 \ 'tabline': {
 \   'left':  [ ['tabs'] ],
 \   'right': [ ['close'], ['cwd', 'gitbranch'] ],
