@@ -731,7 +731,7 @@ endfunction
 
 augroup vimrc_gina
   autocmd!
-  autocmd CmdUndefined Gina call s:gina_settings()
+  autocmd CmdUndefined Gina ++once call s:gina_settings()
 augroup END
 
 nnoremap <silent> <Leader>gs :<C-u>Gina status<CR>
