@@ -361,7 +361,6 @@ function! PackInit() abort
   call minpac#add('kana/vim-altr')
   call minpac#add('dhruvasagar/vim-table-mode')
   call minpac#add('previm/previm')
-  call minpac#add('skanehira/preview-markdown.vim')
   call minpac#add('bfrg/vim-qf-preview')
   " Extension
   call minpac#add('skywind3000/asyncrun.vim')
@@ -614,15 +613,6 @@ let g:previm_open_cmd = 'open'
 augroup vimrc_previm
   au!
   autocmd FileType markdown nnoremap <buffer> <silent> <LocalLeader>p :<C-u>PrevimOpen<CR>
-augroup END
-
-" preview-markdown.vim
-let g:preview_markdown_vertical = 1
-let g:preview_markdown_parser = 'glow'
-let g:preview_markdown_auto_update = 1
-augroup vimrc_preview_markdown
-  au!
-  autocmd FileType markdown nnoremap <buffer> <silent> mp :<C-u>PreviewMarkdown<CR><BAR><C-w>w
 augroup END
 
 " vim-qf-preview
