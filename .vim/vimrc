@@ -73,7 +73,7 @@ set display=lastline
 set laststatus=2
 set nocursorcolumn
 set nocursorline
-set wrap
+set nowrap
 set list
 set listchars=tab:»-,trail:-,eol:↲,extends:»,precedes:«,nbsp:%
 set scrolloff=8
@@ -349,6 +349,7 @@ function! PackInit() abort
   call minpac#add('mattn/ctrlp-matchfuzzy')
   call minpac#add('mattn/ctrlp-lsp')
   call minpac#add('mattn/vim-findroot')
+  call minpac#add('halkn/vim-agrep')
   " LSP
   call minpac#add('prabirshrestha/vim-lsp')
   call minpac#add('mattn/vim-lsp-settings')
@@ -636,7 +637,6 @@ augroup END
 " ----------------------------------------------------------------------------
 " asyncrun.vim
 let g:asyncrun_open = 8
-command! -nargs=* Grep AsyncRun -program=grep -strip <f-args>
 
 function s:asyncrun_gotest_func() abort
   let l:test = search('func \(Test\|Example\)', "bcnW")
