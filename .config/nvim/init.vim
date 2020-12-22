@@ -463,7 +463,7 @@ vmap <Leader>c <Plug>(caw:hatpos:toggle)
 " nvim-compe
 let g:compe = {}
 let g:compe.enabled = v:true
-let g:compe.auto_preselect = v:true
+let g:compe.preselect = 'disable'
 let g:compe.allow_prefix_unmatch = v:true
 let g:compe.source = {}
 let g:compe.source.path = v:true
