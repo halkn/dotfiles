@@ -349,6 +349,7 @@ function! PackInit() abort
   call minpac#add('mattn/ctrlp-matchfuzzy')
   call minpac#add('mattn/ctrlp-lsp')
   call minpac#add('mattn/vim-findroot')
+  call minpac#add('mattn/vim-qfnavigate')
   call minpac#add('halkn/vim-agrep')
   " LSP
   call minpac#add('prabirshrestha/vim-lsp')
@@ -482,6 +483,10 @@ let g:ctrlp_match_func = {'match': 'ctrlp_matchfuzzy#matcher'}
 nnoremap <silent> <Leader><Leader> :<C-u>CtrlPMRU<CR>
 nnoremap <silent> <Leader>b        :<C-u>CtrlPBuffer<CR>
 nnoremap <silent> <Leader>l        :<C-u>CtrlPLine<CR>
+
+" vim-qfnavigate
+nmap <C-n> <plug>(qfnavigate-next)
+nmap <C-p> <plug>(qfnavigate-previous)
 
 " LSP ------------------------------------------------------------------------
 " vim-lsp-settings
