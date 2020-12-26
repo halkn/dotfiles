@@ -343,6 +343,8 @@ function! PackInit() abort
   call minpac#add('cohama/lexima.vim')
   call minpac#add('tyru/caw.vim')
   call minpac#add('machakann/vim-sandwich')
+  call minpac#add('kana/vim-textobj-user')
+  call minpac#add('sgur/vim-textobj-parameter')
   call minpac#add('kana/vim-operator-user')
   call minpac#add('kana/vim-operator-replace')
   call minpac#add('ctrlpvim/ctrlp.vim')
