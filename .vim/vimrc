@@ -427,11 +427,12 @@ let g:lightline = {
 \ },
 \ 'active': {
 \   'left': [ [ 'mode', 'paste'],
-\             [ 'readonly', 'filename', 'modified' ],
-\             ['lsp_errors', 'lsp_warnings', 'lsp_ok'] ],
-\   'right': [ [ 'lineinfo' ],
+\             [ 'readonly', 'filename', 'modified' ] ],
+\   'right': [ ['lsp_errors', 'lsp_warnings', 'lsp_ok'],
+\              [ 'lineinfo' ],
 \              [ 'percent' ],
-\              [ 'fileformat', 'fileencoding', 'filetype' ] ]
+\              [ 'fileformat', 'fileencoding', 'filetype' ],
+\              ],
 \ },
 \ 'component_function': {
 \   'gitbranch': 'gitbranch#name',
@@ -445,7 +446,7 @@ let g:lightline = {
 \ 'component_type': {
 \   'lsp_warnings': 'warning',
 \   'lsp_errors':   'error',
-\   'lsp_ok':       'middle',
+\   'lsp_ok':       'ok',
 \ },
 \ }
 
