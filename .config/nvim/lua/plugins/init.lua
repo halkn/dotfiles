@@ -22,41 +22,41 @@ require'nvim-treesitter.configs'.setup {
 -- ===========================================================================
 -- telescope
 -- ===========================================================================
-local actions = require('telescope.actions')
-require('telescope').setup {
-  defaults = {
-    prompt_position = "top",
-    sorting_strategy = "ascending",
-    layout_strategy = "flex",
-    generic_sorter = require'telescope.sorters'.get_fzy_sorter,
-    file_sorter = require'telescope.sorters'.get_fzy_sorter,
-    vimgrep_arguments = {
-      'rg',
-      '--color=never',
-      '--no-heading',
-      '--with-filename',
-      '--line-number',
-      '--column',
-      '--smart-case',
-      '--hidden'
-    },
-    mappings = {
-      i = {
-        ["<C-j>"] = actions.move_selection_next,
-        ["<C-k>"] = actions.move_selection_previous,
-        ["<esc>"] = actions.close,
-      },
-    },
-  }
-}
-
-nmap('<Leader>f',  '<cmd>Telescope find_files find_command=rg,--ignore,--hidden,--files<CR>')
-nmap('<Leader>b',  '<cmd>Telescope buffers<CR>')
-nmap('<Leader>R',  '<cmd>Telescope live_grep<CR>')
-nmap('<Leader>q',  '<cmd>Telescope quickfix<CR>')
-nmap('<Leader>ml', '<cmd>Telescope find_files cwd=~/memo<CR>')
-nmap('<Leader>gs', '<cmd>Telescope git_status<CR>')
-nmap('<Leader>gl', '<cmd>Telescope git_commits<CR>')
+-- local actions = require('telescope.actions')
+-- require('telescope').setup {
+--   defaults = {
+--     prompt_position = "top",
+--     sorting_strategy = "ascending",
+--     layout_strategy = "flex",
+--     generic_sorter = require'telescope.sorters'.get_fzy_sorter,
+--     file_sorter = require'telescope.sorters'.get_fzy_sorter,
+--     vimgrep_arguments = {
+--       'rg',
+--       '--color=never',
+--       '--no-heading',
+--       '--with-filename',
+--       '--line-number',
+--       '--column',
+--       '--smart-case',
+--       '--hidden'
+--     },
+--     mappings = {
+--       i = {
+--         ["<C-j>"] = actions.move_selection_next,
+--         ["<C-k>"] = actions.move_selection_previous,
+--         ["<esc>"] = actions.close,
+--       },
+--     },
+--   }
+-- }
+-- 
+-- nmap('<Leader>f',  '<cmd>Telescope find_files find_command=rg,--ignore,--hidden,--files<CR>')
+-- nmap('<Leader>b',  '<cmd>Telescope buffers<CR>')
+-- nmap('<Leader>R',  '<cmd>Telescope live_grep<CR>')
+-- nmap('<Leader>q',  '<cmd>Telescope quickfix<CR>')
+-- nmap('<Leader>ml', '<cmd>Telescope find_files cwd=~/memo<CR>')
+-- nmap('<Leader>gs', '<cmd>Telescope git_status<CR>')
+-- nmap('<Leader>gl', '<cmd>Telescope git_commits<CR>')
 
 -- ===========================================================================
 -- gitsigns.nvim
@@ -101,6 +101,7 @@ local custom_attach = function()
   bmapper('n', '<c-]>', '<cmd>lua vim.lsp.buf.definition()<CR>')
   bmapper('n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>')
   bmapper('n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>')
+  bmapper('n', 'gi', '<cmd>lua vim.lsp.buf.implementation()<CR>')
   bmapper('n', '<F2>', '<cmd>lua vim.lsp.buf.rename()<CR>')
   bmapper('n', '<LocalLeader>ca', '<cmd>lua vim.lsp.buf.code_action()<CR>')
   bmapper('n', '<LocalLeader>s', '<cmd>lua vim.lsp.buf.document_symbol()<CR>')
@@ -123,36 +124,43 @@ local cap = {
 -- go
 nvim_lsp.gopls.setup{
   capabilities = cap,
-  init_options = {
-    usePlaceholders=true;
-    linkTarget="pkg.go.dev";
-    completionDocumentation=true;
-    completeUnimported=true;
-    deepCompletion=true;
-    staticcheck=true;
+  cmd = {"gopls", "serve"},
+  settings = {
+    gopls = {
+      usePlaceholders=true,
+      gofumpt = true,
+      analyses = {
+        unusedparams = true,
+      }
+    },
   },
   on_attach=custom_attach
 }
 
 -- Synchronously organise (Go) imports.
-function Go_organize_imports_sync(timeout_ms)
-  vim.lsp.buf.formatting_sync(nil, 1000)
+function goimports(timeoutms)
   local context = { source = { organizeImports = true } }
-  vim.validate { context = { context, 't', true } }
+  vim.validate { context = { context, "t", true } }
+
   local params = vim.lsp.util.make_range_params()
   params.context = context
 
-  local result = vim.lsp.buf_request_sync(0, "textDocument/codeAction", params, timeout_ms)
-  if not result then return end
-  result = result[1].result
-  if not result then return end
-  local edit = result[1].edit
-  vim.lsp.util.apply_workspace_edit(edit)
+  local method = "textDocument/codeAction"
+  local resp = vim.lsp.buf_request_sync(0, method, params, timeoutms)
+  if resp and resp[1] then
+    local result = resp[1].result
+    if result and result[1] then
+      local edit = result[1].edit
+      vim.lsp.util.apply_workspace_edit(edit)
+    end
+  end
+
+  vim.lsp.buf.formatting()
 end
 
 vim.api.nvim_command("augroup vimrc_go_org_imports")
 vim.api.nvim_command("au!")
-vim.api.nvim_command("au BufWritePre *.go lua Go_organize_imports_sync(1000)")
+vim.api.nvim_command("au BufWritePre *.go lua goimports(1000)")
 vim.api.nvim_command("augroup END")
 
 -- bash
@@ -227,46 +235,51 @@ nvim_lsp.efm.setup{
 }
 
 -- ===========================================================================
+-- fzf_lsp
+-- ===========================================================================
+require'fzf_lsp'.setup()
+
+-- ===========================================================================
 -- nvim-lsputils
 -- ===========================================================================
-local border_chars = {
-  TOP_LEFT = '┌',
-  TOP_RIGHT = '┐',
-  MID_HORIZONTAL = '─',
-  MID_VERTICAL = '│',
-  BOTTOM_LEFT = '└',
-  BOTTOM_RIGHT = '┘',
-}
-vim.g.lsp_utils_location_opts = {
-  height = 12,
-  mode = 'split',
-  preview = {
-    title = 'Location Preview',
-    border = true,
-    border_chars = border_chars
-  },
-  keymaps = {
-    n = {
-      ['<C-n>'] = 'j',
-      ['<C-p>'] = 'k',
-    }
-  },
-}
-vim.g.lsp_utils_symbols_opts = {
-  height = 24,
-  mode = 'editor',
-  preview = {
-    title = 'Symbols Preview',
-    border = true,
-    border_chars = border_chars
-  },
-  prompt = {},
-}
-vim.lsp.callbacks['textDocument/codeAction'] = require'lsputil.codeAction'.code_action_handler
-vim.lsp.callbacks['textDocument/references'] = require'lsputil.locations'.references_handler
-vim.lsp.callbacks['textDocument/definition'] = require'lsputil.locations'.definition_handler
-vim.lsp.callbacks['textDocument/declaration'] = require'lsputil.locations'.declaration_handler
-vim.lsp.callbacks['textDocument/typeDefinition'] = require'lsputil.locations'.typeDefinition_handler
-vim.lsp.callbacks['textDocument/implementation'] = require'lsputil.locations'.implementation_handler
-vim.lsp.callbacks['textDocument/documentSymbol'] = require'lsputil.symbols'.document_handler
-vim.lsp.callbacks['workspace/symbol'] = require'lsputil.symbols'.workspace_handler
+-- local border_chars = {
+--   TOP_LEFT = '┌',
+--   TOP_RIGHT = '┐',
+--   MID_HORIZONTAL = '─',
+--   MID_VERTICAL = '│',
+--   BOTTOM_LEFT = '└',
+--   BOTTOM_RIGHT = '┘',
+-- }
+-- vim.g.lsp_utils_location_opts = {
+--   height = 12,
+--   mode = 'split',
+--   preview = {
+--     title = 'Location Preview',
+--     border = true,
+--     border_chars = border_chars
+--   },
+--   keymaps = {
+--     n = {
+--       ['<C-n>'] = 'j',
+--       ['<C-p>'] = 'k',
+--     }
+--   },
+-- }
+-- vim.g.lsp_utils_symbols_opts = {
+--   height = 24,
+--   mode = 'editor',
+--   preview = {
+--     title = 'Symbols Preview',
+--     border = true,
+--     border_chars = border_chars
+--   },
+--   prompt = {},
+-- }
+-- vim.lsp.callbacks['textDocument/codeAction'] = require'lsputil.codeAction'.code_action_handler
+-- vim.lsp.callbacks['textDocument/references'] = require'lsputil.locations'.references_handler
+-- vim.lsp.callbacks['textDocument/definition'] = require'lsputil.locations'.definition_handler
+-- vim.lsp.callbacks['textDocument/declaration'] = require'lsputil.locations'.declaration_handler
+-- vim.lsp.callbacks['textDocument/typeDefinition'] = require'lsputil.locations'.typeDefinition_handler
+-- vim.lsp.callbacks['textDocument/implementation'] = require'lsputil.locations'.implementation_handler
+-- vim.lsp.callbacks['textDocument/documentSymbol'] = require'lsputil.symbols'.document_handler
+-- vim.lsp.callbacks['workspace/symbol'] = require'lsputil.symbols'.workspace_handler

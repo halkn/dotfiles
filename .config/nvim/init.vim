@@ -62,7 +62,7 @@ set display=lastline
 set laststatus=2
 set nocursorcolumn
 set nocursorline
-set wrap
+set nowrap
 set list
 set listchars=tab:»-,trail:-,eol:↲,extends:»,precedes:«,nbsp:%
 set scrolloff=8
@@ -164,11 +164,15 @@ inoremap <C-a> <C-o>^
 inoremap <C-e> <End>
 inoremap <C-d> <Del>
 
-" Move cursor like emacs in Insert Mode
+" Move cursor like emacs in Cmdline-mode
 cnoremap <C-b> <Left>
 cnoremap <C-f> <Right>
 cnoremap <C-a> <HOME>
 cnoremap <C-e> <END>
+
+" forward match from cmdline history
+cnoremap <C-p> <Up>
+cnoremap <C-n> <Down>
 
 " Move cursor the begining and end of line
 nnoremap H ^
@@ -253,7 +257,7 @@ function! s:helpvert()
     wincmd L
   endif
 endfunction
-augroup vimrc_au
+augroup vimrc_filetype
   autocmd!
   autocmd FileType gitcommit setlocal spell spelllang=cjk,en
   autocmd FileType git setlocal nofoldenable
@@ -314,19 +318,20 @@ Plug 'tyru/caw.vim', { 'on': '<Plug>(caw:hatpos:toggle)' }
 Plug 'tyru/capture.vim', { 'on': 'Capture' }
 Plug 'tweekmonster/startuptime.vim', { 'on': 'StartupTime' }
 
+" fuzzy finder
+Plug 'junegunn/fzf'
+Plug 'junegunn/fzf.vim'
+
 " completion
 Plug 'hrsh7th/nvim-compe'
 Plug 'hrsh7th/vim-vsnip'
 Plug 'hrsh7th/vim-vsnip-integ'
 
 " Lua
-Plug 'nvim-lua/popup.nvim'
 Plug 'nvim-lua/plenary.nvim'
-Plug 'nvim-telescope/telescope.nvim'
 Plug 'lewis6991/gitsigns.nvim'
 Plug 'neovim/nvim-lspconfig'
-Plug 'RishabhRD/popfix'
-Plug 'RishabhRD/nvim-lsputils'
+Plug 'gfanto/fzf-lsp.nvim'
 call plug#end()
 
 " colorscheme ----------------------------------------------------------------
@@ -395,6 +400,7 @@ augroup END
 let g:memolist_memo_suffix = 'md'
 let g:memolist_template_dir_path =
 \ expand(fnamemodify($MYVIMRC, ":h") . '/template/memotemplates')
+let g:memolist_ex_cmd = 'FzfFiles'
 nnoremap <Leader>mn :<C-u>MemoNew<CR>
 nnoremap <Leader>mg :<C-u>MemoGrep<CR>
 nnoremap <Leader>ml :<C-u>MemoList<CR>
@@ -459,6 +465,19 @@ xmap <Space>M <Plug>(quickhl-manual-reset)
 nmap <Leader>c <Plug>(caw:hatpos:toggle)
 vmap <Leader>c <Plug>(caw:hatpos:toggle)
 
+" fuzzy finder ---------------------------------------------------------------
+" fzf.vim
+let g:fzf_command_prefix = 'Fzf'
+
+nnoremap <silent> <Leader>f <cmd>FzfFiles<CR>
+nnoremap <silent> <Leader>b <cmd>FzfBuffers<CR>
+nnoremap <silent> <Leader>l <cmd>FzfBLines<CR>
+
+augroup vimrc_fzf
+  autocmd!
+  autocmd FileType fzf tnoremap <buffer> <silent> <ESC> <ESC>
+augroup END
+
 " completion -----------------------------------------------------------------
 " nvim-compe
 let g:compe = {}
@@ -489,7 +508,7 @@ function! s:check_back_space() abort
   return !col || getline('.')[col - 1]  =~# '\s'
 endfunction
 imap <silent><expr> <Tab>
-\ pumvisible() ? compe#confirm('<Tab>') :
+\ pumvisible() ? compe#confirm('<C-e>') :
 \ vsnip#jumpable(1)  ? '<Plug>(vsnip-jump-next)' :
 \ <SID>check_back_space() ? "\<TAB>" :
 \ compe#complete()
