@@ -333,7 +333,6 @@ function! PackInit() abort
 
   " global
   call minpac#add('chuling/vim-equinusocio-material', {'type': 'opt'})
-  call minpac#add('sainnhe/sonokai', {'type': 'opt'})
   call minpac#add('itchyny/lightline.vim')
   call minpac#add('itchyny/vim-gitbranch')
   call minpac#add('halkn/lightline-lsp')
@@ -397,25 +396,19 @@ endif
 " ============================================================================
 " Global ---------------------------------------------------------------------
 " vim-equinusocio-material
-" packadd vim-equinusocio-material
-" let g:equinusocio_material_style = 'darker'
-" let g:equinusocio_material_bracket_improved = 1
-" colorscheme equinusocio_material
-" 
-" highlight LspErrorHighlight gui=underline cterm=underline
-" highlight LspWarningHighlight gui=underline cterm=underline
-" hi PMenu guibg=#2f2f2f
-packadd sonokai
-let g:sonokai_style = 'shusia'
-let g:sonokai_disable_italic_comment = 1
-let g:sonokai_menu_selection_background = 'blue'
-let g:sonokai_current_word = 'underline'
-let g:sonokai_better_performance = 1
-colorscheme sonokai
+packadd vim-equinusocio-material
+let g:equinusocio_material_style = 'darker'
+let g:equinusocio_material_bracket_improved = 1
+augroup vimrc_colorscheme
+  autocmd!
+  autocmd ColorScheme equinusocio_material highlight LspErrorHighlight gui=underline cterm=underline
+  autocmd ColorScheme equinusocio_material highlight LspWarningHighlight gui=underline cterm=underline
+augroup END
+colorscheme equinusocio_material
 
 " lightline
 let g:lightline = {
-\ 'colorscheme': 'sonokai',
+\ 'colorscheme': 'wombat',
 \ 'tabline': {
 \   'left':  [ ['tabs'] ],
 \   'right': [ ['close'], ['cwd', 'gitbranch'] ],
