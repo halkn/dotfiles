@@ -299,6 +299,13 @@ function! s:helpvert()
     wincmd L
   endif
 endfunction
+function! s:qfenter(cmd)
+  let l:lnum = line('.')
+  let l:cmd = get(get(getwininfo(win_getid()), 0, {}), 'loclist', 0) ? 'll' : 'cc'
+  silent! execute a:cmd
+  silent! execute l:cmd l:lnum
+  cclose
+endfunction
 augroup vimrc_filetype
   autocmd!
   autocmd FileType gitcommit setlocal spell spelllang=cjk,en
@@ -314,6 +321,10 @@ augroup vimrc_filetype
   autocmd FileType qf setlocal signcolumn=no
   autocmd Filetype qf nnoremap <silent> <buffer> p <CR>zz<C-w>p
   autocmd Filetype qf nnoremap <silent> <buffer> q <C-w>c
+  autocmd Filetype qf nnoremap <silent> <buffer> <C-m> <cmd>call <SID>qfenter('edit')<CR>
+  autocmd Filetype qf nnoremap <silent> <buffer> <C-t> <cmd>call <SID>qfenter('tabnew')<CR>
+  autocmd Filetype qf nnoremap <silent> <buffer> <C-x> <cmd>call <SID>qfenter('wincmd p <bar> new')<CR>
+  autocmd Filetype qf nnoremap <silent> <buffer> <C-v> <cmd>call <SID>qfenter('wincmd p <bar> vnew')<CR>
   autocmd BufEnter *.txt,*.jax call s:helpvert()
   autocmd FileType help setlocal signcolumn=no
   autocmd FileType help nnoremap <silent> <buffer> q <C-w>c
@@ -333,6 +344,7 @@ function! PackInit() abort
 
   " global
   call minpac#add('chuling/vim-equinusocio-material', {'type': 'opt'})
+  call minpac#add('aonemd/kuroi.vim')
   call minpac#add('itchyny/lightline.vim')
   call minpac#add('itchyny/vim-gitbranch')
   call minpac#add('halkn/lightline-lsp')
@@ -396,19 +408,29 @@ endif
 " ============================================================================
 " Global ---------------------------------------------------------------------
 " vim-equinusocio-material
-packadd vim-equinusocio-material
-let g:equinusocio_material_style = 'darker'
-let g:equinusocio_material_bracket_improved = 1
+" packadd vim-equinusocio-material
+" let g:equinusocio_material_style = 'darker'
+" let g:equinusocio_material_bracket_improved = 1
+" augroup vimrc_colorscheme
+"   autocmd!
+"   autocmd ColorScheme equinusocio_material highlight LspErrorHighlight gui=underline cterm=underline
+"   autocmd ColorScheme equinusocio_material highlight LspWarningHighlight gui=underline cterm=underline
+" augroup END
+" colorscheme equinusocio_material
+function s:kuroi_modify() abort
+  highlight link LspErrorText WarningMsg
+  highlight link LspWarningText Title
+  highlight link LspWarningHighlight LongLineWarning
+endfunction
 augroup vimrc_colorscheme
   autocmd!
-  autocmd ColorScheme equinusocio_material highlight LspErrorHighlight gui=underline cterm=underline
-  autocmd ColorScheme equinusocio_material highlight LspWarningHighlight gui=underline cterm=underline
+  autocmd ColorScheme kuroi call s:kuroi_modify()
 augroup END
-colorscheme equinusocio_material
+colorscheme kuroi
 
 " lightline
 let g:lightline = {
-\ 'colorscheme': 'wombat',
+\ 'colorscheme': 'simpleblack',
 \ 'tabline': {
 \   'left':  [ ['tabs'] ],
 \   'right': [ ['close'], ['cwd', 'gitbranch'] ],
