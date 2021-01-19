@@ -252,9 +252,13 @@ require'fzf_lsp'.setup()
 -- }
 -- vim.g.lsp_utils_location_opts = {
 --   height = 12,
---   mode = 'split',
+--   mode = 'editor',
 --   preview = {
 --     title = 'Location Preview',
+--     border = true,
+--     border_chars = border_chars
+--   },
+--   list = {
 --     border = true,
 --     border_chars = border_chars
 --   },
@@ -273,7 +277,13 @@ require'fzf_lsp'.setup()
 --     border = true,
 --     border_chars = border_chars
 --   },
---   prompt = {},
+--   list = {
+--     border = true,
+--     border_chars = border_chars
+--   },
+--   prompt = {
+--     border_chars = border_chars
+--   },
 -- }
 -- vim.lsp.callbacks['textDocument/codeAction'] = require'lsputil.codeAction'.code_action_handler
 -- vim.lsp.callbacks['textDocument/references'] = require'lsputil.locations'.references_handler
