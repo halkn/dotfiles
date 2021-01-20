@@ -321,7 +321,7 @@ augroup vimrc_filetype
   autocmd FileType qf setlocal signcolumn=no
   autocmd Filetype qf nnoremap <silent> <buffer> p <CR>zz<C-w>p
   autocmd Filetype qf nnoremap <silent> <buffer> q <C-w>c
-  autocmd Filetype qf nnoremap <silent> <buffer> <C-m> <cmd>call <SID>qfenter('edit')<CR>
+  autocmd Filetype qf nnoremap <silent> <buffer> <C-m> <cmd>call <SID>qfenter('wincmd p')<CR>
   autocmd Filetype qf nnoremap <silent> <buffer> <C-t> <cmd>call <SID>qfenter('tabnew')<CR>
   autocmd Filetype qf nnoremap <silent> <buffer> <C-x> <cmd>call <SID>qfenter('wincmd p <bar> new')<CR>
   autocmd Filetype qf nnoremap <silent> <buffer> <C-v> <cmd>call <SID>qfenter('wincmd p <bar> vnew')<CR>
@@ -376,7 +376,6 @@ function! PackInit() abort
   call minpac#add('kana/vim-altr')
   call minpac#add('dhruvasagar/vim-table-mode')
   call minpac#add('previm/previm')
-  call minpac#add('bfrg/vim-qf-preview')
   " Extension
   call minpac#add('skywind3000/asyncrun.vim')
   call minpac#add('glidenote/memolist.vim')
@@ -646,22 +645,6 @@ let g:previm_open_cmd = 'open'
 augroup vimrc_previm
   au!
   autocmd FileType markdown nnoremap <buffer> <silent> <LocalLeader>p :<C-u>PrevimOpen<CR>
-augroup END
-
-" vim-qf-preview
-let g:qfpreview = {
-\ 'top': 'g',
-\ 'bottom': 'G',
-\ 'number': 1,
-\ 'height': 20,
-\ 'offset': 10,
-\ 'next': 'j',
-\ 'previous': 'k',
-\ 'sign': {'linehl': 'CursorLine'}
-\ }
-augroup vimrc_qfpreview
-  autocmd!
-  autocmd FileType qf nmap <buffer> p <plug>(qf-preview-open)
 augroup END
 
 " ----------------------------------------------------------------------------
