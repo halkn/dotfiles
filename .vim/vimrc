@@ -290,10 +290,16 @@ function! s:helpvert()
 endfunction
 function! s:qfenter(cmd)
   let l:lnum = line('.')
-  let l:cmd = get(get(getwininfo(win_getid()), 0, {}), 'loclist', 0) ? 'll' : 'cc'
+  if get(get(getwininfo(win_getid()), 0, {}), 'loclist', 0)
+    let l:cmd = 'll'
+    let l:ccmd = 'lclose'
+  else
+    let l:cmd = 'cc'
+    let l:ccmd = 'cclose'
+  endif
   silent! execute a:cmd
   silent! execute l:cmd l:lnum
-  cclose
+  silent! execute l:ccmd
 endfunction
 augroup vimrc_filetype
   autocmd!
