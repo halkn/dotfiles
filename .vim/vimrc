@@ -236,10 +236,8 @@ function s:ToggleTerminal()
     endif
   endif
 endfunction
-
-command! ToggleTerm call s:ToggleTerminal()
-nnoremap <silent> <C-t> :ToggleTerm<CR>
-tnoremap <silent> <C-t> <C-w>:ToggleTerm<CR>
+nnoremap <silent> <C-t> <cmd>call <SID>ToggleTerminal()<CR>
+tnoremap <silent> <C-t> <cmd>call <SID>ToggleTerminal()<CR>
 
 " Toggle options
 nmap [Toggle] <Nop>
@@ -258,8 +256,7 @@ cnoreabbrev ++s ++enc=sjis
 " quickfix
 nnoremap <silent> [q :<C-u>cprev<CR>
 nnoremap <silent> ]q :<C-u>cnext<CR>
-
-function! ToggleQuickfix()
+function! s:ToggleQuickfix()
   let l:nr = winnr('$')
   cwindow
   let l:nr2 = winnr('$')
@@ -267,13 +264,12 @@ function! ToggleQuickfix()
       cclose
   endif
 endfunction
-nnoremap <script> <silent> Q :call ToggleQuickfix()<CR>
+nnoremap <script> <silent> Q <cmd>call <SID>ToggleQuickfix()<CR>
 
 " locationlist
 nnoremap <silent> [l :lprevious<CR>
 nnoremap <silent> ]l :lnext<CR>
-
-function! ToggleLocationList()
+function! s:ToggleLocationList()
   let l:nr = winnr('$')
   lwindow
   let l:nr2 = winnr('$')
@@ -281,7 +277,7 @@ function! ToggleLocationList()
       lclose
   endif
 endfunction
-nnoremap <script> <silent> W :call ToggleLocationList()<CR>
+nnoremap <script> <silent> W <cmd>call <SID>ToggleLocationList()<CR>
 
 " ============================================================================
 " autocmd
