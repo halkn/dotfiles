@@ -215,10 +215,10 @@ inoremap <silent> <C-q> <Esc>:q<CR>
 tnoremap <silent> <C-q> <C-w>N:q!<CR>
 
 " open termianl in vertial split,new tab,current winddow
-nnoremap <silent> <Leader>ts :<C-u>terminal<CR>
-nnoremap <silent> <Leader>tv :<C-u>vertical terminal<CR>
-nnoremap <silent> <Leader>tt :<C-u>tab terminal<CR>
-nnoremap <silent> <Leader>tw :<C-u>terminal ++curwin<CR>
+nnoremap <silent> <Leader>ts <cmd>terminal<CR>
+nnoremap <silent> <Leader>tv <cmd>vertical terminal<CR>
+nnoremap <silent> <Leader>tt <cmd>tab terminal<CR>
+nnoremap <silent> <Leader>tw <cmd>terminal ++curwin<CR>
 
 " toggle terminal buffer.
 function s:ToggleTerminal()
@@ -242,11 +242,11 @@ tnoremap <silent> <C-t> <cmd>call <SID>ToggleTerminal()<CR>
 " Toggle options
 nmap [Toggle] <Nop>
 map <Leader>o [Toggle]
-nnoremap <silent> [Toggle]n :<C-u>setlocal number! number?<CR>
-nnoremap <silent> [Toggle]rn :<C-u>setlocal relativenumber! relativenumber?<CR>
-nnoremap <silent> [Toggle]c :<C-u>setlocal cursorline! cursorcolumn!<CR>
-nnoremap <silent> [Toggle]w :<C-u>setlocal wrap! wrap?<CR>
-nnoremap <silent> [Toggle]p :<C-u>set paste! paste?<CR>
+nnoremap <silent> [Toggle]n <cmd>setlocal number! number?<CR>
+nnoremap <silent> [Toggle]rn <cmd>setlocal relativenumber! relativenumber?<CR>
+nnoremap <silent> [Toggle]c <cmd>setlocal cursorline! cursorcolumn!<CR>
+nnoremap <silent> [Toggle]w <cmd>setlocal wrap! wrap?<CR>
+nnoremap <silent> [Toggle]p <cmd>set paste! paste?<CR>
 
 " Shortening for ++enc=
 cnoreabbrev ++u ++enc=utf8
@@ -254,8 +254,8 @@ cnoreabbrev ++c ++enc=cp932
 cnoreabbrev ++s ++enc=sjis
 
 " quickfix
-nnoremap <silent> [q :<C-u>cprev<CR>
-nnoremap <silent> ]q :<C-u>cnext<CR>
+nnoremap <silent> [q <cmd>cprev<CR>
+nnoremap <silent> ]q <cmd>cnext<CR>
 function! s:ToggleQuickfix()
   let l:nr = winnr('$')
   cwindow
@@ -492,9 +492,9 @@ let g:ctrlp_use_caching = 0
 let g:ctrlp_show_hidden = 1
 let g:ctrlp_match_func = {'match': 'ctrlp_matchfuzzy#matcher'}
 
-nnoremap <silent> <Leader><Leader> :<C-u>CtrlPMRU<CR>
-nnoremap <silent> <Leader>b        :<C-u>CtrlPBuffer<CR>
-nnoremap <silent> <Leader>l        :<C-u>CtrlPLine<CR>
+nnoremap <silent> <Leader><Leader> <cmd>CtrlPMRU<CR>
+nnoremap <silent> <Leader>b        <cmd>CtrlPBuffer<CR>
+nnoremap <silent> <Leader>l        <cmd>CtrlPLine<CR>
 
 " vim-qfnavigate
 nmap <C-n> <plug>(qfnavigate-next)
@@ -554,7 +554,7 @@ function! s:setup_lsp() abort
   setlocal omnifunc=lsp#complete
   setlocal tagfunc=lsp#tagfunc
   nmap <silent> <buffer> gd              <Plug>(lsp-definition)
-  nmap <silent> <buffer> gD              :<C-u>tab LspDefinition<CR>
+  nmap <silent> <buffer> gD              <cmd>tab LspDefinition<CR>
   nmap <silent> <buffer> gi              <Plug>(lsp-implementation)
   nmap <silent> <buffer> gy              <Plug>(lsp-type-definition)
   nmap <silent> <buffer> gr              <Plug>(lsp-references)
@@ -564,8 +564,8 @@ function! s:setup_lsp() abort
   nmap <silent> <buffer> <LocalLeader>ca <plug>(lsp-code-action)
   nmap <silent> <buffer> <LocalLeader>d  <plug>(lsp-document-diagnostics)
   nmap <silent> <buffer> <LocalLeader>m  <plug>(lsp-document-format)
-  nmap <silent> <buffer> <LocalLeader>s  :<C-u>CtrlPLspDocumentSymbol<CR>
-  nmap <silent> <buffer> <LocalLeader>w  :<C-u>CtrlPLspWorkspaceSymbol<CR>
+  nmap <silent> <buffer> <LocalLeader>s  <cmd>CtrlPLspDocumentSymbol<CR>
+  nmap <silent> <buffer> <LocalLeader>w  <cmd>CtrlPLspWorkspaceSymbol<CR>
 endfunction
 
 augroup vimrc_lsp_setup
@@ -633,7 +633,7 @@ let g:table_mode_toggle_map = 'tm'
 let g:previm_open_cmd = 'open'
 augroup vimrc_previm
   au!
-  autocmd FileType markdown nnoremap <buffer> <silent> <LocalLeader>p :<C-u>PrevimOpen<CR>
+  autocmd FileType markdown nnoremap <buffer> <silent> <LocalLeader>p <cmd>PrevimOpen<CR>
 augroup END
 
 " ----------------------------------------------------------------------------
@@ -663,17 +663,17 @@ function s:asyncrun_go_setup() abort
   command! -buffer -nargs=0 GoTestPackage GoTest ./$VIM_RELDIR
   command! -buffer -nargs=0 GoTestFunc call s:asyncrun_gotest_func()
 
-  nnoremap <silent> <buffer> <LocalLeader>r :<C-u>GoRun<CR>
-  nnoremap <silent> <buffer> <LocalLeader>t :<C-u>GoTest ./...<CR>
-  nnoremap <silent> <buffer> <LocalLeader>p :<C-u>GoTestPackage<CR>
-  nnoremap <silent> <buffer> <LocalLeader>f :<C-u>GoTestFunc<CR>
+  nnoremap <silent> <buffer> <LocalLeader>r <cmd>GoRun<CR>
+  nnoremap <silent> <buffer> <LocalLeader>t <cmd>GoTest ./...<CR>
+  nnoremap <silent> <buffer> <LocalLeader>p <cmd>GoTestPackage<CR>
+  nnoremap <silent> <buffer> <LocalLeader>f <cmd>GoTestFunc<CR>
 endfunction
 
 augroup vimrc_asyncrun
   au!
   autocmd FileType go call s:asyncrun_go_setup()
   autocmd FileType sh nnoremap <silent> <buffer> <LocalLeader>r
-  \ :<C-u>AsyncRun -mode=term -pos=right -cols=80 -focus=0 bash $VIM_RELNAME<CR>
+  \ <cmd>AsyncRun -mode=term -pos=right -cols=80 -focus=0 bash $VIM_RELNAME<CR>
 augroup END
 
 " memolist.vim
@@ -682,9 +682,9 @@ let g:memolist_delimiter_yaml_end  = '---'
 let g:memolist_memo_suffix = 'md'
 let g:memolist_template_dir_path = expand(fnamemodify($MYVIMRC, ":h") . '/template/memotemplates')
 let g:memolist_ex_cmd = 'CtrlP'
-nnoremap <Leader>mn :<C-u>MemoNew<CR>
-nnoremap <Leader>mg :<C-u>MemoGrep<CR>
-nnoremap <Leader>ml :<C-u>MemoList<CR>
+nnoremap <Leader>mn <cmd>MemoNew<CR>
+nnoremap <Leader>mg <cmd>MemoGrep<CR>
+nnoremap <Leader>ml <cmd>MemoList<CR>
 
 " winresizer
 let g:winresizer_start_key = '<C-w>r'
@@ -706,19 +706,19 @@ function s:gina_settings() abort
   call gina#custom#command#option('show','--show-signature')
 
   call gina#custom#mapping#nmap('/.*', 'q', ':<C-U>bd<CR>', s:gina_cmd_opt)
-  call gina#custom#mapping#nmap('status', '<C-c>', ':<C-u>Gina commit<CR>', s:gina_cmd_opt)
-  call gina#custom#mapping#nmap('commit', '<C-c>', ':<C-u>Gina status<CR>', s:gina_cmd_opt)
+  call gina#custom#mapping#nmap('status', '<C-c>', '<cmd>Gina commit<CR>', s:gina_cmd_opt)
+  call gina#custom#mapping#nmap('commit', '<C-c>', '<cmd>Gina status<CR>', s:gina_cmd_opt)
 
   call gina#custom#mapping#nmap(
   \ 'status',
   \ 'p',
-  \ ':<C-u>call gina#action#call(''diff:vsplit'')<CR>',
+  \ '<cmd>call gina#action#call(''diff:vsplit'')<CR>',
   \ s:gina_cmd_opt,
   \ )
   call gina#custom#mapping#nmap(
   \ '/\%(blame\|log\|reflog\)',
   \ 'p',
-  \ ':<C-u>call gina#action#call(''show:commit:vsplit'')<CR>',
+  \ '<cmd>call gina#action#call(''show:commit:vsplit'')<CR>',
   \ s:gina_cmd_opt,
   \ )
 endfunction
@@ -728,9 +728,9 @@ augroup vimrc_gina
   autocmd CmdUndefined Gina ++once call s:gina_settings()
 augroup END
 
-nnoremap <silent> <Leader>gs :<C-u>Gina status<CR>
-nnoremap <silent> <Leader>gl :<C-u>Gina log --graph<CR>
-nnoremap <silent> <Leader>gd :<C-u>Gina compare<CR>
+nnoremap <silent> <Leader>gs <cmd>Gina status<CR>
+nnoremap <silent> <Leader>gl <cmd>Gina log --graph<CR>
+nnoremap <silent> <Leader>gd <cmd>Gina compare<CR>
 
 " translate.vim
 let g:translate_source = "en"
