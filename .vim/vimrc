@@ -132,13 +132,6 @@ endif
 " clipborad
 if has('clipboard')
   set clipboard=unnamed
-elseif executable('win32yank.exe')
-  augroup Yank
-    au!
-    autocmd TextYankPost * :call system('win32yank.exe -i', @")
-  augroup END
-  noremap <silent> p :call setreg('"',system('win32yank.exe -o'))<CR>""p
-  noremap <silent> P :call setreg('"',system('win32yank.exe -o'))<CR>""P
 endif
 
 " undo
