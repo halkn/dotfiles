@@ -215,16 +215,10 @@ nnoremap <silent> [Toggle]c <cmd>setlocal cursorline! cursorcolumn!<CR>
 nnoremap <silent> [Toggle]w <cmd>setlocal wrap! wrap?<CR>
 nnoremap <silent> [Toggle]p <cmd>set paste! paste?<CR>
 
-" Shortening for ++enc=
-cnoreabbrev ++u ++enc=utf8
-cnoreabbrev ++c ++enc=cp932
-cnoreabbrev ++s ++enc=sjis
-
 " quickfix
 nnoremap <silent> [q <cmd>cprev<CR>
 nnoremap <silent> ]q <cmd>cnext<CR>
-
-function! ToggleQuickfix()
+function! s:ToggleQuickfix()
   let l:nr = winnr('$')
   cwindow
   let l:nr2 = winnr('$')
@@ -232,13 +226,12 @@ function! ToggleQuickfix()
       cclose
   endif
 endfunction
-nnoremap <script> <silent> Q :call ToggleQuickfix()<CR>
+nnoremap <script> <silent> Q <cmd>call <SID>ToggleQuickfix()<CR>
 
 " locationlist
 nnoremap <silent> [l :lprevious<CR>
 nnoremap <silent> ]l :lnext<CR>
-
-function! ToggleLocationList()
+function! s:ToggleLocationList()
   let l:nr = winnr('$')
   lwindow
   let l:nr2 = winnr('$')
@@ -246,7 +239,7 @@ function! ToggleLocationList()
       lclose
   endif
 endfunction
-nnoremap <script> <silent> W :call ToggleLocationList()<CR>
+nnoremap <script> <silent> W <cmd>call <SID>ToggleLocationList()<CR>
 
 " ============================================================================
 " autocmd
@@ -256,6 +249,19 @@ function! s:helpvert()
   if &buftype == 'help'
     wincmd L
   endif
+endfunction
+function! s:qfenter(cmd)
+  let l:lnum = line('.')
+  if get(get(getwininfo(win_getid()), 0, {}), 'loclist', 0)
+    let l:cmd = 'll'
+    let l:ccmd = 'lclose'
+  else
+    let l:cmd = 'cc'
+    let l:ccmd = 'cclose'
+  endif
+  silent! execute a:cmd
+  silent! execute l:cmd l:lnum
+  silent! execute l:ccmd
 endfunction
 augroup vimrc_filetype
   autocmd!
@@ -272,6 +278,10 @@ augroup vimrc_filetype
   autocmd FileType qf setlocal signcolumn=no
   autocmd Filetype qf nnoremap <silent> <buffer> p <CR>zz<C-w>p
   autocmd Filetype qf nnoremap <silent> <buffer> q <C-w>c
+  autocmd Filetype qf nnoremap <silent> <buffer> <C-m> <cmd>call <SID>qfenter('wincmd p')<CR>
+  autocmd Filetype qf nnoremap <silent> <buffer> <C-t> <cmd>call <SID>qfenter('tabnew')<CR>
+  autocmd Filetype qf nnoremap <silent> <buffer> <C-x> <cmd>call <SID>qfenter('wincmd p <bar> new')<CR>
+  autocmd Filetype qf nnoremap <silent> <buffer> <C-v> <cmd>call <SID>qfenter('wincmd p <bar> vnew')<CR>
   autocmd BufEnter *.txt,*.jax call s:helpvert()
   autocmd FileType help setlocal signcolumn=no
   autocmd FileType help nnoremap <silent> <buffer> q <C-w>c
@@ -281,6 +291,14 @@ augroup vimrc_filetype
   autocmd TermOpen * startinsert
   autocmd TextYankPost * silent! lua return (not vim.v.event.visual) and require'vim.highlight'.on_yank()
 augroup END
+
+" ============================================================================
+" abbrev
+" ============================================================================
+" Shortening for ++enc=
+cnoreabbrev ++u ++enc=utf8
+cnoreabbrev ++c ++enc=cp932
+cnoreabbrev ++s ++enc=sjis
 
 " ============================================================================
 " Plugin
