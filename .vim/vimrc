@@ -248,11 +248,6 @@ nnoremap <silent> [Toggle]c <cmd>setlocal cursorline! cursorcolumn!<CR>
 nnoremap <silent> [Toggle]w <cmd>setlocal wrap! wrap?<CR>
 nnoremap <silent> [Toggle]p <cmd>set paste! paste?<CR>
 
-" Shortening for ++enc=
-cnoreabbrev ++u ++enc=utf8
-cnoreabbrev ++c ++enc=cp932
-cnoreabbrev ++s ++enc=sjis
-
 " quickfix
 nnoremap <silent> [q <cmd>cprev<CR>
 nnoremap <silent> ]q <cmd>cnext<CR>
@@ -327,6 +322,14 @@ augroup vimrc_filetype
   autocmd FileType help nnoremap <buffer> <BS> <C-T>
   autocmd TerminalOpen * if &buftype == 'terminal' | setlocal signcolumn=no nolist | endif
 augroup END
+
+" ============================================================================
+" abbrev
+" ============================================================================
+" Shortening for ++enc=
+cnoreabbrev ++u ++enc=utf8
+cnoreabbrev ++c ++enc=cp932
+cnoreabbrev ++s ++enc=sjis
 
 " ============================================================================
 " Plugin
