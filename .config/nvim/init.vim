@@ -198,10 +198,10 @@ inoremap <silent> <C-q> <Esc>:q<CR>
 tnoremap <silent> <C-q> <C-\><C-n>:q!<CR>
 
 " open termianl in vertial split,new tab,current winddow
-nnoremap <silent> <Leader>ts :<C-u>split term://$SHELL<CR>
-nnoremap <silent> <Leader>tv :<C-u>vsplit term://$SHELL<CR>
-nnoremap <silent> <Leader>tt :<C-u>tabnew term://$SHELL<CR>
-nnoremap <silent> <Leader>tw :<C-u>terminal<CR>
+nnoremap <silent> <Leader>ts <cmd>split term://$SHELL<CR>
+nnoremap <silent> <Leader>tv <cmd>vsplit term://$SHELL<CR>
+nnoremap <silent> <Leader>tt <cmd>tabnew term://$SHELL<CR>
+nnoremap <silent> <Leader>tw <cmd>terminal<CR>
 
 " ESC in terminal-mode.
 tnoremap <silent> <Esc> <C-\><C-n>
@@ -209,11 +209,11 @@ tnoremap <silent> <Esc> <C-\><C-n>
 " Toggle options
 nmap [Toggle] <Nop>
 map <Leader>o [Toggle]
-nnoremap <silent> [Toggle]n :<C-u>setlocal number! number?<CR>
-nnoremap <silent> [Toggle]rn :<C-u>setlocal relativenumber! relativenumber?<CR>
-nnoremap <silent> [Toggle]c :<C-u>setlocal cursorline! cursorcolumn!<CR>
-nnoremap <silent> [Toggle]w :<C-u>setlocal wrap! wrap?<CR>
-nnoremap <silent> [Toggle]p :<C-u>set paste! paste?<CR>
+nnoremap <silent> [Toggle]n <cmd>setlocal number! number?<CR>
+nnoremap <silent> [Toggle]rn <cmd>setlocal relativenumber! relativenumber?<CR>
+nnoremap <silent> [Toggle]c <cmd>setlocal cursorline! cursorcolumn!<CR>
+nnoremap <silent> [Toggle]w <cmd>setlocal wrap! wrap?<CR>
+nnoremap <silent> [Toggle]p <cmd>set paste! paste?<CR>
 
 " Shortening for ++enc=
 cnoreabbrev ++u ++enc=utf8
@@ -221,8 +221,8 @@ cnoreabbrev ++c ++enc=cp932
 cnoreabbrev ++s ++enc=sjis
 
 " quickfix
-nnoremap <silent> [q :<C-u>cprev<CR>
-nnoremap <silent> ]q :<C-u>cnext<CR>
+nnoremap <silent> [q <cmd>cprev<CR>
+nnoremap <silent> ]q <cmd>cnext<CR>
 
 function! ToggleQuickfix()
   let l:nr = winnr('$')
@@ -392,7 +392,7 @@ let g:table_mode_toggle_map = 'tm'
 " markdown-preview.nvim
 augroup vimrc_markdown_preview
   au!
-  autocmd FileType markdown nnoremap <buffer> <silent> <LocalLeader>p :<C-u>MarkdownPreview<CR>
+  autocmd FileType markdown nnoremap <buffer> <silent> <LocalLeader>p <cmd>MarkdownPreview<CR>
 augroup END
 
 " extension ------------------------------------------------------------------
@@ -401,9 +401,9 @@ let g:memolist_memo_suffix = 'md'
 let g:memolist_template_dir_path =
 \ expand(fnamemodify($MYVIMRC, ":h") . '/template/memotemplates')
 let g:memolist_ex_cmd = 'FzfFiles'
-nnoremap <Leader>mn :<C-u>MemoNew<CR>
-nnoremap <Leader>mg :<C-u>MemoGrep<CR>
-nnoremap <Leader>ml :<C-u>MemoList<CR>
+nnoremap <Leader>mn <cmd>MemoNew<CR>
+nnoremap <Leader>mg <cmd>MemoGrep<CR>
+nnoremap <Leader>ml <cmd>MemoList<CR>
 
 " asyncrun.vim
 let g:asyncrun_open = 8
@@ -430,17 +430,17 @@ function s:asyncrun_go_setup() abort
   command! -buffer -nargs=0 GoTestPackage GoTest ./$VIM_RELDIR
   command! -buffer -nargs=0 GoTestFunc call s:asyncrun_gotest_func()
 
-  nnoremap <silent> <buffer> <LocalLeader>r :<C-u>GoRun<CR>
-  nnoremap <silent> <buffer> <LocalLeader>t :<C-u>GoTest ./...<CR>
-  nnoremap <silent> <buffer> <LocalLeader>p :<C-u>GoTestPackage<CR>
-  nnoremap <silent> <buffer> <LocalLeader>f :<C-u>GoTestFunc<CR>
+  nnoremap <silent> <buffer> <LocalLeader>r <cmd>GoRun<CR>
+  nnoremap <silent> <buffer> <LocalLeader>t <cmd>GoTest ./...<CR>
+  nnoremap <silent> <buffer> <LocalLeader>p <cmd>GoTestPackage<CR>
+  nnoremap <silent> <buffer> <LocalLeader>f <cmd>GoTestFunc<CR>
 endfunction
 
 augroup vimrc_asyncrun
   au!
   autocmd FileType go call s:asyncrun_go_setup()
   autocmd FileType sh nnoremap <silent> <buffer> <LocalLeader>r
-  \ :<C-u>AsyncRun -mode=term -pos=right -cols=80 -focus=0 bash $VIM_RELNAME<CR>
+  \ <cmd>AsyncRun -mode=term -pos=right -cols=80 -focus=0 bash $VIM_RELNAME<CR>
 augroup END
 
 " translate.vim
