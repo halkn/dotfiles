@@ -344,8 +344,9 @@ paq{'savq/paq-nvim', opt=true}
 
 -- appearance
 paq'glepnir/zephyr-nvim'
+paq'ChristianChiarulli/nvcode-color-schemes.vim'
 paq'nvim-treesitter/nvim-treesitter'
-paq'hoob3rt/lualine.nvim'
+paq'glepnir/galaxyline.nvim'
 
 -- enhanced
 paq 'hrsh7th/vim-eft'
@@ -391,7 +392,24 @@ paq'hrsh7th/vim-vsnip-integ'
 
 -- appearance ================================================================
 -- zephyr-nvim
-require('zephyr')
+vim.cmd [[ colorscheme nvcode ]]
+function _G.colormod()
+  vim.cmd [[
+    hi! GitGutterAdd guifg=#B5CEA8
+    hi! GitGutterChange guifg=#9CDCFE
+    hi! GitGutterDelete guifg=#F44747
+    hi! link GitGutterChabgeDelete GitGutterDelete
+    hi! link LspDiagnosticsDefaultError TSError
+    hi! link LspDiagnosticsDefaultWarning WarningMsg
+    hi! LspDiagnosticsUnderlineError gui=underline
+    hi! LspDiagnosticsUnderlineWarning gui=underline
+  ]]
+end
+create_augroups({
+  vimrc_colormod = {
+    {"ColorScheme", "nvcode", "call v:lua.colormod()"},
+  },
+})
 
 -- nvim-treesitter
 require'nvim-treesitter.configs'.setup {
@@ -401,11 +419,221 @@ require'nvim-treesitter.configs'.setup {
   },
 }
 
--- lualine.nvim
-local lualine = require('lualine')
-lualine.theme = 'onedark'
-lualine.extensions = { 'fzf' }
-lualine.status()
+-- galaxyline.nvim
+local gl = require('galaxyline')
+local gls = gl.section
+
+local colors = {
+  bg = '#282c34',
+  yellow = '#fabd2f',
+  cyan = '#008080',
+  darkblue = '#081633',
+  green = '#608B4E',
+  orange = '#FF8800',
+  purple = '#5d4d7a',
+  magenta = '#d16d9e',
+  grey = '#c0c0c0',
+  blue = '#569CD6',
+  red = '#D16969'
+}
+
+local buffer_not_empty = function()
+  if vim.fn.empty(vim.fn.expand('%:t')) ~= 1 then
+    return true
+  end
+  return false
+end
+
+gls.left[2] = {
+  ViMode = {
+    provider = function()
+      -- auto change color according the vim mode
+      local mode_color = {n = colors.purple,
+                          i = colors.green,
+                          v = colors.blue,
+                          [''] = colors.blue,
+                          V = colors.blue,
+                          c = colors.purple,
+                          no = colors.magenta,
+                          s = colors.orange,
+                          S = colors.orange,
+                          [''] = colors.orange,
+                          ic = colors.yellow,
+                          R = colors.red,
+                          Rv = colors.red,
+                          cv = colors.red,
+                          ce=colors.red,
+                          r = colors.cyan,
+                          rm = colors.cyan,
+                          ['r?'] = colors.cyan,
+                          ['!']  = colors.red,
+                          t = colors.red}
+      vim.api.nvim_command('hi GalaxyViMode guibg='..mode_color[vim.fn.mode()])
+      -- return '  NVCode '
+      local alias = {
+        n = 'NORMAL',
+        i = 'INSERT',
+        c= 'COMMAND',
+        V= 'VISUAL',
+        [''] = 'VISUAL',
+        s = 'SELECT',
+        S = 'SELECT',
+        [''] = 'SELECT',
+        t = 'TERMINAL',
+      }
+      local mode = alias[vim.fn.mode()]
+      if mode == nil then
+        mode = ' '
+      end
+      return '  '..mode..' '
+      -- return '  '..alias[vim.fn.mode()]..' '
+    end,
+    separator = ' ',
+    separator_highlight = {colors.yellow,function()
+      if not buffer_not_empty() then
+        return colors.bg
+      end
+      return colors.bg
+    end},
+    highlight = {colors.grey,colors.bg,'bold'},
+  },
+}
+gls.left[3] = {
+  GitIcon = {
+    provider = function() return ' ' end,
+    condition = buffer_not_empty,
+    highlight = {colors.orange,colors.bg},
+  }
+}
+gls.left[4] = {
+  GitBranch = {
+    provider = 'GitBranch',
+    separator = '|',
+    separator_highlight = {colors.purple,colors.bg},
+    condition = buffer_not_empty,
+    highlight = {colors.grey,colors.bg},
+  }
+}
+
+local checkwidth = function()
+  local squeeze_width  = vim.fn.winwidth(0) / 2
+  if squeeze_width > 40 then
+    return true
+  end
+  return false
+end
+gls.left[5] = {
+  DiffAdd = {
+    provider = 'DiffAdd',
+    condition = checkwidth,
+    icon = '  ',
+    highlight = {colors.green,colors.bg},
+  }
+}
+gls.left[6] = {
+  DiffModified = {
+    provider = 'DiffModified',
+    condition = checkwidth,
+    icon = '  ',
+    highlight = {colors.blue,colors.bg},
+  }
+}
+gls.left[7] = {
+  DiffRemove = {
+    provider = 'DiffRemove',
+    condition = checkwidth,
+    icon = '  ',
+    highlight = {colors.red,colors.bg},
+  }
+}
+gls.left[8] = {
+  LeftEnd = {
+    provider = function() return ' ' end,
+    separator = ' ',
+    separator_highlight = {colors.purple,colors.bg},
+    highlight = {colors.purple,colors.bg}
+  }
+}
+gls.left[9] = {
+  DiagnosticError = {
+    provider = 'DiagnosticError',
+    icon = '  ',
+    highlight = {colors.red,colors.bg}
+  }
+}
+gls.left[10] = {
+  Space = {
+    provider = function () return '' end
+  }
+}
+gls.left[11] = {
+  DiagnosticWarn = {
+    provider = 'DiagnosticWarn',
+    icon = '  ',
+    highlight = {colors.yellow,colors.bg},
+  }
+}
+gls.left[12] = {
+  DiagnosticHint = {
+    provider = 'DiagnosticHint',
+    icon = '   ',
+    highlight = {colors.blue,colors.bg},
+  }
+}
+gls.left[13] = {
+  DiagnosticInfo = {
+    provider = 'DiagnosticInfo',
+    icon = '   ',
+    highlight = {colors.orange,colors.bg},
+  }
+}
+
+gls.right[1]= {
+  FileFormat = {
+    provider = 'FileFormat',
+    separator = ' ',
+    separator_highlight = {colors.darkblue,colors.bg},
+    highlight = {colors.grey,colors.bg},
+  }
+}
+gls.right[2]= {
+  FileEncode = {
+    provider = 'FileEncode',
+    separator = ' |',
+    separator_highlight = {colors.darkblue,colors.bg},
+    highlight = {colors.grey,colors.bg},
+  }
+}
+gls.right[3]= {
+  FileTypeName = {
+    provider = 'FileTypeName',
+    separator = ' |',
+    separator_highlight = {colors.darkblue,colors.bg},
+    highlight = {colors.grey,colors.bg},
+  }
+}
+gls.right[4] = {
+  LineInfo = {
+    provider = 'LineColumn',
+    separator = ' | ',
+    separator_highlight = {colors.darkblue,colors.bg},
+    highlight = {colors.grey,colors.bg},
+  },
+}
+gls.right[5] = {
+  PerCent = {
+    provider = 'LinePercent',
+    separator = ' |',
+    separator_highlight = {colors.darkblue,colors.bg},
+    highlight = {colors.grey,colors.bg},
+  }
+}
+gls.right[6] = {
+  ScrollBar = {
+    provider = 'ScrollBar',
+    highlight = {colors.yellow,colors.purple},
+  }
+}
 
 -- fuzzyfinder ===============================================================
 -- fzf.vim
