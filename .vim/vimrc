@@ -243,37 +243,34 @@ tnoremap <silent> <C-t> <cmd>call <SID>ToggleTerminal()<CR>
 " Toggle options
 nmap [Toggle] <Nop>
 map <Leader>o [Toggle]
-nnoremap <silent> [Toggle]n <cmd>setlocal number! number?<CR>
+nnoremap <silent> [Toggle]n  <cmd>setlocal number! number?<CR>
 nnoremap <silent> [Toggle]rn <cmd>setlocal relativenumber! relativenumber?<CR>
-nnoremap <silent> [Toggle]c <cmd>setlocal cursorline! cursorcolumn!<CR>
-nnoremap <silent> [Toggle]w <cmd>setlocal wrap! wrap?<CR>
-nnoremap <silent> [Toggle]p <cmd>set paste! paste?<CR>
+nnoremap <silent> [Toggle]c  <cmd>setlocal cursorline! cursorcolumn!<CR>
+nnoremap <silent> [Toggle]w  <cmd>setlocal wrap! wrap?<CR>
+nnoremap <silent> [Toggle]p  <cmd>set paste! paste?<CR>
 
-" quickfix
+" quickfix/loclist
 nnoremap <silent> [q <cmd>cprev<CR>
 nnoremap <silent> ]q <cmd>cnext<CR>
-function! s:ToggleQuickfix()
-  let l:nr = winnr('$')
-  cwindow
-  let l:nr2 = winnr('$')
-  if l:nr == l:nr2
-      cclose
-  endif
-endfunction
-nnoremap <script> <silent> Q <cmd>call <SID>ToggleQuickfix()<CR>
-
-" locationlist
 nnoremap <silent> [l :lprevious<CR>
 nnoremap <silent> ]l :lnext<CR>
-function! s:ToggleLocationList()
+function! s:toggleqf(mode) abort
+  if a:mode == 'q'
+    let l:open = 'cwindow'
+    let l:close = 'cclose'
+  else
+    let l:open = 'lwindow'
+    let l:close = 'lclose'
+  endif
   let l:nr = winnr('$')
-  lwindow
+  execute(l:open)
   let l:nr2 = winnr('$')
   if l:nr == l:nr2
-      lclose
+      execute(l:close)
   endif
 endfunction
-nnoremap <script> <silent> W <cmd>call <SID>ToggleLocationList()<CR>
+nnoremap <script> <silent> Q <cmd>call <SID>toggleqf('q')<CR>
+nnoremap <script> <silent> W <cmd>call <SID>toggleqf('l')<CR>
 
 " ============================================================================
 " autocmd
