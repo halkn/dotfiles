@@ -165,6 +165,7 @@ nnoremap <Space>s :source $MYVIMRC<CR>
 
 " Clear search highlight
 nnoremap <Esc><Esc> :nohlsearch<CR><Esc>
+nnoremap <silent> <C-l> :<C-u>nohlsearch<CR><C-l>
 
 " Multi line move
 noremap k gk
