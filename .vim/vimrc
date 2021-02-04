@@ -745,15 +745,15 @@ function s:gina_settings() abort
   packadd gina.vim
   let s:gina_cmd_opt = {'noremap': 1, 'silent': 1}
   call gina#custom#command#option('status','-s')
-  call gina#custom#command#option('status','--opener', 'tabedit')
+  call gina#custom#command#option('status','-b')
+  call gina#custom#command#option('status','--opener', 'split')
   call gina#custom#command#option('log','--opener', 'tabedit')
   call gina#custom#command#option('commit', '-v')
   call gina#custom#command#option('show','--show-signature')
 
   call gina#custom#mapping#nmap('/.*', 'q', ':<C-U>bd<CR>', s:gina_cmd_opt)
   call gina#custom#mapping#nmap('status', '<C-c>', '<cmd>Gina commit<CR>', s:gina_cmd_opt)
-  call gina#custom#mapping#nmap('commit', '<C-c>', '<cmd>Gina status<CR>', s:gina_cmd_opt)
-
+  call gina#custom#mapping#nmap('commit', '<C-c>', '<cmd>Gina status --opener=edit<CR>', s:gina_cmd_opt)
   call gina#custom#mapping#nmap(
   \ 'status',
   \ 'p',
@@ -766,6 +766,15 @@ function s:gina_settings() abort
   \ '<cmd>call gina#action#call(''show:commit:vsplit'')<CR>',
   \ s:gina_cmd_opt,
   \ )
+
+  call gina#custom#execute(
+  \ '/\%(ls\|log\|reflog\|grep\)',
+  \ 'setlocal noautoread',
+  \ )
+  call gina#custom#execute(
+  \ '/\%(status\|branch\|ls\|log\|reflog\|grep\)',
+  \ 'setlocal cursorline',
+  \ )
 endfunction
 
 augroup vimrc_gina
@@ -776,6 +785,7 @@ augroup END
 nnoremap <silent> <Leader>gs <cmd>Gina status<CR>
 nnoremap <silent> <Leader>gl <cmd>Gina log --graph<CR>
 nnoremap <silent> <Leader>gd <cmd>Gina compare<CR>
+nnoremap <silent> <Leader>gb <cmd>Gina branch -av<CR>
 
 " translate.vim
 let g:translate_source = "en"
