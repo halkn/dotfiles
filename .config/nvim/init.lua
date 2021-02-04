@@ -91,7 +91,7 @@ vim.o.shiftround = true
 vim.o.tabstop = 4
 vim.o.whichwrap = 'b,s,[,],<,>'
 vim.o.backspace = 'indent,eol,start'
-vim.o.completeopt = 'menuone,noinsert,noselect'
+vim.o.completeopt = 'menu,menuone,noselect'
 
 -- window
 vim.o.splitbelow = true
@@ -916,7 +916,7 @@ require'compe'.setup {
   throttle_time = 80;
   source_timeout = 200;
   incomplete_delay = 400;
-  allow_prefix_unmatch = false;
+  allow_prefix_unmatch = true;
 
   source = {
     path = true;
@@ -924,7 +924,6 @@ require'compe'.setup {
     vsnip = true;
     nvim_lsp = true;
     nvim_lua = false;
-    your_awesome_source = {};
   };
 }
 vim.api.nvim_set_keymap('i', '<CR>', [[compe#confirm('<CR>')]], {noremap=true, silent=true, expr=true})
