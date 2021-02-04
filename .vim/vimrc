@@ -342,7 +342,8 @@ function! PackInit() abort
 
   " global
   call minpac#add('chuling/vim-equinusocio-material', {'type': 'opt'})
-  call minpac#add('aonemd/kuroi.vim')
+  call minpac#add('aonemd/kuroi.vim', {'type': 'opt'})
+  call minpac#add('jacoborus/tender.vim', {'type': 'opt'})
   call minpac#add('itchyny/lightline.vim')
   call minpac#add('itchyny/vim-gitbranch')
   call minpac#add('halkn/lightline-lsp')
@@ -414,20 +415,53 @@ endif
 "   autocmd ColorScheme equinusocio_material highlight LspWarningHighlight gui=underline cterm=underline
 " augroup END
 " colorscheme equinusocio_material
-function s:kuroi_modify() abort
-  highlight link LspErrorText WarningMsg
-  highlight link LspWarningText Title
-  highlight link LspWarningHighlight LongLineWarning
+" function s:kuroi_modify() abort
+"   highlight link LspErrorText WarningMsg
+"   highlight link LspWarningText Title
+"   highlight link LspWarningHighlight LongLineWarning
+" endfunction
+" augroup vimrc_colorscheme
+"   autocmd!
+"   autocmd ColorScheme kuroi call s:kuroi_modify()
+" augroup END
+" colorscheme kuroi
+
+" tender.vim
+function s:tender_custum() abort
+  hi PMenu guifg=#eeeeee ctermfg=255 guibg=#444444 ctermbg=238 gui=NONE cterm=NONE
+  hi PMenuSel guifg=#ffc24b ctermfg=215 guibg=#282828 ctermbg=235 gui=NONE cterm=NONE
+  hi link LspErrorText CocErrorSign
+  hi link LspWarningText CocWarningSign
+  hi LspErrorHighlight gui=underline cterm=underline
+  hi LspWarningHighlight gui=underline cterm=underline
+  let g:terminal_ansi_colors = [
+    \ '#282828',
+    \ '#f43753',
+    \ '#c9d05c',
+    \ '#ffc24b',
+    \ '#b3deef',
+    \ '#d3b987',
+    \ '#73cef4',
+    \ '#eeeeee',
+    \ '#1d1d1d',
+    \ '#f43753',
+    \ '#c9d05c',
+    \ '#ffc24b',
+    \ '#b3deef',
+    \ '#d3b987',
+    \ '#73cef4',
+    \ '#ffffff'
+    \ ]
 endfunction
 augroup vimrc_colorscheme
   autocmd!
-  autocmd ColorScheme kuroi call s:kuroi_modify()
+  autocmd ColorScheme tender call s:tender_custum()
 augroup END
-colorscheme kuroi
+colorscheme tender
 
 " lightline
 let g:lightline = {
-\ 'colorscheme': 'simpleblack',
+\ 'colorscheme': 'wombat',
 \ 'tabline': {
 \   'left':  [ ['tabs'] ],
 \   'right': [ ['close'], ['cwd', 'gitbranch'] ],
