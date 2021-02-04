@@ -374,6 +374,7 @@ function! PackInit() abort
   call minpac#add('liuchengxu/vista.vim')
   " FileType
   call minpac#add('kana/vim-altr')
+  call minpac#add('mattn/vim-gomod')
   call minpac#add('dhruvasagar/vim-table-mode')
   call minpac#add('previm/previm')
   " Extension
