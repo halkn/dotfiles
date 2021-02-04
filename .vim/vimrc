@@ -360,7 +360,6 @@ function! PackInit() abort
   call minpac#add('kana/vim-operator-replace')
   call minpac#add('ctrlpvim/ctrlp.vim')
   call minpac#add('mattn/ctrlp-matchfuzzy')
-  call minpac#add('mattn/ctrlp-lsp')
   call minpac#add('mattn/vim-findroot')
   call minpac#add('mattn/vim-qfnavigate')
   call minpac#add('halkn/vim-agrep')
@@ -607,10 +606,11 @@ function! s:setup_lsp() abort
   nmap <silent> <buffer> <F2>            <Plug>(lsp-rename)
   nmap <silent> <buffer> <LocalLeader>k  <Plug>(lsp-peek-definition)
   nmap <silent> <buffer> <LocalLeader>ca <plug>(lsp-code-action)
-  nmap <silent> <buffer> <LocalLeader>d  <plug>(lsp-document-diagnostics)
+  nmap <silent> <buffer> <LocalLeader>cl <plug>(lsp-code-lens)
+  nmap <silent> <buffer> <LocalLeader>d  <cmd>LspDocumentDiagnostics --buffers=*<CR>
   nmap <silent> <buffer> <LocalLeader>m  <plug>(lsp-document-format)
-  nmap <silent> <buffer> <LocalLeader>s  <cmd>CtrlPLspDocumentSymbol<CR>
-  nmap <silent> <buffer> <LocalLeader>w  <cmd>CtrlPLspWorkspaceSymbol<CR>
+  nmap <silent> <buffer> <LocalLeader>s  <plug>(lsp-document-symbol-search)
+  nmap <silent> <buffer> <LocalLeader>w  <plug>(lsp-workspace-symbol-search)
 endfunction
 
 augroup vimrc_lsp_setup
