@@ -583,7 +583,7 @@ nnoremap <silent> <Leader>p        <cmd>call candle#mapping#action_prev('default
 nnoremap <silent> <Leader>f <cmd>call candle#start(
 \ {
 \   'file': {
-\     'root_path': '.',
+\     'root_path': getcwd(),
 \     'ignore_patterns': ['.git/'],
 \   }
 \ },
