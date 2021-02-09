@@ -114,6 +114,9 @@ set smartcase
 set incsearch
 set hlsearch
 
+" time
+set ttimeoutlen=10
+
 " Completion
 set completeopt=menuone,noinsert,noselect
 
@@ -348,13 +351,13 @@ function! PackInit() abort
   call minpac#add('vim-jp/vimdoc-ja')
   call minpac#add('tyru/columnskip.vim')
   call minpac#add('hrsh7th/vim-eft')
-  call minpac#add('cohama/lexima.vim')
   call minpac#add('tyru/caw.vim')
   call minpac#add('machakann/vim-sandwich')
   call minpac#add('kana/vim-textobj-user')
   call minpac#add('sgur/vim-textobj-parameter')
   call minpac#add('kana/vim-operator-user')
   call minpac#add('kana/vim-operator-replace')
+  call minpac#add('mattn/vim-lexiv')
   call minpac#add('mattn/vim-findroot')
   call minpac#add('mattn/vim-qfnavigate')
   call minpac#add('halkn/vim-agrep')
@@ -489,9 +492,6 @@ let g:lightline = {
 \ },
 \ }
 
-" lexima.vim
-let g:lexima_ctrlh_as_backspace = 1
-
 " caw.vim
 nmap <Leader>c <Plug>(caw:hatpos:toggle)
 vmap <Leader>c <Plug>(caw:hatpos:toggle)
@@ -522,6 +522,9 @@ omap t <Plug>(eft-t)
 nmap T <Plug>(eft-T)
 xmap T <Plug>(eft-T)
 omap T <Plug>(eft-T)
+
+" vim-lexiv
+inoremap <expr> <C-h> lexiv#paren_delete()
 
 " vim-qfnavigate
 nmap <C-n> <plug>(qfnavigate-next)
