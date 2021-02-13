@@ -198,6 +198,9 @@ nnoremap X "_X
 vnoremap > >gv
 vnoremap < <gv
 
+" Does not move when using *
+nnoremap * *N
+
 " Quit the current window
 nnoremap <silent> <C-q> :q<CR>
 inoremap <silent> <C-q> <Esc>:q<CR>
