@@ -55,20 +55,13 @@ let g:markdown_fenced_languages = [
 " ============================================================================
 " Global options
 " ============================================================================
+" encoding
 set encoding=utf-8
 scriptencoding utf-8
-
-" Encoding
 set fileencodings=utf-8,cp932
 set fileformats=unix,dos,mac
 
-" Don't creat swap files
-set nobackup
-set noswapfile
-set noundofile
-
 " Appearance
-set wildmenu
 set display=lastline
 set laststatus=2
 set nocursorcolumn
@@ -83,11 +76,11 @@ set signcolumn=yes
 set noshowmode
 set showtabline=2
 set background=dark
+set termguicolors
 set diffopt^=vertical
-
-" buffer
-set hidden
-set switchbuf=useopen
+set shortmess+=c
+set shortmess-=S
+set helplang=ja,en
 
 " edit
 set smarttab
@@ -99,6 +92,10 @@ set tabstop=4
 set virtualedit=block,onemore
 set whichwrap=b,s,[,],<,>
 set backspace=indent,eol,start
+
+" buffer
+set hidden
+set switchbuf=useopen
 
 " window
 set splitbelow
@@ -114,44 +111,32 @@ set smartcase
 set incsearch
 set hlsearch
 
-" time
+" performance
+set updatetime=300
 set ttimeoutlen=10
+set ttyfast
+set lazyredraw
 
 " Completion
 set completeopt=menuone,noinsert,noselect
+set pumheight=10
 
-" shortmess
-set shortmess+=c
-set shortmess-=S
+" cmdline
+set wildmenu 
+set wildmode=longest:full
+set wildchar=<Tab>
 
-" help
-set helplang=ja,en
-
-" vimfinfo
-if has('viminfo')
-  set viminfo+=n$XDG_CACHE_HOME/vim/viminfo
-endif
+" data files
+set nobackup
+set noswapfile
+set noundofile
+set viminfo+=n$XDG_CACHE_HOME/vim/viminfo
+set undodir=$XDG_CACHE_HOME/vim/.undodir
+set undofile
 
 " clipborad
 if has('clipboard')
   set clipboard=unnamed
-endif
-
-" undo
-if has("persistent_undo")
-  set undodir=$XDG_CACHE_HOME/vim/.undodir
-  set undofile
-endif
-
-" Use true color in terminal
-if exists('&termguicolors')
-  set termguicolors
-endif
-
-" Use popup window with complete
-if has('textprop')
-  set completeopt+=popup
-  set completepopup=align:menu,border:on,highlight:Pmenu
 endif
 
 " grep
