@@ -103,9 +103,6 @@ set smartcase
 set incsearch
 set hlsearch
 
-" time
-set ttimeoutlen=10
-
 " Completion
 set completeopt=menuone,noinsert,noselect
 
@@ -151,7 +148,6 @@ nnoremap <Space>s :source $MYVIMRC<CR>
 
 " Clear search highlight
 nnoremap <Esc><Esc> :nohlsearch<CR><Esc>
-nnoremap <silent> <C-l> :<C-u>nohlsearch<CR><C-l>
 
 " Multi line move
 noremap k gk
@@ -213,34 +209,37 @@ tnoremap <silent> <Esc> <C-\><C-n>
 " Toggle options
 nmap [Toggle] <Nop>
 map <Leader>o [Toggle]
-nnoremap <silent> [Toggle]n  <cmd>setlocal number! number?<CR>
+nnoremap <silent> [Toggle]n <cmd>setlocal number! number?<CR>
 nnoremap <silent> [Toggle]rn <cmd>setlocal relativenumber! relativenumber?<CR>
-nnoremap <silent> [Toggle]c  <cmd>setlocal cursorline! cursorcolumn!<CR>
-nnoremap <silent> [Toggle]w  <cmd>setlocal wrap! wrap?<CR>
-nnoremap <silent> [Toggle]p  <cmd>set paste! paste?<CR>
+nnoremap <silent> [Toggle]c <cmd>setlocal cursorline! cursorcolumn!<CR>
+nnoremap <silent> [Toggle]w <cmd>setlocal wrap! wrap?<CR>
+nnoremap <silent> [Toggle]p <cmd>set paste! paste?<CR>
 
-" quickfix/loclist
+" quickfix
 nnoremap <silent> [q <cmd>cprev<CR>
 nnoremap <silent> ]q <cmd>cnext<CR>
-nnoremap <silent> [l :lprevious<CR>
-nnoremap <silent> ]l :lnext<CR>
-function! s:toggleqf(mode) abort
-  if a:mode == 'q'
-    let l:open = 'cwindow'
-    let l:close = 'cclose'
-  else
-    let l:open = 'lwindow'
-    let l:close = 'lclose'
-  endif
+function! s:ToggleQuickfix()
   let l:nr = winnr('$')
-  execute(l:open)
+  cwindow
   let l:nr2 = winnr('$')
   if l:nr == l:nr2
-      execute(l:close)
+      cclose
   endif
 endfunction
-nnoremap <script> <silent> Q <cmd>call <SID>toggleqf('q')<CR>
-nnoremap <script> <silent> W <cmd>call <SID>toggleqf('l')<CR>
+nnoremap <script> <silent> Q <cmd>call <SID>ToggleQuickfix()<CR>
+
+" locationlist
+nnoremap <silent> [l :lprevious<CR>
+nnoremap <silent> ]l :lnext<CR>
+function! s:ToggleLocationList()
+  let l:nr = winnr('$')
+  lwindow
+  let l:nr2 = winnr('$')
+  if l:nr == l:nr2
+      lclose
+  endif
+endfunction
+nnoremap <script> <silent> W <cmd>call <SID>ToggleLocationList()<CR>
 
 " ============================================================================
 " autocmd
@@ -307,6 +306,7 @@ cnoreabbrev ++s ++enc=sjis
 call plug#begin(stdpath('data') . '/plugged')
 " colorscheme
 Plug 'christianchiarulli/nvcode-color-schemes.vim'
+Plug 'nvim-treesitter/nvim-treesitter'
 
 " enhanced
 Plug 'itchyny/lightline.vim'
@@ -317,8 +317,6 @@ Plug 'machakann/vim-sandwich'
 Plug 'kana/vim-operator-user'
 Plug 'kana/vim-operator-replace'
 Plug 'mattn/vim-findroot'
-
-" git
 
 " filetype
 Plug 'kana/vim-altr', { 'for': [ 'go', 'vim', 'help' ] }
@@ -339,19 +337,21 @@ Plug 'tyru/capture.vim', { 'on': 'Capture' }
 Plug 'tweekmonster/startuptime.vim', { 'on': 'StartupTime' }
 
 " fuzzy finder
-Plug 'Shougo/denite.nvim', { 'do': ':UpdateRemotePlugins', 'on': 'Denite' }
+Plug 'junegunn/fzf'
+Plug 'junegunn/fzf.vim'
 
 " completion
 Plug 'hrsh7th/nvim-compe'
 Plug 'hrsh7th/vim-vsnip'
 Plug 'hrsh7th/vim-vsnip-integ'
 
+" Lua
+Plug 'nvim-lua/plenary.nvim'
+Plug 'lewis6991/gitsigns.nvim'
+Plug 'neovim/nvim-lspconfig'
+Plug 'gfanto/fzf-lsp.nvim'
 call plug#end()
 
-
-" ============================================================================
-" Plugin config
-" ============================================================================
 " colorscheme ----------------------------------------------------------------
 colorscheme nvcode
 hi! GitGutterAdd guifg=#B5CEA8
@@ -363,13 +363,6 @@ hi! link GitGutterChabgeDelete GitGutterDelete
 " lightline.vim
 let g:lightline = {}
 let g:lightline.colorscheme = 'wombat'
-" columnskip.vim
-nmap sj <Plug>(columnskip:nonblank:next)
-omap sj <Plug>(columnskip:nonblank:next)
-xmap sj <Plug>(columnskip:nonblank:next)
-nmap sk <Plug>(columnskip:nonblank:prev)
-omap sk <Plug>(columnskip:nonblank:prev)
-xmap sk <Plug>(columnskip:nonblank:prev)
 
 " vim-eft
 nmap ; <Plug>(eft-repeat)
@@ -387,6 +380,13 @@ nmap T <Plug>(eft-T)
 xmap T <Plug>(eft-T)
 omap T <Plug>(eft-T)
 
+" columnskip.vim
+nmap sj <Plug>(columnskip:nonblank:next)
+omap sj <Plug>(columnskip:nonblank:next)
+xmap sj <Plug>(columnskip:nonblank:next)
+nmap sk <Plug>(columnskip:nonblank:prev)
+omap sk <Plug>(columnskip:nonblank:prev)
+xmap sk <Plug>(columnskip:nonblank:prev)
 
 " lexima.vim
 let g:lexima_ctrlh_as_backspace = 1
@@ -461,6 +461,13 @@ augroup vimrc_asyncrun
   \ <cmd>AsyncRun -mode=term -pos=right -cols=80 -focus=0 bash $VIM_RELNAME<CR>
 augroup END
 
+" translate.vim
+let g:translate_source = "en"
+let g:translate_target = "ja"
+let g:translate_popup_window = 1
+let g:translate_winsize = 10
+xmap T <Plug>(VTranslate)
+xmap <Leader>tR <Plug>(VTranslateBang)
 
 " winresizer
 let g:winresizer_start_key = '<C-w>r'
@@ -477,55 +484,17 @@ nmap <Leader>c <Plug>(caw:hatpos:toggle)
 vmap <Leader>c <Plug>(caw:hatpos:toggle)
 
 " fuzzy finder ---------------------------------------------------------------
-function! s:denite_my_settings() abort
-  nnoremap <silent><buffer><expr> <CR>    denite#do_map('do_action')
-  nnoremap <silent><buffer><expr> a       denite#do_map('choose_action')
-  nnoremap <silent><buffer><expr> d       denite#do_map('do_action', 'delete')
-  nnoremap <silent><buffer><expr> p       denite#do_map('do_action', 'preview')
-  nnoremap <silent><buffer><expr> q       denite#do_map('quit')
-  nnoremap <silent><buffer><expr> <ESC>   denite#do_map('quit')
-  nnoremap <silent><buffer><expr> i       denite#do_map('open_filter_buffer')
-  nnoremap <silent><buffer><expr> <Space> denite#do_map('toggle_select').'j'
-endfunction
-function! s:denite_filter_my_settings() abort
-  inoremap <silent><buffer> <C-j> <Esc><C-w>p:call cursor(line('.')+1,0)<CR><C-w>pA
-  inoremap <silent><buffer> <C-k> <Esc><C-w>p:call cursor(line('.')-1,0)<CR><C-w>pA
-  inoremap <silent><buffer><expr> <ESC>   denite#do_map('quit')
-  nnoremap <silent><buffer><expr> <ESC>   denite#do_map('quit')
-  inoremap <silent><buffer><expr> <C-c>   denite#do_map('quit')
-endfunction
-function! s:denite_init() abort
-  call denite#custom#var('file/rec', 'command',
-  \ ['fd', '--type', 'file', '--follow', '--hidden', '--exclude', '.git', '.*']
-  \ )
-  call denite#custom#var('grep,line/external', {
-  \ 'command': ['rg', '--threads', '1'],
-  \ 'recursive_opts': [],
-  \ 'final_opts': [],
-  \ 'separator': ['--'],
-  \ 'default_opts': ['-i', '--vimgrep', '--no-heading', '--hidden'],
-  \ })
-  call denite#custom#option('default', {
-  \ 'source_names': 'short',
-  \ 'winheight': 12,
-  \ 'vertical_preview': v:true,
-  \ 'prompt': '> ',
-  \ 'preview_width': 80,
-  \ 'statusline': v:false,
-  \ })
-endfunction
+" fzf.vim
+let g:fzf_command_prefix = 'Fzf'
 
-augroup vimrc_denite
-  au!
-  autocmd User denite.nvim call s:denite_init()
-  autocmd FileType denite call s:denite_my_settings()
-  autocmd FileType denite-filter call s:denite_filter_my_settings()
+nnoremap <silent> <Leader>f <cmd>FzfFiles<CR>
+nnoremap <silent> <Leader>b <cmd>FzfBuffers<CR>
+nnoremap <silent> <Leader>l <cmd>FzfBLines<CR>
+
+augroup vimrc_fzf
+  autocmd!
+  autocmd FileType fzf tnoremap <buffer> <silent> <ESC> <ESC>
 augroup END
-
-nnoremap <silent> <Leader>f <cmd>Denite file/rec -start-filter<CR>
-nnoremap <silent> <Leader>l <cmd>Denite line -start-filter<CR>
-nnoremap <silent> <Leader>b <cmd>Denite buffer<CR>
-nnoremap <silent> <Leader>R <cmd>Denite grep -auto-action=preview<CR>
 
 " completion -----------------------------------------------------------------
 " nvim-compe
@@ -538,7 +507,6 @@ let g:compe.source.path = v:true
 let g:compe.source.buffer = v:true
 let g:compe.source.vsnip = v:true
 let g:compe.source.nvim_lsp = v:true
-let g:compe.source.nvim_lua = v:true
 inoremap <silent><expr> <CR>  compe#confirm('<CR>')
 inoremap <silent><expr> <C-e> compe#close('<C-e>')
 
@@ -562,3 +530,6 @@ imap <silent><expr> <Tab>
 \ vsnip#jumpable(1)  ? '<Plug>(vsnip-jump-next)' :
 \ <SID>check_back_space() ? "\<TAB>" :
 \ compe#complete()
+
+" Lua ------------------------------------------------------------------------
+lua require('plugins')
