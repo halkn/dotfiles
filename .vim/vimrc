@@ -362,6 +362,7 @@ function! PackInit() abort
   " FileType
   call minpac#add('kana/vim-altr')
   call minpac#add('mattn/vim-gomod')
+  call minpac#add('mattn/vim-maketable')
   call minpac#add('dhruvasagar/vim-table-mode')
   call minpac#add('previm/previm')
   call minpac#add('lambdalisue/vim-backslash')
@@ -758,6 +759,13 @@ augroup vimrc_altr
   au!
   autocmd FileType go,vim,help nmap <buffer> <LocalLeader>a <Plug>(altr-forward)
   autocmd FileType go,vim,help nmap <buffer> <LocalLeader>b <Plug>(altr-back)
+augroup END
+
+" vim-maketable
+augroup vimrc_maketable
+  au!
+  autocmd FileType markdown vnoremap <buffer> <silent> mt :MakeTable!<CR>
+  autocmd FileType markdown nnoremap <buffer> <silent> mt <cmd>UnmakeTable<CR>
 augroup END
 
 " vim-table-mode
