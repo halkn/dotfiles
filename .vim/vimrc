@@ -350,7 +350,9 @@ function! PackInit() abort
   call minpac#add('mattn/vim-qfnavigate')
   call minpac#add('halkn/vim-agrep')
   " fuzzyfubder
-  call minpac#add('hrsh7th/vim-candle')
+  call minpac#add('ctrlpvim/ctrlp.vim')
+  call minpac#add('mattn/ctrlp-matchfuzzy')
+  call minpac#add('mattn/ctrlp-launcher')
   " LSP
   call minpac#add('prabirshrestha/vim-lsp')
   call minpac#add('mattn/vim-lsp-settings')
@@ -521,120 +523,27 @@ nmap <C-n> <plug>(qfnavigate-next)
 nmap <C-p> <plug>(qfnavigate-previous)
 
 " FuzzyFinder ----------------------------------------------------------------
-" vim-candle
-" mapping for candle buffer
-function! s:on_candle_start()
-  nnoremap <silent><buffer> k     <cmd>call candle#mapping#cursor_move(-1)<CR>
-  nnoremap <silent><buffer> j     <cmd>call candle#mapping#cursor_move(1)<CR>
-  nnoremap <silent><buffer> K     <cmd>call candle#mapping#cursor_move(-10)<CR>
-  nnoremap <silent><buffer> J     <cmd>call candle#mapping#cursor_move(10)<CR>
-  nnoremap <silent><buffer> gg    <cmd>call candle#mapping#cursor_top()<CR>
-  nnoremap <silent><buffer> G     <cmd>call candle#mapping#cursor_bottom()<CR>
-  nnoremap <silent><buffer> -     <cmd>call candle#mapping#toggle_select()<CR>
-  nnoremap <silent><buffer> *     <cmd>call candle#mapping#toggle_select_all()<CR>
-  nnoremap <silent><buffer> i     <cmd>call candle#mapping#input_open()<CR>
-  nnoremap <silent><buffer> a     <cmd>call candle#mapping#input_open()<CR>
-  nnoremap <silent><buffer> <Tab> <cmd>call candle#mapping#choose_action()<CR>
-  nnoremap <silent><buffer> <C-l> <cmd>call candle#mapping#restart()<CR>
-  nnoremap <silent><buffer> <Esc> <cmd>call candle#mapping#close()<CR>
-  nnoremap <silent><buffer> <C-c> <cmd>call candle#mapping#close()<CR>
+" ctrlp.vim
+let g:ctrlp_map = '<space>f'
+let g:ctrlp_user_command = 'fd --type file --follow --hidden -E .git -E .svn'
+let g:ctrlp_working_path_mode = 'rw'
+let g:ctrlp_match_window = 'bottom,order:btt,min:12,max:12,results:12'
+let g:ctrlp_reuse_window = 'help\|quickfix'
+let g:ctrlp_use_caching = 0
+let g:ctrlp_show_hidden = 1
+let g:ctrlp_match_func = {'match': 'ctrlp_matchfuzzy#matcher'}
 
-  nnoremap <silent><buffer> <CR>  <cmd>call candle#mapping#action('default')<CR>
-  nnoremap <silent><buffer> s     <cmd>call candle#mapping#action('split')<CR>
-  nnoremap <silent><buffer> v     <cmd>call candle#mapping#action('vsplit')<CR>
-  nnoremap <silent><buffer> d     <cmd>call candle#mapping#action('delete')<CR>
-endfunction
-" mapping for candle.input buffer
-function! s:on_candle_input_start()
-  cnoremap <silent><buffer> <Esc> <C-c>
-  cnoremap <silent><buffer> <C-c> <Esc><cmd>call candle#mapping#close()<CR>
-  cnoremap <silent><buffer> <Tab> <Esc><cmd>call candle#mapping#choose_action()<CR>
-  cnoremap <silent><buffer> <CR>  <Esc><cmd>call candle#mapping#action('default')<CR>
-  cnoremap <silent><buffer> <C-s> <Esc><cmd>call candle#mapping#action('split')<CR>
-  cnoremap <silent><buffer> <C-v> <Esc><cmd>call candle#mapping#action('vsplit')<CR>
-  cnoremap <silent><buffer> <C-p> <Esc><cmd>call candle#mapping#cursor_move(-1) \| call candle#mapping#input_open()<CR>
-  cnoremap <silent><buffer> <C-n> <Esc><cmd>call candle#mapping#cursor_move(+1) \| call candle#mapping#input_open()<CR>
-  cnoremap <silent><buffer> <C-k> <Esc><cmd>call candle#mapping#cursor_move(-1) \| call candle#mapping#input_open()<CR>
-  cnoremap <silent><buffer> <C-j> <Esc><cmd>call candle#mapping#cursor_move(+1) \| call candle#mapping#input_open()<CR>
-endfunction
-" setup candle
-augroup vimrc_candle
+nnoremap <silent> <Leader><Leader> <cmd>CtrlPMRU<CR>
+nnoremap <silent> <Leader>b        <cmd>CtrlPBuffer<CR>
+nnoremap <silent> <Leader>l        <cmd>CtrlPLine<CR>
+
+" ctrlp-launcher
+let g:ctrlp_launcher_file = expand(fnamemodify($MYVIMRC, ":h") . '/etc/ctrlp/ctrlp-launcher')
+nnoremap <silent> <Leader>0 <cmd>CtrlPLauncher<CR>
+augroup vimrc_ctrlp_launcher
   autocmd!
-  autocmd User candle#start call s:on_candle_start()
-  autocmd User candle#input#start call s:on_candle_input_start()
+  autocmd BufEnter *ctrlp-launcher* setlocal noexpandtab
 augroup END
-
-" global mapping
-nnoremap <silent> <Leader><Leader> <cmd>call candle#mapping#toggle()<CR>
-nnoremap <silent> <Leader>n        <cmd>call candle#mapping#action_next('default')<CR>
-nnoremap <silent> <Leader>p        <cmd>call candle#mapping#action_prev('default')<CR>
-
-" files
-nnoremap <silent> <Leader>f <cmd>call candle#start(
-\ {
-\   'file': {
-\     'root_path': getcwd(),
-\     'ignore_patterns': ['.git/'],
-\   }
-\ },
-\ {
-\   'start_input': v:true
-\ }
-\ )<CR>
-
-" grep
-nnoremap <silent> <Leader>R <cmd>call candle#start({
-\   'grep': {
-\     'root_path': '.',
-\     'pattern': input('PATTERN: '),
-\     'command': [
-\       'rg',
-\       '-i',
-\       '--vimgrep',
-\       '--hidden',
-\     ] + map([
-\       '.git',
-\       '.svn',
-\       'image/',
-\       'vendor/',
-\     ], { _, v -> printf('--glob=!%s', v) }) + [
-\       '-e',
-\       '%PATTERN%',
-\       '%ROOT_PATH%',
-\     ]
-\   }
-\ })<CR>
-
-" menu
-nnoremap <silent> <Leader>0 <cmd>call candle#start({
-\ 'item': [
-\   { 'id': 1, 'title': 'minpac update', 'command': 'PackUpdate'},
-\   { 'id': 2, 'title': 'minpac clean',  'command': 'PackClean' },
-\   { 'id': 3, 'title': 'git push',      'command': 'Gina push' },
-\   { 'id': 4, 'title': 'git pull',      'command': 'Gina pull' },
-\   { 'id': 5, 'title': 'startuptime',   'command': 'StartupTime' }
-\ ],
-\ }, {
-\   'action': {
-\     'default': { candle -> [
-\       execute('quit'),
-\       win_gotoid(candle.prev_winid),
-\       execute(candle.get_action_items()[0].command)
-\     ] }
-\   },
-\ })<CR>
-
-" memo
-nnoremap <silent> <Leader>ml <cmd>call candle#start(
-\ {
-\   'file': {
-\     'root_path': expand('~/memo'),
-\   }
-\ },
-\ {
-\   'start_input': v:true
-\ }
-\ )<CR>
 
 " LSP ------------------------------------------------------------------------
 " vim-lsp-settings
@@ -824,11 +733,11 @@ augroup END
 let g:memolist_delimiter_yaml_start = '---'
 let g:memolist_delimiter_yaml_end  = '---'
 let g:memolist_memo_suffix = 'md'
-let g:memolist_template_dir_path = expand(fnamemodify($MYVIMRC, ":h") . '/template/memotemplates')
+let g:memolist_template_dir_path = expand(fnamemodify($MYVIMRC, ":h") . '/etc/memotemplates')
 let g:memolist_ex_cmd = 'CtrlP'
 nnoremap <Leader>mn <cmd>MemoNew<CR>
 nnoremap <Leader>mg <cmd>MemoGrep<CR>
-" nnoremap <Leader>ml <cmd>MemoList<CR>
+nnoremap <Leader>ml <cmd>MemoList<CR>
 
 " winresizer
 let g:winresizer_start_key = '<C-w>r'

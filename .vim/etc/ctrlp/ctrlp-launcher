@@ -1,0 +1,5 @@
+pack update	:PackUpdate
+pack clean	:PackClean
+git pull	:Gina pull
+git push	:Gina push
+startuptime	:StartupTime
