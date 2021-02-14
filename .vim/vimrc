@@ -364,6 +364,7 @@ function! PackInit() abort
   call minpac#add('mattn/vim-gomod')
   call minpac#add('dhruvasagar/vim-table-mode')
   call minpac#add('previm/previm')
+  call minpac#add('lambdalisue/vim-backslash')
   " Extension
   call minpac#add('skywind3000/asyncrun.vim')
   call minpac#add('glidenote/memolist.vim')
