@@ -216,7 +216,7 @@ nnoremap <silent> <Leader>tw <cmd>terminal ++curwin<CR>
 function s:ToggleTerminal()
   let l:bufferNum = bufnr('ToggleTerminal')
   if l:bufferNum == -1 || bufloaded(l:bufferNum) != 1
-    execute 'bel terminal ++close ++kill=term'
+    execute 'bel terminal ++close ++kill=kill'
     file ToggleTerminal
   else
     let l:windowNum = bufwinnr(l:bufferNum)
