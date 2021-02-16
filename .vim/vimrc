@@ -366,6 +366,7 @@ function! PackInit() abort
   call minpac#add('dhruvasagar/vim-table-mode')
   call minpac#add('previm/previm')
   call minpac#add('lambdalisue/vim-backslash')
+  call minpac#add('halkn/vim-bash')
   " Extension
   call minpac#add('skywind3000/asyncrun.vim')
   call minpac#add('glidenote/memolist.vim')
@@ -723,8 +724,6 @@ endfunction
 augroup vimrc_asyncrun
   au!
   autocmd FileType go call s:asyncrun_go_setup()
-  autocmd FileType sh nnoremap <silent> <buffer> <LocalLeader>r
-  \ <cmd>AsyncRun -mode=term -pos=right -cols=80 -focus=0 bash $VIM_RELNAME<CR>
 augroup END
 
 " memolist.vim
