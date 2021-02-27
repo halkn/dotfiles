@@ -358,6 +358,7 @@ function! PackInit() abort
   call minpac#add('prabirshrestha/asyncomplete-lsp.vim')
   call minpac#add('hrsh7th/vim-vsnip')
   call minpac#add('hrsh7th/vim-vsnip-integ')
+  call minpac#add('halkn/vim-vsnip-snippets')
   call minpac#add('liuchengxu/vista.vim')
   " FileType
   call minpac#add('kana/vim-altr')
@@ -366,7 +367,6 @@ function! PackInit() abort
   call minpac#add('dhruvasagar/vim-table-mode')
   call minpac#add('previm/previm')
   call minpac#add('lambdalisue/vim-backslash')
-  call minpac#add('halkn/vim-bash')
   " Extension
   call minpac#add('skywind3000/asyncrun.vim')
   call minpac#add('glidenote/memolist.vim')
@@ -634,7 +634,6 @@ smap <expr> <C-l>   vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : '<C-l
 smap <expr> <Tab>   vsnip#jumpable(1)  ? '<Plug>(vsnip-jump-next)' : '<Tab>'
 imap <expr> <S-Tab> vsnip#jumpable(-1) ? '<Plug>(vsnip-jump-prev)' : '<S-Tab>'
 smap <expr> <S-Tab> vsnip#jumpable(-1) ? '<Plug>(vsnip-jump-prev)' : '<S-Tab>'
-let g:vsnip_snippet_dir = expand(fnamemodify($MYVIMRC, ":h") . '/snippets')
 
 " Make <tab> used for
 " trigger completion, completion confirm, snippet expand and jump like VSCode.
