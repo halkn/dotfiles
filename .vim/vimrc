@@ -149,11 +149,11 @@ endif
 " Mapping
 " ============================================================================
 " reload vimrc
-nnoremap <Space>s :source $MYVIMRC<CR>
+nnoremap <silent> <Leader>s <cmd>source $MYVIMRC<CR>
 
 " Clear search highlight
-nnoremap <Esc><Esc> :nohlsearch<CR><Esc>
-nnoremap <silent> <C-l> :<C-u>nohlsearch<CR><C-l>
+nnoremap <Esc><Esc> <cmd>nohlsearch<CR><Esc>
+nnoremap <silent> <C-l> <cmd>nohlsearch<CR><C-l>
 
 " Multi line move
 noremap k gk
@@ -202,9 +202,9 @@ vnoremap < <gv
 nnoremap * *N
 
 " Quit the current window
-nnoremap <silent> <C-q> :q<CR>
-inoremap <silent> <C-q> <Esc>:q<CR>
-tnoremap <silent> <C-q> <C-w>N:q!<CR>
+nnoremap <silent> <C-q> <cmd>q<CR>
+inoremap <silent> <C-q> <cmd>q<CR><Esc>
+tnoremap <silent> <C-q> <cmd>q!<CR>
 
 " open termianl in vertial split,new tab,current winddow
 nnoremap <silent> <Leader>ts <cmd>terminal<CR>
@@ -656,8 +656,8 @@ let g:vista_close_on_jump = 1
 let g:vista#renderer#enable_icon = 0
 let g:vista_fzf_preview = ['right:60%']
 let g:vista_echo_cursor_strategy = 'floating_win'
-nnoremap <silent> <leader>vt :<c-u>Vista!!<CR>
-nnoremap <silent> <leader>vf :<c-u>Vista finder<CR>
+nnoremap <silent> <leader>vt <cmd>Vista!!<CR>
+nnoremap <silent> <leader>vf <cmd>Vista finder<CR>
 
 " ----------------------------------------------------------------------------
 " FileType
@@ -740,35 +740,35 @@ nnoremap <Leader>ml <cmd>MemoList<CR>
 let g:winresizer_start_key = '<C-w>r'
 
 " vim-signify
-nnoremap <silent> <C-y> :SignifyToggle<CR>
-nnoremap <silent> <Leader>gd :SignifyDiff<CR>
-nnoremap <silent> <leader>gu :SignifyHunkUndo<cr>
+nnoremap <silent> <C-y>      <cmd>SignifyToggle<CR>
+nnoremap <silent> <Leader>gd <cmd>SignifyDiff<CR>
+nnoremap <silent> <leader>gu <cmd>SignifyHunkUndo<cr>
 let g:signify_disable_by_default = 0
 
 " gina.vim
 function s:gina_settings() abort
   packadd gina.vim
-  let s:gina_cmd_opt = {'noremap': 1, 'silent': 1}
+  let l:gina_cmd_opt = {'noremap': 1, 'silent': 1}
   call gina#custom#command#option('status','-s')
   call gina#custom#command#option('status','--opener', 'split')
   call gina#custom#command#option('log','--opener', 'tabedit')
   call gina#custom#command#option('commit', '-v')
   call gina#custom#command#option('show','--show-signature')
 
-  call gina#custom#mapping#nmap('/.*', 'q', ':<C-U>bd<CR>', s:gina_cmd_opt)
-  call gina#custom#mapping#nmap('status', '<C-c>', '<cmd>Gina commit<CR>', s:gina_cmd_opt)
-  call gina#custom#mapping#nmap('commit', '<C-c>', '<cmd>Gina status --opener=edit<CR>', s:gina_cmd_opt)
+  call gina#custom#mapping#nmap('/.*', 'q', '<cmd>bd<CR>', l:gina_cmd_opt)
+  call gina#custom#mapping#nmap('status', '<C-c>', '<cmd>Gina commit<CR>', l:gina_cmd_opt)
+  call gina#custom#mapping#nmap('commit', '<C-c>', '<cmd>Gina status --opener=edit<CR>', l:gina_cmd_opt)
   call gina#custom#mapping#nmap(
   \ 'status',
   \ 'p',
   \ '<cmd>call gina#action#call(''diff:vsplit'')<CR>',
-  \ s:gina_cmd_opt,
+  \ l:gina_cmd_opt,
   \ )
   call gina#custom#mapping#nmap(
   \ '/\%(blame\|log\|reflog\)',
   \ 'p',
   \ '<cmd>call gina#action#call(''show:commit:vsplit'')<CR>',
-  \ s:gina_cmd_opt,
+  \ l:gina_cmd_opt,
   \ )
 
   call gina#custom#execute(
