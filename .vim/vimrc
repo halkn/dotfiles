@@ -346,7 +346,6 @@ function! PackInit() abort
   call minpac#add('mattn/vim-lexiv')
   call minpac#add('mattn/vim-findroot')
   call minpac#add('mattn/vim-qfnavigate')
-  call minpac#add('halkn/vim-agrep')
   " fuzzyfubder
   call minpac#add('ctrlpvim/ctrlp.vim')
   call minpac#add('mattn/ctrlp-matchfuzzy')
@@ -368,7 +367,8 @@ function! PackInit() abort
   call minpac#add('previm/previm')
   call minpac#add('lambdalisue/vim-backslash')
   " Extension
-  call minpac#add('skywind3000/asyncrun.vim')
+  call minpac#add('halkn/vim-agrep')
+  call minpac#add('halkn/vim-termrun')
   call minpac#add('glidenote/memolist.vim')
   call minpac#add('simeji/winresizer')
   call minpac#add('mhinz/vim-signify')
@@ -691,39 +691,17 @@ augroup END
 " ----------------------------------------------------------------------------
 " Extention
 " ----------------------------------------------------------------------------
-" asyncrun.vim
-let g:asyncrun_open = 8
-
-function s:asyncrun_gotest_func() abort
-  let l:test = search('func \(Test\|Example\)', "bcnW")
-
-  if l:test == 0
-    echo "[test] no test found immediate to cursor"
-    return
-  end
-
-  let l:line = getline(test)
-  let l:name = split(split(line, " ")[1], "(")[0]
-  execute('AsyncRun -mode=term -pos=right -cols=80 -focus=0 -cwd=$(VIM_FILEDIR) go test -v -run ' . l:name)
+" vim-termrun
+function s:termrun_setup_go() abort
+  nmap <buffer> <LocalLeader>r <Plug>(termrun-go-run)
+  nmap <buffer> <LocalLeader>t <Plug>(termrun-go-test-all)
+  nmap <buffer> <LocalLeader>p <Plug>(termrun-go-test-pkg)
+  nmap <buffer> <LocalLeader>f <Plug>(termrun-go-test-func)
 endfunction
 
-function s:asyncrun_go_setup() abort
-  command! -buffer -nargs=* -complete=dir GoRun
-  \ AsyncRun -mode=term -pos=right -cols=80 -focus=0  go run $VIM_RELNAME
-  command! -buffer -nargs=* -complete=dir GoTest
-  \ AsyncRun -mode=term -pos=right -cols=80 -focus=0 go test <f-args>
-  command! -buffer -nargs=0 GoTestPackage GoTest ./$VIM_RELDIR
-  command! -buffer -nargs=0 GoTestFunc call s:asyncrun_gotest_func()
-
-  nnoremap <buffer> <LocalLeader>r <cmd>GoRun<CR>
-  nnoremap <buffer> <LocalLeader>t <cmd>GoTest ./...<CR>
-  nnoremap <buffer> <LocalLeader>p <cmd>GoTestPackage<CR>
-  nnoremap <buffer> <LocalLeader>f <cmd>GoTestFunc<CR>
-endfunction
-
-augroup vimrc_asyncrun
+augroup vimrc_termrun
   au!
-  autocmd FileType go call s:asyncrun_go_setup()
+  autocmd FileType go call s:termrun_setup_go()
 augroup END
 
 " memolist.vim
