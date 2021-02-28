@@ -149,11 +149,11 @@ endif
 " Mapping
 " ============================================================================
 " reload vimrc
-nnoremap <silent> <Leader>s <cmd>source $MYVIMRC<CR>
+nnoremap <Leader>s <cmd>source $MYVIMRC<CR>
 
 " Clear search highlight
 nnoremap <Esc><Esc> <cmd>nohlsearch<CR><Esc>
-nnoremap <silent> <C-l> <cmd>nohlsearch<CR><C-l>
+nnoremap <C-l> <cmd>nohlsearch<CR><C-l>
 
 " Multi line move
 noremap k gk
@@ -202,49 +202,49 @@ vnoremap < <gv
 nnoremap * *N
 
 " Quit the current window
-nnoremap <silent> <C-q> <cmd>q<CR>
-inoremap <silent> <C-q> <cmd>q<CR><Esc>
-tnoremap <silent> <C-q> <cmd>q!<CR>
+nnoremap <C-q> <cmd>q<CR>
+inoremap <C-q> <cmd>q<CR><Esc>
+tnoremap <C-q> <cmd>q!<CR>
 
 " open termianl in vertial split,new tab,current winddow
-nnoremap <silent> <Leader>ts <cmd>terminal<CR>
-nnoremap <silent> <Leader>tv <cmd>vertical terminal<CR>
-nnoremap <silent> <Leader>tt <cmd>tab terminal<CR>
-nnoremap <silent> <Leader>tw <cmd>terminal ++curwin<CR>
+nnoremap <Leader>ts <cmd>terminal<CR>
+nnoremap <Leader>tv <cmd>vertical terminal<CR>
+nnoremap <Leader>tt <cmd>tab terminal<CR>
+nnoremap <Leader>tw <cmd>terminal ++curwin<CR>
 
 " toggle terminal buffer.
 function s:ToggleTerminal()
   let l:bufferNum = bufnr('ToggleTerminal')
   if l:bufferNum == -1 || bufloaded(l:bufferNum) != 1
-    execute 'bel terminal ++close ++kill=kill'
+    silent! execute 'bel terminal ++close ++kill=kill'
     file ToggleTerminal
   else
     let l:windowNum = bufwinnr(l:bufferNum)
     if l:windowNum == -1
-      execute 'bel sbuffer '.l:bufferNum
+      silent! execute 'bel sbuffer '.l:bufferNum
     else
-      execute l:windowNum.'wincmd w'
+      silent! execute l:windowNum.'wincmd w'
       hide
     endif
   endif
 endfunction
-nnoremap <silent> <C-t> <cmd>call <SID>ToggleTerminal()<CR>
-tnoremap <silent> <C-t> <cmd>call <SID>ToggleTerminal()<CR>
+nnoremap <C-t> <cmd>call <SID>ToggleTerminal()<CR>
+tnoremap <C-t> <cmd>call <SID>ToggleTerminal()<CR>
 
 " Toggle options
 nmap [Toggle] <Nop>
 map <Leader>o [Toggle]
-nnoremap <silent> [Toggle]n  <cmd>setlocal number! number?<CR>
-nnoremap <silent> [Toggle]rn <cmd>setlocal relativenumber! relativenumber?<CR>
-nnoremap <silent> [Toggle]c  <cmd>setlocal cursorline! cursorcolumn!<CR>
-nnoremap <silent> [Toggle]w  <cmd>setlocal wrap! wrap?<CR>
-nnoremap <silent> [Toggle]p  <cmd>set paste! paste?<CR>
+nnoremap [Toggle]n  <cmd>setlocal number! number?<CR>
+nnoremap [Toggle]rn <cmd>setlocal relativenumber! relativenumber?<CR>
+nnoremap [Toggle]c  <cmd>setlocal cursorline! cursorcolumn!<CR>
+nnoremap [Toggle]w  <cmd>setlocal wrap! wrap?<CR>
+nnoremap [Toggle]p  <cmd>set paste! paste?<CR>
 
 " quickfix/loclist
-nnoremap <silent> [q <cmd>cprev<CR>
-nnoremap <silent> ]q <cmd>cnext<CR>
-nnoremap <silent> [l :lprevious<CR>
-nnoremap <silent> ]l :lnext<CR>
+nnoremap [q <cmd>cprev<CR>
+nnoremap ]q <cmd>cnext<CR>
+nnoremap [l <cmd>lprevious<CR>
+nnoremap ]l <cmd>lnext<CR>
 function! s:toggleqf(mode) abort
   if a:mode == 'q'
     let l:open = 'cwindow'
@@ -260,8 +260,8 @@ function! s:toggleqf(mode) abort
       execute(l:close)
   endif
 endfunction
-nnoremap <script> <silent> Q <cmd>call <SID>toggleqf('q')<CR>
-nnoremap <script> <silent> W <cmd>call <SID>toggleqf('l')<CR>
+nnoremap <script> Q <cmd>call <SID>toggleqf('q')<CR>
+nnoremap <script> W <cmd>call <SID>toggleqf('l')<CR>
 
 " ============================================================================
 " autocmd
@@ -300,10 +300,10 @@ augroup vimrc_filetype
   autocmd FileType qf setlocal signcolumn=no
   autocmd Filetype qf nnoremap <silent> <buffer> p <CR>zz<C-w>p
   autocmd Filetype qf nnoremap <silent> <buffer> q <C-w>c
-  autocmd Filetype qf nnoremap <silent> <buffer> <C-m> <cmd>call <SID>qfenter('wincmd p')<CR>
-  autocmd Filetype qf nnoremap <silent> <buffer> <C-t> <cmd>call <SID>qfenter('tabnew')<CR>
-  autocmd Filetype qf nnoremap <silent> <buffer> <C-x> <cmd>call <SID>qfenter('wincmd p <bar> new')<CR>
-  autocmd Filetype qf nnoremap <silent> <buffer> <C-v> <cmd>call <SID>qfenter('wincmd p <bar> vnew')<CR>
+  autocmd Filetype qf nnoremap <buffer> <C-m> <cmd>call <SID>qfenter('wincmd p')<CR>
+  autocmd Filetype qf nnoremap <buffer> <C-t> <cmd>call <SID>qfenter('tabnew')<CR>
+  autocmd Filetype qf nnoremap <buffer> <C-x> <cmd>call <SID>qfenter('wincmd p <bar> new')<CR>
+  autocmd Filetype qf nnoremap <buffer> <C-v> <cmd>call <SID>qfenter('wincmd p <bar> vnew')<CR>
   autocmd BufEnter *.txt,*.jax call s:helpvert()
   autocmd FileType help setlocal signcolumn=no
   autocmd FileType help nnoremap <silent> <buffer> q <C-w>c
@@ -533,13 +533,13 @@ let g:ctrlp_use_caching = 0
 let g:ctrlp_show_hidden = 1
 let g:ctrlp_match_func = {'match': 'ctrlp_matchfuzzy#matcher'}
 
-nnoremap <silent> <Leader><Leader> <cmd>CtrlPMRU<CR>
-nnoremap <silent> <Leader>b        <cmd>CtrlPBuffer<CR>
-nnoremap <silent> <Leader>l        <cmd>CtrlPLine<CR>
+nnoremap <Leader><Leader> <cmd>CtrlPMRU<CR>
+nnoremap <Leader>b        <cmd>CtrlPBuffer<CR>
+nnoremap <Leader>l        <cmd>CtrlPLine<CR>
 
 " ctrlp-launcher
 let g:ctrlp_launcher_file = expand(fnamemodify($MYVIMRC, ":h") . '/etc/ctrlp/ctrlp-launcher')
-nnoremap <silent> <Leader>0 <cmd>CtrlPLauncher<CR>
+nnoremap <Leader>0 <cmd>CtrlPLauncher<CR>
 augroup vimrc_ctrlp_launcher
   autocmd!
   autocmd BufEnter *ctrlp-launcher* setlocal noexpandtab
@@ -656,8 +656,8 @@ let g:vista_close_on_jump = 1
 let g:vista#renderer#enable_icon = 0
 let g:vista_fzf_preview = ['right:60%']
 let g:vista_echo_cursor_strategy = 'floating_win'
-nnoremap <silent> <leader>vt <cmd>Vista!!<CR>
-nnoremap <silent> <leader>vf <cmd>Vista finder<CR>
+nnoremap <leader>vt <cmd>Vista!!<CR>
+nnoremap <leader>vf <cmd>Vista finder<CR>
 
 " ----------------------------------------------------------------------------
 " FileType
@@ -672,8 +672,8 @@ augroup END
 " vim-maketable
 augroup vimrc_maketable
   au!
-  autocmd FileType markdown vnoremap <buffer> <silent> mt :MakeTable!<CR>
-  autocmd FileType markdown nnoremap <buffer> <silent> mt <cmd>UnmakeTable!<CR>
+  autocmd FileType markdown vnoremap <silent> <buffer> mt :MakeTable!<CR>
+  autocmd FileType markdown nnoremap <buffer>          mt <cmd>UnmakeTable!<CR>
 augroup END
 
 " vim-table-mode
@@ -685,7 +685,7 @@ let g:table_mode_toggle_map = 'tm'
 let g:previm_open_cmd = 'open'
 augroup vimrc_previm
   au!
-  autocmd FileType markdown nnoremap <buffer> <silent> <LocalLeader>p <cmd>PrevimOpen<CR>
+  autocmd FileType markdown nnoremap <buffer> <LocalLeader>p <cmd>PrevimOpen<CR>
 augroup END
 
 " ----------------------------------------------------------------------------
@@ -715,10 +715,10 @@ function s:asyncrun_go_setup() abort
   command! -buffer -nargs=0 GoTestPackage GoTest ./$VIM_RELDIR
   command! -buffer -nargs=0 GoTestFunc call s:asyncrun_gotest_func()
 
-  nnoremap <silent> <buffer> <LocalLeader>r <cmd>GoRun<CR>
-  nnoremap <silent> <buffer> <LocalLeader>t <cmd>GoTest ./...<CR>
-  nnoremap <silent> <buffer> <LocalLeader>p <cmd>GoTestPackage<CR>
-  nnoremap <silent> <buffer> <LocalLeader>f <cmd>GoTestFunc<CR>
+  nnoremap <buffer> <LocalLeader>r <cmd>GoRun<CR>
+  nnoremap <buffer> <LocalLeader>t <cmd>GoTest ./...<CR>
+  nnoremap <buffer> <LocalLeader>p <cmd>GoTestPackage<CR>
+  nnoremap <buffer> <LocalLeader>f <cmd>GoTestFunc<CR>
 endfunction
 
 augroup vimrc_asyncrun
@@ -740,9 +740,9 @@ nnoremap <Leader>ml <cmd>MemoList<CR>
 let g:winresizer_start_key = '<C-w>r'
 
 " vim-signify
-nnoremap <silent> <C-y>      <cmd>SignifyToggle<CR>
-nnoremap <silent> <Leader>gd <cmd>SignifyDiff<CR>
-nnoremap <silent> <leader>gu <cmd>SignifyHunkUndo<cr>
+nnoremap <C-y>      <cmd>SignifyToggle<CR>
+nnoremap <Leader>gd <cmd>SignifyDiff<CR>
+nnoremap <leader>gu <cmd>SignifyHunkUndo<cr>
 let g:signify_disable_by_default = 0
 
 " gina.vim
@@ -786,10 +786,10 @@ augroup vimrc_gina
   autocmd CmdUndefined Gina ++once call s:gina_settings()
 augroup END
 
-nnoremap <silent> <Leader>gs <cmd>Gina status<CR>
-nnoremap <silent> <Leader>gl <cmd>Gina log --graph<CR>
-nnoremap <silent> <Leader>gd <cmd>Gina compare<CR>
-nnoremap <silent> <Leader>gb <cmd>Gina branch -av<CR>
+nnoremap <Leader>gs <cmd>Gina status<CR>
+nnoremap <Leader>gl <cmd>Gina log --graph<CR>
+nnoremap <Leader>gd <cmd>Gina compare<CR>
+nnoremap <Leader>gb <cmd>Gina branch -av<CR>
 
 " translate.vim
 let g:translate_source = "en"
