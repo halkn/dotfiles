@@ -361,6 +361,7 @@ function! PackInit() abort
   " FileType
   call minpac#add('kana/vim-altr')
   call minpac#add('mattn/vim-gomod')
+  call minpac#add('kyoh86/vim-go-coverage')
   call minpac#add('mattn/vim-maketable')
   call minpac#add('dhruvasagar/vim-table-mode')
   call minpac#add('previm/previm')
