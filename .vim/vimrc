@@ -123,13 +123,12 @@ set pumheight=10
 
 " cmdline
 set wildmenu 
-set wildmode=longest:full
+set wildmode=list:full
 set wildchar=<Tab>
 
 " data files
 set nobackup
 set noswapfile
-set noundofile
 set viminfo+=n$XDG_CACHE_HOME/vim/viminfo
 set undodir=$XDG_CACHE_HOME/vim/.undodir
 set undofile
