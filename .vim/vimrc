@@ -340,6 +340,7 @@ function! PackInit() abort
   call minpac#add('hrsh7th/vim-eft')
   call minpac#add('tyru/caw.vim')
   call minpac#add('machakann/vim-sandwich')
+  call minpac#add('machakann/vim-swap')
   call minpac#add('kana/vim-operator-user')
   call minpac#add('kana/vim-operator-replace')
   call minpac#add('mattn/vim-lexiv')
@@ -487,6 +488,12 @@ let g:lightline = {
 let g:caw_no_default_keymappings = 1
 nmap <Leader>c <Plug>(caw:hatpos:toggle)
 vmap <Leader>c <Plug>(caw:hatpos:toggle)
+
+" vim-swap
+omap i, <Plug>(swap-textobject-i)
+xmap i, <Plug>(swap-textobject-i)
+omap a, <Plug>(swap-textobject-a)
+xmap a, <Plug>(swap-textobject-a)
 
 " vim-operator-replace
 map R <Plug>(operator-replace)
