@@ -1,3 +1,5 @@
+let s:vimhome = expand('<sfile>:p:h')
+
 " ============================================================================
 " Global variables
 " ============================================================================
@@ -86,9 +88,9 @@ set helplang=ja,en
 set smarttab
 set expandtab
 set autoindent
-set shiftwidth=4
+set shiftwidth=2
 set shiftround
-set tabstop=4
+set tabstop=2
 set virtualedit=block,onemore
 set whichwrap=b,s,[,],<,>
 set backspace=indent,eol,start
@@ -152,7 +154,7 @@ nnoremap <Leader>s <cmd>source $MYVIMRC<CR>
 
 " Clear search highlight
 nnoremap <Esc><Esc> <cmd>nohlsearch<CR><Esc>
-nnoremap <C-l> <cmd>nohlsearch<CR><C-l>
+nnoremap <C-l>      <cmd>nohlsearch<CR><C-l>
 
 " Multi line move
 noremap k gk
@@ -193,6 +195,11 @@ nnoremap <Right> 5<C-w>>
 nnoremap <Up>    2<C-w>-
 nnoremap <Down>  2<C-w>+
 
+" Quit the current window
+nnoremap <C-q> <cmd>q<CR>
+inoremap <C-q> <cmd>q<CR><Esc>
+tnoremap <C-q> <cmd>q!<CR>
+
 " Not yank is delete operation
 nnoremap x "_x
 nnoremap X "_X
@@ -204,10 +211,14 @@ vnoremap < <gv
 " Does not move when using *
 nnoremap * *N
 
-" Quit the current window
-nnoremap <C-q> <cmd>q<CR>
-inoremap <C-q> <cmd>q<CR><Esc>
-tnoremap <C-q> <cmd>q!<CR>
+" Toggle options
+nmap [Toggle] <Nop>
+map <Leader>o [Toggle]
+nnoremap [Toggle]n  <cmd>setlocal number! number?<CR>
+nnoremap [Toggle]rn <cmd>setlocal relativenumber! relativenumber?<CR>
+nnoremap [Toggle]c  <cmd>setlocal cursorline! cursorcolumn!<CR>
+nnoremap [Toggle]w  <cmd>setlocal wrap! wrap?<CR>
+nnoremap [Toggle]p  <cmd>set paste! paste?<CR>
 
 " open termianl in vertial split,new tab,current winddow
 nnoremap <Leader>ts <cmd>terminal<CR>
@@ -233,15 +244,6 @@ function s:ToggleTerminal()
 endfunction
 nnoremap <C-t> <cmd>call <SID>ToggleTerminal()<CR>
 tnoremap <C-t> <cmd>call <SID>ToggleTerminal()<CR>
-
-" Toggle options
-nmap [Toggle] <Nop>
-map <Leader>o [Toggle]
-nnoremap [Toggle]n  <cmd>setlocal number! number?<CR>
-nnoremap [Toggle]rn <cmd>setlocal relativenumber! relativenumber?<CR>
-nnoremap [Toggle]c  <cmd>setlocal cursorline! cursorcolumn!<CR>
-nnoremap [Toggle]w  <cmd>setlocal wrap! wrap?<CR>
-nnoremap [Toggle]p  <cmd>set paste! paste?<CR>
 
 " quickfix/loclist
 nnoremap [q <cmd>cprev<CR>
@@ -294,12 +296,6 @@ augroup vimrc_filetype
   autocmd FileType git setlocal nofoldenable
   autocmd FileType text setlocal textwidth=0
   autocmd FileType go setlocal noexpandtab tabstop=4 shiftwidth=4
-  autocmd FileType vim setlocal tabstop=2 shiftwidth=2
-  autocmd FileType lua setlocal tabstop=2 shiftwidth=2
-  autocmd FileType sh setlocal tabstop=2 shiftwidth=2
-  autocmd FileType zsh setlocal tabstop=2 shiftwidth=2
-  autocmd FileType yaml setlocal tabstop=2 shiftwidth=2
-  autocmd FileType json setlocal tabstop=2 shiftwidth=2
   autocmd FileType qf setlocal signcolumn=no
   autocmd Filetype qf nnoremap <silent> <buffer> p <CR>zz<C-w>p
   autocmd Filetype qf nnoremap <silent> <buffer> q <C-w>c
@@ -548,7 +544,7 @@ nnoremap <Leader>b        <cmd>CtrlPBuffer<CR>
 nnoremap <Leader>l        <cmd>CtrlPLine<CR>
 
 " ctrlp-launcher
-let g:ctrlp_launcher_file = expand(fnamemodify($MYVIMRC, ":h") . '/etc/ctrlp/ctrlp-launcher')
+let g:ctrlp_launcher_file = s:vimhome .. '/etc/ctrlp/ctrlp-launcher'
 nnoremap <Leader>0 <cmd>CtrlPLauncher<CR>
 augroup vimrc_ctrlp_launcher
   autocmd!
@@ -715,10 +711,8 @@ augroup vimrc_termrun
 augroup END
 
 " memolist.vim
-let g:memolist_delimiter_yaml_start = '---'
-let g:memolist_delimiter_yaml_end  = '---'
 let g:memolist_memo_suffix = 'md'
-let g:memolist_template_dir_path = expand(fnamemodify($MYVIMRC, ":h") . '/etc/memotemplates')
+let g:memolist_template_dir_path = s:vimhome .. '/etc/memotemplates'
 let g:memolist_ex_cmd = 'CtrlP'
 nnoremap <Leader>mn <cmd>MemoNew<CR>
 nnoremap <Leader>mg <cmd>MemoGrep<CR>
@@ -740,9 +734,19 @@ function s:gina_settings() abort
   call gina#custom#command#option('commit', '-v')
   call gina#custom#command#option('show','--show-signature')
 
-  call gina#custom#mapping#nmap('/.*', 'q', '<cmd>bd<CR>', l:gina_cmd_opt)
-  call gina#custom#mapping#nmap('status', '<C-c>', '<cmd>Gina commit<CR>', l:gina_cmd_opt)
-  call gina#custom#mapping#nmap('commit', '<C-c>', '<cmd>Gina status --opener=edit<CR>', l:gina_cmd_opt)
+  call gina#custom#mapping#nmap(
+  \ '/.*', 'q', '<cmd>bd<CR>', l:gina_cmd_opt
+  \ )
+  call gina#custom#mapping#nmap(
+  \ 'status',
+  \ '<C-c>',
+  \ '<cmd>Gina commit<CR>',
+  \ l:gina_cmd_opt)
+  call gina#custom#mapping#nmap(
+  \ 'commit', 
+  \ '<C-c>', 
+  \ '<cmd>Gina status --opener=edit<CR>',
+  \ l:gina_cmd_opt)
   call gina#custom#mapping#nmap(
   \ 'status',
   \ 'p',
