@@ -357,7 +357,6 @@ function! PackInit() abort
   call minpac#add('prabirshrestha/asyncomplete-lsp.vim')
   call minpac#add('hrsh7th/vim-vsnip')
   call minpac#add('hrsh7th/vim-vsnip-integ')
-  call minpac#add('halkn/vim-vsnip-snippets')
   call minpac#add('liuchengxu/vista.vim')
   " FileType
   call minpac#add('kana/vim-altr')
@@ -635,6 +634,7 @@ inoremap <expr> <C-y> pumvisible() ? asyncomplete#close_popup()  : "\<C-y>"
 inoremap <expr> <C-e> pumvisible() ? asyncomplete#cancel_popup() : "\<C-e>"
 
 " vim-vsnip
+let g:vsnip_snippet_dir = s:vimhome .. '/etc/snippets'
 imap <expr> <C-l>   vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : '<C-l>'
 smap <expr> <C-l>   vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : '<C-l>'
 smap <expr> <Tab>   vsnip#jumpable(1)  ? '<Plug>(vsnip-jump-next)' : '<Tab>'
