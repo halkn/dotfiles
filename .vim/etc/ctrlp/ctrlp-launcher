@@ -1,10 +1,13 @@
-pack update					:PackUpdate
-pack clean					:PackClean
-git pull					:Gina pull
-git push					:Gina push
-startuptime					:StartupTime
-[toggle] number				:normal [Toggle]n
+pack update								:PackUpdate
+pack clean								:PackClean
+git pull									:Gina pull
+git push									:Gina push
+startuptime								:StartupTime
+[toggle] number						:normal [Toggle]n
 [toggle] relativenumber		:normal [Toggle]rn
-[toggle] cursorline			:normal [Toggle]c
-[toggle] wrap				:normal [Toggle]w
-[toggle] paste				:normal [Toggle]p
+[toggle] cursorline				:normal [Toggle]c
+[toggle] wrap							:normal [Toggle]w
+[toggle] paste						:normal [Toggle]p
+[edit] utf8								:edit ++enc=utf-8 %
+[edit] sjis								:edit ++enc=sjis %
+[edit] cp932							:edit ++enc=cp932 %
