@@ -346,8 +346,8 @@ function! PackInit() abort
   call minpac#add('itchyny/vim-gitbranch')
   call minpac#add('halkn/lightline-lsp')
   call minpac#add('vim-jp/vimdoc-ja')
-  call minpac#add('tyru/columnskip.vim')
   call minpac#add('hrsh7th/vim-eft')
+  call minpac#add('tyru/columnskip.vim')
   call minpac#add('tyru/caw.vim')
   call minpac#add('machakann/vim-sandwich')
   call minpac#add('machakann/vim-swap')
@@ -493,28 +493,6 @@ let g:lightline = {
 \ },
 \ }
 
-" caw.vim
-let g:caw_no_default_keymappings = 1
-nmap <Leader>c <Plug>(caw:hatpos:toggle)
-vmap <Leader>c <Plug>(caw:hatpos:toggle)
-
-" vim-swap
-omap i, <Plug>(swap-textobject-i)
-xmap i, <Plug>(swap-textobject-i)
-omap a, <Plug>(swap-textobject-a)
-xmap a, <Plug>(swap-textobject-a)
-
-" vim-operator-replace
-map R <Plug>(operator-replace)
-
-" columnskip.vim
-nmap sj <Plug>(columnskip:nonblank:next)
-omap sj <Plug>(columnskip:nonblank:next)
-xmap sj <Plug>(columnskip:nonblank:next)
-nmap sk <Plug>(columnskip:nonblank:prev)
-omap sk <Plug>(columnskip:nonblank:prev)
-xmap sk <Plug>(columnskip:nonblank:prev)
-
 " vim-eft
 nmap ; <Plug>(eft-repeat)
 xmap ; <Plug>(eft-repeat)
@@ -530,6 +508,28 @@ omap t <Plug>(eft-t)
 nmap T <Plug>(eft-T)
 xmap T <Plug>(eft-T)
 omap T <Plug>(eft-T)
+
+" columnskip.vim
+nmap sj <Plug>(columnskip:nonblank:next)
+omap sj <Plug>(columnskip:nonblank:next)
+xmap sj <Plug>(columnskip:nonblank:next)
+nmap sk <Plug>(columnskip:nonblank:prev)
+omap sk <Plug>(columnskip:nonblank:prev)
+xmap sk <Plug>(columnskip:nonblank:prev)
+
+" caw.vim
+let g:caw_no_default_keymappings = 1
+nmap <Leader>c <Plug>(caw:hatpos:toggle)
+vmap <Leader>c <Plug>(caw:hatpos:toggle)
+
+" vim-swap
+omap i, <Plug>(swap-textobject-i)
+xmap i, <Plug>(swap-textobject-i)
+omap a, <Plug>(swap-textobject-a)
+xmap a, <Plug>(swap-textobject-a)
+
+" vim-operator-replace
+map R <Plug>(operator-replace)
 
 " vim-qfnavigate
 nmap <C-n> <plug>(qfnavigate-next)
