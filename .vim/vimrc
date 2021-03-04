@@ -159,8 +159,6 @@ noremap k gk
 noremap j gj
 noremap gk k
 noremap gj j
-noremap <Down> gj
-noremap <Up> gk
 
 " Move cursor like emacs in Insert Mode
 inoremap <C-b> <Left>
@@ -188,6 +186,12 @@ vnoremap L $
 " Move between windows
 nnoremap <tab>   <c-w>w
 nnoremap <S-tab> <c-w>W
+
+" resize window
+nnoremap <Left>  5<C-w><
+nnoremap <Right> 5<C-w>>
+nnoremap <Up>    2<C-w>-
+nnoremap <Down>  2<C-w>+
 
 " Not yank is delete operation
 nnoremap x "_x
@@ -371,7 +375,6 @@ function! PackInit() abort
   call minpac#add('halkn/vim-agrep')
   call minpac#add('halkn/vim-termrun')
   call minpac#add('glidenote/memolist.vim')
-  call minpac#add('simeji/winresizer')
   call minpac#add('mhinz/vim-signify')
   call minpac#add('lambdalisue/gina.vim', { 'type': 'opt' })
   call minpac#add('tyru/capture.vim')
@@ -720,9 +723,6 @@ let g:memolist_ex_cmd = 'CtrlP'
 nnoremap <Leader>mn <cmd>MemoNew<CR>
 nnoremap <Leader>mg <cmd>MemoGrep<CR>
 nnoremap <Leader>ml <cmd>MemoList<CR>
-
-" winresizer
-let g:winresizer_start_key = '<C-w>r'
 
 " vim-signify
 nnoremap <C-y>      <cmd>SignifyToggle<CR>
