@@ -455,10 +455,11 @@ let g:lightline = {
 \ 'colorscheme': 'wombat',
 \ 'tabline': {
 \   'left':  [ ['tabs'] ],
-\   'right': [ ['close'], ['cwd', 'gitbranch'] ],
+\   'right': [ ['close'], ['cwd'] ],
 \ },
 \ 'active': {
 \   'left': [ [ 'mode', 'paste'],
+\             [ 'gitbranch' ],
 \             [ 'readonly', 'filename', 'modified' ] ],
 \   'right': [ ['lsp_errors', 'lsp_warnings', 'lsp_ok'],
 \              [ 'lineinfo' ],
