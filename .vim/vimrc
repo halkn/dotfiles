@@ -168,6 +168,7 @@ inoremap <C-f> <Right>
 inoremap <C-a> <C-o>^
 inoremap <C-e> <End>
 inoremap <C-d> <Del>
+imap     <C-h> <BS>
 
 " Move cursor like emacs in Cmdline-mode
 cnoremap <C-b> <Left>
@@ -202,14 +203,23 @@ tnoremap <C-q> <cmd>q!<CR>
 
 " Not yank is delete operation
 nnoremap x "_x
+xnoremap x "_x
 nnoremap X "_X
+xnoremap X "_X
+
+" Yank EOF
+nnoremap Y y$
+
+" Does not move when using *
+nnoremap * *N
 
 " Indent in visual and select mode automatically re-selects.
 vnoremap > >gv
 vnoremap < <gv
 
-" Does not move when using *
-nnoremap * *N
+" Disable dangerous key
+nnoremap ZZ <Nop>
+nnoremap ZQ <Nop>
 
 " Toggle options
 nmap [Toggle] <Nop>
@@ -520,9 +530,6 @@ omap t <Plug>(eft-t)
 nmap T <Plug>(eft-T)
 xmap T <Plug>(eft-T)
 omap T <Plug>(eft-T)
-
-" vim-lexiv
-inoremap <expr> <C-h> lexiv#paren_delete()
 
 " vim-qfnavigate
 nmap <C-n> <plug>(qfnavigate-next)
