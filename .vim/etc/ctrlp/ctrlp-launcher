@@ -11,3 +11,4 @@ startuptime								:StartupTime
 [edit] utf8								:edit ++enc=utf-8 %
 [edit] sjis								:edit ++enc=sjis %
 [edit] cp932							:edit ++enc=cp932 %
+[vimrc] open vimrc				:tabe $MYVIMRC
