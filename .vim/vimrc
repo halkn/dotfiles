@@ -367,7 +367,6 @@ function! PackInit() abort
   call minpac#add('prabirshrestha/asyncomplete-lsp.vim')
   call minpac#add('hrsh7th/vim-vsnip')
   call minpac#add('hrsh7th/vim-vsnip-integ')
-  call minpac#add('liuchengxu/vista.vim')
   " FileType
   call minpac#add('kana/vim-altr')
   call minpac#add('mattn/vim-gomod')
@@ -662,18 +661,6 @@ imap <silent><expr> <TAB>
 \ <SID>check_back_space() ? "\<TAB>" :
 \ asyncomplete#force_refresh()
 
-" vista.vim
-let g:vista_default_executive = 'vim_lsp'
-let g:vista_executive_for = {
-\ 'markdown': 'toc',
-\ }
-let g:vista_close_on_jump = 1
-let g:vista#renderer#enable_icon = 0
-let g:vista_fzf_preview = ['right:60%']
-let g:vista_echo_cursor_strategy = 'floating_win'
-nnoremap <leader>vt <cmd>Vista!!<CR>
-nnoremap <leader>vf <cmd>Vista finder<CR>
-
 " ----------------------------------------------------------------------------
 " FileType
 " ----------------------------------------------------------------------------
@@ -688,6 +675,10 @@ augroup END
 let g:vim_markdown_folding_disabled = 1
 let g:vim_markdown_no_default_key_mappings = 1
 let g:vim_markdown_emphasis_multiline = 0
+augroup vimrc_markdown
+  au!
+  autocmd FileType markdown nnoremap <buffer> <LocalLeader>o <cmd>Toch<CR>
+augroup END
 
 " vim-maketable
 augroup vimrc_maketable
