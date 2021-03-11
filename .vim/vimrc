@@ -260,23 +260,31 @@ nnoremap [q <cmd>cprev<CR>
 nnoremap ]q <cmd>cnext<CR>
 nnoremap [l <cmd>lprevious<CR>
 nnoremap ]l <cmd>lnext<CR>
-function! s:toggleqf(mode) abort
-  if a:mode == 'q'
-    let l:open = 'cwindow'
-    let l:close = 'cclose'
+function s:toggleqf() abort
+  let l:qid = getqflist({'winid' : 1}).winid
+  let l:lid = getloclist(0, {'winid' : 1}).winid
+  if l:qid == 0 && l:lid == 0
+    silent cwindow
+    if &ft != 'qf'
+      try
+        silent lwindow
+      catch /E776/
+      endtry
+    endif
+  elseif l:qid != 0 && l:lid == 0
+    silent cclose
+    try
+      silent lwindow
+    catch /E776/
+    endtry
+  elseif l:qid == 0 && l:lid != 0
+    silent lclose
   else
-    let l:open = 'lwindow'
-    let l:close = 'lclose'
-  endif
-  let l:nr = winnr('$')
-  execute(l:open)
-  let l:nr2 = winnr('$')
-  if l:nr == l:nr2
-      execute(l:close)
+    cclose
+    lclose
   endif
 endfunction
-nnoremap <script> Q <cmd>call <SID>toggleqf('q')<CR>
-nnoremap <script> W <cmd>call <SID>toggleqf('l')<CR>
+nnoremap <silent> <script> Q <cmd>call <SID>toggleqf()<CR>
 
 " ============================================================================
 " autocmd
@@ -307,12 +315,7 @@ augroup vimrc_filetype
   autocmd FileType text setlocal textwidth=0
   autocmd FileType go setlocal noexpandtab tabstop=4 shiftwidth=4
   autocmd FileType qf setlocal signcolumn=no
-  autocmd Filetype qf nnoremap <silent> <buffer> p <CR>zz<C-w>p
   autocmd Filetype qf nnoremap <silent> <buffer> q <C-w>c
-  autocmd Filetype qf nnoremap <buffer> <C-m> <cmd>call <SID>qfenter('wincmd p')<CR>
-  autocmd Filetype qf nnoremap <buffer> <C-t> <cmd>call <SID>qfenter('tabnew')<CR>
-  autocmd Filetype qf nnoremap <buffer> <C-x> <cmd>call <SID>qfenter('wincmd p <bar> new')<CR>
-  autocmd Filetype qf nnoremap <buffer> <C-v> <cmd>call <SID>qfenter('wincmd p <bar> vnew')<CR>
   autocmd BufEnter *.txt,*.jax call s:helpvert()
   autocmd FileType help setlocal signcolumn=no
   autocmd FileType help nnoremap <silent> <buffer> q <C-w>c
@@ -376,6 +379,7 @@ function! PackInit() abort
   call minpac#add('dhruvasagar/vim-table-mode')
   call minpac#add('previm/previm')
   call minpac#add('lambdalisue/vim-backslash')
+  call minpac#add('halkn/vim-qfex')
   " Extension
   call minpac#add('halkn/vim-agrep')
   call minpac#add('halkn/vim-termrun')
@@ -698,6 +702,10 @@ augroup vimrc_previm
   au!
   autocmd FileType markdown nnoremap <buffer> <LocalLeader>p <cmd>PrevimOpen<CR>
 augroup END
+
+" vim-qfex
+let g:qfex_autopreview_enabled = 1
+let g:qfex_autoclose_enabled = 1
 
 " ----------------------------------------------------------------------------
 " Extention
