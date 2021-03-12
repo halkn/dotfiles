@@ -710,6 +710,9 @@ let g:qfex_autoclose_enabled = 1
 " ----------------------------------------------------------------------------
 " Extention
 " ----------------------------------------------------------------------------
+" vim-agrep
+nmap <Leader>a <Plug>(agrep-input)
+
 " vim-termrun
 function s:termrun_setup_go() abort
   nmap <buffer> <LocalLeader>r <Plug>(termrun-go-run)
