@@ -1,7 +1,8 @@
 pack update								:PackUpdate
 pack clean								:PackClean
-git pull									:Gina pull
-git push									:Gina push
+[gina]pull								:Gina pull
+[gina]push								:Gina push
+[gina]current log					:Gina log :%
 startuptime								:StartupTime
 [toggle] number						:normal [Toggle]n
 [toggle] relativenumber		:normal [Toggle]rn
