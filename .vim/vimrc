@@ -289,12 +289,6 @@ nnoremap <silent> <script> Q <cmd>call <SID>toggleqf()<CR>
 " ============================================================================
 " autocmd
 " ============================================================================
-" open help in vertical window.
-function! s:helpvert()
-  if &buftype == 'help'
-    wincmd L
-  endif
-endfunction
 function s:cfiler() abort
   let l:query = input('Cfilter: ', '')
   if empty(l:query) | redraw | return | endif
@@ -310,7 +304,7 @@ augroup vimrc_filetype
   autocmd Filetype qf ++once packadd cfilter
   autocmd Filetype qf nnoremap <silent> <buffer> q <C-w>c
   autocmd Filetype qf nnoremap <buffer> <LocalLeader>f <cmd>call <SID>cfiler()<CR>
-  autocmd BufEnter *.txt,*.jax call s:helpvert()
+  autocmd BufEnter *.txt,*.jax if &buftype == 'help' | wincmd L | endif
   autocmd FileType help setlocal signcolumn=no
   autocmd FileType help nnoremap <silent> <buffer> q <C-w>c
   autocmd FileType help nnoremap <buffer> <CR> <C-]>
