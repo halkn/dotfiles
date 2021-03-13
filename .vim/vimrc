@@ -295,18 +295,10 @@ function! s:helpvert()
     wincmd L
   endif
 endfunction
-function! s:qfenter(cmd)
-  let l:lnum = line('.')
-  if get(get(getwininfo(win_getid()), 0, {}), 'loclist', 0)
-    let l:cmd = 'll'
-    let l:ccmd = 'lclose'
-  else
-    let l:cmd = 'cc'
-    let l:ccmd = 'cclose'
-  endif
-  silent! execute a:cmd
-  silent! execute l:cmd l:lnum
-  silent! execute l:ccmd
+function s:cfiler() abort
+  let l:query = input('Cfilter: ', '')
+  if empty(l:query) | redraw | return | endif
+  execute 'Cfilter' l:query
 endfunction
 augroup vimrc_filetype
   autocmd!
@@ -315,7 +307,9 @@ augroup vimrc_filetype
   autocmd FileType text setlocal textwidth=0
   autocmd FileType go setlocal noexpandtab tabstop=4 shiftwidth=4
   autocmd FileType qf setlocal signcolumn=no
+  autocmd Filetype qf ++once packadd cfilter
   autocmd Filetype qf nnoremap <silent> <buffer> q <C-w>c
+  autocmd Filetype qf nnoremap <buffer> <LocalLeader>f <cmd>call <SID>cfiler()<CR>
   autocmd BufEnter *.txt,*.jax call s:helpvert()
   autocmd FileType help setlocal signcolumn=no
   autocmd FileType help nnoremap <silent> <buffer> q <C-w>c
