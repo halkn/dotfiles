@@ -1,15 +1,15 @@
-pack update								:PackUpdate
-pack clean								:PackClean
-[gina]pull								:Gina pull
-[gina]push								:Gina push
-[gina]current log					:Gina log :%
-startuptime								:StartupTime
+[minpac] update						:PackUpdate
+[minpac] clean						:PackClean
+[gina]   pull							:Gina pull
+[gina]   push							:Gina push
+[gina]   current log			:Gina log :%
 [toggle] number						:normal [Toggle]n
 [toggle] relativenumber		:normal [Toggle]rn
 [toggle] cursorline				:normal [Toggle]c
 [toggle] wrap							:normal [Toggle]w
 [toggle] paste						:normal [Toggle]p
-[edit] utf8								:edit ++enc=utf-8 %
-[edit] sjis								:edit ++enc=sjis %
-[edit] cp932							:edit ++enc=cp932 %
-[vimrc] open vimrc				:tabe $MYVIMRC
+[edit]   utf8							:edit ++enc=utf-8 %
+[edit]   sjis							:edit ++enc=sjis %
+[edit]   cp932						:edit ++enc=cp932 %
+[etc]    open vimrc				:tabe $MYVIMRC
+[etc]    startuptime			:StartupTime
