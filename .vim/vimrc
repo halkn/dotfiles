@@ -424,6 +424,7 @@ function s:tender_custum() abort
   hi PMenuSel guifg=#ffc24b ctermfg=215 guibg=#282828 ctermbg=235 gui=NONE cterm=NONE
   hi link LspErrorText CocErrorSign
   hi link LspWarningText CocWarningSign
+  hi link LspCodeActionText CocWarningSign
   hi LspErrorHighlight gui=underline cterm=underline
   hi LspWarningHighlight gui=underline cterm=underline
   let g:terminal_ansi_colors = [
@@ -587,44 +588,56 @@ let g:lsp_settings = {
 " vim-lsp
 let g:lsp_async_completion = 1
 let g:lsp_diagnostics_enabled = 1
-let g:lsp_diagnostics_echo_cursor = 0
-let g:lsp_diagnostics_float_cursor = 1
+let g:lsp_diagnostics_echo_cursor = 1
+let g:lsp_diagnostics_float_cursor = 0
 let g:lsp_diagnostics_highlights_insert_mode_enabled = 0
 let g:lsp_documentation_float_docked = 1
 let g:lsp_diagnostics_signs_enabled = 1
 let g:lsp_diagnostics_signs_insert_mode_enabled = 0
-let g:lsp_diagnostics_signs_priority = 11
-let g:lsp_diagnostics_signs_error = {'text': '✗'}
-let g:lsp_diagnostics_signs_warning = {'text': '!!'}
-let g:lsp_diagnostics_signs_information = {'text': '●'}
-let g:lsp_diagnostics_signs_hint = {'text': '▲'}
+let g:lsp_diagnostics_signs_priority = 12
+let g:lsp_diagnostics_signs_error = {'text': "\u2717"}
+let g:lsp_diagnostics_signs_warning = {'text': "\u26a0"}
+let g:lsp_diagnostics_signs_information = {'text': "i>"}
+let g:lsp_diagnostics_signs_hint = {'text': "H>"}
+let g:lsp_document_code_action_signs_priority = 11
+let g:lsp_document_code_action_signs_hint = {'text': "\uf834"}
 
 function! s:setup_lsp() abort
   setlocal omnifunc=lsp#complete
   setlocal tagfunc=lsp#tagfunc
   nmap <silent> <buffer> gd              <Plug>(lsp-definition)
-  nmap <silent> <buffer> gD              <cmd>tab LspDefinition<CR>
   nmap <silent> <buffer> gi              <Plug>(lsp-implementation)
   nmap <silent> <buffer> gy              <Plug>(lsp-type-definition)
   nmap <silent> <buffer> gr              <Plug>(lsp-references)
   nmap <silent> <buffer> K               <Plug>(lsp-hover)
   nmap <silent> <buffer> <F2>            <Plug>(lsp-rename)
   nmap <silent> <buffer> <LocalLeader>k  <Plug>(lsp-peek-definition)
-  nmap <silent> <buffer> <LocalLeader>ca <plug>(lsp-code-action)
-  nmap <silent> <buffer> <LocalLeader>cl <plug>(lsp-code-lens)
+  nmap <silent> <buffer> <LocalLeader>ca <Plug>(lsp-code-action)
+  nmap <silent> <buffer> <LocalLeader>cl <Plug>(lsp-code-lens)
   nmap <silent> <buffer> <LocalLeader>d  <cmd>LspDocumentDiagnostics --buffers=*<CR>
-  nmap <silent> <buffer> <LocalLeader>m  <plug>(lsp-document-format)
-  nmap <silent> <buffer> <LocalLeader>s  <plug>(lsp-document-symbol-search)
-  nmap <silent> <buffer> <LocalLeader>w  <plug>(lsp-workspace-symbol-search)
+  nmap <silent> <buffer> ]d              <Plug>(lsp-next-diagnostic-nowrap)
+  nmap <silent> <buffer> [d              <Plug>(lsp-previous-diagnostic-nowrap)
+  nmap <silent> <buffer> <LocalLeader>m  <Plug>(lsp-document-format)
+  nmap <silent> <buffer> <LocalLeader>s  <Plug>(lsp-document-symbol-search)
+  nmap <silent> <buffer> <LocalLeader>w  <Plug>(lsp-workspace-symbol-search)
+  if &filetype ==# 'go'
+    augroup vimrc_lsp_go
+      autocmd!
+      autocmd BufWritePre <buffer> silent LspDocumentFormatSync
+      autocmd BufWritePre <buffer> silent LspCodeActionSync source.organizeImports
+    augroup END
+  endif
+  if &filetype ==# 'sh'
+    augroup vimrc_lsp_sh
+      autocmd!
+      autocmd BufWritePre <buffer> silent LspDocumentFormatSync
+    augroup END
+  endif
 endfunction
 
 augroup vimrc_lsp_setup
   au!
-  " call s:on_lsp_buffer_enabled only for languages that has the server registered.
   autocmd User lsp_buffer_enabled call s:setup_lsp()
-  autocmd BufWritePre *.go  call execute('LspDocumentFormatSync') |
-    \ call execute('LspCodeActionSync source.organizeImports')
-  autocmd BufWrite *.sh call execute('LspDocumentFormatSync')
 augroup END
 
 " asyncomplete.vim
