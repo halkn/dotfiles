@@ -470,7 +470,7 @@ ftpane() {
   current_pane=$(tmux display-message -p '#I:#P')
   current_window=$(tmux display-message -p '#I')
 
-  target=$(echo "$panes" | grep -v "$current_pane" | fzf +m --reverse) || return
+  target=$(echo "$panes" | grep -v "$current_pane" | fzf +m --reverse --height=100%) || return
 
   target_window=$(echo $target | awk 'BEGIN{FS=":|-"} {print$1}')
   target_pane=$(echo $target | awk 'BEGIN{FS=":|-"} {print$2}' | cut -c 1)
