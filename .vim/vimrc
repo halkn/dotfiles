@@ -595,6 +595,7 @@ let g:lsp_diagnostics_signs_error = {'text': "\u2717"}
 let g:lsp_diagnostics_signs_warning = {'text': "\u26a0"}
 let g:lsp_diagnostics_signs_information = {'text': "i>"}
 let g:lsp_diagnostics_signs_hint = {'text': "H>"}
+let g:lsp_document_code_action_signs_enabled = 0
 let g:lsp_document_code_action_signs_priority = 11
 let g:lsp_document_code_action_signs_hint = {'text': "\uf834"}
 
