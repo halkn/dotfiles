@@ -362,8 +362,8 @@ function! PackInit() abort
   call minpac#add('mattn/vim-gomod')
   call minpac#add('kyoh86/vim-go-coverage')
   call minpac#add('plasticboy/vim-markdown')
+  call minpac#add('godlygeek/tabular')
   call minpac#add('mattn/vim-maketable')
-  call minpac#add('dhruvasagar/vim-table-mode')
   call minpac#add('previm/previm')
   call minpac#add('lambdalisue/vim-backslash')
   call minpac#add('halkn/vim-qfex')
@@ -679,6 +679,7 @@ let g:vim_markdown_emphasis_multiline = 0
 augroup vimrc_markdown
   au!
   autocmd FileType markdown nnoremap <buffer> <LocalLeader>o <cmd>Toch<CR>
+  autocmd FileType markdown nnoremap <buffer> <LocalLeader>f <cmd>TableFormat<CR>
 augroup END
 
 " vim-maketable
@@ -687,11 +688,6 @@ augroup vimrc_maketable
   autocmd FileType markdown vnoremap <silent> <buffer> mt :MakeTable!<CR>
   autocmd FileType markdown nnoremap <buffer>          mt <cmd>UnmakeTable!<CR>
 augroup END
-
-" vim-table-mode
-let g:table_mode_corner = '|'
-let g:table_mode_map_prefix = '<LocalLeader>'
-let g:table_mode_toggle_map = 'tm'
 
 " previm
 let g:previm_open_cmd = 'open'
