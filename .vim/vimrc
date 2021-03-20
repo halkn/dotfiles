@@ -346,7 +346,6 @@ function! PackInit() abort
   call minpac#add('kana/vim-operator-replace')
   call minpac#add('mattn/vim-lexiv')
   call minpac#add('mattn/vim-findroot')
-  call minpac#add('mattn/vim-qfnavigate')
   " fuzzyfubder
   call minpac#add('ctrlpvim/ctrlp.vim')
   call minpac#add('mattn/ctrlp-matchfuzzy')
@@ -529,10 +528,6 @@ xmap a, <Plug>(swap-textobject-a)
 
 " vim-operator-replace
 map R <Plug>(operator-replace)
-
-" vim-qfnavigate
-nmap <C-n> <plug>(qfnavigate-next)
-nmap <C-p> <plug>(qfnavigate-previous)
 
 " FuzzyFinder ----------------------------------------------------------------
 " ctrlp.vim
