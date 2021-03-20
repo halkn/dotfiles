@@ -335,6 +335,7 @@ function! PackInit() abort
   call minpac#add('itchyny/lightline.vim')
   call minpac#add('itchyny/vim-gitbranch')
   call minpac#add('halkn/lightline-lsp')
+  call minpac#add('mhinz/vim-signify')
   call minpac#add('vim-jp/vimdoc-ja')
   call minpac#add('hrsh7th/vim-eft')
   call minpac#add('tyru/columnskip.vim')
@@ -371,7 +372,6 @@ function! PackInit() abort
   call minpac#add('halkn/vim-agrep')
   call minpac#add('halkn/vim-termrun')
   call minpac#add('glidenote/memolist.vim')
-  call minpac#add('mhinz/vim-signify')
   call minpac#add('lambdalisue/gina.vim', { 'type': 'opt' })
   call minpac#add('tyru/capture.vim')
   call minpac#add('skanehira/translate.vim')
@@ -462,7 +462,7 @@ let g:lightline = {
 \ 'active': {
 \   'left': [ [ 'mode', 'paste'],
 \             [ 'gitbranch' ],
-\             [ 'readonly', 'filename', 'modified' ] ],
+\             [ 'readonly', 'filename', 'modified' ], ['gitstatus'] ],
 \   'right': [ ['lsp_errors', 'lsp_warnings', 'lsp_ok'],
 \              [ 'lineinfo' ],
 \              [ 'percent' ],
@@ -471,7 +471,8 @@ let g:lightline = {
 \ },
 \ 'component_function': {
 \   'gitbranch': 'gitbranch#name',
-\   'cwd':       'getcwd'
+\   'gitstatus': 'sy#repo#get_stats_decorated',
+\   'cwd':       'getcwd',
 \ },
 \ 'component_expand': {
 \   'lsp_warnings': 'lightline_lsp#warnings',
@@ -484,6 +485,12 @@ let g:lightline = {
 \   'lsp_ok':       'ok',
 \ },
 \ }
+
+" vim-signify
+let g:signify_disable_by_default = 0
+let g:signify_priority = 5
+nnoremap <C-y>      <cmd>SignifyToggle<CR>
+nnoremap <leader>gu <cmd>SignifyHunkUndo<cr>
 
 " vim-eft
 nmap ; <Plug>(eft-repeat)
@@ -726,12 +733,6 @@ let g:memolist_ex_cmd = 'CtrlP'
 nnoremap <Leader>mn <cmd>MemoNew<CR>
 nnoremap <Leader>mg <cmd>MemoGrep<CR>
 nnoremap <Leader>ml <cmd>MemoList<CR>
-
-" vim-signify
-nnoremap <C-y>      <cmd>SignifyToggle<CR>
-nnoremap <Leader>gd <cmd>SignifyDiff<CR>
-nnoremap <leader>gu <cmd>SignifyHunkUndo<cr>
-let g:signify_disable_by_default = 0
 
 " gina.vim
 function s:gina_settings() abort
