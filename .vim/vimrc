@@ -709,16 +709,15 @@ let g:qfex_autoclose_enabled = 1
 nmap <Leader>a <Plug>(agrep-input)
 
 " vim-termrun
-function s:termrun_setup_go() abort
-  nmap <buffer> <LocalLeader>r <Plug>(termrun-go-run)
-  nmap <buffer> <LocalLeader>t <Plug>(termrun-go-test-all)
-  nmap <buffer> <LocalLeader>p <Plug>(termrun-go-test-pkg)
-  nmap <buffer> <LocalLeader>f <Plug>(termrun-go-test-func)
-endfunction
-
+let g:termrun_config = {
+\ 'sh': { 'opts': {'vertical': v:true, 'term_cols': &columns/2} },
+\ 'go': { 'opts': {'term_rows': &lines/3} },
+\ }
 augroup vimrc_termrun
   au!
-  autocmd FileType go call s:termrun_setup_go()
+  autocmd FileType go,sh,markdown nmap <buffer> <LocalLeader>r <Plug>(termrun-quick)
+  autocmd FileType go nmap <buffer> <LocalLeader>t <Plug>(termrun-test)
+  autocmd FileType go nmap <buffer> <LocalLeader>f <Plug>(termrun-gotest-func)
 augroup END
 
 " memolist.vim
