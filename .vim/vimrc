@@ -342,6 +342,7 @@ function! PackInit() abort
   call minpac#add('tyru/caw.vim')
   call minpac#add('machakann/vim-sandwich')
   call minpac#add('machakann/vim-swap')
+  call minpac#add('machakann/vim-highlightedyank')
   call minpac#add('kana/vim-operator-user')
   call minpac#add('kana/vim-operator-replace')
   call minpac#add('mattn/vim-lexiv')
@@ -525,6 +526,9 @@ omap i, <Plug>(swap-textobject-i)
 xmap i, <Plug>(swap-textobject-i)
 omap a, <Plug>(swap-textobject-a)
 xmap a, <Plug>(swap-textobject-a)
+
+" vim-highlightedyank
+let g:highlightedyank_highlight_duration = 100
 
 " vim-operator-replace
 map R <Plug>(operator-replace)
