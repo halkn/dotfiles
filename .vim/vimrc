@@ -630,6 +630,13 @@ function! s:setup_lsp() abort
       autocmd BufWritePre <buffer> silent LspCodeActionSync source.organizeImports
     augroup END
   endif
+  if &filetype ==# 'typescript'
+    nmap <silent> <buffer> gd <cmd>LspDenoDefinition<CR>
+    augroup vimrc_lsp_ts
+      autocmd!
+      autocmd BufWritePre <buffer> silent LspDocumentFormatSync
+    augroup END
+  endif
   if &filetype ==# 'sh'
     augroup vimrc_lsp_sh
       autocmd!
