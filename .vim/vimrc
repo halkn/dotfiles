@@ -810,7 +810,7 @@ xmap T <Plug>(VTranslate)
 xmap <Leader>tR <Plug>(VTranslateBang)
 
 " vim-quickhl
-nmap <Space>m <Plug>(quickhl-manual-this)
-xmap <Space>m <Plug>(quickhl-manual-this)
-nmap <Space>M <Plug>(quickhl-manual-reset)
-xmap <Space>M <Plug>(quickhl-manual-reset)
+nmap mm <Plug>(quickhl-manual-this)
+xmap mm <Plug>(quickhl-manual-this)
+nmap mM <Plug>(quickhl-manual-reset)
+xmap mM <Plug>(quickhl-manual-reset)
