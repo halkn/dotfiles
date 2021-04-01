@@ -286,6 +286,15 @@ endfunction
 nnoremap <silent> <script> Q <cmd>call <SID>toggleqf()<CR>
 
 " ============================================================================
+" Command
+" ============================================================================
+" Caputre result for Ex-Command.
+command! -nargs=1 -complete=command Capture
+\ <mods> new |
+\ setlocal buftype=nofile bufhidden=hide noswapfile |
+\ call setline(1, split(execute(<q-args>), '\n'))
+
+" ============================================================================
 " autocmd
 " ============================================================================
 function s:cfiler() abort
@@ -373,7 +382,6 @@ function! PackInit() abort
   call minpac#add('halkn/vim-termrun')
   call minpac#add('glidenote/memolist.vim')
   call minpac#add('lambdalisue/gina.vim', { 'type': 'opt' })
-  call minpac#add('tyru/capture.vim')
   call minpac#add('skanehira/translate.vim')
   call minpac#add('thinca/vim-qfreplace')
   call minpac#add('t9md/vim-quickhl')
