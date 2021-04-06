@@ -421,7 +421,7 @@ bua() {
 # fuzzy-ghq-list - cd to development directory in ghq list.
 fuzzy-ghq-list() {
   local dir
-  dir=$(ghq list > /dev/null | fzf --height 100% --preview="glow $(ghq root)/{}")
+  dir=$(ghq list > /dev/null | fzf --height 100% --preview="glow $(ghq root)/{}/README.md")
   if [[ ${dir} ]]; then
     cd $(ghq root)/${dir}
   fi
@@ -455,7 +455,7 @@ vp() {
 
   selected=$(echo "${dir}" | fzf \
     --height=100% \
-    --preview="glow ${base}{}")
+    --preview="glow ${base}{}/README.md")
   if [ -n "${selected}" ]; then
     builtin cd "${base}${selected}"
   fi
