@@ -631,31 +631,17 @@ function! s:setup_lsp() abort
   nmap <silent> <buffer> <LocalLeader>m  <Plug>(lsp-document-format)
   nmap <silent> <buffer> <LocalLeader>s  <Plug>(lsp-document-symbol-search)
   nmap <silent> <buffer> <LocalLeader>w  <Plug>(lsp-workspace-symbol-search)
-  if &filetype ==# 'go'
-    augroup vimrc_lsp_go
-      autocmd!
-      autocmd BufWritePre <buffer> silent LspDocumentFormatSync
-      autocmd BufWritePre <buffer> silent LspCodeActionSync source.organizeImports
-    augroup END
-  endif
   if &filetype ==# 'typescript'
     nmap <silent> <buffer> gd <cmd>LspDenoDefinition<CR>
-    augroup vimrc_lsp_ts
-      autocmd!
-      autocmd BufWritePre <buffer> silent LspDocumentFormatSync
-    augroup END
-  endif
-  if &filetype ==# 'sh'
-    augroup vimrc_lsp_sh
-      autocmd!
-      autocmd BufWritePre <buffer> silent LspDocumentFormatSync
-    augroup END
   endif
 endfunction
 
 augroup vimrc_lsp_setup
   au!
   autocmd User lsp_buffer_enabled call s:setup_lsp()
+  autocmd BufWritePre *.go silent execute('LspDocumentFormatSync') 
+  \ | silent execute('LspCodeActionSync source.organizeImports')
+  autocmd BufWritePre *.ts,*sh silent execute('LspDocumentFormatSync') 
 augroup END
 
 " asyncomplete.vim
