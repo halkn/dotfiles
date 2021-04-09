@@ -9,13 +9,14 @@
     "${XDG_DATA_HOME}/zsh",
     "${XDG_CACHE_HOME}/nvim/.undodir"
   ],
-  "tools": {
-    "go": [
-      "github.com/x-motemen/ghq@latest",
-      "github.com/itchyny/gojq/cmd/gojq@latest",
-      "github.com/charmbracelet/glow@latest",
-      "github.com/Code-Hex/battery/cmd/battery@latest",
-      "mvdan.cc/sh/v3/cmd/shfmt@latest"
-    ]
-  }
+  "tools": [
+    ["go", "install", "github.com/x-motemen/ghq@latest"],
+    ["go", "install", "github.com/itchyny/gojq/cmd/gojq@latest"],
+    ["go", "install", "github.com/charmbracelet/glow@latest"],
+    ["go", "install", "mvdan.cc/sh/v3/cmd/shfmt@latest"],
+    ["go", "install", "github.com/Code-Hex/battery/cmd/battery@latest"],
+    ["npm", "install", "-g", "npm"],
+    ["npm", "install", "-g", "markdownlint-cli"],
+    ["npm", "install", "-g", "fixjson"]
+  ]
 }
