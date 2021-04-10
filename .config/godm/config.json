@@ -1,7 +1,6 @@
 {
   "installpath": "$HOME/.dotfiles",
   "dirs": [
-    "${XDG_DATA_HOME}/ba",
     "${XDG_DATA_HOME}/bash",
     "${XDG_DATA_HOME}/go",
     "${XDG_DATA_HOME}/nodebrew",
