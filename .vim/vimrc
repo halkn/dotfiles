@@ -715,9 +715,11 @@ nmap <Leader>a <Plug>(agrep-input)
 
 " vim-termrun
 let g:termrun_config = {
+\ '_': { 'opts': {'term_rows': &lines/3} },
 \ 'sh': { 'opts': {'vertical': v:true, 'term_cols': &columns/2} },
 \ 'go': { 'opts': {'term_rows': &lines/3} },
 \ }
+nmap <Leader>q <Plug>(termrun-close)
 augroup vimrc_termrun
   au!
   autocmd FileType go,sh,markdown nmap <buffer> <LocalLeader>r <Plug>(termrun-quick)
