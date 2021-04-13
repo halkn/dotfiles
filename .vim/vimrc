@@ -571,16 +571,18 @@ augroup END
 " vim-lsp-settings
 let g:lsp_settings = {
 \ 'gopls': {
-\   'workspace_config': { 'gopls':
-\     {
-\       'gofumpt': v:true,
-\       'usePlaceholders': v:true,
-\       'staticcheck': v:true,
+\   'initialization_options': {
+\     'gofumpt': v:true,
+\     'usePlaceholders': v:true,
+\     'staticcheck': v:true,
+\     'codelenses': {
+\       'generate': v:true,
+\       'test': v:true,
 \     }
 \   }
 \ },
 \ 'yaml-language-server': {
-\   'workspace_config': {
+\   'initialization_options': {
 \     'yaml': {
 \       'schemas': {
 \         'http://json.schemastore.org/cloudbuild': '/cloudbuild*.yaml'
@@ -635,7 +637,7 @@ function! s:setup_lsp() abort
   nmap <silent> <buffer> <LocalLeader>s  <Plug>(lsp-document-symbol-search)
   nmap <silent> <buffer> <LocalLeader>w  <Plug>(lsp-workspace-symbol-search)
   if &filetype ==# 'typescript'
-    nmap <silent> <buffer> gd <cmd>LspDenoDefinition<CR>
+    nmap <silent> <buffer> gd            <plug>(lsp-deno-definition)
   endif
 endfunction
 
