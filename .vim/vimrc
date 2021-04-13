@@ -229,6 +229,9 @@ nnoremap [Toggle]c  <cmd>setlocal cursorline! cursorcolumn!<CR>
 nnoremap [Toggle]w  <cmd>setlocal wrap! wrap?<CR>
 nnoremap [Toggle]p  <cmd>set paste! paste?<CR>
 
+" terminal mode
+tnoremap <C-y> <C-w>N
+
 " open termianl in vertial split,new tab,current winddow
 nnoremap <Leader>ts <cmd>terminal<CR>
 nnoremap <Leader>tv <cmd>vertical terminal<CR>
