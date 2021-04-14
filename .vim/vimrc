@@ -373,6 +373,8 @@ function! PackInit() abort
   " FileType
   call minpac#add('kana/vim-altr')
   call minpac#add('mattn/vim-gomod')
+  call minpac#add('mattn/vim-goaddtags')
+  call minpac#add('mattn/vim-goimpl')
   call minpac#add('kyoh86/vim-go-coverage')
   call minpac#add('plasticboy/vim-markdown')
   call minpac#add('godlygeek/tabular')
@@ -644,8 +646,9 @@ endfunction
 augroup vimrc_lsp_setup
   au!
   autocmd User lsp_buffer_enabled call s:setup_lsp()
-  autocmd BufWritePre *.go silent execute('LspDocumentFormatSync') 
-  \ | silent execute('LspCodeActionSync source.organizeImports')
+  autocmd BufWritePre *.go call execute([
+  \ 'LspCodeActionSync source.organizeImports',
+  \ 'LspDocumentFormatSync'])
   autocmd BufWritePre *.ts,*sh silent execute('LspDocumentFormatSync') 
 augroup END
 
