@@ -300,7 +300,7 @@ command! -nargs=1 -complete=command Capture
 " ============================================================================
 " autocmd
 " ============================================================================
-function s:cfiler() abort
+function s:cfilter() abort
   let l:query = input('Cfilter: ', '')
   if empty(l:query) | redraw | return | endif
   execute 'Cfilter' l:query
@@ -314,7 +314,7 @@ augroup vimrc_filetype
   autocmd FileType qf setlocal signcolumn=no
   autocmd Filetype qf ++once packadd cfilter
   autocmd Filetype qf nnoremap <silent> <buffer> q <C-w>c
-  autocmd Filetype qf nnoremap <buffer> <LocalLeader>f <cmd>call <SID>cfiler()<CR>
+  autocmd Filetype qf nnoremap <buffer> <LocalLeader>f <cmd>call <SID>cfilter()<CR>
   autocmd BufEnter *.txt,*.jax if &buftype == 'help' | wincmd L | endif
   autocmd FileType help setlocal signcolumn=no
   autocmd FileType help nnoremap <silent> <buffer> q <C-w>c
