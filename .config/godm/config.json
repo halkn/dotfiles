@@ -14,6 +14,7 @@
     ["go", "install", "github.com/charmbracelet/glow@latest"],
     ["go", "install", "mvdan.cc/sh/v3/cmd/shfmt@latest"],
     ["go", "install", "github.com/Code-Hex/battery/cmd/battery@latest"],
+    ["go", "install", "github.com/cweill/gotests/...@latest"],
     ["npm", "install", "-g", "npm"],
     ["npm", "install", "-g", "markdownlint-cli"],
     ["npm", "install", "-g", "fixjson"]

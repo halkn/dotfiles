@@ -376,6 +376,7 @@ function! PackInit() abort
   call minpac#add('mattn/vim-goaddtags')
   call minpac#add('mattn/vim-goimpl')
   call minpac#add('kyoh86/vim-go-coverage')
+  call minpac#add('buoto/gotests-vim')
   call minpac#add('plasticboy/vim-markdown')
   call minpac#add('godlygeek/tabular')
   call minpac#add('mattn/vim-maketable')
