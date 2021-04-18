@@ -276,6 +276,15 @@ endfunction
 nnoremap <silent> <script> Q <cmd>call <SID>toggleqf()<CR>
 
 " ============================================================================
+" Command
+" ============================================================================
+" Caputre result for Ex-Command.
+command! -nargs=1 -complete=command Capture
+\ <mods> new |
+\ setlocal buftype=nofile bufhidden=hide noswapfile |
+\ call setline(1, split(execute(<q-args>), '\n'))
+
+" ============================================================================
 " autocmd
 " ============================================================================
 " open help in vertical window.
@@ -292,7 +301,7 @@ function! s:qfenter(cmd)
   silent! execute l:cmd l:lnum
   silent! execute l:ccmd
 endfunction
-function s:cfiler() abort
+function s:cfilter() abort
   let l:query = input('Cfilter: ', '')
   if empty(l:query) | redraw | return | endif
   execute 'Cfilter' l:query
@@ -307,7 +316,7 @@ augroup vimrc_filetype
   autocmd Filetype qf ++once packadd cfilter
   autocmd Filetype qf nnoremap <silent> <buffer> p <CR>zz<C-w>p
   autocmd Filetype qf nnoremap <silent> <buffer> q <C-w>c
-  autocmd Filetype qf nnoremap <buffer> <LocalLeader>f <cmd>call <SID>cfiler()<CR>
+  autocmd Filetype qf nnoremap <buffer> <LocalLeader>f <cmd>call <SID>cfilter()<CR>
   autocmd Filetype qf nnoremap <buffer> <C-m> <cmd>call <SID>qfenter('wincmd p')<CR>
   autocmd Filetype qf nnoremap <buffer> <C-t> <cmd>call <SID>qfenter('tabnew')<CR>
   autocmd Filetype qf nnoremap <buffer> <C-x> <cmd>call <SID>qfenter('wincmd p <bar> new')<CR>
@@ -357,8 +366,8 @@ Plug 'machakann/vim-sandwich'
 Plug 'machakann/vim-swap'
 Plug 'kana/vim-operator-user'
 Plug 'kana/vim-operator-replace'
-Plug 'mattn/vim-lexiv'
 Plug 'mattn/vim-findroot'
+Plug 'windwp/nvim-autopairs'
 " fuzzyfinder
 Plug 'nvim-lua/popup.nvim'
 Plug 'nvim-lua/plenary.nvim'
@@ -505,6 +514,9 @@ xmap a, <Plug>(swap-textobject-a)
 " vim-operator-replace
 map R <Plug>(operator-replace)
 
+" nvim-autopairs
+lua require('nvim-autopairs').setup()
+
 " FuzzyFinder ----------------------------------------------------------------
 " telescope.nvim
 lua require('vimrc/plugins/telescope')
@@ -628,10 +640,10 @@ nnoremap <Leader>gd <cmd>Gina compare<CR>
 nnoremap <Leader>gb <cmd>Gina branch -av<CR>
 
 " vim-quickhl
-nmap <Space>m <Plug>(quickhl-manual-this)
-xmap <Space>m <Plug>(quickhl-manual-this)
-nmap <Space>M <Plug>(quickhl-manual-reset)
-xmap <Space>M <Plug>(quickhl-manual-reset)
+nmap mm <Plug>(quickhl-manual-this)
+xmap mm <Plug>(quickhl-manual-this)
+nmap mM <Plug>(quickhl-manual-reset)
+xmap mM <Plug>(quickhl-manual-reset)
 
 " FileType -------------------------------------------------------------------
 " vim-altr

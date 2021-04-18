@@ -23,13 +23,17 @@ require('telescope').setup{
         ["<esc>"] = actions.close,
       },
     },
-    extensions = {
-      fzy_native = {
-        override_generic_sorter = true,
-        override_file_sorter = true,
-      }
-    }
-
+  },
+  extensions = {
+    fzy_native = {
+      override_generic_sorter = true,
+      override_file_sorter = true,
+    },
+    lsp_handlers = {
+      code_action = {
+        telescope = require('telescope.themes').get_dropdown({}),
+      },
+    },
   }
 }
 
@@ -38,3 +42,4 @@ require('telescope').setup{
 -- ===========================================================================
 require('telescope').load_extension('fzy_native')
 require('telescope').load_extension('lsp_handlers')
+
