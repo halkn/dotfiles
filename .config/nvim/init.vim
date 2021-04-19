@@ -378,6 +378,7 @@ Plug 'gbrlsnchs/telescope-lsp-handlers.nvim'
 Plug 'hrsh7th/nvim-compe'
 Plug 'hrsh7th/vim-vsnip'
 " Extension
+Plug 'skywind3000/asyncrun.vim', { 'on': 'AsyncRun', 'for': 'go' }
 Plug 'glidenote/memolist.vim', { 'on': [ 'MemoNew', 'MemoList', 'MemoGrep' ] }
 Plug 'lambdalisue/gina.vim', { 'on': 'Gina' }
 Plug 'thinca/vim-qfreplace', { 'on': 'QfReplace' }
@@ -569,6 +570,52 @@ imap <silent><expr> <TAB>
 \ compe#complete()
 
 " Extention ------------------------------------------------------------------
+" AsyncRun
+let s:asyncrun_go_opts = {
+\ 'mode': 'term',
+\ 'pos': 'bottom',
+\ 'rows': &lines/3,
+\ 'focus': v:false,
+\ }
+function! s:asyncrun_gorun(...) abort
+  let l:cmd = 'go run ' .. join(a:000)
+  call asyncrun#run("", s:asyncrun_go_opts, l:cmd)
+endfunction
+function! s:asyncrun_gotest(...) abort
+  let l:cmd = 'go test ' .. join(a:000)
+  call asyncrun#run("", s:asyncrun_go_opts, l:cmd)
+endfunction
+function s:asyncrun_gotest_func() abort
+  let l:test = search('func \(Test\|Example\)', "bcnW")
+  if l:test == 0
+    echo "[test] no test found immediate to cursor"
+    return
+  end
+  let l:line = getline(test)
+  let l:name = split(split(line, " ")[1], "(")[0]
+  let l:opts = deepcopy(s:asyncrun_go_opts)
+  let l:opts['cwd'] = '$(VIM_FILEDIR)'
+  call asyncrun#run("", l:opts, 'go test -v -run ' .. l:name)
+endfunction
+
+function s:asyncrun_go_setup() abort
+  command! -buffer -nargs=* -complete=file GoRun call s:asyncrun_gorun(<f-args>)
+  command! -buffer -nargs=* -complete=file GoTest call s:asyncrun_gotest(<f-args>)
+  command! -buffer -nargs=0 GoTestFunc call s:asyncrun_gotest_func()
+
+  nnoremap <buffer> <LocalLeader>r <cmd>GoRun $VIM_RELNAME<CR>
+  nnoremap <buffer> <LocalLeader>t <cmd>GoTest ./...<CR>
+  nnoremap <buffer> <LocalLeader>p <cmd>GoTest ./$VIM_RELDIR<CR>
+  nnoremap <buffer> <LocalLeader>f <cmd>GoTestFunc<CR>
+endfunction
+
+augroup vimrc_asyncrun
+  au!
+  autocmd FileType go call s:asyncrun_go_setup()
+  autocmd FileType sh nnoremap <silent> <buffer> <LocalLeader>r
+  \ <cmd>AsyncRun -mode=term -pos=right -cols=80 -focus=0 bash $VIM_RELNAME<CR>
+augroup END
+
 " memolist.vim
 let g:memolist_memo_suffix = 'md'
 let g:memolist_template_dir_path = stdpath('config') .. '/etc/memotemplates'
