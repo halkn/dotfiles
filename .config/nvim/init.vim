@@ -625,7 +625,6 @@ nnoremap <Leader>ml <cmd>MemoList<CR>
 
 " gina.vim
 function s:gina_settings() abort
-  packadd gina.vim
   let l:gina_cmd_opt = {'noremap': 1, 'silent': 1}
   call gina#custom#command#option('status','-s')
   call gina#custom#command#option('status','--opener', 'tabedit')
