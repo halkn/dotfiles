@@ -354,7 +354,6 @@ call plug#begin(stdpath('data') .. '/plugins')
 " base
 Plug 'nvim-treesitter/nvim-treesitter'
 Plug 'neovim/nvim-lspconfig'
-Plug 'kabouzeid/nvim-lspinstall', { 'on': 'LspInstall' }
 " enhanced
 Plug 'ChristianChiarulli/nvcode-color-schemes.vim'
 Plug 'hoob3rt/lualine.nvim'
@@ -413,6 +412,9 @@ function s:nvcode_mod() abort
   highlight! link DiffAdd GitSignsAdd
   highlight! link DiffChange GitSignsChange
   highlight! link DiffDelete GitSignsDelete
+  highlight! link LspReferenceRead Underlined
+  highlight! link LspReferenceText Underlined
+  highlight! link LspReferenceWrite Underlined
   let g:terminal_color_0 = '#5C6370'
   let g:terminal_color_1 = '#E06C75'
   let g:terminal_color_2 = '#98C379'
