@@ -341,8 +341,6 @@ function! PackInit() abort
   call minpac#add('k-takata/minpac', {'type': 'opt'})
 
   " global
-  call minpac#add('chuling/vim-equinusocio-material', {'type': 'opt'})
-  call minpac#add('aonemd/kuroi.vim', {'type': 'opt'})
   call minpac#add('jacoborus/tender.vim', {'type': 'opt'})
   call minpac#add('itchyny/lightline.vim')
   call minpac#add('itchyny/vim-gitbranch')
@@ -410,28 +408,7 @@ endif
 " ============================================================================
 " Plugin config
 " ============================================================================
-" Global ---------------------------------------------------------------------
-" vim-equinusocio-material
-" packadd vim-equinusocio-material
-" let g:equinusocio_material_style = 'darker'
-" let g:equinusocio_material_bracket_improved = 1
-" augroup vimrc_colorscheme
-"   autocmd!
-"   autocmd ColorScheme equinusocio_material highlight LspErrorHighlight gui=underline cterm=underline
-"   autocmd ColorScheme equinusocio_material highlight LspWarningHighlight gui=underline cterm=underline
-" augroup END
-" colorscheme equinusocio_material
-" function s:kuroi_modify() abort
-"   highlight link LspErrorText WarningMsg
-"   highlight link LspWarningText Title
-"   highlight link LspWarningHighlight LongLineWarning
-" endfunction
-" augroup vimrc_colorscheme
-"   autocmd!
-"   autocmd ColorScheme kuroi call s:kuroi_modify()
-" augroup END
-" colorscheme kuroi
-
+" global ---------------------------------------------------------------------
 " tender.vim
 function s:tender_custum() abort
   hi PMenu guifg=#eeeeee ctermfg=255 guibg=#444444 ctermbg=238 gui=NONE cterm=NONE
