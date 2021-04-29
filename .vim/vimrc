@@ -297,6 +297,8 @@ command! -nargs=1 -complete=command Capture
 \ setlocal buftype=nofile bufhidden=hide noswapfile |
 \ call setline(1, split(execute(<q-args>), '\n'))
 
+" Count for char in current buffer.
+command! -nargs=0 Wc %s/.//nge
 " ============================================================================
 " autocmd
 " ============================================================================
