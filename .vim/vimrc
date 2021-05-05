@@ -319,6 +319,7 @@ command! -nargs=1 -complete=command Capture
 
 " Count for char in current buffer.
 command! -nargs=0 Wc %s/.//nge
+
 " ============================================================================
 " autocmd
 " ============================================================================
@@ -356,13 +357,14 @@ cnoreabbrev ++s ++enc=sjis
 " ============================================================================
 " Plugin
 " ============================================================================
-function! PackInit() abort
+" PluginManager --------------------------------------------------------------
+" minpac
+function! s:pack_init() abort
   packadd minpac
-
   call minpac#init({'progress_open': 'vertical'})
   call minpac#add('k-takata/minpac', {'type': 'opt'})
 
-  " global
+  " enhance
   call minpac#add('jacoborus/tender.vim', {'type': 'opt'})
   call minpac#add('itchyny/lightline.vim')
   call minpac#add('itchyny/vim-gitbranch')
@@ -379,57 +381,48 @@ function! PackInit() abort
   call minpac#add('kana/vim-operator-replace')
   call minpac#add('mattn/vim-lexiv')
   call minpac#add('mattn/vim-findroot')
-  " fuzzyfubder
-  call minpac#add('ctrlpvim/ctrlp.vim')
-  call minpac#add('mattn/ctrlp-matchfuzzy')
-  call minpac#add('mattn/ctrlp-launcher')
-  " LSP
-  call minpac#add('prabirshrestha/vim-lsp')
-  call minpac#add('mattn/vim-lsp-settings')
-  call minpac#add('prabirshrestha/asyncomplete.vim')
-  call minpac#add('prabirshrestha/asyncomplete-lsp.vim')
-  call minpac#add('hrsh7th/vim-vsnip')
-  call minpac#add('hrsh7th/vim-vsnip-integ')
-  " FileType
+  " extension
+  call minpac#add('glidenote/memolist.vim')
+  call minpac#add('halkn/vim-agrep')
+  call minpac#add('halkn/vim-termrun')
+  call minpac#add('lambdalisue/gina.vim', { 'type': 'opt' })
+  call minpac#add('skanehira/translate.vim')
+  call minpac#add('thinca/vim-qfreplace')
+  call minpac#add('t9md/vim-quickhl')
+  call minpac#add('tweekmonster/startuptime.vim')
+  " filetype
   call minpac#add('kana/vim-altr')
   call minpac#add('mattn/vim-gomod')
   call minpac#add('mattn/vim-goaddtags')
   call minpac#add('mattn/vim-goimpl')
-  call minpac#add('kyoh86/vim-go-coverage')
   call minpac#add('buoto/gotests-vim')
+  call minpac#add('kyoh86/vim-go-coverage')
   call minpac#add('plasticboy/vim-markdown')
   call minpac#add('godlygeek/tabular')
   call minpac#add('mattn/vim-maketable')
   call minpac#add('previm/previm')
   call minpac#add('lambdalisue/vim-backslash')
   call minpac#add('halkn/vim-qfex')
-  " Extension
-  call minpac#add('halkn/vim-agrep')
-  call minpac#add('halkn/vim-termrun')
-  call minpac#add('glidenote/memolist.vim')
-  call minpac#add('lambdalisue/gina.vim', { 'type': 'opt' })
-  call minpac#add('skanehira/translate.vim')
-  call minpac#add('thinca/vim-qfreplace')
-  call minpac#add('t9md/vim-quickhl')
-  call minpac#add('tweekmonster/startuptime.vim')
+  " fuzzyfubder
+  call minpac#add('ctrlpvim/ctrlp.vim')
+  call minpac#add('mattn/ctrlp-matchfuzzy')
+  call minpac#add('mattn/ctrlp-launcher')
+  " lsp
+  call minpac#add('prabirshrestha/vim-lsp')
+  call minpac#add('mattn/vim-lsp-settings')
+  call minpac#add('prabirshrestha/asyncomplete.vim')
+  call minpac#add('prabirshrestha/asyncomplete-lsp.vim')
+  call minpac#add('hrsh7th/vim-vsnip')
+  call minpac#add('hrsh7th/vim-vsnip-integ')
 endfunction
 
-command! PackUpdate source $MYVIMRC | call PackInit() | call minpac#update()
-command! PackClean  source $MYVIMRC | call PackInit() | call minpac#clean()
-command! PackStatus packadd minpac | call minpac#status()
+command! PackUpdate source $MYVIMRC | call s:pack_init() | call minpac#update()
+command! PackClean  source $MYVIMRC | call s:pack_init() | call minpac#clean()
 
 filetype plugin indent on
 syntax enable
 
-if !isdirectory(expand('$XDG_DATA_HOME/vim/pack/minpac'))
-  colorscheme desert
-  finish
-endif
-
-" ============================================================================
-" Plugin config
-" ============================================================================
-" global ---------------------------------------------------------------------
+" enhance --------------------------------------------------------------------
 " tender.vim
 function s:tender_custum() abort
   hi! PMenu guifg=#eeeeee ctermfg=255 guibg=#444444 ctermbg=238 gui=NONE cterm=NONE
@@ -547,7 +540,146 @@ let g:highlightedyank_highlight_duration = 100
 " vim-operator-replace
 map R <Plug>(operator-replace)
 
-" FuzzyFinder ----------------------------------------------------------------
+" extension ------------------------------------------------------------------
+" memolist.vim
+let g:memolist_memo_suffix = 'md'
+let g:memolist_template_dir_path = expand('$VIM_CONFIG_HOME/etc/memotemplates')
+let g:memolist_ex_cmd = 'CtrlP'
+nnoremap <Leader>mn <cmd>MemoNew<CR>
+nnoremap <Leader>mg <cmd>MemoGrep<CR>
+nnoremap <Leader>ml <cmd>MemoList<CR>
+
+" vim-agrep
+nmap <Leader>a <Plug>(agrep-input)
+
+" vim-termrun
+let g:termrun_config = {
+\ '_': { 'opts': {'term_rows': &lines/3} },
+\ 'sh': { 'opts': {'vertical': v:true, 'term_cols': &columns/2} },
+\ 'go': { 'opts': {'term_rows': &lines/3} },
+\ }
+nmap <Leader>q <Plug>(termrun-close)
+augroup vimrc_termrun
+  au!
+  autocmd FileType go,sh,markdown nmap <buffer> <LocalLeader>r <Plug>(termrun-quick)
+  autocmd FileType go nmap <buffer> <LocalLeader>t <Plug>(termrun-test)
+  autocmd FileType go nmap <buffer> <LocalLeader>f <Plug>(termrun-gotest-func)
+augroup END
+
+" gina.vim
+function s:gina_settings() abort
+  packadd gina.vim
+  let l:gina_cmd_opt = {'noremap': 1, 'silent': 1}
+  call gina#custom#command#option('status','-s')
+  call gina#custom#command#option('status','--opener', 'tabedit')
+  call gina#custom#command#option('log','--opener', 'tabedit')
+  call gina#custom#command#option('commit', '-v')
+  call gina#custom#command#option('show','--show-signature')
+  call gina#custom#command#option('branch','--opener', 'split')
+
+  call gina#custom#mapping#nmap(
+  \ '/.*', 'q', '<cmd>bd<CR>', l:gina_cmd_opt
+  \ )
+  call gina#custom#mapping#nmap(
+  \ 'status',
+  \ '<C-c>',
+  \ '<cmd>Gina commit<CR>',
+  \ l:gina_cmd_opt)
+  call gina#custom#mapping#nmap(
+  \ 'commit',
+  \ '<C-c>',
+  \ '<cmd>Gina status --opener=edit<CR>',
+  \ l:gina_cmd_opt)
+  call gina#custom#mapping#nmap(
+  \ 'status',
+  \ 'p',
+  \ '<cmd>call gina#action#call(''diff:vsplit'')<CR>',
+  \ l:gina_cmd_opt,
+  \ )
+  call gina#custom#mapping#nmap(
+  \ '/\%(blame\|log\|reflog\)',
+  \ 'p',
+  \ '<cmd>call gina#action#call(''show:commit:vsplit'')<CR>',
+  \ l:gina_cmd_opt,
+  \ )
+  call gina#custom#mapping#nmap(
+  \ 'branch',
+  \ 'D',
+  \ '<cmd>call gina#action#call(''branch:delete'')<CR>',
+  \ l:gina_cmd_opt
+  \  )
+
+  call gina#custom#execute(
+  \ '/\%(ls\|log\|reflog\|grep\)',
+  \ 'setlocal noautoread',
+  \ )
+  call gina#custom#execute(
+  \ '/\%(status\|branch\|ls\|log\|reflog\|grep\)',
+  \ 'setlocal cursorline',
+  \ )
+endfunction
+
+augroup vimrc_gina
+  autocmd!
+  autocmd CmdUndefined Gina ++once call s:gina_settings()
+augroup END
+
+nnoremap <Leader>gs <cmd>Gina status<CR>
+nnoremap <Leader>gl <cmd>Gina log --graph<CR>
+nnoremap <Leader>gd <cmd>Gina compare<CR>
+nnoremap <Leader>gb <cmd>Gina branch -av<CR>
+
+" translate.vim
+let g:translate_source = "en"
+let g:translate_target = "ja"
+let g:translate_winsize = 10
+xmap T <Plug>(VTranslate)
+xmap <Leader>tR <Plug>(VTranslateBang)
+
+" vim-quickhl
+nmap mm <Plug>(quickhl-manual-this)
+xmap mm <Plug>(quickhl-manual-this)
+nmap mM <Plug>(quickhl-manual-reset)
+xmap mM <Plug>(quickhl-manual-reset)
+
+" filetype -------------------------------------------------------------------
+" vim-altr
+augroup vimrc_altr
+  au!
+  autocmd FileType go,vim,help nmap <buffer> <LocalLeader>a <Plug>(altr-forward)
+  autocmd FileType go,vim,help nmap <buffer> <LocalLeader>b <Plug>(altr-back)
+augroup END
+
+" vim-markdown
+let g:vim_markdown_folding_disabled = 1
+let g:vim_markdown_no_default_key_mappings = 1
+let g:vim_markdown_emphasis_multiline = 0
+augroup vimrc_markdown
+  au!
+  autocmd FileType markdown nnoremap <buffer> <LocalLeader>o <cmd>Toch<CR>
+  autocmd FileType markdown nnoremap <buffer> <LocalLeader>f <cmd>TableFormat<CR>
+augroup END
+
+" vim-maketable
+augroup vimrc_maketable
+  au!
+  autocmd FileType markdown vnoremap <silent> <buffer> mt :MakeTable!<CR>
+  autocmd FileType markdown nnoremap <buffer>          mt <cmd>UnmakeTable!<CR>
+augroup END
+
+" previm
+let g:previm_open_cmd = 'open'
+augroup vimrc_previm
+  au!
+  autocmd FileType markdown nnoremap <buffer> <LocalLeader>p <cmd>PrevimOpen<CR>
+augroup END
+
+" vim-qfex
+let g:qfex_autopreview_enabled = 1
+let g:qfex_autoclose_enabled = 1
+
+
+" fuzzyfinder ----------------------------------------------------------------
 " ctrlp.vim
 let g:ctrlp_map = '<space>f'
 let g:ctrlp_user_command = 'fd --type file --follow --hidden -E .git -E .svn'
@@ -570,7 +702,7 @@ augroup vimrc_ctrlp_launcher
   autocmd BufEnter *ctrlp-launcher* setlocal noexpandtab
 augroup END
 
-" LSP ------------------------------------------------------------------------
+" lsp ------------------------------------------------------------------------
 " vim-lsp-settings
 let g:lsp_settings = {
 \ 'gopls': {
@@ -678,144 +810,3 @@ imap <silent><expr> <TAB>
 \ <SID>check_back_space() ? "\<TAB>" :
 \ asyncomplete#force_refresh()
 
-" ----------------------------------------------------------------------------
-" FileType
-" ----------------------------------------------------------------------------
-" vim-altr
-augroup vimrc_altr
-  au!
-  autocmd FileType go,vim,help nmap <buffer> <LocalLeader>a <Plug>(altr-forward)
-  autocmd FileType go,vim,help nmap <buffer> <LocalLeader>b <Plug>(altr-back)
-augroup END
-
-" vim-markdown
-let g:vim_markdown_folding_disabled = 1
-let g:vim_markdown_no_default_key_mappings = 1
-let g:vim_markdown_emphasis_multiline = 0
-augroup vimrc_markdown
-  au!
-  autocmd FileType markdown nnoremap <buffer> <LocalLeader>o <cmd>Toch<CR>
-  autocmd FileType markdown nnoremap <buffer> <LocalLeader>f <cmd>TableFormat<CR>
-augroup END
-
-" vim-maketable
-augroup vimrc_maketable
-  au!
-  autocmd FileType markdown vnoremap <silent> <buffer> mt :MakeTable!<CR>
-  autocmd FileType markdown nnoremap <buffer>          mt <cmd>UnmakeTable!<CR>
-augroup END
-
-" previm
-let g:previm_open_cmd = 'open'
-augroup vimrc_previm
-  au!
-  autocmd FileType markdown nnoremap <buffer> <LocalLeader>p <cmd>PrevimOpen<CR>
-augroup END
-
-" vim-qfex
-let g:qfex_autopreview_enabled = 1
-let g:qfex_autoclose_enabled = 1
-
-" ----------------------------------------------------------------------------
-" Extention
-" ----------------------------------------------------------------------------
-" vim-agrep
-nmap <Leader>a <Plug>(agrep-input)
-
-" vim-termrun
-let g:termrun_config = {
-\ '_': { 'opts': {'term_rows': &lines/3} },
-\ 'sh': { 'opts': {'vertical': v:true, 'term_cols': &columns/2} },
-\ 'go': { 'opts': {'term_rows': &lines/3} },
-\ }
-nmap <Leader>q <Plug>(termrun-close)
-augroup vimrc_termrun
-  au!
-  autocmd FileType go,sh,markdown nmap <buffer> <LocalLeader>r <Plug>(termrun-quick)
-  autocmd FileType go nmap <buffer> <LocalLeader>t <Plug>(termrun-test)
-  autocmd FileType go nmap <buffer> <LocalLeader>f <Plug>(termrun-gotest-func)
-augroup END
-
-" memolist.vim
-let g:memolist_memo_suffix = 'md'
-let g:memolist_template_dir_path = expand('$VIM_CONFIG_HOME/etc/memotemplates')
-let g:memolist_ex_cmd = 'CtrlP'
-nnoremap <Leader>mn <cmd>MemoNew<CR>
-nnoremap <Leader>mg <cmd>MemoGrep<CR>
-nnoremap <Leader>ml <cmd>MemoList<CR>
-
-" gina.vim
-function s:gina_settings() abort
-  packadd gina.vim
-  let l:gina_cmd_opt = {'noremap': 1, 'silent': 1}
-  call gina#custom#command#option('status','-s')
-  call gina#custom#command#option('status','--opener', 'tabedit')
-  call gina#custom#command#option('log','--opener', 'tabedit')
-  call gina#custom#command#option('commit', '-v')
-  call gina#custom#command#option('show','--show-signature')
-  call gina#custom#command#option('branch','--opener', 'split')
-
-  call gina#custom#mapping#nmap(
-  \ '/.*', 'q', '<cmd>bd<CR>', l:gina_cmd_opt
-  \ )
-  call gina#custom#mapping#nmap(
-  \ 'status',
-  \ '<C-c>',
-  \ '<cmd>Gina commit<CR>',
-  \ l:gina_cmd_opt)
-  call gina#custom#mapping#nmap(
-  \ 'commit',
-  \ '<C-c>',
-  \ '<cmd>Gina status --opener=edit<CR>',
-  \ l:gina_cmd_opt)
-  call gina#custom#mapping#nmap(
-  \ 'status',
-  \ 'p',
-  \ '<cmd>call gina#action#call(''diff:vsplit'')<CR>',
-  \ l:gina_cmd_opt,
-  \ )
-  call gina#custom#mapping#nmap(
-  \ '/\%(blame\|log\|reflog\)',
-  \ 'p',
-  \ '<cmd>call gina#action#call(''show:commit:vsplit'')<CR>',
-  \ l:gina_cmd_opt,
-  \ )
-  call gina#custom#mapping#nmap(
-  \ 'branch',
-  \ 'D',
-  \ '<cmd>call gina#action#call(''branch:delete'')<CR>',
-  \ l:gina_cmd_opt
-  \  )
-
-  call gina#custom#execute(
-  \ '/\%(ls\|log\|reflog\|grep\)',
-  \ 'setlocal noautoread',
-  \ )
-  call gina#custom#execute(
-  \ '/\%(status\|branch\|ls\|log\|reflog\|grep\)',
-  \ 'setlocal cursorline',
-  \ )
-endfunction
-
-augroup vimrc_gina
-  autocmd!
-  autocmd CmdUndefined Gina ++once call s:gina_settings()
-augroup END
-
-nnoremap <Leader>gs <cmd>Gina status<CR>
-nnoremap <Leader>gl <cmd>Gina log --graph<CR>
-nnoremap <Leader>gd <cmd>Gina compare<CR>
-nnoremap <Leader>gb <cmd>Gina branch -av<CR>
-
-" translate.vim
-let g:translate_source = "en"
-let g:translate_target = "ja"
-let g:translate_winsize = 10
-xmap T <Plug>(VTranslate)
-xmap <Leader>tR <Plug>(VTranslateBang)
-
-" vim-quickhl
-nmap mm <Plug>(quickhl-manual-this)
-xmap mm <Plug>(quickhl-manual-this)
-nmap mM <Plug>(quickhl-manual-reset)
-xmap mM <Plug>(quickhl-manual-reset)
