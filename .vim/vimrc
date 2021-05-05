@@ -559,6 +559,7 @@ let g:termrun_config = {
 \ 'go': { 'opts': {'term_rows': &lines/3} },
 \ }
 nmap <Leader>q <Plug>(termrun-close)
+nmap <Leader>r <Plug>(termrun-resume)
 augroup vimrc_termrun
   au!
   autocmd FileType go,sh,markdown nmap <buffer> <LocalLeader>r <Plug>(termrun-quick)
@@ -675,7 +676,7 @@ augroup vimrc_previm
 augroup END
 
 " vim-qfex
-let g:qfex_autopreview_enabled = 1
+let g:qfex_autopreview_enabled = 0
 let g:qfex_autoclose_enabled = 1
 
 
