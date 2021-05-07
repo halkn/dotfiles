@@ -620,9 +620,37 @@ function s:gina_settings() abort
   \ )
 endfunction
 
+let s:ginastatus_bufnr = -1
+function! s:gina_status_preview(line)
+  let l:winid = bufwinid(s:ginastatus_bufnr)
+  if l:winid != -1
+    call win_execute(l:winid, "bw!")
+  endif
+
+  " remove ansi color code.
+  let l:line = substitute(a:line, '\[[0-9;]*m', '', 'g')
+  let l:splitted = split(l:line, '\zs')
+  let l:joined = join(l:splitted[3:len(l:splitted)], '')
+
+  let s:ginastatus_bufnr = term_start(['git', 'diff', l:joined], 
+  \ {'norestore': v:true, 'term_kill': 'kill', 'term_rows': &lines*4/5}
+  \ )
+  call win_execute(bufwinid(s:ginastatus_bufnr), 'setlocal nobl')
+  silent! execute 'wincmd p'
+endfunction
+
+function! s:gina_status() abort
+  augroup vimrc_gina_status
+    autocmd! * <buffer>
+    autocmd CursorMoved <buffer> ++nested call <SID>gina_status_preview(getline('.'))
+    autocmd BufUnload <buffer> call win_execute(bufwinid(s:ginastatus_bufnr), 'wincmd c')
+  augroup END
+endfunction
+
 augroup vimrc_gina
   autocmd!
   autocmd CmdUndefined Gina ++once call s:gina_settings()
+  autocmd FileType gina-status call s:gina_status()
 augroup END
 
 nnoremap <Leader>gs <cmd>Gina status<CR>
