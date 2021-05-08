@@ -631,6 +631,7 @@ function! s:gina_status_preview(line)
   let l:line = substitute(a:line, '\[[0-9;]*m', '', 'g')
   let l:splitted = split(l:line, '\zs')
   let l:joined = join(l:splitted[3:len(l:splitted)], '')
+  if l:joined == "" | return | endif
 
   let s:ginastatus_bufnr = term_start(['git', 'diff', l:joined], 
   \ {'norestore': v:true, 'term_kill': 'kill', 'term_rows': &lines*4/5}
