@@ -26,6 +26,9 @@ export ZDOTDIR=$XDG_CONFIG_HOME/zsh
 # golang
 export GOPATH=$XDG_DATA_HOME/go
 export GOBIN=$LOCAL_BIN
+export GOENV=$XDG_CONFIG_HOME/go/env
+export GOMODCACHE=$XDG_CACHE_HOME/go_mod
+export GOCACHE=$XDG_CACHE_HOME/go
 export GO111MODULE=on
 
 # nodebrew
@@ -34,16 +37,6 @@ export NODEBREW_ROOT=$XDG_DATA_HOME/nodebrew
 # npm
 export NPM_HOME=$XDG_DATA_HOME/npm
 export NPM_CONFIG_USERCONFIG=$XDG_CONFIG_HOME/npm/npmrc
-
-# RubyGems
-export GEM_HOME="$XDG_DATA_HOME"/gem
-export GEM_SPEC_CACHE="$XDG_CACHE_HOME"/gem
-
-# Docker
-export DOCKER_CONFIG="$XDG_CONFIG_HOME"/docker
-
-# homebrew
-export HOMEBREW_NO_INSTALL_CLEANUP=1
 
 # PATH
 typeset -U path
@@ -74,7 +67,7 @@ export LESSHISTFILE=-
 
 # fzf
 export FZF_DEFAULT_COMMAND='fd --type file --follow --hidden -E .git -E .svn'
-export FZF_DEFAULT_OPTS='--height 50% --layout=reverse --border --preview-window=right:60%'
+export FZF_DEFAULT_OPTS='--height 80% --layout=reverse --border --preview-window=right:60%'
 export FZF_GIT_DEFAULT_OPTS=" \
 --ansi \
 --height='100%' \
