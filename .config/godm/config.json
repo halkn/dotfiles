@@ -5,8 +5,7 @@
     "${XDG_DATA_HOME}/go",
     "${XDG_DATA_HOME}/nodebrew",
     "${XDG_DATA_HOME}/npm",
-    "${XDG_DATA_HOME}/zsh",
-    "${XDG_CACHE_HOME}/nvim/.undodir"
+    "${XDG_DATA_HOME}/zsh"
   ],
   "tools": [
     ["go", "install", "github.com/x-motemen/ghq@latest"],
