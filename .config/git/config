@@ -1,6 +1,8 @@
 [user]
     name = halkn
     email = h.mhty0wia.s@gmail.com
+[status]
+    showUntrackedFiles = all
 [diff]
     tool = vimdiff
 [merge]
