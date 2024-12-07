@@ -1,6 +1,0 @@
-# or
---glob
-!.git/*
-
---glob
-!.svn/*
