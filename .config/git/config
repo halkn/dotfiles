@@ -1,0 +1,19 @@
+[user]
+    name = halkn
+    email = nhalkn0920@gmail.com
+[status]
+    showUntrackedFiles = all
+[diff]
+    tool = vimdiff
+[merge]
+    tool = vimdiff
+[difftool]
+    prompt = false
+[mergetool]
+    prompt = false
+[color]
+    ui = true
+[fetch]
+    prune = true
+[push]
+    default = current
