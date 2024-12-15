@@ -85,6 +85,12 @@ alias df='df -h'
 # cd
 alias ..='cd ..'
 
+# editor
+if type nvim > /dev/null 2>&1; then
+  alias vim=nvim
+  export EDITOR=nvim
+fi
+
 # etc
 alias path='echo $PATH | tr ":" "\n"'
 alias zs='source $ZDOTDIR/.zshrc'
