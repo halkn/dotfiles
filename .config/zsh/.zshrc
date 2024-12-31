@@ -89,6 +89,7 @@ alias ..='cd ..'
 if type nvim > /dev/null 2>&1; then
   alias vim=nvim
   export EDITOR=nvim
+  export MANPAGER='nvim +Man!'
 fi
 
 # etc
