@@ -1,28 +1,20 @@
-local map = vim.keymap.set
-local kopts = { noremap = true, silent = true }
+---@type LazySpec
+local spec = {
 
-local actions = require("telescope.actions")
-
-return {
-  "nvim-telescope/telescope.nvim",
-  dependencies = {
-    "nvim-lua/plenary.nvim",
-  },
-  cmd = "Telescope",
-  init = function()
-      map("n", "<Leader>f", "<cmd>Telescope find_files<CR>", kopts)
-      map("n", "<Leader>b", "<cmd>Telescope buffers<CR>", kopts)
-      map("n", "<Leader>g", "<cmd>Telescope live_grep<CR>", kopts)
-  end,
-  config = function()
-    require("telescope").setup({
+  -- telescope
+  {
+    "nvim-telescope/telescope.nvim",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "nvim-telescope/telescope-fzy-native.nvim",
+    },
+    keys = {
+      { "<Leader>f", "<cmd>Telescope find_files<CR>" },
+      { "<Leader>b", "<cmd>Telescope buffers<CR>" },
+      { "<Leader>g", "<cmd>Telescope live_grep<CR>" },
+    },
+    opts = {
       defaults = {
-        mappings = {
-          i = {
-            ["<esc>"] = actions.close,
-            ["<c-d>"] = actions.delete_buffer + actions.move_to_top,
-          },
-        },
         sorting_strategy = "ascending",
         layout_strategy = "flex",
         layout_config = {
@@ -43,7 +35,6 @@ return {
           "!**/.git/*",
           "--trim"
         },
-        generic_sorter = require("telescope.sorters").get_generic_fuzzy_sorter,
         path_display = {
           "truncate",
           filename_first = { reverse_directories = false },
@@ -53,9 +44,25 @@ return {
       },
       pickers = {
         find_files = {
-          find_command = {"rg", "--files", "--hidden", "--glob", "!**/.git/*" },
+          find_command = { "rg", "--files", "--hidden", "--glob", "!**/.git/*" },
         },
       },
-    })
-  end
+    },
+    config = function(_, opts)
+      local actions = require("telescope.actions")
+      local layout = require("telescope.actions.layout")
+      local mappings = {
+        i = {
+          ["<esc>"] = actions.close,
+          ["<M-p>"] = layout.toggle_preview,
+          ["<c-d>"] = actions.delete_buffer + actions.move_to_top,
+        },
+      }
+      opts.defaults.mappings = mappings
+      require('telescope').setup(opts)
+      require('telescope').load_extension('fzy_native')
+    end
+  },
 }
+
+return spec
