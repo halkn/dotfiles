@@ -6,11 +6,11 @@ local spec = {
     "nvim-telescope/telescope.nvim",
     dependencies = {
       "nvim-lua/plenary.nvim",
-      "nvim-telescope/telescope-fzy-native.nvim",
     },
     keys = {
       { "<Leader>f", "<cmd>Telescope find_files<CR>" },
       { "<Leader>b", "<cmd>Telescope buffers<CR>" },
+      { "<Leader>l", "<cmd>Telescope current_buffer_fuzzy_find<CR>" },
       { "<Leader>g", "<cmd>Telescope live_grep<CR>" },
     },
     opts = {
@@ -51,6 +51,8 @@ local spec = {
     config = function(_, opts)
       local actions = require("telescope.actions")
       local layout = require("telescope.actions.layout")
+      local sorters = require("telescope.sorters")
+
       local mappings = {
         i = {
           ["<esc>"] = actions.close,
@@ -59,8 +61,9 @@ local spec = {
         },
       }
       opts.defaults.mappings = mappings
+      opts.defaults.file_sorter = sorters.get_fzy_sorter
+      opts.defaults.generic_sorter = sorters.get_fzy_sorter
       require('telescope').setup(opts)
-      require('telescope').load_extension('fzy_native')
     end
   },
 }
