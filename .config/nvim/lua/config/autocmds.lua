@@ -16,7 +16,6 @@ autocmd('QuickfixCmdPost', {
 autocmd('FileType', {
   group = group_name,
   pattern = { "help" },
---  command = [[wincmd L]],
   callback = function()
     local opts = { silent = false, noremap = true, buffer = true }
     vim.keymap.set('n', '<CR>', '<C-]>', opts)
@@ -54,6 +53,5 @@ autocmd('FileType', {
 -- Briefly highlight yanked text
 autocmd('TextYankPost', {
   group = group_name,
-  callback = function() vim.highlight.on_yank({timeout = 200}) end,
+  callback = function() vim.highlight.on_yank({ timeout = 200 }) end,
 })
-
