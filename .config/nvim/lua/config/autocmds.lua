@@ -12,6 +12,15 @@ autocmd('QuickfixCmdPost', {
   end,
 })
 
+autocmd('FileType', {
+  group = group_name,
+  pattern = { "qf" },
+  callback = function()
+    local opts = { silent = false, noremap = true, buffer = true }
+    vim.keymap.set('n', 'q', '<cmd>cclose<cr>', opts)
+  end,
+})
+
 -- help
 autocmd('FileType', {
   group = group_name,

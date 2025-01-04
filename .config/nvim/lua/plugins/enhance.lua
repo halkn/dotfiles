@@ -90,6 +90,23 @@ local spec = {
     },
     opts = { use_default_keymaps = false, max_join_length = 150 },
   },
+
+  -- quickfix
+  {
+    "kevinhwang91/nvim-bqf",
+    ft = "qf",
+    opts = {
+      auto_resize_height = true,
+      func_map = {
+        openc = "<CR>",
+        split = "<C-s>",
+        tabdrop = "<C-t>",
+        stoggleup = "S",
+        stoggledown = "s",
+        stogglevm = "s",
+      },
+    },
+  }
 }
 
 return spec
