@@ -74,6 +74,7 @@ map('t', '<Esc>', '<C-\\><C-n>')
 map('t', '<C-y>', '<C-\\><C-n>')
 map('n', '<Leader>ts', '<cmd>horizontal terminal<CR>')
 map('n', '<Leader>tv', '<cmd>vertical terminal<CR>')
+map('n', '<Leader>tt', '<cmd>tab terminal<CR>')
 map('n', '<Leader>tw', '<cmd>terminal<CR>')
 
 -- quickfix/loclist
