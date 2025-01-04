@@ -52,7 +52,9 @@ local spec = {
       local actions = require("telescope.actions")
       local layout = require("telescope.actions.layout")
       local sorters = require("telescope.sorters")
+      local builtin = require('telescope.builtin')
 
+      -- mappings
       local mappings = {
         i = {
           ["<esc>"] = actions.close,
@@ -62,7 +64,14 @@ local spec = {
       }
       opts.defaults.mappings = mappings
       opts.defaults.file_sorter = sorters.get_fzy_sorter
-      opts.defaults.generic_sorter = sorters.get_fzy_sorter
+
+      -- override lsp handlers
+      vim.lsp.handlers["textDocument/references"] = builtin.lsp_references
+      vim.lsp.handlers["textDocument/definition"] = builtin.lsp_definitions
+      vim.lsp.handlers["textDocument/implementation"] = builtin.lsp_implementations
+      vim.lsp.handlers["textDocument/typeDefinition"] = builtin.lsp_type_definitions
+      vim.lsp.handlers["textDocument/documentSymbol"] = builtin.lsp_document_symbols
+
       require('telescope').setup(opts)
     end
   },
