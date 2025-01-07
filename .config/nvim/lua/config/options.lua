@@ -1,6 +1,15 @@
 local g = vim.g
 local opt = vim.opt
 
+-- Don't use Japanese in neovim
+if vim.fn.has("unix") == 1 then
+  vim.env.LANG = "C.UTF-8"
+else
+  vim.env.LANG = "en"
+end
+vim.cmd.language(vim.env.LANG)
+vim.o.langmenu = vim.env.LANG
+
 -- disable built-in plugin and remote provider
 g.loaded_python3_provider = 0
 g.loaded_node_provider = 0
@@ -25,6 +34,7 @@ opt.number = true
 opt.relativenumber = true
 opt.signcolumn = "yes"
 opt.wrap = false
+opt.showmode = false
 opt.list = true
 opt.listchars = "tab:»-,extends:»,precedes:«,nbsp:%,eol:↲,trail:~"
 opt.scrolloff = 8
