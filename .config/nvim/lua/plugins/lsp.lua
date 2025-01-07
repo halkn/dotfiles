@@ -123,6 +123,7 @@ local spec = {
               workspace = {
                 library = {
                   vim.fs.joinpath(vim.fn.stdpath("data") --[[@as string]], "/lazy/lazy.nvim/lua"),
+                  vim.fs.joinpath(vim.fn.stdpath("data") --[[@as string]], "/lazy/blink.cmp/lua"),
                   vim.fs.joinpath(vim.fn.stdpath("config") --[[@as string]], "lua"),
                   vim.fs.joinpath(vim.env.VIMRUNTIME, "lua"),
                   "${3rd}/luv/library",
@@ -144,6 +145,12 @@ local spec = {
         lspconfig[server].setup(settings)
       end
     end,
+  },
+
+  {
+    "williamboman/mason.nvim",
+    event = "VeryLazy",
+    opts = {},
   },
 
   {
