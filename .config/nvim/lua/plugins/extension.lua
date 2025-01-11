@@ -86,6 +86,23 @@ local spec = {
       },
     }
   },
+
+  -- yank
+  {
+    "gbprod/yanky.nvim",
+    keys = {
+      { "p",         "<Plug>(YankyPutAfter)",      mode = { "n", "v" } },
+      { "P",         "<Plug>(YankyPutBefore)",     mode = { "n", "v" } },
+      { "gp",        "<Plug>(YankyGPutAfter)",     mode = { "n", "v" } },
+      { "gP",        "<Plug>(YankyGPutBefore)",    mode = { "n", "v" } },
+      { "<c-p>",     "<Plug>(YankyPreviousEntry)", mode = { "n" } },
+      { "<c-n>",     "<Plug>(YankyNextEntry)",     mode = { "n" } },
+      { "<Leader>y", "<CMD>YankyRingHistory<CR>",  mode = { "n" } },
+    },
+    opts = {
+
+    },
+  },
 }
 
 return spec
