@@ -29,6 +29,7 @@ autocmd('FileType', {
     local opts = { silent = false, noremap = true, buffer = true }
     vim.keymap.set('n', '<CR>', '<C-]>', opts)
     vim.keymap.set('n', '<BS>', '<C-T>', opts)
+    vim.keymap.set('n', 'q', '<cmd>q<cr>', opts)
     vim.cmd('wincmd L')
   end
 })
