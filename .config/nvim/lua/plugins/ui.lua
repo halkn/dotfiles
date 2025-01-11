@@ -59,6 +59,13 @@ local spec = {
       end
     },
   },
+
+  --
+  {
+    'stevearc/dressing.nvim',
+    event = "VeryLazy",
+    opts = {},
+  },
 }
 
 return spec
