@@ -1,19 +1,26 @@
 [user]
-    name = halkn
-    email = nhalkn0920@gmail.com
+  name = halkn
+  email = nhalkn0920@gmail.com
 [status]
-    showUntrackedFiles = all
+  showUntrackedFiles = all
 [diff]
-    tool = vimdiff
+  tool = vimdiff
 [merge]
-    tool = vimdiff
+  tool = vimdiff
 [difftool]
-    prompt = false
+  prompt = false
 [mergetool]
-    prompt = false
+  prompt = false
 [color]
-    ui = true
+  ui = true
 [fetch]
-    prune = true
+  prune = true
 [push]
-    default = current
+  default = current
+[include]
+  path = ~/.gitconfig.local
+[alias]
+  st = status
+  br = branch
+  sw = switch
+  co = checkout
