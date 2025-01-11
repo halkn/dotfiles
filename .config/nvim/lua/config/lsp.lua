@@ -15,11 +15,7 @@ vim.api.nvim_create_autocmd('LspAttach', {
     vim.keymap.set("n", "K", vim.lsp.buf.hover, bufopts)
     vim.keymap.set("n", "<LocalLeader>s", vim.lsp.buf.document_symbol, bufopts)
     vim.keymap.set("n", "<LocalLeader>S", vim.lsp.buf.workspace_symbol, bufopts)
-    vim.keymap.set("n", "<LocalLeader>e", vim.diagnostic.open_float, bufopts)
-    vim.keymap.set("n", "<LocalLeader>d", vim.diagnostic.setloclist, bufopts)
     vim.keymap.set("n", "<LocalLeader>c", vim.lsp.buf.code_action, bufopts)
-    vim.keymap.set("n", "]d", function() vim.diagnostic.jump({ count = 1, float = true }) end, bufopts)
-    vim.keymap.set("n", "[d", function() vim.diagnostic.jump({ count = -1, float = true }) end, bufopts)
 
     local client = vim.lsp.get_client_by_id(ev.data.client_id)
     if client ~= nil then
@@ -62,6 +58,18 @@ vim.diagnostic.config({
       [vim.diagnostic.severity.INFO] = 'DiagnosticSignInfo',
     },
   },
+})
+-- diagnostic autocmd for mappings
+vim.api.nvim_create_autocmd('DiagnosticChanged', {
+  group = group,
+  callback = function(ev)
+    --mappings
+    local bufopts = { noremap = true, silent = true, buffer = ev.buf }
+    vim.keymap.set("n", "<LocalLeader>e", vim.diagnostic.open_float, bufopts)
+    vim.keymap.set("n", "<LocalLeader>d", vim.diagnostic.setloclist, bufopts)
+    vim.keymap.set("n", "]d", function() vim.diagnostic.jump({ count = 1, float = true }) end, bufopts)
+    vim.keymap.set("n", "[d", function() vim.diagnostic.jump({ count = -1, float = true }) end, bufopts)
+  end,
 })
 
 --setup
