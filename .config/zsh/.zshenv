@@ -11,6 +11,7 @@ export SHELL=zsh
 export XDG_CONFIG_HOME=~/.config
 export XDG_CACHE_HOME=~/.cache
 export XDG_DATA_HOME=~/.local/share
+export XDG_BIN_HOME=~/.local/bin
 
 # zsh
 export ZHOMEDIR=$XDG_CONFIG_HOME/zsh
@@ -33,5 +34,6 @@ export LESSHISTFILE=-
 # ---------------------------------------------------------------------------
 typeset -U path
 path=(
-    $path
+  $XDG_BIN_HOME(N-/)
+  $path
 )

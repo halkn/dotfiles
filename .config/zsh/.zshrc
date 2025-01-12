@@ -166,6 +166,15 @@ if [ -f $XDG_DATA_HOME/zsh-syntax-highlighting//zsh-syntax-highlighting.zsh ]; t
   source $XDG_DATA_HOME/zsh-syntax-highlighting//zsh-syntax-highlighting.zsh
 fi 
 
+
+#####################################################################
+# uv (for python)
+#####################################################################
+# for uv
+if type uv > /dev/null 2>&1; then
+  eval "$(uv generate-shell-completion zsh)"
+fi
+
 #####################################################################
 # prompt
 #####################################################################
