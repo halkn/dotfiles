@@ -103,3 +103,4 @@ vim.api.nvim_create_autocmd('DiagnosticChanged', {
 require("lspconfigs.luals")
 require("lspconfigs.pyright")
 require("lspconfigs.ruff")
+require("lspconfigs.azure_pipelines_ls")
