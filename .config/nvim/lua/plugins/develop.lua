@@ -19,6 +19,17 @@ local spec = {
         nerd_font_variant = 'mono'
       },
       signature = { enabled = true },
+      completion = {
+        menu = {
+          draw = {
+            columns = {
+              { "label",     "label_description", gap = 1 },
+              { "kind_icon", "kind" },
+            },
+          },
+        },
+        documentation = { auto_show = true, auto_show_delay_ms = 500 },
+      },
       sources = {
         default = { 'lsp', 'path', 'snippets', 'buffer' },
       },
