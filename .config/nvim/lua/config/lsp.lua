@@ -87,17 +87,11 @@ vim.diagnostic.config({
   },
 })
 -- diagnostic autocmd for mappings
-vim.api.nvim_create_autocmd('DiagnosticChanged', {
-  group = group,
-  callback = function(ev)
-    --mappings
-    local bufopts = { noremap = true, silent = true, buffer = ev.buf }
-    vim.keymap.set("n", "<LocalLeader>e", vim.diagnostic.open_float, bufopts)
-    vim.keymap.set("n", "<LocalLeader>d", vim.diagnostic.setloclist, bufopts)
-    vim.keymap.set("n", "]d", function() vim.diagnostic.jump({ count = 1, float = true }) end, bufopts)
-    vim.keymap.set("n", "[d", function() vim.diagnostic.jump({ count = -1, float = true }) end, bufopts)
-  end,
-})
+local opts = { noremap = true, silent = true }
+vim.keymap.set("n", "<C-e>", vim.diagnostic.open_float, opts)
+vim.keymap.set("n", "<Leader>d", vim.diagnostic.setqflist, opts)
+vim.keymap.set("n", "]d", function() vim.diagnostic.jump({ count = 1, float = true }) end, opts)
+vim.keymap.set("n", "[d", function() vim.diagnostic.jump({ count = -1, float = true }) end, opts)
 
 --setup
 require("lspconfigs.luals")
