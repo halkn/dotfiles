@@ -14,7 +14,9 @@ local config = {
       disableOrganizeImports = false,
     },
     python = {
-      venvPath = ".venv",
+      pythonPath = ".venv/bin/python",
+      venvPath = ".",
+      venv = ".venv",
       analysis = {
         -- ignore = { '*' },
         autoSearchPaths = true,
