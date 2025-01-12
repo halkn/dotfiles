@@ -5,7 +5,6 @@ vim.api.nvim_create_autocmd('LspAttach', {
   callback = function(ev)
     --mappings
     local bufopts = { noremap = true, silent = true, buffer = ev.buf }
-    vim.keymap.set("n", "<LocalLeader>f", vim.lsp.buf.format, bufopts)
     vim.keymap.set("n", "<F2>", vim.lsp.buf.rename, bufopts)
     vim.keymap.set("n", "gd", vim.lsp.buf.definition, bufopts)
     vim.keymap.set("n", "gD", vim.lsp.buf.declaration, bufopts)
@@ -18,16 +17,44 @@ vim.api.nvim_create_autocmd('LspAttach', {
     vim.keymap.set("n", "<LocalLeader>c", vim.lsp.buf.code_action, bufopts)
 
     local client = vim.lsp.get_client_by_id(ev.data.client_id)
-    if client ~= nil then
-      if client:supports_method('textDocument/formatting') then
-        vim.api.nvim_create_autocmd("BufWritePre", {
-          group = group,
-          buffer = ev.buf,
-          callback = function()
-            vim.lsp.buf.format({ bufnr = ev.buf, id = client.id })
+    if client == nil then
+      return
+    end
+
+    -- format
+    -- if client ~= nil and client.name ~= "pyright" then
+    if client:supports_method('textDocument/formatting') then
+      vim.keymap.set("n", "<LocalLeader>f", vim.lsp.buf.format, bufopts)
+      vim.api.nvim_create_autocmd("BufWritePre", {
+        group = group,
+        buffer = ev.buf,
+        callback = function()
+          vim.lsp.buf.format({ bufnr = ev.buf, id = client.id })
+          if client.name ~= "ruff" then
+            return
           end
-        })
-      end
+          vim.lsp.buf.code_action({
+            context = {
+              diagnostics = {},
+              only = { "source.organizeImports" },
+            },
+            apply = true,
+          })
+          vim.lsp.buf.code_action({
+            context = {
+              diagnostics = {},
+              only = { "source.fixAll" },
+            },
+            apply = true,
+          })
+        end
+      })
+    end
+
+    -- ruff
+    if client.name == 'ruff' then
+      -- Disable hover in favor of Pyright
+      client.server_capabilities.hoverProvider = false
     end
   end,
 })
@@ -74,3 +101,5 @@ vim.api.nvim_create_autocmd('DiagnosticChanged', {
 
 --setup
 require("lspconfigs.luals")
+require("lspconfigs.pyright")
+require("lspconfigs.ruff")
