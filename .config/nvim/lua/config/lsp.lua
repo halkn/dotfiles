@@ -94,7 +94,7 @@ vim.keymap.set("n", "]d", function() vim.diagnostic.jump({ count = 1, float = tr
 vim.keymap.set("n", "[d", function() vim.diagnostic.jump({ count = -1, float = true }) end, opts)
 
 --setup
-require("lspconfigs.luals")
-require("lspconfigs.pyright")
-require("lspconfigs.ruff")
-require("lspconfigs.azure_pipelines_ls")
+require("config.lspservers.luals")
+require("config.lspservers.pyright")
+require("config.lspservers.ruff")
+require("config.lspservers.azure_pipelines_ls")
