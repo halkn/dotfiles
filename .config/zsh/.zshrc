@@ -159,11 +159,11 @@ setopt interactive_comments
 #####################################################################
 # plugins
 #####################################################################
-if [ -f $XDG_DATA_HOME/zsh-autosuggestions/zsh-autosuggestions.zsh ]; then
-  source $XDG_DATA_HOME/zsh-autosuggestions/zsh-autosuggestions.zsh
+if [ -f $ZPLUGINDIR/zsh-autosuggestions/zsh-autosuggestions.zsh ]; then
+  source $ZPLUGINDIR/zsh-autosuggestions/zsh-autosuggestions.zsh
 fi 
-if [ -f $XDG_DATA_HOME/zsh-syntax-highlighting//zsh-syntax-highlighting.zsh ]; then
-  source $XDG_DATA_HOME/zsh-syntax-highlighting//zsh-syntax-highlighting.zsh
+if [ -f $ZPLUGINDIR/zsh-syntax-highlighting//zsh-syntax-highlighting.zsh ]; then
+  source $ZPLUGINDIR/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 fi 
 
 

@@ -20,6 +20,7 @@ export ZCACHEDIR=$XDG_CACHE_HOME/zsh
 export HISTFILE=$XDG_DATA_HOME/zsh/history
 export HISTSIZE=10000
 export SAVEHIST=10000
+export ZPLUGINDIR=$XDG_DATA_HOME/zsh_plugins
 
 # node
 export NVM_DIR="$XDG_DATA_HOME/nvm"
