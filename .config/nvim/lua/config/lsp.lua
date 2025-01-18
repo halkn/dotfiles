@@ -1,5 +1,5 @@
 -- lsp config
-local group = vim.api.nvim_create_augroup('UserLspConfig', { clear = true })
+local group = vim.api.nvim_create_augroup('vimrc_lspconfig', { clear = true })
 vim.api.nvim_create_autocmd('LspAttach', {
   group = group,
   callback = function(ev)
@@ -22,7 +22,6 @@ vim.api.nvim_create_autocmd('LspAttach', {
     end
 
     -- format
-    -- if client ~= nil and client.name ~= "pyright" then
     if client:supports_method('textDocument/formatting') then
       vim.keymap.set("n", "<LocalLeader>f", vim.lsp.buf.format, bufopts)
       vim.api.nvim_create_autocmd("BufWritePre", {
@@ -58,40 +57,6 @@ vim.api.nvim_create_autocmd('LspAttach', {
     end
   end,
 })
-
--- diagnostic config
-vim.diagnostic.config({
-  virtual_text = true,
-  underline = true,
-  update_in_insert = false,
-  severity_sort = true,
-  signs = {
-    text = {
-      [vim.diagnostic.severity.ERROR] = "󰅚",
-      [vim.diagnostic.severity.WARN] = "󰀪 ",
-      [vim.diagnostic.severity.HINT] = "󰌶 ",
-      [vim.diagnostic.severity.INFO] = "󰋽 ",
-    },
-    linehl = {
-      [vim.diagnostic.severity.ERROR] = 'DiagnosticSignError',
-      [vim.diagnostic.severity.WARN] = 'DiagnosticSignWarn',
-      [vim.diagnostic.severity.HINT] = 'DiagnosticSignHint',
-      [vim.diagnostic.severity.INFO] = 'DiagnosticSignInfo',
-    },
-    numhl = {
-      [vim.diagnostic.severity.ERROR] = 'DiagnosticSignError',
-      [vim.diagnostic.severity.WARN] = 'DiagnosticSignWarn',
-      [vim.diagnostic.severity.HINT] = 'DiagnosticSignHint',
-      [vim.diagnostic.severity.INFO] = 'DiagnosticSignInfo',
-    },
-  },
-})
--- diagnostic autocmd for mappings
-local opts = { noremap = true, silent = true }
-vim.keymap.set("n", "<C-e>", vim.diagnostic.open_float, opts)
-vim.keymap.set("n", "<Leader>d", vim.diagnostic.setqflist, opts)
-vim.keymap.set("n", "]d", function() vim.diagnostic.jump({ count = 1, float = true }) end, opts)
-vim.keymap.set("n", "[d", function() vim.diagnostic.jump({ count = -1, float = true }) end, opts)
 
 --setup
 require("config.lspservers.luals")

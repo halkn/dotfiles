@@ -99,7 +99,6 @@ opt.clipboard = "unnamedplus"
 opt.lazyredraw = true
 
 -- grep
--- `rg`コマンドの存在を確認し、存在する場合に`grepprg`と`grepformat`を設定
 if vim.fn.executable("rg") == 1 then
   opt.grepprg = 'rg --vimgrep --hidden --glob "!**/.git/*"'
   opt.grepformat = "%f:%l:%c:%m"
