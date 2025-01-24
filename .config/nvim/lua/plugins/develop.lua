@@ -44,12 +44,6 @@ local spec = {
     opts = {},
   },
 
-  {
-    "j-hui/fidget.nvim",
-    event = "LspAttach",
-    opts = {},
-  },
-
   -- Linter/Formatter
   {
     "mfussenegger/nvim-lint",

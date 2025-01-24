@@ -66,6 +66,15 @@ local spec = {
     event = "VeryLazy",
     opts = {},
   },
+
+
+  -- LSP progress messages.
+  {
+    "j-hui/fidget.nvim",
+    event = "LspAttach",
+    opts = {},
+  },
+
 }
 
 return spec
