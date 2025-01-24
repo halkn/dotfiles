@@ -15,6 +15,4 @@ local config = {
   },
 }
 
-
-vim.lsp.config("ruff", config)
-vim.lsp.enable("ruff")
+return config

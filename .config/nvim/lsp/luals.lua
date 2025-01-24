@@ -52,5 +52,4 @@ local config = {
   },
 }
 
-vim.lsp.config("luals", config)
-vim.lsp.enable("luals")
+return config

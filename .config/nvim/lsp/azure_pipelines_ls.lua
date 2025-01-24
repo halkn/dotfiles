@@ -21,5 +21,4 @@ local config = {
   },
 }
 
-vim.lsp.config("azure-pipelines-language-server", config)
-vim.lsp.enable("azure-pipelines-language-server")
+return config

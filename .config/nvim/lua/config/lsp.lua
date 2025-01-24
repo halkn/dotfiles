@@ -59,8 +59,11 @@ vim.api.nvim_create_autocmd('LspAttach', {
 })
 
 --setup
-require("config.lspservers.luals")
-require("config.lspservers.pyright")
-require("config.lspservers.ruff")
-require("config.lspservers.azure_pipelines_ls")
-require("config.lspservers.bashls")
+local lspservers = {
+  "luals",
+  "pyright",
+  "ruff",
+  "azure_pipelines_ls",
+  "bashls",
+}
+vim.lsp.enable(lspservers)

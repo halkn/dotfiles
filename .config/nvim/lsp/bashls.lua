@@ -20,5 +20,4 @@ local config = {
   single_file_support = true,
 }
 
-vim.lsp.config("bashls", config)
-vim.lsp.enable("bashls")
+return config

@@ -28,5 +28,4 @@ local config = {
   },
 }
 
-vim.lsp.config("pyright", config)
-vim.lsp.enable("pyright")
+return config
