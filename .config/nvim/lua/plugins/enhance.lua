@@ -13,20 +13,15 @@ local spec = {
     },
   },
 
-  -- textobject Replace
-  {
-    "kana/vim-operator-replace",
-    dependencies = { 'kana/vim-operator-user' },
-    keys = {
-      { "R", "<Plug>(operator-replace)", mode = "" },
-    },
-  },
-
-  -- surround
+  -- textobject/operator
   {
     "kylechui/nvim-surround",
     version = "*",
-    event = "VeryLazy",
+    keys = {
+      { "sa", nil, mode = { "n", "x" } },
+      { "sd", nil, mode = { "n", "x" } },
+      { "sr", nil, mode = { "n", "x" } },
+    },
     opts = {
       keymaps = {
         -- insert = "<C-g>s",
@@ -42,6 +37,31 @@ local spec = {
         -- change_line = "cS",
       },
     },
+  },
+  {
+    "gbprod/substitute.nvim",
+    keys = {
+      { "s",  nil, mode = { "n" } },
+      { "ss", nil, mode = { "n" } },
+      { "S",  nil, mode = { "n", "x" }, },
+    },
+    opts = {
+      on_substitute = nil,
+      yank_substituted_text = false,
+      preserve_cursor_position = false,
+      modifiers = nil,
+      highlight_substituted_text = {
+        enabled = true,
+        timer = 500,
+      },
+    },
+    config = function(_, opts)
+      vim.keymap.set("n", "s", require('substitute').operator, { noremap = true })
+      vim.keymap.set("n", "ss", require('substitute').line, { noremap = true })
+      vim.keymap.set("n", "S", require('substitute').eol, { noremap = true })
+      vim.keymap.set("x", "S", require('substitute').visual, { noremap = true })
+      require("substitute").setup(opts)
+    end
   },
 
   -- increment/decrement <C-a>/<C-x>
