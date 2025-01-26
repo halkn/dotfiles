@@ -96,7 +96,7 @@ opt.pumblend = 10
 
 -- other
 opt.clipboard = "unnamedplus"
-opt.lazyredraw = true
+opt.lazyredraw = false
 
 -- grep
 if vim.fn.executable("rg") == 1 then

@@ -75,6 +75,18 @@ local spec = {
     opts = {},
   },
 
+  {
+    "folke/noice.nvim",
+    event = "VeryLazy",
+    opts = {
+      -- add any options here
+    },
+    dependencies = {
+      "MunifTanjim/nui.nvim",
+      "rcarriga/nvim-notify",
+    }
+  }
+
 }
 
 return spec
