@@ -31,19 +31,10 @@ local spec = {
   {
     "iamcco/markdown-preview.nvim",
     ft = { "markdown" },
+    keys = {
+      { "<LocalLeader>p", "<cmd>MarkdownPreviewToggle<CR>", ft = { "markdown" }, }
+    },
     build = function() vim.fn["mkdp#util#install"]() end,
-    init = function()
-      local group_name = "vimrc_markdown-preview"
-      vim.api.nvim_create_augroup(group_name, { clear = true })
-      vim.api.nvim_create_autocmd("FileType", {
-        group = group_name,
-        pattern = { "markdown" },
-        callback = function()
-          local opts = { noremap = true, silent = true, buffer = true }
-          vim.keymap.set("n", "<LocalLeader>p", "<cmd>MarkdownPreviewToggle<CR>", opts)
-        end,
-      })
-    end
   },
 
 }
