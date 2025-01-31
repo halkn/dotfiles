@@ -20,7 +20,7 @@ mkdir -p "${tmp_dir}" && cd "${tmp_dir}" || exit 1
 # Main
 #####################################################################
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-  bin="nvim-linux64.tar.gz"
+  bin="nvim-linux-x86_64.tar.gz"
 elif [[ "$OSTYPE" == "darwin"* ]]; then
   bin="nvim-macos-arm64.tar.gz"
 else
