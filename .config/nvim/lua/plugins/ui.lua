@@ -60,21 +60,6 @@ local spec = {
     },
   },
 
-  --
-  {
-    'stevearc/dressing.nvim',
-    event = "VeryLazy",
-    opts = {},
-  },
-
-
-  -- LSP progress messages.
-  {
-    "j-hui/fidget.nvim",
-    event = "LspAttach",
-    opts = {},
-  },
-
   {
     "folke/noice.nvim",
     event = "VeryLazy",
@@ -88,7 +73,7 @@ local spec = {
     },
     dependencies = {
       "MunifTanjim/nui.nvim",
-      "rcarriga/nvim-notify",
+      -- "rcarriga/nvim-notify",
     }
   }
 

@@ -66,27 +66,6 @@ local spec = {
     end
   },
 
-  -- terminal
-  {
-    {
-      'akinsho/toggleterm.nvim',
-      version = "*",
-      keys = {
-        { "<C-t>", "<cmd>ToggleTerm<cr>", mode = { "n", "t" } },
-      },
-      opts = {
-        size = 20,
-        direction = "float",
-        float_opts = {
-          border = 'double'
-        },
-        func_map = {
-          drop = '<CR>',
-        },
-      },
-    }
-  },
-
   -- yank
   {
     "gbprod/yanky.nvim",
