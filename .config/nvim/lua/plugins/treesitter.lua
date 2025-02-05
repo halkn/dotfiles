@@ -14,6 +14,7 @@ local spec = {
         "markdown_inline",
         "python",
         "sql",
+        "regex",
         "yaml",
       },
       highlight = {
