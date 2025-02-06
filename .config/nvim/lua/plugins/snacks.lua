@@ -5,11 +5,12 @@ local spec = {
     priority = 1000,
     lazy = false,
     keys = {
-      { "<leader>f", function() Snacks.picker.files({ hidden = true }) end, desc = "Find Files" },
-      { "<leader>b", function() Snacks.picker.buffers() end,                desc = "Buffers" },
-      { "<leader>l", function() Snacks.picker.lines() end,                  desc = "Buffer Lines" },
-      { "<leader>G", function() Snacks.picker.grep({ hidden = true }) end,  desc = "Grep" },
-      { "<c-t>",     function() Snacks.terminal() end,                      desc = "Toggle Terminal", mode = { "n", "t" } },
+      { "<leader>f", function() Snacks.picker.files({ hidden = true }) end,    desc = "Find Files" },
+      { "<leader>b", function() Snacks.picker.buffers() end,                   desc = "Buffers" },
+      { "<leader>l", function() Snacks.picker.lines() end,                     desc = "Buffer Lines" },
+      { "<leader>G", function() Snacks.picker.grep({ hidden = true }) end,     desc = "Grep" },
+      { "<leader>e", function() Snacks.picker.explorer({ hidden = true }) end, desc = "Explorer" },
+      { "<c-t>",     function() Snacks.terminal() end,                         desc = "Toggle Terminal", mode = { "n", "t" } },
     },
     ---@type snacks.Config
     opts = {
