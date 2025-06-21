@@ -55,6 +55,10 @@ local spec = {
       scope = { enabled = true },
       scroll = { enabled = true },
       statuscolumn = { enabled = false },
+      terminal = {
+        enabled = true,
+        win = { position = "float", },
+      },
       styles = {
         ---@class snacks.input.Config
         input = {
