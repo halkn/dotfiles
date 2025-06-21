@@ -26,6 +26,9 @@ export ZPLUGINDIR=$XDG_DATA_HOME/zsh_plugins
 export NVM_DIR="$XDG_DATA_HOME/nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
+# npm
+export NPM_CONFIG_USERCONFIG=$XDG_CONFIG_HOME/npm/npmrc
+
 # less
 export LESS='-g -i -M -R -S -W -z-4 -x4'
 export LESSHISTFILE=-
