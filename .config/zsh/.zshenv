@@ -23,11 +23,11 @@ export SAVEHIST=10000
 export ZPLUGINDIR=$XDG_DATA_HOME/zsh_plugins
 
 # node
-export NVM_DIR="$XDG_DATA_HOME/nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+export FNM_DIR=$XDG_DATA_HOME/fnm/
 
 # npm
 export NPM_CONFIG_USERCONFIG=$XDG_CONFIG_HOME/npm/npmrc
+export NPM_BIN=$XDG_DATA_HOME/npm/bin
 
 # less
 export LESS='-g -i -M -R -S -W -z-4 -x4'
@@ -39,5 +39,7 @@ export LESSHISTFILE=-
 typeset -U path
 path=(
   $XDG_BIN_HOME(N-/)
+  $FNM_DIR(N-/)
+  $NPM_BIN(N-/)
   $path
 )
