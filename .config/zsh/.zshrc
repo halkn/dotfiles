@@ -166,6 +166,12 @@ if [ -f $ZPLUGINDIR/zsh-syntax-highlighting//zsh-syntax-highlighting.zsh ]; then
   source $ZPLUGINDIR/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 fi 
 
+#####################################################################
+# for mise
+#####################################################################
+if type mise > /dev/null 2>&1; then
+  eval "$(mise activate zsh)"
+fi
 
 #####################################################################
 # uv (for python)
@@ -173,13 +179,6 @@ fi
 # for uv
 if type uv > /dev/null 2>&1; then
   eval "$(uv generate-shell-completion zsh)"
-fi
-
-#####################################################################
-# fnm (for node)
-#####################################################################
-if type fnm > /dev/null 2>&1; then
-  eval "$(fnm env --use-on-cd)"
 fi
 
 #####################################################################

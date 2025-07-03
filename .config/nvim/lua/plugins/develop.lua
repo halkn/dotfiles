@@ -37,13 +37,6 @@ local spec = {
     opts_extend = { "sources.default" },
   },
 
-  -- lsp installer
-  {
-    "williamboman/mason.nvim",
-    event = "VeryLazy",
-    opts = {},
-  },
-
   -- Linter/Formatter
   {
     "mfussenegger/nvim-lint",
