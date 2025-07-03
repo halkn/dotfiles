@@ -1,8 +1,28 @@
 #!/bin/bash
 
-# before
-script_dir=$(dirname "$(readlink -f "$0" || echo "$0")")
-source "$script_dir/lib/util.sh"
+print_start() {
+  echo "# #####################################################################"
+  echo "# Start :$1"
+  echo "#"
+}
+
+print_end() {
+  echo "#"
+  echo "# End :$1"
+  echo "# #####################################################################"
+  echo ""
+}
+
+install_zsh_plugin() {
+  owner=$1
+  repo=$2
+
+  source_url="https://github.com/$owner/$repo"
+  dist_dir="${ZPLUGINDIR:?}/$repo"
+
+  rm -fr "${dist_dir:?}"
+  git clone "${source_url}" "${dist_dir}"
+}
 
 # variables
 bin_dir=${XDG_BIN_HOME:?}
@@ -25,6 +45,12 @@ print_start "$mes"
 mkdir -vp "$bin_dir"
 mkdir -vp "$cache_dir/zsh"
 mkdir -vp "$data_dir/zsh"
+print_end "$mes"
+
+mes="Installing zsh plugins..."
+print_start "$mes"
+install_zsh_plugin "zsh-users" "zsh-autosuggestions"
+install_zsh_plugin "zsh-users" "zsh-syntax-highlighting"
 print_end "$mes"
 
 exit 0
