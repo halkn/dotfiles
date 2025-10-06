@@ -3,15 +3,15 @@
 ripgrep = "latest"
 fd = "latest"
 starship = "latest"
+gh = "latest"
 
 # dev 
 node = "lts"
 uv = "latest"
 
 # editor
-neovim = "latest"
+neovim = "nightly"
 lua-language-server = "latest"
-# "ubi:LuaLS/lua-language-server" = "latest"
 "npm:pyright" = "latest"
 shfmt = "latest"
 shellcheck = "latest"
