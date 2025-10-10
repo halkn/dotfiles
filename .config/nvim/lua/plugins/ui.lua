@@ -2,11 +2,12 @@
 local spec = {
   -- colorscheme
   {
-    "EdenEast/nightfox.nvim",
+    "catppuccin/nvim",
+    name = "catppuccin",
     lazy = false,
     priority = 1000,
     config = function()
-      vim.cmd([[colorscheme nightfox]])
+      vim.cmd.colorscheme "catppuccin"
     end,
   },
 
@@ -17,7 +18,7 @@ local spec = {
     dependencies = { 'nvim-tree/nvim-web-devicons' },
     opts = {
       options = {
-        theme = 'nightfox',
+        theme = 'auto',
         icons_enabled = true,
         component_separators = { left = '|', right = '|' },
         section_separators = { left = '', right = '' },
