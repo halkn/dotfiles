@@ -1,1 +1,7 @@
-require("config")
+vim.loader.enable()
+require("halkn.options")
+require("halkn.mappings")
+require("halkn.autocmds")
+require("halkn.lsp")
+require("halkn.mini")
+require("halkn.plugins")

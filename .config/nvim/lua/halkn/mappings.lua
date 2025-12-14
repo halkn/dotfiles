@@ -86,3 +86,9 @@ map('n', ']l', '<cmd>lnext<CR>')
 -- commenting
 remap({ 'n', 'x', 'o' }, '<Leader>c', 'gcc')
 remap('v', '<Leader>c', 'gc')
+
+--diagnostics
+map("n", "<C-e>", vim.diagnostic.open_float)
+map("n", "<Leader>d", vim.diagnostic.setqflist)
+map("n", "]d", function() vim.diagnostic.jump({ count = 1, float = true }) end)
+map("n", "[d", function() vim.diagnostic.jump({ count = -1, float = true }) end)

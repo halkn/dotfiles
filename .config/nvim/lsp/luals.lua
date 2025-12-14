@@ -40,9 +40,7 @@ local config = {
       workspace = {
         checkThirdParty = false,
         library = {
-          vim.fs.joinpath(vim.fn.stdpath("data") --[[@as string]], "/lazy/lazy.nvim/lua"),
-          vim.fs.joinpath(vim.fn.stdpath("data") --[[@as string]], "/lazy/blink.cmp/lua"),
-          vim.fs.joinpath(vim.fn.stdpath("data") --[[@as string]], "/lazy/snacks.nvim/lua"),
+          vim.fs.joinpath(vim.fn.stdpath("data") --[[@as string]], "/site/pack/deps/start/mini.nvim/lua"),
           vim.fs.joinpath(vim.fn.stdpath("config") --[[@as string]], "lua"),
           vim.fs.joinpath(vim.env.VIMRUNTIME, "lua"),
           "${3rd}/luv/library",
