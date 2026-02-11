@@ -1,71 +1,5 @@
 ---@type LazySpec
 local spec = {
-  -- git
-  {
-    "NeogitOrg/neogit",
-    dependencies = {
-      "nvim-lua/plenary.nvim",
-      "sindrets/diffview.nvim",
-    },
-    cmd = "Neogit",
-    keys = {
-      { "<Leader>gs", "<cmd>Neogit kind=floating<CR>" },
-    },
-    opts = {
-      integrations = {
-        telescope = true,
-        diffview = true,
-      },
-    },
-  },
-  {
-    "sindrets/diffview.nvim",
-    keys = {
-      { "<Leader>gd", "<cmd>DiffviewOpen<CR>" },
-      { "<Leader>gl", "<cmd>DiffviewFileHistory<CR>" },
-      { "<Leader>gb", "<cmd>DiffviewFileHistory %<CR>" },
-    },
-    config = function()
-      local actions = require("diffview.actions")
-      local opts = {
-        keymaps = {
-          view = {
-            { "n", "<tab>",   false },
-            { "n", "<s-tab>", false },
-            { "n", "<c-n>",   actions.select_next_entry, { desc = "Open the diff for the next file" } },
-            { "n", "<c-p>",   actions.select_prev_entry, { desc = "Open the diff for the prev file" } },
-            { "n", "<cr>",    actions.goto_file_edit,    { desc = "Open the file in the previous tabpage" } },
-            { "n", "q",       "<cmd>DiffviewClose<CR>",  { desc = "Close Diffview tabpage" } },
-          },
-          file_panel = {
-            { "n", "<tab>",          false },
-            { "n", "<s-tab>",        false },
-            { "n", "<c-n>",          actions.select_next_entry,  { desc = "Open the diff for the next file" } },
-            { "n", "<c-p>",          actions.select_prev_entry,  { desc = "Open the diff for the prev file" } },
-            { "n", "j",              actions.select_next_entry,  { desc = "Open the diff for the next file" } },
-            { "n", "k",              actions.select_prev_entry,  { desc = "Open the diff for the prev file" } },
-            { "n", "<localleader>e", actions.goto_file_edit,     { desc = "Open the diff for the next file" } },
-            { "n", "q",              "<cmd>DiffviewClose<CR>",   { desc = "Close Diffview tabpage" } },
-            { "n", "?",              actions.help("file_panel"), { desc = "Open the help panel" } },
-          },
-          file_history_panel = {
-            { "n", "<tab>",          false },
-            { "n", "<s-tab>",        false },
-            { "n", "<c-n>",          actions.select_next_entry,          { desc = "Open the diff for the next file" } },
-            { "n", "<c-p>",          actions.select_prev_entry,          { desc = "Open the diff for the prev file" } },
-            { "n", "j",              actions.select_next_entry,          { desc = "Open the diff for the next file" } },
-            { "n", "k",              actions.select_prev_entry,          { desc = "Open the diff for the prev file" } },
-            { "n", "<localleader>e", actions.goto_file_edit,             { desc = "Open the diff for the next file" } },
-            { "n", "q",              "<cmd>DiffviewClose<CR>",           { desc = "Close Diffview tabpage" } },
-            { "n", "?",              actions.help("file_history_panel"), { desc = "Open the help panel" } },
-          },
-        }
-      }
-
-      require("diffview").setup(opts)
-    end
-  },
-
   -- yank
   {
     "gbprod/yanky.nvim",
@@ -82,6 +16,81 @@ local spec = {
 
     },
   },
+
+  -- Diff
+  {
+    "esmuellert/codediff.nvim",
+    dependencies = { "MunifTanjim/nui.nvim" },
+    cmd = "CodeDiff",
+  },
+
+  -- Linter/Formatter
+  {
+    "mfussenegger/nvim-lint",
+    ft = { "markdown" },
+    config = function()
+      local lint = require("lint")
+      lint.linters_by_ft = {
+        markdown = { "markdownlint-cli2" },
+      }
+
+      local group_name = "vimrc_nvim-lint"
+      vim.api.nvim_create_augroup(group_name, { clear = true })
+      vim.api.nvim_create_autocmd("BufWritePost", {
+        group = group_name,
+        pattern = { "*.md" },
+        callback = function()
+          lint.try_lint()
+        end
+      })
+    end
+  },
+  {
+    "stevearc/conform.nvim",
+    ft = { "markdown" },
+    opts = {
+      formatters_by_ft = {
+        markdown = { "markdownlint-cli2" }
+      },
+      default_format_opts = {
+        lsp_format = "fallback",
+      },
+      format_on_save = {
+        timeout_ms = 500,
+        lsp_format = "fallback",
+      },
+      format_after_save = {
+        lsp_format = "fallback",
+      },
+    },
+    config = function(_, opts)
+      local conform = require("conform")
+
+      local group_name = "vimrc_cnform"
+      vim.api.nvim_create_augroup(group_name, { clear = true })
+
+      vim.api.nvim_create_autocmd("BufWritePost", {
+        pattern = { "*.md" },
+        callback = function(ev)
+          conform.format({ bufnr = ev.buf })
+        end
+      })
+      vim.api.nvim_create_autocmd("FileType", {
+        group = group_name,
+        pattern = { "markdown" },
+        callback = function(ev)
+          vim.keymap.set(
+            "n",
+            "<LocalLeader>f",
+            function() conform.format({ bufnr = ev.buf }) end,
+            { noremap = true, silent = true, buffer = ev.buf }
+          )
+        end
+      })
+
+      conform.setup(opts)
+    end
+  }
 }
 
 return spec

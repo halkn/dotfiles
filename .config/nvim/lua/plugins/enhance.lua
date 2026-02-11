@@ -1,6 +1,42 @@
 ---@type LazySpec
 local spec = {
 
+  -- completion
+  {
+    'saghen/blink.cmp',
+    dependencies = 'rafamadriz/friendly-snippets',
+    version = "*",
+    event = { "InsertEnter", "CmdlineEnter" },
+
+    ---@module 'blink.cmp'
+    ---@type blink.cmp.Config
+    opts = {
+      keymap = {
+        preset = 'super-tab',
+      },
+      appearance = {
+        use_nvim_cmp_as_default = true,
+        nerd_font_variant = 'mono'
+      },
+      signature = { enabled = true },
+      completion = {
+        menu = {
+          draw = {
+            columns = {
+              { "label",     "label_description", gap = 1 },
+              { "kind_icon", "kind" },
+            },
+          },
+        },
+        documentation = { auto_show = true, auto_show_delay_ms = 500 },
+      },
+      sources = {
+        default = { 'lsp', 'path', 'snippets', 'buffer' },
+      },
+    },
+    opts_extend = { "sources.default" },
+  },
+
   -- f motion
   {
     "hrsh7th/vim-eft",
@@ -11,57 +47,6 @@ local spec = {
       { "T", "<Plug>(eft-T)",      mode = { "n", "x", "o" } },
       { ";", "<Plug>(eft-repeat)", mode = { "n", "x", "o" } },
     },
-  },
-
-  -- textobject/operator
-  {
-    "kylechui/nvim-surround",
-    version = "*",
-    keys = {
-      { "sa", nil, mode = { "n", "x" } },
-      { "sd", nil, mode = { "n", "x" } },
-      { "sr", nil, mode = { "n", "x" } },
-    },
-    opts = {
-      keymaps = {
-        -- insert = "<C-g>s",
-        -- insert_line = "<C-g>S",
-        normal = "sa",
-        -- normal_cur = "yss",
-        -- normal_line = "yS",
-        -- normal_cur_line = "ySS",
-        visual = "sa",
-        -- visual_line = "gS",
-        delete = "sd",
-        change = "sr",
-        -- change_line = "cS",
-      },
-    },
-  },
-  {
-    "gbprod/substitute.nvim",
-    keys = {
-      { "s",  nil, mode = { "n" } },
-      { "ss", nil, mode = { "n" } },
-      { "S",  nil, mode = { "n", "x" }, },
-    },
-    opts = {
-      on_substitute = nil,
-      yank_substituted_text = false,
-      preserve_cursor_position = false,
-      modifiers = nil,
-      highlight_substituted_text = {
-        enabled = true,
-        timer = 500,
-      },
-    },
-    config = function(_, opts)
-      vim.keymap.set("n", "s", require('substitute').operator, { noremap = true })
-      vim.keymap.set("n", "ss", require('substitute').line, { noremap = true })
-      vim.keymap.set("n", "S", require('substitute').eol, { noremap = true })
-      vim.keymap.set("x", "S", require('substitute').visual, { noremap = true })
-      require("substitute").setup(opts)
-    end
   },
 
   -- increment/decrement <C-a>/<C-x>
@@ -90,50 +75,6 @@ local spec = {
         },
       })
     end
-  },
-
-  -- insert mode
-  {
-    "hrsh7th/nvim-insx",
-    event = "InsertEnter",
-    config = function()
-      require('insx.preset.standard').setup()
-      vim.keymap.set('i', '<C-h>', "<BS>", { silent = false, remap = true })
-    end
-  },
-
-  -- splitting/joining
-  {
-    "Wansmer/treesj",
-    keys = {
-      { "<Leader>j", "<cmd>TSJToggle<cr>", desc = "Join Toggle" },
-    },
-    opts = { use_default_keymaps = false, max_join_length = 150 },
-  },
-
-  -- quickfix
-  {
-    "kevinhwang91/nvim-bqf",
-    ft = "qf",
-    opts = {
-      auto_resize_height = true,
-      func_map = {
-        openc = "<CR>",
-        split = "<C-s>",
-        tabdrop = "<C-t>",
-        stoggleup = "S",
-        stoggledown = "s",
-        stogglevm = "s",
-      },
-    },
-  },
-
-  -- gx
-  {
-    "tyru/open-browser.vim",
-    keys = {
-      { "gx", "<Plug>(openbrowser-smart-search)", { mode = { "n", "x" } } }
-    }
   },
 
 }
