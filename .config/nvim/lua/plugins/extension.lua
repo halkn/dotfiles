@@ -90,7 +90,13 @@ local spec = {
 
       conform.setup(opts)
     end
-  }
+  },
+  {
+    "OXY2DEV/markview.nvim",
+    lazy = false,
+    -- Completion for `blink.cmp`
+    dependencies = { "saghen/blink.cmp" },
+  },
 }
 
 return spec

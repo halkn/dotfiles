@@ -17,6 +17,7 @@ shfmt = "latest"
 shellcheck = "latest"
 "npm:bash-language-server" = "latest"
 "npm:azure-pipelines-language-server" = "latest"
+"npm:tree-sitter-cli" = "latest"
 markdownlint-cli2 = "latest"
 
 [settings]
