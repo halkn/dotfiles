@@ -160,10 +160,10 @@ if [ -f $ZPLUGINDIR/zsh-syntax-highlighting//zsh-syntax-highlighting.zsh ]; then
 fi 
 
 #####################################################################
-# for mise
+# for devbox
 #####################################################################
-if type mise > /dev/null 2>&1; then
-  eval "$(mise activate zsh --shims)"
+if type devbox > /dev/null 2>&1; then
+  eval "$(devbox global shellenv)"
 fi
 
 #####################################################################
