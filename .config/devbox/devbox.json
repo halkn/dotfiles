@@ -5,6 +5,8 @@
     "ripgrep@latest",
     "fd@latest",
     "delta@latest",
+    "eza@latest",
+    "bat@latest",
     "starship@latest",
     "github:nix-community/neovim-nightly-overlay",
     "tree-sitter@latest",

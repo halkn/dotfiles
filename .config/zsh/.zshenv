@@ -39,6 +39,20 @@ export UV_COLOR=auto
 export LESS='-g -i -M -R -S -W -z-4 -x4'
 export LESSHISTFILE=-
 
+# fzf
+export FZF_DEFAULT_OPTS="
+  --height 60%
+  --layout=reverse
+  --border
+  --inline-info
+  --preview-window=right:60%:wrap
+  --bind ctrl-u:preview-page-up,ctrl-d:preview-page-down
+  --bind ctrl-/:toggle-preview
+  --color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8
+  --color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc
+  --color=marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8
+"
+
 # ---------------------------------------------------------------------------
 # path
 # ---------------------------------------------------------------------------
