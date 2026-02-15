@@ -4,11 +4,17 @@
 [status]
   showUntrackedFiles = all
 [diff]
-  tool = vimdiff
-[merge]
-  tool = vimdiff
+  colorMoved = default
+  tool = codediff
+[difftool "codediff"]
+  cmd = nvim \"$LOCAL\" \"$REMOTE\" +\"CodeDiff file $LOCAL $REMOTE\"
 [difftool]
   prompt = false
+[merge]
+  tool = codediff
+  conflictstyle = diff3
+[mergetool "codediff"]
+	cmd = nvim \"$MERGED\" -c \"CodeDiff merge \\\"$MERGED\\\"\"
 [mergetool]
   prompt = false
 [color]
@@ -24,3 +30,13 @@
   br = branch
   sw = switch
   co = checkout
+  df = difftool
+[core]
+  pager = delta
+[interactive]
+  diffFilter = delta --color-only
+[delta]
+  navigate = true
+  line-numbers = true
+  side-by-side = true
+  syntax-theme = Visual Studio Dark+

@@ -4,6 +4,7 @@
     "fzf@latest",
     "ripgrep@latest",
     "fd@latest",
+    "delta@latest",
     "starship@latest",
     "github:nix-community/neovim-nightly-overlay",
     "tree-sitter@latest",
