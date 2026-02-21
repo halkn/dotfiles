@@ -40,3 +40,5 @@
   line-numbers = true
   side-by-side = true
   syntax-theme = Visual Studio Dark+
+[ghq]
+  root = ~/dev/

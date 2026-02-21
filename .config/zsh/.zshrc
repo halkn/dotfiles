@@ -234,6 +234,20 @@ if type fzf > /dev/null 2>&1; then
 fi
 
 #####################################################################
+# ghq + fzf
+#####################################################################
+if type ghq > /dev/null 2>&1; then
+  ghq-cd () {
+    local repo=$(ghq list | fzf)
+    if [ -n "$repo" ]; then
+      repo=$(ghq list --full-path --exact $repo)
+      cd ${repo} && ls -la
+    fi
+  }
+  alias dev='ghq-cd'
+fi
+
+#####################################################################
 # prompt
 #####################################################################
 if type starship > /dev/null 2>&1; then
