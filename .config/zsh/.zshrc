@@ -160,9 +160,21 @@ if [ -f $ZPLUGINDIR/zsh-syntax-highlighting//zsh-syntax-highlighting.zsh ]; then
 fi 
 
 #####################################################################
+# alt commands
+#####################################################################
+# eza
+if command -v eza > /dev/null 2>&1; then
+  alias ls='eza --group-directories-first'
+  alias ll='eza -l --group-directories-first --time-style=long-iso --git'
+  alias la='eza -la --group-directories-first --time-style=long-iso --git'
+  alias tree='eza --tree --group-directories-first --time-style=long-iso -I .git'
+  alias lst='eza -l --sort=modified'
+fi
+
+#####################################################################
 # nvim
 #####################################################################
-if type nvim > /dev/null 2>&1; then
+if command -v nvim > /dev/null 2>&1; then
   export EDITOR=nvim
   export MANPAGER='nvim +Man!'
   alias vim=nvim
@@ -173,14 +185,14 @@ fi
 # uv (for python)
 #####################################################################
 # for uv
-if type uv > /dev/null 2>&1; then
+if command -v uv > /dev/null 2>&1; then
   eval "$(uv generate-shell-completion zsh)"
 fi
 
 #####################################################################
 # fzf
 #####################################################################
-if type fzf > /dev/null 2>&1; then
+if command -v fzf > /dev/null 2>&1; then
   source <(fzf --zsh)
 
   # fh - repeat history
@@ -229,7 +241,7 @@ fi
 #####################################################################
 # ghq + fzf
 #####################################################################
-if type ghq > /dev/null 2>&1; then
+if command -v ghq > /dev/null 2>&1; then
   ghq-cd () {
     local repo=$(ghq list | fzf)
     if [ -n "$repo" ]; then
@@ -243,7 +255,7 @@ fi
 #####################################################################
 # prompt
 #####################################################################
-if type starship > /dev/null 2>&1; then
+if command -v starship > /dev/null 2>&1; then
   export STARSHIP_CONFIG=$XDG_CONFIG_HOME/starship/starship.toml
   export STARSHIP_CACHE=$XDG_CACHE_HOME/starship/cache
   eval "$(starship init zsh)"
