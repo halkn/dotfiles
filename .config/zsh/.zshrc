@@ -160,13 +160,6 @@ if [ -f $ZPLUGINDIR/zsh-syntax-highlighting//zsh-syntax-highlighting.zsh ]; then
 fi 
 
 #####################################################################
-# for devbox
-#####################################################################
-if type devbox > /dev/null 2>&1; then
-  eval "$(devbox global shellenv)"
-fi
-
-#####################################################################
 # nvim
 #####################################################################
 if type nvim > /dev/null 2>&1; then

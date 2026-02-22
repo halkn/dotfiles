@@ -5,7 +5,18 @@ This is my dotfiles.
 ## Setup
 
 ```sh
-curl -fsSL https://get.jetify.com/devbox | bash
-ln -s "${HOME}/.config/devbox/devbox.json" "${XDG_DATA_HOME}/devbox/global/default/devbo
-x.json"
+# see: https://determinate.systems/nix-installer/
+curl -fsSL https://install.determinate.systems/nix | sh -s -- install
+```
+
+### setup develop eviroments
+
+```bash
+# install package
+nix profile install
+bash ./scripts/install_neovim.sh
+
+# update package
+nix profile upgrade --all
+bash ./scripts/install_neovim.sh
 ```
