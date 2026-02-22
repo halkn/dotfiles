@@ -20,7 +20,6 @@ local spec = {
   -- Diff
   {
     "esmuellert/codediff.nvim",
-    dependencies = { "MunifTanjim/nui.nvim" },
     cmd = "CodeDiff",
   },
 
