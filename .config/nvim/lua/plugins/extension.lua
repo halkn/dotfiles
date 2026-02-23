@@ -91,12 +91,6 @@ local spec = {
     end
   },
   {
-    'MeanderingProgrammer/render-markdown.nvim',
-    dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-mini/mini.nvim' },
-    ---@module 'render-markdown'
-    opts = {},
-  },
-  {
     "halkn/nvim-markview",
     ft = "markdown",
     opts = {},
