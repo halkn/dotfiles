@@ -1,0 +1,23 @@
+[tools]
+# --- CLI tools ---
+"aqua:BurntSushi/ripgrep" = "latest"
+"aqua:sharkdp/fd" = "latest"
+"aqua:junegunn/fzf" = "latest"
+"aqua:eza-community/eza" = "latest"
+"aqua:dandavison/delta" = "latest"
+"aqua:x-motemen/ghq" = "latest"
+"aqua:cli/cli" = "latest"
+"aqua:starship/starship" = "latest"
+
+# --- LSP / Linter / Formatter ---
+node = "lts"
+"aqua:LuaLS/lua-language-server" = "latest"
+"aqua:mvdan/sh" = "latest"
+"aqua:koalaman/shellcheck" = "latest"
+"npm:bash-language-server" = "latest"
+"npm:markdownlint-cli2" = "latest"
+
+[settings]
+experimental = true
+always_keep_download = false
+jobs = 4
