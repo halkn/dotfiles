@@ -24,9 +24,7 @@ export SAVEHIST=10000
 export ZPLUGINDIR=$XDG_DATA_HOME/zsh_plugins
 
 # node/npm
-export NODE_ENV=production
 export NPM_CONFIG_USERCONFIG=$XDG_CONFIG_HOME/npm/npmrc
-export NPM_BIN=$XDG_DATA_HOME/npm/bin
 
 # uv
 export UV_CACHE_DIR=$XDG_CACHE_HOME/uv
@@ -60,6 +58,5 @@ export FZF_DEFAULT_OPTS="
 typeset -U path
 path=(
   $XDG_BIN_HOME(N-/)
-  $NPM_BIN(N-/)
   $path
 )
