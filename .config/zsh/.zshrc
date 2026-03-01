@@ -12,6 +12,11 @@ fi
 bindkey -e
 
 #####################################################################
+# plugins
+#####################################################################
+source $ZDOTDIR/plugins.zsh
+
+#####################################################################
 # completion
 #####################################################################
 # load command completion function
@@ -148,16 +153,6 @@ setopt multios
 setopt print_eight_bit
 # To treat '#' as comment in command line
 setopt interactive_comments
-
-#####################################################################
-# plugins
-#####################################################################
-if [ -f $ZPLUGINDIR/zsh-autosuggestions/zsh-autosuggestions.zsh ]; then
-  source $ZPLUGINDIR/zsh-autosuggestions/zsh-autosuggestions.zsh
-fi 
-if [ -f $ZPLUGINDIR/zsh-syntax-highlighting//zsh-syntax-highlighting.zsh ]; then
-  source $ZPLUGINDIR/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-fi 
 
 #####################################################################
 # mise
