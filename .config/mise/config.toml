@@ -7,7 +7,6 @@
 "aqua:dandavison/delta" = "latest"
 "aqua:x-motemen/ghq" = "latest"
 "aqua:cli/cli" = "latest"
-"aqua:starship/starship" = "latest"
 
 # --- LSP / Linter / Formatter ---
 node = "lts"

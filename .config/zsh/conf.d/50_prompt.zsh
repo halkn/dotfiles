@@ -1,24 +1,11 @@
-# ── prompt ───────────────────────────────────────────────────────────────────
-#
-# Alternatives comparison (in order of "no binary + speed" priority):
-#
-#   Pure          ✅ no binary  ✅ async git  ✅ simple  ← current choice
-#   Spaceship     ✅ no binary  △ slower      ✅ feature-rich
-#   Powerlevel10k ❌ has binary ✅ fastest     △ complex config
-#   Starship      ❌ Rust binary △ blocking    △ cross-shell (fallback)
-#
-# To switch back to Starship: comment out the pure block below.
-# To try Spaceship: replace pure with spaceship-prompt/spaceship-prompt
-#   and change the fpath/promptinit lines accordingly.
-# ─────────────────────────────────────────────────────────────────────────────
-
-# ── Pure ──────────────────────────────────────────────────────────────────────
+# ── prompt (Pure) ─────────────────────────────────────────────────────────────
+# Auto-installed as a zsh plugin on first launch (no binary, no mise required).
+# See: conf.d/30_plugins.zsh
 if [[ -d "$ZPLUGINDIR/pure" ]]; then
   fpath=("$ZPLUGINDIR/pure" $fpath)
   autoload -U promptinit
   promptinit
 
-  # Match current Starship color scheme
   zstyle ':prompt:pure:path'            color 'blue'
   zstyle ':prompt:pure:prompt:success'  color 'magenta'   # ❯ purple on success
   zstyle ':prompt:pure:prompt:error'    color 'red'        # ❯ red on error
@@ -28,10 +15,4 @@ if [[ -d "$ZPLUGINDIR/pure" ]]; then
   zstyle ':prompt:pure:execution_time'  color 'yellow'
 
   prompt pure
-
-# ── Starship (fallback if Pure is not installed) ───────────────────────────────
-elif command -v starship > /dev/null 2>&1; then
-  export STARSHIP_CONFIG=$XDG_CONFIG_HOME/starship/starship.toml
-  export STARSHIP_CACHE=$XDG_CACHE_HOME/starship/cache
-  eval "$(starship init zsh)"
 fi
