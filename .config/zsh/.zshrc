@@ -6,6 +6,65 @@ if [ ! -f $ZDOTDIR/.zshrc.zwc -o $ZDOTDIR/.zshrc -nt $ZDOTDIR/.zshrc.zwc ]; then
 fi
 
 #####################################################################
+# options
+#####################################################################
+# Ignore Ctrl-D logout from zsh
+setopt ignore_eof
+# Disable flow control
+setopt no_flow_control
+# beep off
+setopt no_beep
+
+# history
+export HISTFILE=$XDG_DATA_HOME/zsh/history
+export HISTSIZE=10000
+export SAVEHIST=10000
+# Ignore all duplicates in history (including non-consecutive)
+setopt hist_ignore_all_dups
+# No add history when beginning of line is space
+setopt hist_ignore_space
+# Reduce blanks when add history
+setopt hist_reduce_blanks
+# Expand history
+setopt hist_expand
+# Share command history across multiple Zsh sessions.
+setopt share_history
+
+# auto resume if suspend command exists
+setopt auto_resume
+# auto cd when input is only directory name
+setopt auto_cd
+# cd history pushd DIRSTACK
+setopt auto_pushd
+# prevent duplicate directories in directory stack
+setopt pushd_ignore_dups
+
+# complete list show horizontally
+setopt list_rows_first
+# complete sort numeric
+setopt numeric_glob_sort
+# Compact display of complete result
+setopt list_packed
+
+# Expand {} (ex. echo {a-c} -> a b c)
+setopt brace_ccl
+# Enable extended glob
+setopt extended_glob
+# Enable completion in "--option=arg"
+setopt magic_equal_subst
+# no glob expand when complete
+setopt glob_complete
+
+# command spellcheck
+setopt correct
+# jobs command default "jobs -l"
+setopt long_list_jobs
+# Add "/" if completes directory
+setopt mark_dirs
+# To treat '#' as comment in command line
+setopt interactive_comments
+
+#####################################################################
 # Keybind
 #####################################################################
 # emacs key bind
@@ -21,9 +80,13 @@ source $ZDOTDIR/plugins.zsh
 #####################################################################
 # load command completion function
 autoload -Uz compinit
-# load compinit
-# compinit -d $XDG_CACHE_HOME/zsh/.zcompdump
-compinit
+# load compinit with XDG cache location for dump file
+# skip regeneration if dump file is less than 24 hours old
+if [[ -n $XDG_CACHE_HOME/zsh/.zcompdump(#qN.mh+24) ]]; then
+  compinit -d $XDG_CACHE_HOME/zsh/.zcompdump
+else
+  compinit -C -d $XDG_CACHE_HOME/zsh/.zcompdump
+fi
 
 # Choose a complementary candidate from the menu.
 # select=2: Complement immediately
@@ -76,7 +139,7 @@ zstyle ':completion:*' completer \
 alias ls='ls --color=auto'
 alias ll='ls -lhF'
 alias la='ls -lhAF'
-alias ltr='ll -tr'
+alias ltr='ls -lhFtr'
 
 # nocorrect command
 alias mv='nocorrect mv'
@@ -98,63 +161,6 @@ alias dot='cd $HOME/.dotfiles && $EDITOR'
 alias :q='exit'
 
 #####################################################################
-# options
-#####################################################################
-# Ignore Ctrl-D logout from zsh
-setopt ignore_eof
-# Disable flow control
-setopt no_flow_control
-# beep off
-setopt no_beep
-
-# Ignore Duplication comannd when add history
-setopt hist_ignore_dups
-# No add history when beginning of line is space
-setopt hist_ignore_space
-# Reduce blanks when add history
-setopt hist_reduce_blanks
-# Expand history
-setopt hist_expand
-# Share command history across multiple Zsh sessions.
-setopt share_history
-
-# auto resume if suspend command exists
-setopt auto_resume
-# auto cd when input is only directory name
-setopt auto_cd
-# cd history pushd DIRSTACK
-setopt auto_pushd
-
-# complete list show horizontally
-setopt list_rows_first
-# complete sort numeric
-setopt numeric_glob_sort
-# Compact display of complete result
-setopt list_packed
-
-# Expand {} (ex. echo {a-c} -> a b c)
-setopt brace_ccl
-# Enable extended glob
-setopt extended_glob
-# Enable completion in "--option=arg"
-setopt magic_equal_subst
-# no glob expand when complete
-setopt glob_complete
-
-# command spellcheck
-setopt correct
-# jobs command default "jobs -l"
-setopt long_list_jobs
-# Add "/" if completes directory
-setopt mark_dirs
-# Enable redirection for multi files
-setopt multios
-# For multi byte
-setopt print_eight_bit
-# To treat '#' as comment in command line
-setopt interactive_comments
-
-#####################################################################
 # mise
 #####################################################################
 if command -v mise > /dev/null 2>&1; then
@@ -169,8 +175,9 @@ if command -v eza > /dev/null 2>&1; then
   alias ls='eza --group-directories-first'
   alias ll='eza -l --group-directories-first --time-style=long-iso --git'
   alias la='eza -la --group-directories-first --time-style=long-iso --git'
-  alias tree='eza --tree --group-directories-first --time-style=long-iso -I .git'
+  alias ltr='eza -l --sort=modified --reverse'
   alias lst='eza -l --sort=modified'
+  alias tree='eza --tree --group-directories-first --time-style=long-iso -I .git'
 fi
 
 #####################################################################
@@ -186,9 +193,13 @@ fi
 #####################################################################
 # uv (for python)
 #####################################################################
-# for uv
 if command -v uv > /dev/null 2>&1; then
-  eval "$(uv generate-shell-completion zsh)"
+  _uv_comp=$XDG_CACHE_HOME/zsh/uv_completion.zsh
+  if [[ ! -f $_uv_comp ]]; then
+    mkdir -p ${_uv_comp:h}
+    uv generate-shell-completion zsh > $_uv_comp
+  fi
+  source $_uv_comp
 fi
 
 #####################################################################
@@ -199,19 +210,21 @@ if command -v fzf > /dev/null 2>&1; then
 
   # fh - repeat history
   fh() {
-    print -z $( ([ -n "$ZSH_NAME" ] && fc -l 1 || history) | fzf +s --tac | sed -E 's/ *[0-9]*\*? *//' | sed -E 's/\\/\\\\/g')
+    print -z $(fc -l 1 | fzf +s --tac | sed -E 's/ *[0-9]*\*? *//' | sed -E 's/\\/\\\\/g')
   }
 
   # fcd - interactive change directory
-  alias fcd='cd $(fd --type d --hidden | fzf \
-    --preview "eza -lah --color=always --icons {} && echo && eza --tree --level=2 --color=always --icons {}" \
-    --preview-window=right:60% \
-    --bind "ctrl-/:toggle-preview")'
+  if command -v fd > /dev/null 2>&1; then
+    alias fcd='cd $(fd --type d --hidden | fzf \
+      --preview "eza -lah --color=always --icons {} && echo && eza --tree --level=2 --color=always --icons {}" \
+      --preview-window=right:60% \
+      --bind "ctrl-/:toggle-preview")'
+  fi
 
   # gb - interactive git switch
   fzf-git-branch() {
     local branches branch
- 
+
     branches=$(git branch --all --color=always --format='%(refname:short)|%(authorname)|%(committerdate:relative)' | grep -v HEAD) &&
     branch=$(echo "$branches" |
       column -t -s '|' |
@@ -230,9 +243,9 @@ if command -v fzf > /dev/null 2>&1; then
         --bind "ctrl-u:preview-page-up,ctrl-d:preview-page-down" \
         --bind "ctrl-o:execute(git log --oneline --graph --color=always {1} | delta)" \
         --header "Enter: checkout / Ctrl-/: toggle preview / Ctrl-O: full log") &&
- 
+
     branch=$(echo "$branch" | awk '{print $1}' | sed "s#remotes/[^/]*/##")
- 
+
     if [ -n "$branch" ]; then
       git switch "$branch"
     fi
@@ -262,4 +275,3 @@ if command -v starship > /dev/null 2>&1; then
   export STARSHIP_CACHE=$XDG_CACHE_HOME/starship/cache
   eval "$(starship init zsh)"
 fi
-

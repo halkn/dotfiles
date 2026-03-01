@@ -5,7 +5,6 @@
 export LANG=C.UTF-8
 export EDITOR=vim
 export PAGER=less
-export SHELL=zsh
 
 # XDG Base Directory
 export XDG_CONFIG_HOME=~/.config
@@ -18,9 +17,6 @@ export XDG_STATE_HOME=~/.local/state
 export ZHOMEDIR=$XDG_CONFIG_HOME/zsh
 export ZDATADIR=$XDG_DATA_HOME/zsh
 export ZCACHEDIR=$XDG_CACHE_HOME/zsh
-export HISTFILE=$XDG_DATA_HOME/zsh/history
-export HISTSIZE=10000
-export SAVEHIST=10000
 export ZPLUGINDIR=$XDG_DATA_HOME/zsh_plugins
 
 # node/npm
@@ -31,8 +27,6 @@ export UV_CACHE_DIR=$XDG_CACHE_HOME/uv
 export UV_PYTHON_PREFERENCE=only-managed
 export UV_PROJECT_ENVIRONMENT=.venv
 export UV_COMPILE_BYTECODE=true
-export UV_PROGRESS=auto
-export UV_COLOR=auto
 
 # less
 export LESS='-g -i -M -R -S -W -z-4 -x4'
@@ -43,7 +37,7 @@ export FZF_DEFAULT_OPTS="
   --height 60%
   --layout=reverse
   --border
-  --inline-info
+  --info=inline
   --preview-window=right:60%:wrap
   --bind ctrl-u:preview-page-up,ctrl-d:preview-page-down
   --bind ctrl-/:toggle-preview
