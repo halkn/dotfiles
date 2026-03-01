@@ -1,4 +1,5 @@
-.config/zsh/.zshrc.zwc
+.config/zsh/*.zwc
+.config/zsh/conf.d/*.zwc
 .config/zsh/.zcompdump
 
 # secret
