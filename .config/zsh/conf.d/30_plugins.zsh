@@ -13,7 +13,6 @@
 _zsh_plugins=(
   zsh-users/zsh-autosuggestions
   zdharma-continuum/fast-syntax-highlighting  # replaces zsh-syntax-highlighting
-  sindresorhus/pure                           # async zsh prompt (fpath-only, no binary)
 )
 
 _zsh_plugin_entries=(
