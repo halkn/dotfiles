@@ -22,18 +22,18 @@ fh() {
 
 # fcd - interactive change directory
 if command -v fd > /dev/null 2>&1; then
-  alias fcd='cd $(fd --type d --hidden | fzf \
+  alias fcd='cd $(fd --type d --hidden --exclude .git | fzf \
     --preview "eza -lah --color=always --icons {} && echo && eza --tree --level=2 --color=always --icons {}" \
     --preview-window=right:60% \
     --bind "ctrl-/:toggle-preview")'
 fi
 
 # ── git ─────────────────────────────────────────────
-command -v delta &>/dev/null || return
-
 # gb - interactive git switch
 fzf-git-branch() {
   local branches branch
+  local -a extra_binds=()
+  command -v delta &>/dev/null && extra_binds=(--bind "ctrl-o:execute(git log --oneline --graph --color=always {1} | delta)")
 
   branches=$(git branch --all --color=always --format='%(refname:short)|%(authorname)|%(committerdate:relative)' | grep -v HEAD) &&
   branch=$(echo "$branches" |
@@ -51,7 +51,7 @@ fzf-git-branch() {
       ' \
       --bind "ctrl-/:toggle-preview" \
       --bind "ctrl-u:preview-page-up,ctrl-d:preview-page-down" \
-      --bind "ctrl-o:execute(git log --oneline --graph --color=always {1} | delta)" \
+      $extra_binds \
       --header "Enter: checkout / Ctrl-/: toggle preview / Ctrl-O: full log") &&
 
   branch=$(echo "$branch" | awk '{print $1}' | sed "s#remotes/[^/]*/##")
@@ -61,4 +61,3 @@ fzf-git-branch() {
   fi
 }
 alias gb='fzf-git-branch'
-

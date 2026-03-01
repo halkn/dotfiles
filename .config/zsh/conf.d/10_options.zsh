@@ -1,6 +1,6 @@
 # ── History ──────────────────────────────────────────
 export HISTFILE=$XDG_DATA_HOME/zsh/history
-export HISTSIZE=10000
+export HISTSIZE=100000
 export SAVEHIST=10000
 setopt hist_ignore_all_dups
 setopt hist_ignore_space
@@ -41,8 +41,8 @@ else
   compinit -C -d $ZCACHEDIR/.zcompdump
 fi
 
-# Choose a complementary candidate from the menu.
-# select=2: Complement immediately
+# Choose a completion candidate from the menu.
+# select=2: Complete immediately
 #           as soon as there are two or more completion candidates
 zstyle ':completion:*:default' menu select=2
 
@@ -55,7 +55,7 @@ zstyle ':completion:*:default' list-colors ''
 #   r:|[._-]=*    : Complement it as having a wild card "*" before "." , "_" , "-"
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z} r:|[._-]=*'
 
-# complection format
+# completion format
 zstyle ':completion:*' format "--- %d ---"
 
 # grouping for completion list
@@ -79,8 +79,8 @@ zstyle ':completion:*' verbose yes
 zstyle ':completion:*' completer \
   _complete \
   _match \
-  _approximate \
   _oldlist \
   _history \
   _ignored \
-  _prefix
+  _prefix \
+  _approximate

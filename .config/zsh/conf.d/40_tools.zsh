@@ -6,11 +6,13 @@ fi
 # ── uv ───────────────────────────────────────────────
 if command -v uv > /dev/null 2>&1; then
   _uv_comp=$ZCACHEDIR/uv_completion.zsh
-  if [[ ! -f $_uv_comp ]]; then
+  _uv_bin=$(command -v uv)
+  if [[ ! -f $_uv_comp || $_uv_bin -nt $_uv_comp ]]; then
     mkdir -p ${_uv_comp:h}
     uv generate-shell-completion zsh > $_uv_comp
   fi
   source $_uv_comp
+  unset _uv_comp _uv_bin
 fi
 
 # ── eza ──────────────────────────────────────────────
