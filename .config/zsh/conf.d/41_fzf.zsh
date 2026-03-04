@@ -29,35 +29,69 @@ if command -v fd > /dev/null 2>&1; then
 fi
 
 # ── git ─────────────────────────────────────────────
-# gb - interactive git switch
-fzf-git-branch() {
-  local branches branch
-  local -a extra_binds=()
-  command -v delta &>/dev/null && extra_binds=(--bind "ctrl-o:execute(git log --oneline --graph --color=always {1} | delta)")
+# ── opts ────────────────────────────────────────────
+_fzf_git_opts=(
+  --height 80%
+  --layout reverse
+  --border
+  --multi
+  --bind 'ctrl-_:change-preview-window(down,50%|hidden|)'
+  --color header:italic
+)
 
-  branches=$(git branch --all --color=always --format='%(refname:short)|%(authorname)|%(committerdate:relative)' | grep -v HEAD) &&
-  branch=$(echo "$branches" |
-    column -t -s '|' |
-    fzf --ansi \
-      --preview-window=right:70% \
-      --preview '
-        branch=$(echo {} | awk "{print \$1}" | sed "s#remotes/[^/]*/##")
-        echo "=== Branch: $branch ==="
-        echo
-        git log --oneline --graph --date=short --color=always --pretty="format:%C(auto)%cd %h%d %s" $branch | head -50
-        echo
-        echo "=== Recent commits ==="
-        git log --color=always --pretty=format:"%C(yellow)%h %C(blue)%ad %C(green)%an%C(reset)%n%s%n" --date=short $branch | head -20
-      ' \
-      --bind "ctrl-/:toggle-preview" \
-      --bind "ctrl-u:preview-page-up,ctrl-d:preview-page-down" \
-      $extra_binds \
-      --header "Enter: checkout / Ctrl-/: toggle preview / Ctrl-O: full log") &&
-
-  branch=$(echo "$branch" | awk '{print $1}' | sed "s#remotes/[^/]*/##")
-
-  if [ -n "$branch" ]; then
-    git switch "$branch"
-  fi
+# ── switch branch ───────────────────────────────────
+fgb() {
+  local branch
+  branch=$(git branch -a --color=always \
+    | grep -v HEAD \
+    | fzf "${_fzf_git_opts[@]}" \
+        --no-multi \
+        --ansi \
+        --header 'ENTER: checkout  CTRL-_: toggle preview' \
+        --preview 'git log --oneline --graph --color=always $(echo {} | sed "s/^[* ]*//" | sed "s/\s.*//" | sed "s|remotes/||") | head -50' \
+    | sed 's/^[* ]*//' | sed 's/\s.*//' | sed 's|remotes/||')
+  [[ -n "$branch" ]] && git switch "$branch"
 }
-alias gb='fzf-git-branch'
+
+# ── stage/unstage ───────────────────────────────────
+fga() {
+  local files
+  files=$(git -c color.status=always status --short \
+    | fzf "${_fzf_git_opts[@]}" \
+        --ansi \
+        --nth 2.. \
+        --header 'TAB: multi-select  ENTER: git add  CTRL-U: unstage  CTRL-_: toggle preview' \
+        --preview 'git diff --color=always -- {2} | delta' \
+        --bind 'ctrl-u:execute-silent(git restore --staged {2})+reload(git -c color.status=always status --short)' \
+        --bind 'enter:execute-silent(git add {+2})+reload(git -c color.status=always status --short)' \
+    | awk '{print $2}')
+  [[ -n "$files" ]] && git status --short
+}
+
+# ── commit log ──────────────────────────────────────
+fgl() {
+  local commit
+  commit=$(git log --oneline --color=always --decorate --all \
+    | fzf "${_fzf_git_opts[@]}" \
+        --no-multi \
+        --ansi \
+        --header 'ENTER: show stat  CTRL-V: full diff  CTRL-S: stat  CTRL-_: toggle preview' \
+        --preview 'git show --color=always --stat {1} | delta' \
+        --bind 'ctrl-v:change-preview(git show --color=always {1} | delta)' \
+        --bind 'ctrl-s:change-preview(git show --color=always --stat {1} | delta)' \
+    | awk '{print $1}')
+  [[ -n "$commit" ]] && git show --stat "$commit"
+}
+
+# ── worktree cd ─────────────────────────────────────
+fgw() {
+  local worktree
+  worktree=$(git worktree list \
+    | fzf "${_fzf_git_opts[@]}" \
+        --no-multi \
+        --header 'ENTER: cd to worktree  CTRL-_: toggle preview' \
+        --preview 'eza --tree --color=always --level 2 {1}' \
+    | awk '{print $1}')
+  [[ -n "$worktree" ]] && cd "$worktree"
+}
+
