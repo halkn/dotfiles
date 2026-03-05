@@ -1,0 +1,9 @@
+# Smart Caseを有効にする
+--smart-case
+
+# 隠しファイルを検索対象にする
+--hidden
+
+# 特定のディレクトリやファイルを除外する
+--glob=!.git/*
+--glob=!node_modules

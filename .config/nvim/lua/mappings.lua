@@ -86,3 +86,46 @@ map('n', ']l', '<cmd>lnext<CR>')
 -- commenting
 remap({ 'n', 'x', 'o' }, '<Leader>c', 'gcc')
 remap('v', '<Leader>c', 'gc')
+
+-- diagnostic
+map("n", "<C-e>", vim.diagnostic.open_float)
+map("n", "<Leader>d", vim.diagnostic.setqflist)
+
+-- Toggle Terminal
+local _term = { buf = nil, win = nil }
+local function toggle_terminal()
+  if _term.win and vim.api.nvim_win_is_valid(_term.win) then
+    vim.api.nvim_win_hide(_term.win)
+    _term.win = nil
+  else
+    local width  = math.floor(vim.o.columns * 0.85)
+    local height = math.floor(vim.o.lines * 0.85)
+    local row    = math.floor((vim.o.lines - height) / 2)
+    local col    = math.floor((vim.o.columns - width) / 2)
+
+    if not _term.buf or not vim.api.nvim_buf_is_valid(_term.buf) then
+      _term.buf = vim.api.nvim_create_buf(false, true)
+    end
+
+    _term.win = vim.api.nvim_open_win(_term.buf, true, {
+      relative = "editor",
+      width    = width,
+      height   = height,
+      row      = row,
+      col      = col,
+      style    = "minimal",
+      border   = "rounded",
+    })
+
+    if vim.bo[_term.buf].buftype ~= "terminal" then
+      vim.cmd.terminal()
+      vim.keymap.set("n", "q", function()
+        vim.api.nvim_win_hide(_term.win)
+        _term.win = nil
+      end, { buffer = _term.buf })
+      vim.keymap.set("t", "<Esc>", "<C-\\><C-n>", { buffer = _term.buf })
+    end
+    vim.cmd.startinsert()
+  end
+end
+vim.keymap.set({ "n", "t" }, "<C-t>", toggle_terminal, { desc = "Toggle Terminal" })
