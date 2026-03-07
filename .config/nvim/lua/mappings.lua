@@ -13,7 +13,7 @@ end
 -- Improve Multi Line Move
 map('n', 'k', 'gk')
 map('n', 'j', 'gj')
-map('n', 'gk', 'k')
+map('n', 'gj', 'j')
 map('n', 'gk', 'k')
 
 -- Improve Cursor Move in Normal,Visial-Mode
