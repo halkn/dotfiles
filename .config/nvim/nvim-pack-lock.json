@@ -26,7 +26,7 @@
       "src": "https://github.com/halkn/nvim-markview"
     },
     "nvim-treesitter": {
-      "rev": "544320a9cf5d6bf539ec1cc54d393064015670c4",
+      "rev": "ebe76eb800d4e8df754fc96f8a7b84f578224a97",
       "src": "https://github.com/nvim-treesitter/nvim-treesitter"
     },
     "onedark.nvim": {
