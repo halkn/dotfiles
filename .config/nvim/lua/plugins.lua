@@ -1,15 +1,4 @@
 local M = {}
--- disabale -----------------------------------------------------------------
-vim.g.loaded_gzip = 1
-vim.g.loaded_matchit = 1
-vim.g.loaded_matchparen = 1
-vim.g.loaded_netrwPlugin = 1
-vim.g.loaded_rplugin = 1
-vim.g.loaded_tarPlugin = 1
-vim.g.loaded_tohtml = 1
-vim.g.loaded_tutor = 1
-vim.g.loaded_zipPlugin = 1
-
 -- hooks --------------------------------------------------------------------
 M.hooks = function(ev)
   local name, kind = ev.data.spec.name, ev.data.kind

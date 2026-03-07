@@ -25,7 +25,6 @@ g.loaded_zip = 1
 g.loaded_zipPlugin = 1
 
 -- encoding
-opt.encoding = "utf-8"
 opt.fileencodings = "utf-8,sjis,iso-2022-jp,cp932,euc-jp"
 opt.fileencoding = "utf-8"
 
@@ -96,7 +95,6 @@ opt.pumblend = 10
 
 -- other
 opt.clipboard = "unnamedplus"
-opt.lazyredraw = false
 
 -- grep
 if vim.fn.executable("rg") == 1 then
