@@ -29,23 +29,22 @@ vim.api.nvim_create_autocmd('LspAttach', {
         buffer = ev.buf,
         callback = function()
           vim.lsp.buf.format({ bufnr = ev.buf, id = client.id })
-          if client.name ~= "ruff" then
-            return
+          if client.name == "ruff" then
+            vim.lsp.buf.code_action({
+              context = {
+                diagnostics = {},
+                only = { "source.organizeImports" },
+              },
+              apply = true,
+            })
+            vim.lsp.buf.code_action({
+              context = {
+                diagnostics = {},
+                only = { "source.fixAll" },
+              },
+              apply = true,
+            })
           end
-          vim.lsp.buf.code_action({
-            context = {
-              diagnostics = {},
-              only = { "source.organizeImports" },
-            },
-            apply = true,
-          })
-          vim.lsp.buf.code_action({
-            context = {
-              diagnostics = {},
-              only = { "source.fixAll" },
-            },
-            apply = true,
-          })
         end
       })
     end

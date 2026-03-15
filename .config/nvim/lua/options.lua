@@ -75,7 +75,8 @@ opt.whichwrap = "b,s,[,],<,>"
 -- window
 opt.splitbelow = true
 opt.splitright = true
-opt.cmdheight = 1
+opt.laststatus = 3
+opt.cmdheight = 0
 opt.pumheight = 10
 opt.previewheight = 10
 opt.winwidth = 30
@@ -106,7 +107,6 @@ end
 vim.diagnostic.config({
   virtual_text = true,
   underline = true,
-  -- virtual_lines = true,
   update_in_insert = false,
   severity_sort = true,
   signs = {

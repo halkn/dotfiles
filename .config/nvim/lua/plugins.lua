@@ -43,8 +43,6 @@ M.specs = {
       require('mini.notify').setup()
       vim.notify = require('mini.notify').make_notify({})
       require('mini.statusline').setup()
-      vim.opt.laststatus = 3
-      vim.opt.cmdheight = 0
       require('mini.tabline').setup()
 
       -- Text editing
@@ -199,10 +197,7 @@ M.specs = {
         markdown = { "markdownlint-cli2" },
       }
 
-      -- local group_name = "vimrc_nvim-lint"
-      -- vim.api.nvim_create_augroup(group_name, { clear = true })
       vim.api.nvim_create_autocmd("BufWritePost", {
-        -- group = group_name,
         group = au,
         pattern = { "*.md" },
         callback = function()
@@ -225,13 +220,9 @@ M.specs = {
           timeout_ms = 500,
           lsp_format = "fallback",
         },
-        format_after_save = {
-          lsp_format = "fallback",
-        },
       })
 
       vim.api.nvim_create_autocmd("FileType", {
-        -- group = group_name,
         group = au,
         pattern = { "markdown" },
         callback = function(ev)
@@ -265,7 +256,12 @@ end, M.specs))
 
 -- load config.
 for _, p in ipairs(M.specs) do
-  if p.config then p.config() end
+  if p.config then
+    local ok, err = pcall(p.config)
+    if not ok then
+      vim.notify("Plugin config error [" .. p.src .. "]: " .. tostring(err), vim.log.levels.ERROR)
+    end
+  end
 end
 
 -- commands -----------------------------------------------------------------

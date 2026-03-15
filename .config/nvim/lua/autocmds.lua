@@ -33,11 +33,6 @@ autocmd('FileType', {
     vim.cmd('wincmd L')
   end
 })
-autocmd('BufEnter', {
-  group = group_name,
-  pattern = { "*.txt" },
-  command = [[if &buftype == 'help' | wincmd L | endif]],
-})
 
 -- terminal
 autocmd('TermOpen', {
