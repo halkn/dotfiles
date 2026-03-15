@@ -95,7 +95,7 @@ M.specs = {
         function()
           MiniFiles.open()
         end,
-        { desc = 'Open file exproler' }
+        { desc = 'Open file explorer' }
       )
       require('mini.pick').setup({
         mappings = {

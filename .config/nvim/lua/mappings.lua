@@ -63,7 +63,7 @@ map('n', 'ZQ', '<Nop>')
 map('n', '<Esc><Esc>', '<cmd>nohlsearch<CR><Esc>')
 map('n', '<C-l>', '<cmd>nohlsearch<CR><C-l>')
 
--- To'n', ggle options
+-- Toggle options
 map('n', '<Leader>on', '<cmd>setlocal number! number?<CR>')
 map('n', '<Leader>or', '<cmd>setlocal relativenumber! relativenumber?<CR>')
 map('n', '<Leader>oc', '<cmd>setlocal cursorline! cursorcolumn!<CR>')
