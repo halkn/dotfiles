@@ -5,7 +5,7 @@ fi
 
 # ── uv ───────────────────────────────────────────────
 if command -v uv > /dev/null 2>&1; then
-  _uv_comp=$ZCACHEDIR/uv_completion.zsh
+  _uv_comp=$ZCACHEDIR/completions/_uv
   _uv_bin=$(command -v uv)
   if [[ ! -f $_uv_comp || $_uv_bin -nt $_uv_comp ]]; then
     mkdir -p ${_uv_comp:h}
@@ -13,6 +13,23 @@ if command -v uv > /dev/null 2>&1; then
   fi
   source $_uv_comp
   unset _uv_comp _uv_bin
+fi
+
+# ── deno ─────────────────────────────────────────────
+if ! command -v deno > /dev/null 2>&1 && [[ -x $DENO_INSTALL/bin/deno ]]; then
+  mkdir -p $XDG_BIN_HOME
+  ln -sf $DENO_INSTALL/bin/deno $XDG_BIN_HOME/deno
+fi
+
+if command -v deno > /dev/null 2>&1; then
+  _deno_comp=$ZCACHEDIR/completions/_deno
+  _deno_bin=$(command -v deno)
+  if [[ ! -f $_deno_comp || $_deno_bin -nt $_deno_comp ]]; then
+    mkdir -p ${_deno_comp:h}
+    deno completions zsh > $_deno_comp
+  fi
+  source $_deno_comp
+  unset _deno_comp _deno_bin
 fi
 
 # ── eza ──────────────────────────────────────────────

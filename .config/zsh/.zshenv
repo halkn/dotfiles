@@ -22,6 +22,12 @@ export ZPLUGINDIR=$XDG_DATA_HOME/zsh_plugins
 # node/npm
 export NPM_CONFIG_USERCONFIG=$XDG_CONFIG_HOME/npm/npmrc
 
+# deno
+export DENO_INSTALL=~/.local/opt/deno
+export DENO_DIR=$XDG_CACHE_HOME/deno
+export DENO_INSTALL_ROOT=$XDG_BIN_HOME
+export DENO_NO_UPDATE_CHECK=1
+
 # uv
 export UV_CACHE_DIR=$XDG_CACHE_HOME/uv
 export UV_PYTHON_PREFERENCE=only-managed
