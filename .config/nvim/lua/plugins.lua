@@ -42,8 +42,6 @@ M.specs = {
       require('mini.cursorword').setup()
       require('mini.notify').setup()
       vim.notify = require('mini.notify').make_notify({})
-      require('mini.statusline').setup()
-      require('mini.tabline').setup()
 
       -- Text editing
       require('mini.align').setup()
