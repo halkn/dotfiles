@@ -21,6 +21,11 @@ vim.api.nvim_create_autocmd('LspAttach', {
       return
     end
 
+    -- inlay hints
+    if client:supports_method('textDocument/inlayHint') then
+      vim.lsp.inlay_hint.enable(true, { bufnr = ev.buf })
+    end
+
     -- format
     if client:supports_method('textDocument/formatting') then
       vim.keymap.set("n", "<LocalLeader>f", vim.lsp.buf.format, bufopts)

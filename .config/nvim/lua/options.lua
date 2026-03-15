@@ -93,6 +93,7 @@ opt.inccommand = "split"
 -- pum
 opt.wildoptions = "pum"
 opt.pumblend = 10
+opt.pumborder = "rounded"
 
 -- other
 opt.clipboard = "unnamedplus"
