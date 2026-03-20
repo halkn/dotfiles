@@ -53,59 +53,61 @@ local function update_git(bufnr)
     { 'git', 'status', '--porcelain=v2', '--branch' },
     { text = true, cwd = dir },
     function(obj)
-      -- Bail out if the buffer was deleted before the command completed
-      if not vim.api.nvim_buf_is_valid(bufnr) then return end
-      if obj.code ~= 0 or not obj.stdout then
-        git_cache[bufnr] = nil
-        vim.schedule(vim.cmd.redrawstatus)
-        return
-      end
-      local staged, unstaged, untracked = 0, 0, 0
-      local file_state = 'clean'
-      -- Build an absolute path suffix for exact suffix matching
-      local file_tail = '/' .. vim.fn.fnamemodify(file, ':.')
-      for line in obj.stdout:gmatch('[^\n]+') do
-        if not line:match('^#') then
-          local t = line:sub(1, 1)
-          if t == '?' then
-            -- porcelain v2 untracked: "? <path>"
-            untracked = untracked + 1
-            local path = line:sub(3)
-            if file_tail:sub(-#path - 1) == '/' .. path then
-              file_state = 'untracked'
-            end
-          elseif t == '1' then
-            -- porcelain v2 ordinary change: "1 XY <sub> <mH> <mI> <mW> <hH> <hI> <path>"
-            local x, y, path = line:match('^1 (.)(.) %S+ %S+ %S+ %S+ %S+ %S+ (.+)$')
-            if x then
-              if x ~= '.' then staged   = staged   + 1 end
-              if y ~= '.' then unstaged = unstaged + 1 end
-              if path and file_tail:sub(-#path - 1) == '/' .. path then
-                file_state = 'dirty'
+      vim.schedule(function()
+        -- Bail out if the buffer was deleted before the command completed
+        if not vim.api.nvim_buf_is_valid(bufnr) then return end
+        if obj.code ~= 0 or not obj.stdout then
+          git_cache[bufnr] = nil
+          vim.cmd.redrawstatus()
+          return
+        end
+        local staged, unstaged, untracked = 0, 0, 0
+        local file_state = 'clean'
+        -- Build an absolute path suffix for exact suffix matching
+        local file_tail = '/' .. vim.fn.fnamemodify(file, ':.')
+        for line in obj.stdout:gmatch('[^\n]+') do
+          if not line:match('^#') then
+            local t = line:sub(1, 1)
+            if t == '?' then
+              -- porcelain v2 untracked: "? <path>"
+              untracked = untracked + 1
+              local path = line:sub(3)
+              if file_tail:sub(-#path - 1) == '/' .. path then
+                file_state = 'untracked'
               end
-            end
-          elseif t == '2' then
-            -- porcelain v2 renamed/copied: "2 XY <sub> <mH> <mI> <mW> <hH> <hI> <X><score> <new>\t<orig>"
-            local x, y, paths = line:match('^2 (.)(.) %S+ %S+ %S+ %S+ %S+ %S+ %S+ (.+)$')
-            if x then
-              if x ~= '.' then staged   = staged   + 1 end
-              if y ~= '.' then unstaged = unstaged + 1 end
-              -- paths is "new\torig"; current worktree file is the new name
-              local new_path = paths:match('^([^\t]+)')
-              if new_path and file_tail:sub(-#new_path - 1) == '/' .. new_path then
-                file_state = 'dirty'
+            elseif t == '1' then
+              -- porcelain v2 ordinary change: "1 XY <sub> <mH> <mI> <mW> <hH> <hI> <path>"
+              local x, y, path = line:match('^1 (.)(.) %S+ %S+ %S+ %S+ %S+ %S+ (.+)$')
+              if x then
+                if x ~= '.' then staged   = staged   + 1 end
+                if y ~= '.' then unstaged = unstaged + 1 end
+                if path and file_tail:sub(-#path - 1) == '/' .. path then
+                  file_state = 'dirty'
+                end
+              end
+            elseif t == '2' then
+              -- porcelain v2 renamed/copied: "2 XY <sub> <mH> <mI> <mW> <hH> <hI> <X><score> <new>\t<orig>"
+              local x, y, paths = line:match('^2 (.)(.) %S+ %S+ %S+ %S+ %S+ %S+ %S+ (.+)$')
+              if x then
+                if x ~= '.' then staged   = staged   + 1 end
+                if y ~= '.' then unstaged = unstaged + 1 end
+                -- paths is "new\torig"; current worktree file is the new name
+                local new_path = paths:match('^([^\t]+)')
+                if new_path and file_tail:sub(-#new_path - 1) == '/' .. new_path then
+                  file_state = 'dirty'
+                end
               end
             end
           end
         end
-      end
-      git_cache[bufnr] = {
-        staged    = staged,
-        unstaged  = unstaged,
-        untracked = untracked,
-        file_state = file_state,
-      }
-      vim.schedule(vim.cmd.redrawstatus)
+        git_cache[bufnr] = {
+          staged    = staged,
+          unstaged  = unstaged,
+          untracked = untracked,
+          file_state = file_state,
+        }
+        vim.cmd.redrawstatus()
+      end)
     end
   )
 end
