@@ -4,3 +4,9 @@
 
 # secret
 .config/gh/hosts.yml
+
+# claude
+.claude/*
+!.claude/CLAUDE.md
+!.claude/settings.json
+!.claude/statusline-command.sh
