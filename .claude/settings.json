@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "cleanupPeriodDays": 14,
+  "env": {
+    "DISABLE_TELEMETRY": "1",
+    "DISABLE_ERROR_REPORTING": "1",
+    "CLAUDE_CODE_DISABLE_TERMINAL_TITLE": "0",
+    "BASH_DEFAULT_TIMEOUT_MS": "30000",
+    "CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR": "1"
+  },
+  "includeCoAuthoredBy": false,
+  "permissions": {
+    "allow": [
+      "Bash(git *)",
+      "Read(~/.config/zsh/.zshrc)",
+      "Read(~/.gitconfig)"
+    ],
+    "deny": [
+      "Read(**/.env)",
+      "Read(**/.env.*)",
+      "Read(**/secrets/**)",
+      "Read(**/credentials/**)",
+      "Read(**/*.pem)",
+      "Read(**/*.key)"
+    ],
+    "defaultMode": "acceptEdits"
+  },
+  "autoUpdatesChannel": "stable",
+  "language": "日本語",
+  "statusLine": {
+    "type": "command",
+    "command": "sh ~/.claude/statusline-command.sh"
+  }
+}
