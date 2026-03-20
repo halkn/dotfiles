@@ -5,6 +5,9 @@ This is my dotfiles.
 ## Setup
 
 ```sh
+# Link .config
+ln -s ~/.dotfiles/.config ~/.config
+
 # See: https://mise.jdx.dev/getting-started.html
 curl https://mise.run | sh
 
