@@ -44,6 +44,11 @@ local function update_git(bufnr)
     return
   end
   local dir = vim.fn.fnamemodify(file, ':h')
+  -- nvim-pack: や term:// など実在しないパスを持つバッファはスキップ
+  if not vim.uv.fs_stat(dir) then
+    git_cache[bufnr] = nil
+    return
+  end
   vim.system(
     { 'git', 'status', '--porcelain=v2', '--branch' },
     { text = true, cwd = dir },
