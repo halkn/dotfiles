@@ -93,31 +93,6 @@ M.specs = {
         end,
         { desc = 'Open file explorer' }
       )
-      require('mini.pick').setup({
-        mappings = {
-          caret_left = '<C-b>',
-          caret_right = '<C-f>',
-          delete_char = '<C-h>',
-          scroll_left = '<NOP>',
-          scroll_up = '<NOP>',
-        },
-      })
-      vim.ui.select = MiniPick.ui_select
-      -- mappings
-      vim.keymap.set('n', '<Leader>f', function()
-        MiniPick.builtin.files({ tool = 'rg' })
-      end, { desc = 'mini.pick.files' })
-      vim.keymap.set('n', '<Leader>b', function()
-        MiniPick.builtin.buffers({})
-      end, { desc = 'mini.pick.buffers' })
-      vim.keymap.set('n', '<Leader>G', function()
-        MiniPick.builtin.grep()
-      end, { desc = 'mini.pick.grep' })
-      require('mini.extra').setup()
-      -- mappings
-      vim.keymap.set('n', '<Leader>l', function()
-        MiniExtra.pickers.buf_lines({ scope = 'current' })
-      end, { desc = 'mini.pick.buffers' })
     end
   },
   {
