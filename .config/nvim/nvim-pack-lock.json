@@ -32,10 +32,6 @@
     "nvim-treesitter": {
       "rev": "e5f65e31a5ec0e8526b2311ff8c7aaea4a581c82",
       "src": "https://github.com/nvim-treesitter/nvim-treesitter"
-    },
-    "yanky.nvim": {
-      "rev": "784188e0a7363e762e53140f39124d786aec0832",
-      "src": "https://github.com/gbprod/yanky.nvim"
     }
   }
 }

@@ -26,6 +26,21 @@ vim.api.nvim_create_autocmd('LspAttach', {
       vim.lsp.inlay_hint.enable(true, { bufnr = ev.buf })
     end
 
+    -- document highlight (cursorword)
+    if client:supports_method('textDocument/documentHighlight') then
+      local hl_group = vim.api.nvim_create_augroup('lsp_document_highlight_' .. ev.buf, { clear = true })
+      vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
+        group = hl_group,
+        buffer = ev.buf,
+        callback = vim.lsp.buf.document_highlight,
+      })
+      vim.api.nvim_create_autocmd({ 'CursorMoved', 'CursorMovedI' }, {
+        group = hl_group,
+        buffer = ev.buf,
+        callback = vim.lsp.buf.clear_references,
+      })
+    end
+
     -- format
     if client:supports_method('textDocument/formatting') then
       vim.keymap.set("n", "<LocalLeader>f", vim.lsp.buf.format, bufopts)
@@ -59,6 +74,33 @@ vim.api.nvim_create_autocmd('LspAttach', {
       -- Disable hover in favor of Pyright
       client.server_capabilities.hoverProvider = false
     end
+  end,
+})
+
+-- lsp progress
+local spinner = { '⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏' }
+vim.api.nvim_create_autocmd('LspProgress', {
+  group = group,
+  callback = function(ev)
+    local client = vim.lsp.get_client_by_id(ev.data.client_id)
+    if not client then return end
+    local value = ev.data.params.value
+    if type(value) ~= 'table' then return end
+
+    local msg = ''
+    if value.title then msg = value.title end
+    if value.message then msg = msg .. ' ' .. value.message end
+    if value.percentage then msg = msg .. string.format(' (%d%%)', value.percentage) end
+
+    local done = value.kind == 'end'
+    local icon = done and '  '
+      or spinner[math.floor(vim.uv.hrtime() / (1e6 * 80)) % #spinner + 1]
+
+    vim.notify(icon .. ' ' .. vim.trim(msg), vim.log.levels.INFO, {
+      id = 'lsp_progress_' .. client.id,
+      title = client.name,
+      timeout = done and 1000 or false,
+    })
   end,
 })
 
