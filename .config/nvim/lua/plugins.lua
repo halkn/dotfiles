@@ -134,26 +134,18 @@ M.specs = {
   },
   {
     src = "saghen/blink.cmp",
-    version = "v1.9.1",
+    version = "v1.10.1",
     config = function()
       require("blink.cmp").setup({
         keymap = {
           preset = 'super-tab',
         },
+        cmdline = { enabled = true },
         appearance = {
-          use_nvim_cmp_as_default = true,
           nerd_font_variant = 'mono'
         },
         signature = { enabled = true },
         completion = {
-          menu = {
-            draw = {
-              columns = {
-                { "label",     "label_description", gap = 1 },
-                { "kind_icon", "kind" },
-              },
-            },
-          },
           documentation = { auto_show = true, auto_show_delay_ms = 500 },
         },
         sources = {

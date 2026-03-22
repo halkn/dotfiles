@@ -1,9 +1,9 @@
 {
   "plugins": {
     "blink.cmp": {
-      "rev": "4b18c32adef2898f95cdef6192cbd5796c1a332d",
+      "rev": "451168851e8e2466bc97ee3e026c3dcb9141ce07",
       "src": "https://github.com/saghen/blink.cmp",
-      "version": "'v1.9.1'"
+      "version": "'v1.10.1'"
     },
     "conform.nvim": {
       "rev": "086a40dc7ed8242c03be9f47fbcee68699cc2395",
@@ -14,7 +14,7 @@
       "src": "https://github.com/monaqa/dial.nvim"
     },
     "mini.nvim": {
-      "rev": "adeaeac8622b966273bb161977bff1293dd44565",
+      "rev": "59f09943573c5348ca6c88393fa09ce3b66a7818",
       "src": "https://github.com/nvim-mini/mini.nvim"
     },
     "nvim-lint": {
@@ -26,7 +26,7 @@
       "src": "https://github.com/halkn/nvim-markview"
     },
     "nvim-treesitter": {
-      "rev": "2b50ab5ccbcd9e5708deb351308edd738adbf84c",
+      "rev": "e5f65e31a5ec0e8526b2311ff8c7aaea4a581c82",
       "src": "https://github.com/nvim-treesitter/nvim-treesitter"
     },
     "onedark.nvim": {
