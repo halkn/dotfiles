@@ -703,9 +703,9 @@ function M.setup()
   vim.ui.select = function(items, opts, on_choice)
     M.ui_select(items, opts, on_choice)
   end
-  vim.keymap.set('n', '<Leader>f', function() M.files() end,     { desc = 'picker: files' })
-  vim.keymap.set('n', '<Leader>b', function() M.buffers() end,   { desc = 'picker: buffers' })
-  vim.keymap.set('n', '<Leader>G', function() M.grep() end,      { desc = 'picker: grep' })
+  vim.keymap.set('n', '<Leader>f', function() M.files() end, { desc = 'picker: files' })
+  vim.keymap.set('n', '<Leader>b', function() M.buffers() end, { desc = 'picker: buffers' })
+  vim.keymap.set('n', '<Leader>G', function() M.grep() end, { desc = 'picker: grep' })
   vim.keymap.set('n', '<Leader>l', function() M.buf_lines() end, { desc = 'picker: buf_lines' })
 end
 

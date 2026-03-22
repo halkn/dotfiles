@@ -2,25 +2,44 @@ local M = {}
 
 -- Mode label map
 local mode_map = {
-  ['n'] = 'NORMAL',   ['no'] = 'OP-PEND',  ['nov'] = 'OP-PEND',
-  ['noV'] = 'OP-PEND', ['no\22'] = 'OP-PEND',
-  ['v'] = 'VISUAL',   ['vs'] = 'VISUAL',
-  ['V'] = 'V-LINE',   ['Vs'] = 'V-LINE',
-  ['\22'] = 'V-BLOCK', ['\22s'] = 'V-BLOCK',
-  ['s'] = 'SELECT',   ['S'] = 'S-LINE',    ['\19'] = 'S-BLOCK',
-  ['i'] = 'INSERT',   ['ic'] = 'INSERT',   ['ix'] = 'INSERT',
-  ['R'] = 'REPLACE',  ['Rc'] = 'REPLACE',  ['Rv'] = 'V-REPLACE',
-  ['c'] = 'COMMAND',  ['t'] = 'TERMINAL',
+  ['n'] = 'NORMAL',
+  ['no'] = 'OP-PEND',
+  ['nov'] = 'OP-PEND',
+  ['noV'] = 'OP-PEND',
+  ['no\22'] = 'OP-PEND',
+  ['v'] = 'VISUAL',
+  ['vs'] = 'VISUAL',
+  ['V'] = 'V-LINE',
+  ['Vs'] = 'V-LINE',
+  ['\22'] = 'V-BLOCK',
+  ['\22s'] = 'V-BLOCK',
+  ['s'] = 'SELECT',
+  ['S'] = 'S-LINE',
+  ['\19'] = 'S-BLOCK',
+  ['i'] = 'INSERT',
+  ['ic'] = 'INSERT',
+  ['ix'] = 'INSERT',
+  ['R'] = 'REPLACE',
+  ['Rc'] = 'REPLACE',
+  ['Rv'] = 'V-REPLACE',
+  ['c'] = 'COMMAND',
+  ['t'] = 'TERMINAL',
 }
 
 local function mode_hlname(m)
   local c = m:sub(1, 1)
-  if c == 'i' then return 'SLModeInsert'
-  elseif c == 'v' or c == 'V' or m == '\22' then return 'SLModeVisual'
-  elseif c == 'R' then return 'SLModeReplace'
-  elseif c == 'c' then return 'SLModeCommand'
-  elseif c == 't' then return 'SLModeTerminal'
-  else return 'SLModeNormal'
+  if c == 'i' then
+    return 'SLModeInsert'
+  elseif c == 'v' or c == 'V' or m == '\22' then
+    return 'SLModeVisual'
+  elseif c == 'R' then
+    return 'SLModeReplace'
+  elseif c == 'c' then
+    return 'SLModeCommand'
+  elseif c == 't' then
+    return 'SLModeTerminal'
+  else
+    return 'SLModeNormal'
   end
 end
 
@@ -72,16 +91,16 @@ local function update_git(bufnr)
               -- porcelain v2 untracked: "? <path>"
               untracked = untracked + 1
               local path = line:sub(3)
-              if file_tail:sub(-#path - 1) == '/' .. path then
+              if file_tail:sub(- #path - 1) == '/' .. path then
                 file_state = 'untracked'
               end
             elseif t == '1' then
               -- porcelain v2 ordinary change: "1 XY <sub> <mH> <mI> <mW> <hH> <hI> <path>"
               local x, y, path = line:match('^1 (.)(.) %S+ %S+ %S+ %S+ %S+ %S+ (.+)$')
               if x then
-                if x ~= '.' then staged   = staged   + 1 end
+                if x ~= '.' then staged = staged + 1 end
                 if y ~= '.' then unstaged = unstaged + 1 end
-                if path and file_tail:sub(-#path - 1) == '/' .. path then
+                if path and file_tail:sub(- #path - 1) == '/' .. path then
                   file_state = 'dirty'
                 end
               end
@@ -89,11 +108,11 @@ local function update_git(bufnr)
               -- porcelain v2 renamed/copied: "2 XY <sub> <mH> <mI> <mW> <hH> <hI> <X><score> <new>\t<orig>"
               local x, y, paths = line:match('^2 (.)(.) %S+ %S+ %S+ %S+ %S+ %S+ %S+ (.+)$')
               if x then
-                if x ~= '.' then staged   = staged   + 1 end
+                if x ~= '.' then staged = staged + 1 end
                 if y ~= '.' then unstaged = unstaged + 1 end
                 -- paths is "new\torig"; current worktree file is the new name
                 local new_path = paths:match('^([^\t]+)')
-                if new_path and file_tail:sub(-#new_path - 1) == '/' .. new_path then
+                if new_path and file_tail:sub(- #new_path - 1) == '/' .. new_path then
                   file_state = 'dirty'
                 end
               end
@@ -101,9 +120,9 @@ local function update_git(bufnr)
           end
         end
         git_cache[bufnr] = {
-          staged    = staged,
-          unstaged  = unstaged,
-          untracked = untracked,
+          staged     = staged,
+          unstaged   = unstaged,
+          untracked  = untracked,
           file_state = file_state,
         }
         vim.cmd.redrawstatus()
@@ -120,8 +139,8 @@ local function section_git()
   local gc = git_cache[vim.api.nvim_get_current_buf()]
   local parts = {}
   if gc then
-    if gc.staged    > 0 then table.insert(parts, string.format('%%#SLGitStaged#+%d',    gc.staged))    end
-    if gc.unstaged  > 0 then table.insert(parts, string.format('%%#SLGitDirty#~%d',     gc.unstaged))  end
+    if gc.staged > 0 then table.insert(parts, string.format('%%#SLGitStaged#+%d', gc.staged)) end
+    if gc.unstaged > 0 then table.insert(parts, string.format('%%#SLGitDirty#~%d', gc.unstaged)) end
     if gc.untracked > 0 then table.insert(parts, string.format('%%#SLGitUntracked#?%d', gc.untracked)) end
   end
   local suffix = #parts > 0 and (' ' .. table.concat(parts, ' ')) or ''
@@ -143,10 +162,10 @@ local function section_file()
   if name == '' then name = '[No Name]' end
   local modified = vim.bo.modified and ' [+]' or ''
   local readonly = (not vim.bo.modifiable or vim.bo.readonly) and ' [RO]' or ''
-  local gc = git_cache[vim.api.nvim_get_current_buf()]
-  local state = gc and gc.file_state or nil
-  local hl  = file_state_hl[state]  or 'SLFile'
-  local icon = file_state_icon[state] or ''
+  local gc       = git_cache[vim.api.nvim_get_current_buf()]
+  local state    = gc and gc.file_state or nil
+  local hl       = file_state_hl[state] or 'SLFile'
+  local icon     = file_state_icon[state] or ''
   return string.format('%%#%s# %s%s%s%s %%#StatusLine#', hl, name, modified, readonly, icon)
 end
 
@@ -208,29 +227,29 @@ local function setup_highlights()
   local sl = vim.api.nvim_get_hl(0, { name = 'StatusLine', link = false })
   local bg = sl.bg or 0x21252b
 
-  set_hl(0, 'SLModeNormal',    { fg = 0x21252b, bg = 0x61afef, bold = true })
-  set_hl(0, 'SLModeInsert',    { fg = 0x21252b, bg = 0x98c379, bold = true })
-  set_hl(0, 'SLModeVisual',    { fg = 0x21252b, bg = 0xe5c07b, bold = true })
-  set_hl(0, 'SLModeReplace',   { fg = 0x21252b, bg = 0xe06c75, bold = true })
-  set_hl(0, 'SLModeCommand',   { fg = 0x21252b, bg = 0xc678dd, bold = true })
-  set_hl(0, 'SLModeTerminal',  { fg = 0x21252b, bg = 0x56b6c2, bold = true })
-  set_hl(0, 'SLGit',           { fg = 0xabb2bf, bg = bg })
-  set_hl(0, 'SLGitStaged',     { fg = 0x98c379, bg = bg })
-  set_hl(0, 'SLGitDirty',      { fg = 0xe5c07b, bg = bg })
-  set_hl(0, 'SLGitUntracked',  { fg = 0x56b6c2, bg = bg })
-  set_hl(0, 'SLFile',          { fg = 0xabb2bf, bg = bg, bold = true })
-  set_hl(0, 'SLFileDirty',     { fg = 0xe5c07b, bg = bg, bold = true })
+  set_hl(0, 'SLModeNormal', { fg = 0x21252b, bg = 0x61afef, bold = true })
+  set_hl(0, 'SLModeInsert', { fg = 0x21252b, bg = 0x98c379, bold = true })
+  set_hl(0, 'SLModeVisual', { fg = 0x21252b, bg = 0xe5c07b, bold = true })
+  set_hl(0, 'SLModeReplace', { fg = 0x21252b, bg = 0xe06c75, bold = true })
+  set_hl(0, 'SLModeCommand', { fg = 0x21252b, bg = 0xc678dd, bold = true })
+  set_hl(0, 'SLModeTerminal', { fg = 0x21252b, bg = 0x56b6c2, bold = true })
+  set_hl(0, 'SLGit', { fg = 0xabb2bf, bg = bg })
+  set_hl(0, 'SLGitStaged', { fg = 0x98c379, bg = bg })
+  set_hl(0, 'SLGitDirty', { fg = 0xe5c07b, bg = bg })
+  set_hl(0, 'SLGitUntracked', { fg = 0x56b6c2, bg = bg })
+  set_hl(0, 'SLFile', { fg = 0xabb2bf, bg = bg, bold = true })
+  set_hl(0, 'SLFileDirty', { fg = 0xe5c07b, bg = bg, bold = true })
   set_hl(0, 'SLFileUntracked', { fg = 0x56b6c2, bg = bg, bold = true })
-  set_hl(0, 'SLDiagError',     { fg = 0xe06c75, bg = bg })
-  set_hl(0, 'SLDiagWarn',      { fg = 0xe5c07b, bg = bg })
-  set_hl(0, 'SLDiagHint',      { fg = 0x56b6c2, bg = bg })
-  set_hl(0, 'SLDiagInfo',      { fg = 0x61afef, bg = bg })
-  set_hl(0, 'SLInfo',          { fg = 0x5c6370, bg = bg })
-  set_hl(0, 'SLSep',           { fg = 0x3e4452, bg = bg })
+  set_hl(0, 'SLDiagError', { fg = 0xe06c75, bg = bg })
+  set_hl(0, 'SLDiagWarn', { fg = 0xe5c07b, bg = bg })
+  set_hl(0, 'SLDiagHint', { fg = 0x56b6c2, bg = bg })
+  set_hl(0, 'SLDiagInfo', { fg = 0x61afef, bg = bg })
+  set_hl(0, 'SLInfo', { fg = 0x5c6370, bg = bg })
+  set_hl(0, 'SLSep', { fg = 0x3e4452, bg = bg })
 end
 
 function M.setup()
-  vim.opt.statusline = '%!v:lua.require("statusline").get()'
+  vim.opt.statusline = '%!v:lua.require("modules/statusline").get()'
   setup_highlights()
 
   local grp = vim.api.nvim_create_augroup('statusline', { clear = true })
