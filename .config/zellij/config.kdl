@@ -1,0 +1,72 @@
+// zellij config
+
+default_shell "zsh"
+pane_frames false
+simplified_ui true
+mouse_mode true
+on_force_close "detach"
+
+show_startup_tips false
+
+theme "iceberg-dark"
+
+ui {
+    pane_frames {
+        hide_session_name true
+    }
+}
+
+keybinds clear-defaults=true {
+    normal {
+        // prefix: Ctrl-Space (Neovim との衝突を避ける)
+        bind "Ctrl Space" { SwitchToMode "Tmux"; }
+    }
+    tmux {
+        bind "Ctrl Space" { SwitchToMode "Normal"; }
+        bind "Esc" { SwitchToMode "Normal"; }
+        bind "-" { NewPane "Down"; SwitchToMode "Normal"; }
+        bind "|" { NewPane "Right"; SwitchToMode "Normal"; }
+        bind "c" { NewTab; SwitchToMode "Normal"; }
+        bind "x" { CloseFocus; SwitchToMode "Normal"; }
+        bind "h" { MoveFocus "Left"; SwitchToMode "Normal"; }
+        bind "j" { MoveFocus "Down"; SwitchToMode "Normal"; }
+        bind "k" { MoveFocus "Up"; SwitchToMode "Normal"; }
+        bind "l" { MoveFocus "Right"; SwitchToMode "Normal"; }
+        bind "H" { Resize "Increase Left"; SwitchToMode "Normal"; }
+        bind "J" { Resize "Increase Down"; SwitchToMode "Normal"; }
+        bind "K" { Resize "Increase Up"; SwitchToMode "Normal"; }
+        bind "L" { Resize "Increase Right"; SwitchToMode "Normal"; }
+        bind "n" { GoToNextTab; SwitchToMode "Normal"; }
+        bind "p" { GoToPreviousTab; SwitchToMode "Normal"; }
+        bind "d" { Detach; }
+        bind "z" { ToggleFocusFullscreen; SwitchToMode "Normal"; }
+        bind "[" { SwitchToMode "Scroll"; }
+        bind "s" { SwitchToMode "Session"; }
+    }
+    scroll {
+        bind "Esc" "q" { SwitchToMode "Normal"; }
+        bind "j" { ScrollDown; }
+        bind "k" { ScrollUp; }
+        bind "Ctrl d" { HalfPageScrollDown; }
+        bind "Ctrl u" { HalfPageScrollUp; }
+        bind "/" { SwitchToMode "EnterSearch"; SearchInput 0; }
+        bind "n" { Search "Down"; }
+        bind "N" { Search "Up"; }
+    }
+    entersearch {
+        bind "Esc" { SwitchToMode "Scroll"; }
+        bind "Enter" { SwitchToMode "Search"; }
+    }
+    search {
+        bind "Esc" { SwitchToMode "Normal"; }
+        bind "n" { Search "Down"; }
+        bind "N" { Search "Up"; }
+    }
+    session {
+        bind "Esc" { SwitchToMode "Normal"; }
+        bind "d" { Detach; }
+    }
+    shared_except "normal" "locked" {
+        bind "Ctrl Space" { SwitchToMode "Normal"; }
+    }
+}
