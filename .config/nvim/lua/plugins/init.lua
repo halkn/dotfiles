@@ -12,219 +12,32 @@ M.hooks = function(ev)
 end
 vim.api.nvim_create_autocmd('PackChanged', { callback = M.hooks })
 
--- plugins ------------------------------------------------------------------
-local au = vim.api.nvim_create_augroup("vimrc_augroup", { clear = true })
-M.specs = {
-  {
-    src = "nvim-treesitter/nvim-treesitter",
-    config = function()
-      vim.api.nvim_create_autocmd("FileType", {
-        group = vim.api.nvim_create_augroup("vim-treesitter-start", {}),
-        callback = function()
-          pcall(vim.treesitter.start)
-        end,
-      })
-    end
-  },
-  {
-    src = "navarasu/onedark.nvim",
-    config = function()
-      require('onedark').setup {
-        style = 'darker'
-      }
-      require('onedark').load()
-    end
-  },
-  {
-    src = 'nvim-mini/mini.nvim',
-    config = function()
-      -- Appearance
-      require('mini.cursorword').setup()
-      require('mini.notify').setup()
-      vim.notify = require('mini.notify').make_notify({})
-
-      -- Text editing
-      require('mini.align').setup()
-      require('mini.jump').setup()
-      require('mini.operators').setup({
-        replace = { prefix = 'R' },
-        exchange = { prefix = 'g/' },
-      })
-      vim.keymap.set('n', 'RR', 'R', { desc = 'Replace mode' })
-      require('mini.pairs').setup({
-        mappings = {
-          ['('] = { action = 'open', pair = '()', neigh_pattern = '[^\\].' },
-          ['['] = { action = 'open', pair = '[]', neigh_pattern = '[^\\].' },
-          ['{'] = { action = 'open', pair = '{}', neigh_pattern = '[^\\].' },
-          ['<'] = { action = 'open', pair = '<>', neigh_pattern = '[^\\].' },
-          [')'] = { action = 'close', pair = '()', neigh_pattern = '[^\\].' },
-          [']'] = { action = 'close', pair = '[]', neigh_pattern = '[^\\].' },
-          ['}'] = { action = 'close', pair = '{}', neigh_pattern = '[^\\].' },
-          ['>'] = { action = 'close', pair = '<>', neigh_pattern = '[^\\].' },
-          ['"'] = { action = 'closeopen', pair = '""', neigh_pattern = '[^\\].', register = { cr = false } },
-          ["'"] = { action = 'closeopen', pair = "''", neigh_pattern = '[^%a\\].', register = { cr = false } },
-          ['`'] = { action = 'closeopen', pair = '``', neigh_pattern = '[^\\].', register = { cr = false } },
-        },
-      })
-      vim.keymap.set('i', '<C-h>', '<BS>')
-      require('mini.splitjoin').setup({ mappings = { toggle = '<Leader>j' } })
-      require('mini.surround').setup()
-
-      -- General workflow
-      require('mini.bufremove').setup()
-      require('mini.diff').setup({
-        view = {
-          style = 'sign',
-          signs = { add = '+', change = '~', delete = '-' }
-        },
-        mappings = {
-          goto_first = '[C',
-          goto_prev = '[c',
-          goto_next = ']c',
-          goto_last = ']C',
-        }
-      })
-      require('mini.git').setup({})
-      require('mini.files').setup()
-      vim.api.nvim_create_user_command(
-        'Files',
-        function()
-          MiniFiles.open()
-        end,
-        { desc = 'Open file explorer' }
-      )
-    end
-  },
-  {
-    src = "monaqa/dial.nvim",
-    config = function()
-      local augend = require("dial.augend")
-      require("dial.config").augends:register_group({
-        default = {
-          augend.integer.alias.decimal,
-          augend.integer.alias.hex,
-          augend.constant.alias.bool,
-          augend.date.alias["%Y/%m/%d"],
-          augend.date.alias["%Y-%m-%d"],
-          augend.date.alias["%H:%M"],
-          augend.date.alias["%Y年%-m月%-d日"],
-          augend.date.alias["%Y年%-m月%-d日(%ja)"],
-          augend.constant.alias.ja_weekday,
-          augend.constant.alias.ja_weekday_full,
-        },
-      })
-      vim.keymap.set({ "n", "x" }, "<C-a>", "<Plug>(dial-increment)")
-      vim.keymap.set({ "n", "x" }, "<C-x>", "<Plug>(dial-decrement)")
-      vim.keymap.set({ "n", "x" }, "g<C-a>", "g<Plug>(dial-increment)")
-      vim.keymap.set({ "n", "x" }, "g<C-x>", "g<Plug>(dial-decrement)")
-    end
-  },
-  {
-    src = "gbprod/yanky.nvim",
-    config = function()
-      require("yanky").setup({})
-      vim.keymap.set({ "n", "v" }, "p", "<Plug>(YankyPutAfter)")
-      vim.keymap.set({ "n", "v" }, "P", "<Plug>(YankyPutBefore)")
-      vim.keymap.set({ "n", "v" }, "gp", "<Plug>(YankyGPutAfter)")
-      vim.keymap.set({ "n", "v" }, "gP", "<Plug>(YankyGPutBefore)")
-      vim.keymap.set({ "n" }, "<c-p>", "<Plug>(YankyPreviousEntry)")
-      vim.keymap.set({ "n" }, "<c-n>", "<Plug>(YankyNextEntry)")
-      vim.keymap.set({ "n" }, "<Leader>y", "<CMD>YankyRingHistory<CR>")
-    end
-  },
-  {
-    src = "saghen/blink.cmp",
-    version = "v1.10.1",
-    config = function()
-      require("blink.cmp").setup({
-        keymap = {
-          preset = 'super-tab',
-        },
-        cmdline = { enabled = true },
-        appearance = {
-          nerd_font_variant = 'mono'
-        },
-        signature = { enabled = true },
-        completion = {
-          documentation = { auto_show = true, auto_show_delay_ms = 500 },
-        },
-        sources = {
-          default = { 'lsp', 'path', 'snippets', 'buffer' },
-        },
-      })
-    end
-  },
-  {
-    src = "mfussenegger/nvim-lint",
-    config = function()
-      local lint = require("lint")
-      lint.linters_by_ft = {
-        markdown = { "markdownlint-cli2" },
-      }
-
-      vim.api.nvim_create_autocmd("BufWritePost", {
-        group = au,
-        pattern = { "*.md" },
-        callback = function()
-          lint.try_lint()
-        end
-      })
-    end
-  },
-  {
-    src = "stevearc/conform.nvim",
-    config = function()
-      require("conform").setup({
-        formatters_by_ft = {
-          markdown = { "markdownlint-cli2" }
-        },
-        default_format_opts = {
-          lsp_format = "fallback",
-        },
-        format_on_save = {
-          timeout_ms = 500,
-          lsp_format = "fallback",
-        },
-      })
-
-      vim.api.nvim_create_autocmd("FileType", {
-        group = au,
-        pattern = { "markdown" },
-        callback = function(ev)
-          vim.keymap.set(
-            "n",
-            "<LocalLeader>f",
-            function() require("conform").format({ bufnr = ev.buf }) end,
-            { noremap = true, silent = true, buffer = ev.buf }
-          )
-        end
-      })
-    end
-  },
-  {
-    src = "halkn/nvim-markview",
-    config = function()
-      require("markview").setup({
-        keymaps = {
-          toggle = "<localleader>p",
-        },
-      })
-    end
-  },
-}
-
 -- load plugins -------------------------------------------------------------
--- add plugins.
-vim.pack.add(vim.tbl_map(function(p)
-  return { src = 'https://github.com/' .. p.src, version = p.version }
-end, M.specs))
+local plugs = {}
+for _, f in ipairs(vim.fn.glob(vim.fn.stdpath("config") .. "/lua/plugins/*.lua", false, true)) do
+  local name = vim.fn.fnamemodify(f, ":t:r")
+  if name ~= "init" then
+    local ok, spec = pcall(require, "plugins." .. name)
+    if ok and spec.src then
+      table.insert(plugs, spec)
+    elseif not ok then
+      vim.notify("[plugins] " .. name .. ": " .. spec, vim.log.levels.WARN)
+    end
+  end
+end
 
--- load config.
-for _, p in ipairs(M.specs) do
-  if p.config then
-    local ok, err = pcall(p.config)
+
+-- vim.pack.add
+vim.pack.add(vim.tbl_map(function(s)
+  return { src = "https://github.com/" .. s.src, version = s.version }
+end, plugs))
+
+-- config load
+for _, s in ipairs(plugs) do
+  if s.config then
+    local ok, err = pcall(s.config)
     if not ok then
-      vim.notify("Plugin config error [" .. p.src .. "]: " .. tostring(err), vim.log.levels.ERROR)
+      vim.notify("[plugins] " .. s.src .. ": " .. err, vim.log.levels.WARN)
     end
   end
 end
