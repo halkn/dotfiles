@@ -97,6 +97,7 @@ opt.pumborder = "rounded"
 
 -- other
 opt.clipboard = "unnamedplus"
+opt.updatetime = 250
 
 -- grep
 if vim.fn.executable("rg") == 1 then

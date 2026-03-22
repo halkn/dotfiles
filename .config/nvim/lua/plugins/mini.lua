@@ -1,11 +1,6 @@
 return {
   src = 'nvim-mini/mini.nvim',
   config = function()
-    -- Appearance
-    require('mini.cursorword').setup()
-    require('mini.notify').setup()
-    vim.notify = require('mini.notify').make_notify({})
-
     -- Text editing
     require('mini.align').setup()
     require('mini.jump').setup()
@@ -34,7 +29,6 @@ return {
     require('mini.surround').setup()
 
     -- General workflow
-    require('mini.bufremove').setup()
     require('mini.diff').setup({
       view = {
         style = 'sign',
