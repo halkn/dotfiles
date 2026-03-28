@@ -1,32 +1,78 @@
 #!/bin/sh
-# Claude Code status line - inspired by Starship prompt configuration
+# Claude Code status line
 
 input=$(cat)
 
+# Colors
+GREEN='\033[38;2;98;198;99m'
+YELLOW='\033[38;2;229;192;123m'
+RED='\033[38;2;224;108;117m'
+DIM='\033[2m'
+R='\033[0m'
+
+color_for_pct() {
+  pct=$1
+  if [ "$pct" -ge 80 ]; then
+    printf '%s' "$RED"
+  elif [ "$pct" -ge 50 ]; then
+    printf '%s' "$YELLOW"
+  else
+    printf '%s' "$GREEN"
+  fi
+}
+
+# Braille progress bar (8 segments)
+# BRAILLE: ' ⣀⣄⣤⣦⣶⣷⣿' (indices 0-7)
+braille_bar() {
+  pct=$1
+  width=8
+  # Clamp 0-100
+  [ "$pct" -lt 0 ] && pct=0
+  [ "$pct" -gt 100 ] && pct=100
+
+  bar=''
+  i=0
+  while [ $i -lt $width ]; do
+    # seg_start = i * 100 / width, seg_end = (i+1) * 100 / width  (integer math, *100 to avoid floats)
+    seg_start=$((i * 100 / width))
+    seg_end=$(((i + 1) * 100 / width))
+
+    if [ "$pct" -ge "$seg_end" ]; then
+      bar="${bar}⣿"
+    elif [ "$pct" -le "$seg_start" ]; then
+      bar="${bar} "
+    else
+      frac=$(( (pct - seg_start) * 7 / (seg_end - seg_start) ))
+      case $frac in
+        0) bar="${bar} "  ;;
+        1) bar="${bar}⣀" ;;
+        2) bar="${bar}⣄" ;;
+        3) bar="${bar}⣤" ;;
+        4) bar="${bar}⣦" ;;
+        5) bar="${bar}⣶" ;;
+        6) bar="${bar}⣷" ;;
+        *) bar="${bar}⣿" ;;
+      esac
+    fi
+    i=$((i + 1))
+  done
+
+  printf '%s' "$bar"
+}
+
+fmt() {
+  label=$1
+  pct=$2
+  pct_int=$(printf '%.0f' "$pct" 2>/dev/null || echo "${pct%%.*}")
+  col=$(color_for_pct "$pct_int")
+  bar=$(braille_bar "$pct_int")
+  printf '%b%s%b %b%s%b %d%%' "$DIM" "$label" "$R" "$col" "$bar" "$R" "$pct_int"
+}
+
 cwd=$(echo "$input" | jq -r '.workspace.current_dir // .cwd // empty')
-model=$(echo "$input" | jq -r '.model.display_name // empty')
-used_pct=$(echo "$input" | jq -r '.context_window.used_percentage // empty')
+model=$(echo "$input" | jq -r '.model.display_name // "Claude"')
 
-# User and host
-user=$(whoami)
-host=$(hostname -s)
-
-# Directory: show ~ for home
-if [ -n "$cwd" ]; then
-  home="$HOME"
-  case "$cwd" in
-    "$home"*) dir="~${cwd#$home}" ;;
-    *) dir="$cwd" ;;
-  esac
-else
-  dir=$(pwd)
-  home="$HOME"
-  case "$dir" in
-    "$home"*) dir="~${dir#$home}" ;;
-  esac
-fi
-
-# Git branch (matching Starship's git_branch module)
+# Git branch
 git_branch=""
 if git_ref=$(git -C "${cwd:-$(pwd)}" symbolic-ref --short HEAD 2>/dev/null); then
   git_branch=" $git_ref"
@@ -34,7 +80,7 @@ elif git_ref=$(git -C "${cwd:-$(pwd)}" rev-parse --short HEAD 2>/dev/null); then
   git_branch=" $git_ref"
 fi
 
-# Git status indicators (matching Starship's git_status module)
+# Git status indicators
 git_status_str=""
 if [ -n "$git_branch" ]; then
   git_dir="${cwd:-$(pwd)}"
@@ -54,22 +100,34 @@ if [ -n "$git_branch" ]; then
   [ -n "$markers" ] && git_status_str=" ($markers)"
 fi
 
-# Context usage
-ctx_str=""
-if [ -n "$used_pct" ]; then
-  ctx_str=" ctx:${used_pct}%"
+parts="$model"
+
+ctx=$(echo "$input" | jq -r '.context_window.used_percentage // empty')
+if [ -n "$ctx" ]; then
+  parts="${parts} ${DIM}│${R} $(fmt 'ctx' "$ctx")"
 fi
 
-# Model (short name)
-model_str=""
-if [ -n "$model" ]; then
-  model_str=" $model"
+five=$(echo "$input" | jq -r '.rate_limits.five_hour.used_percentage // empty')
+if [ -n "$five" ]; then
+  parts="${parts} ${DIM}│${R} $(fmt '5h' "$five")"
 fi
 
-# Build output using printf with ANSI colors (dimmed-friendly)
-printf "\033[32m%s@%s\033[0m \033[34m%s\033[0m\033[90m%s%s\033[0m\033[33m%s\033[0m\033[36m%s\033[0m" \
-  "$user" "$host" \
-  "$dir" \
-  "$git_branch" "$git_status_str" \
-  "$ctx_str" \
-  "$model_str"
+week=$(echo "$input" | jq -r '.rate_limits.seven_day.used_percentage // empty')
+if [ -n "$week" ]; then
+  parts="${parts} ${DIM}│${R} $(fmt '7d' "$week")"
+fi
+
+lines_added=$(echo "$input" | jq -r '.cost.total_lines_added // empty')
+lines_removed=$(echo "$input" | jq -r '.cost.total_lines_removed // empty')
+
+if [ -n "$git_branch" ]; then
+  parts="${parts} ${DIM}│${R}\033[90m${git_branch}${git_status_str}\033[0m"
+fi
+
+if [ -n "$lines_added" ] || [ -n "$lines_removed" ]; then
+  added=${lines_added:-0}
+  removed=${lines_removed:-0}
+  parts="${parts} ${DIM}│${R} \033[38;2;98;198;99m+${added}\033[0m\033[90m/\033[0m\033[38;2;224;108;117m-${removed}\033[0m"
+fi
+
+printf '%b' " $parts"
