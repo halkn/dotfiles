@@ -25,7 +25,7 @@
     ],
     "defaultMode": "acceptEdits"
   },
-  "autoUpdatesChannel": "stable",
+  "autoUpdatesChannel": "latest",
   "language": "日本語",
   "statusLine": {
     "type": "command",
