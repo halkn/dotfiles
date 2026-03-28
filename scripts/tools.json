@@ -1,0 +1,37 @@
+{
+  "tools": [
+    {
+      "name": "neovim",
+      "kind": "github_release",
+      "repo": "neovim/neovim",
+      "tag": "nightly",
+      "bin": "nvim",
+      "archive": {
+        "type": "tar.gz",
+        "strip_components": 1,
+        "install_dir": "$HOME/.local/opt/neovim",
+        "bin_path": "bin/nvim"
+      },
+      "assets": {
+        "Linux-x86_64": "nvim-linux-x86_64.tar.gz",
+        "Darwin-arm64": "nvim-macos-arm64.tar.gz",
+        "Darwin-x86_64": "nvim-macos-x86_64.tar.gz"
+      }
+    },
+    {
+      "name": "tree-sitter",
+      "kind": "github_release",
+      "repo": "tree-sitter/tree-sitter",
+      "tag": "latest",
+      "bin": "tree-sitter",
+      "archive": {
+        "type": "gz"
+      },
+      "assets": {
+        "Linux-x86_64": "tree-sitter-linux-x64.gz",
+        "Darwin-arm64": "tree-sitter-macos-arm64.gz",
+        "Darwin-x86_64": "tree-sitter-macos-x64.gz"
+      }
+    }
+  ]
+}
