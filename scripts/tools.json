@@ -7,15 +7,14 @@
       "tag": "nightly",
       "bin": "nvim",
       "archive": {
-        "type": "tar.gz",
         "strip_components": 1,
         "install_dir": "$HOME/.local/opt/neovim",
         "bin_path": "bin/nvim"
       },
-      "assets": {
-        "Linux-x86_64": "nvim-linux-x86_64.tar.gz",
-        "Darwin-arm64": "nvim-macos-arm64.tar.gz",
-        "Darwin-x86_64": "nvim-macos-x86_64.tar.gz"
+      "asset_patterns": {
+        "Linux-x86_64": "nvim-linux-x86_64\\.tar\\.gz$",
+        "Darwin-arm64": "nvim-macos-arm64\\.tar\\.gz$",
+        "Darwin-x86_64": "nvim-macos-x86_64\\.tar\\.gz$"
       }
     },
     {
@@ -24,13 +23,182 @@
       "repo": "tree-sitter/tree-sitter",
       "tag": "latest",
       "bin": "tree-sitter",
+      "asset_patterns": {
+        "Linux-x86_64": "tree-sitter-linux-x64\\.gz$",
+        "Darwin-arm64": "tree-sitter-macos-arm64\\.gz$",
+        "Darwin-x86_64": "tree-sitter-macos-x64\\.gz$"
+      }
+    },
+    {
+      "name": "ripgrep",
+      "kind": "github_release",
+      "repo": "BurntSushi/ripgrep",
+      "tag": "latest",
+      "bin": "rg",
       "archive": {
-        "type": "gz"
+        "strip_components": 1,
+        "bin_path": "rg"
       },
-      "assets": {
-        "Linux-x86_64": "tree-sitter-linux-x64.gz",
-        "Darwin-arm64": "tree-sitter-macos-arm64.gz",
-        "Darwin-x86_64": "tree-sitter-macos-x64.gz"
+      "asset_patterns": {
+        "Linux-x86_64": "ripgrep-.*-x86_64-unknown-linux-musl\\.tar\\.gz$",
+        "Darwin-arm64": "ripgrep-.*-aarch64-apple-darwin\\.tar\\.gz$",
+        "Darwin-x86_64": "ripgrep-.*-x86_64-apple-darwin\\.tar\\.gz$"
+      }
+    },
+    {
+      "name": "fd",
+      "kind": "github_release",
+      "repo": "sharkdp/fd",
+      "tag": "latest",
+      "bin": "fd",
+      "archive": {
+        "strip_components": 1,
+        "bin_path": "fd"
+      },
+      "asset_patterns": {
+        "Linux-x86_64": "fd-.*-x86_64-unknown-linux-musl\\.tar\\.gz$",
+        "Darwin-arm64": "fd-.*-aarch64-apple-darwin\\.tar\\.gz$",
+        "Darwin-x86_64": "fd-.*-x86_64-apple-darwin\\.tar\\.gz$"
+      }
+    },
+    {
+      "name": "fzf",
+      "kind": "github_release",
+      "repo": "junegunn/fzf",
+      "tag": "latest",
+      "bin": "fzf",
+      "archive": {
+        "strip_components": 0,
+        "bin_path": "fzf"
+      },
+      "asset_patterns": {
+        "Linux-x86_64": "fzf-.*-linux_amd64\\.tar\\.gz$",
+        "Darwin-arm64": "fzf-.*-darwin_arm64\\.tar\\.gz$",
+        "Darwin-x86_64": "fzf-.*-darwin_amd64\\.tar\\.gz$"
+      }
+    },
+    {
+      "name": "eza",
+      "kind": "github_release",
+      "repo": "eza-community/eza",
+      "tag": "latest",
+      "bin": "eza",
+      "archive": {
+        "strip_components": 0,
+        "bin_path": "eza"
+      },
+      "asset_patterns": {
+        "Linux-x86_64": "eza_x86_64-unknown-linux-musl\\.tar\\.gz$"
+      }
+    },
+    {
+      "name": "delta",
+      "kind": "github_release",
+      "repo": "dandavison/delta",
+      "tag": "latest",
+      "bin": "delta",
+      "archive": {
+        "strip_components": 1,
+        "bin_path": "delta"
+      },
+      "asset_patterns": {
+        "Linux-x86_64": "delta-.*-x86_64-unknown-linux-musl\\.tar\\.gz$",
+        "Darwin-arm64": "delta-.*-aarch64-apple-darwin\\.tar\\.gz$"
+      }
+    },
+    {
+      "name": "ghq",
+      "kind": "github_release",
+      "repo": "x-motemen/ghq",
+      "tag": "latest",
+      "bin": "ghq",
+      "asset_patterns": {
+        "Linux-x86_64": "ghq_linux_amd64\\.zip$",
+        "Darwin-arm64": "ghq_darwin_arm64\\.zip$",
+        "Darwin-x86_64": "ghq_darwin_amd64\\.zip$"
+      }
+    },
+    {
+      "name": "gh",
+      "kind": "github_release",
+      "repo": "cli/cli",
+      "tag": "latest",
+      "bin": "gh",
+      "archive": {
+        "strip_components": 1,
+        "bin_path": "bin/gh"
+      },
+      "asset_patterns": {
+        "Linux-x86_64": "gh_.*_linux_amd64\\.tar\\.gz$",
+        "Darwin-arm64": "gh_.*_macOS_arm64\\.zip$",
+        "Darwin-x86_64": "gh_.*_macOS_amd64\\.zip$"
+      }
+    },
+    {
+      "name": "starship",
+      "kind": "installer",
+      "url": "https://starship.rs/install.sh",
+      "args": ["--yes", "--bin-dir", "$HOME/.local/bin"]
+    },
+    {
+      "name": "zellij",
+      "kind": "github_release",
+      "repo": "zellij-org/zellij",
+      "tag": "latest",
+      "bin": "zellij",
+      "archive": {
+        "strip_components": 0,
+        "bin_path": "zellij"
+      },
+      "asset_patterns": {
+        "Linux-x86_64": "zellij-x86_64-unknown-linux-musl\\.tar\\.gz$",
+        "Darwin-arm64": "zellij-aarch64-apple-darwin\\.tar\\.gz$",
+        "Darwin-x86_64": "zellij-x86_64-apple-darwin\\.tar\\.gz$"
+      }
+    },
+    {
+      "name": "lua-language-server",
+      "kind": "github_release",
+      "repo": "LuaLS/lua-language-server",
+      "tag": "latest",
+      "bin": "lua-language-server",
+      "archive": {
+        "strip_components": 0,
+        "install_dir": "$HOME/.local/opt/lua-language-server",
+        "bin_path": "bin/lua-language-server"
+      },
+      "asset_patterns": {
+        "Linux-x86_64": "lua-language-server-.*-linux-x64\\.tar\\.gz$",
+        "Darwin-arm64": "lua-language-server-.*-darwin-arm64\\.tar\\.gz$",
+        "Darwin-x86_64": "lua-language-server-.*-darwin-x64\\.tar\\.gz$"
+      }
+    },
+    {
+      "name": "shfmt",
+      "kind": "github_release",
+      "repo": "mvdan/sh",
+      "tag": "latest",
+      "bin": "shfmt",
+      "asset_patterns": {
+        "Linux-x86_64": "shfmt_.*_linux_amd64$",
+        "Darwin-arm64": "shfmt_.*_darwin_arm64$",
+        "Darwin-x86_64": "shfmt_.*_darwin_amd64$"
+      }
+    },
+    {
+      "name": "shellcheck",
+      "kind": "github_release",
+      "repo": "koalaman/shellcheck",
+      "tag": "latest",
+      "bin": "shellcheck",
+      "archive": {
+        "strip_components": 1,
+        "bin_path": "shellcheck"
+      },
+      "asset_patterns": {
+        "Linux-x86_64": "shellcheck-.*\\.linux\\.x86_64\\.tar\\.gz$",
+        "Darwin-arm64": "shellcheck-.*\\.darwin\\.aarch64\\.tar\\.gz$",
+        "Darwin-x86_64": "shellcheck-.*\\.darwin\\.x86_64\\.tar\\.gz$"
       }
     }
   ]
