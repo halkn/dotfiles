@@ -12,7 +12,6 @@ import argparse
 import copy
 import gzip
 import json
-import lzma
 import os
 import platform
 import re
@@ -138,7 +137,9 @@ def _strip_top_component(members: list[tarfile.TarInfo]) -> Iterator[tarfile.Tar
         yield m2
 
 
-def _extract_binary_from_tar(archive: Path, bin_name: str, dest: Path, xz: bool = False) -> None:
+def _extract_binary_from_tar(
+    archive: Path, bin_name: str, dest: Path, xz: bool = False
+) -> None:
     opener = tarfile.open(archive, "r:xz") if xz else tarfile.open(archive, "r:gz")
     with opener as tf:
         for member in tf.getmembers():
@@ -165,7 +166,11 @@ def _install_tar(spec: ToolSpec, url: str, client: httpx.Client) -> None:
 
         try:
             with tarfile.open(tmp_path, "r:gz") as tf:
-                tf.extractall(opt_dir, members=list(_strip_top_component(tf.getmembers())), filter="data")
+                tf.extractall(
+                    opt_dir,
+                    members=list(_strip_top_component(tf.getmembers())),
+                    filter="data",
+                )
         except Exception:
             if backup.exists():
                 shutil.rmtree(opt_dir, ignore_errors=True)
@@ -182,7 +187,9 @@ def _install_tar(spec: ToolSpec, url: str, client: httpx.Client) -> None:
     bin_link.symlink_to(bin_source)
 
 
-def _install_tar_binary(spec: ToolSpec, url: str, client: httpx.Client, xz: bool = False) -> None:
+def _install_tar_binary(
+    spec: ToolSpec, url: str, client: httpx.Client, xz: bool = False
+) -> None:
     suffix = ".tar.xz" if xz else ".tar.gz"
     with tempfile.TemporaryDirectory() as tmpdir:
         tmp_path = Path(tmpdir) / f"archive{suffix}"
@@ -223,7 +230,9 @@ def _install_zip_binary(spec: ToolSpec, url: str, client: httpx.Client) -> None:
                     data = zf.read(info.filename)
                     dest = BIN_DIR / spec.bin
                     dest.write_bytes(data)
-                    dest.chmod(dest.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+                    dest.chmod(
+                        dest.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
+                    )
                     return
     raise FileNotFoundError(f"{spec.bin} not found in zip archive")
 
@@ -280,7 +289,9 @@ def do_install(spec: ToolSpec, client: httpx.Client) -> None:
         console.print(f"  [red]Failed: {e}[/red]")
 
 
-def cmd_install(tools: list[ToolSpec], target: str | None, client: httpx.Client) -> None:
+def cmd_install(
+    tools: list[ToolSpec], target: str | None, client: httpx.Client
+) -> None:
     targets = [t for t in tools if target is None or t.name == target]
     if not targets:
         console.print(f"[red]Tool not found: {target}[/red]")
@@ -288,7 +299,9 @@ def cmd_install(tools: list[ToolSpec], target: str | None, client: httpx.Client)
     for spec in targets:
         installed = get_installed_version(spec)
         if installed is not None and target is None:
-            console.print(f"[dim]  {spec.name}: already installed ({installed}), skipping[/dim]")
+            console.print(
+                f"[dim]  {spec.name}: already installed ({installed}), skipping[/dim]"
+            )
             continue
         do_install(spec, client)
 
@@ -334,7 +347,9 @@ def cmd_check(tools: list[ToolSpec], client: httpx.Client) -> None:
             continue
 
         if spec.version == "nightly":
-            table.add_row(spec.name, installed_str, "nightly", "[dim]always latest[/dim]")
+            table.add_row(
+                spec.name, installed_str, "nightly", "[dim]always latest[/dim]"
+            )
             continue
 
         try:
@@ -362,7 +377,9 @@ def main() -> None:
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    p_install = subparsers.add_parser("install", help="Install tools (skip if already installed)")
+    p_install = subparsers.add_parser(
+        "install", help="Install tools (skip if already installed)"
+    )
     p_install.add_argument("tool", nargs="?", help="Tool name (default: all)")
 
     p_update = subparsers.add_parser("update", help="Update tools to latest version")
