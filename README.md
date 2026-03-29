@@ -13,6 +13,11 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Install all tools
 uv run scripts/tools.py install
+
+# See: https://docs.deno.com/runtime/getting_started/installation/
+curl -fsSL https://deno.land/install.sh | sh
+deno install -g -A --name markdownlint-cli2 npm:markdownlint-cli2
+deno install -g -A --name bash-language-server npm:bash-language-server
 ```
 
 ## Tool Manager
