@@ -208,6 +208,14 @@
       "version_regex": "uv ([\\d.]+)"
     },
     {
+      "name": "markdownlint-cli2",
+      "bin": "markdownlint-cli2",
+      "type": "installer",
+      "command": "npm install -g markdownlint-cli2",
+      "version_cmd": ["markdownlint-cli2", "--version"],
+      "version_regex": "markdownlint-cli2 v([\\d.]+)"
+    },
+    {
       "name": "claude",
       "bin": "claude",
       "type": "installer",
