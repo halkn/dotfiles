@@ -55,6 +55,7 @@ class ToolSpec:
     # installer 専用
     url: str = ""
     command: str = ""
+    update_command: str = ""
 
     @classmethod
     def from_dict(cls, d: dict) -> "ToolSpec":
@@ -266,10 +267,11 @@ def _install_github_release(spec: ToolSpec, client: httpx.Client) -> None:
             raise ValueError(f"Unknown extract type: {spec.extract}")
 
 
-def _install_installer(spec: ToolSpec) -> None:
-    if spec.command:
-        console.print(f"  Running: {spec.command}")
-        subprocess.run(spec.command, shell=True, check=True)
+def _run_installer(spec: ToolSpec, update: bool = False) -> None:
+    cmd = spec.update_command if (update and spec.update_command) else spec.command
+    if cmd:
+        console.print(f"  Running: {cmd}")
+        subprocess.run(cmd, shell=True, check=True)
     else:
         console.print(f"  Running installer from {spec.url}")
         subprocess.run(
@@ -279,14 +281,15 @@ def _install_installer(spec: ToolSpec) -> None:
         )
 
 
-def do_install(spec: ToolSpec, client: httpx.Client) -> None:
-    console.print(f"[bold cyan]Installing {spec.name}[/bold cyan]")
+def do_install(spec: ToolSpec, client: httpx.Client, update: bool = False) -> None:
+    label = "Updating" if update else "Installing"
+    console.print(f"[bold cyan]{label} {spec.name}[/bold cyan]")
     try:
         match spec.type:
             case "github_release":
                 _install_github_release(spec, client)
             case "installer":
-                _install_installer(spec)
+                _run_installer(spec, update=update)
             case _:
                 raise ValueError(f"Unknown type: {spec.type}")
         console.print(f"  [green]Done.[/green] {get_installed_version(spec) or ''}")
@@ -317,7 +320,7 @@ def cmd_update(tools: list[ToolSpec], target: str | None, client: httpx.Client) 
         console.print(f"[red]Tool not found: {target}[/red]")
         sys.exit(1)
     for spec in targets:
-        do_install(spec, client)
+        do_install(spec, client, update=True)
 
 
 def cmd_list(tools: list[ToolSpec]) -> None:

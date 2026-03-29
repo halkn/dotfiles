@@ -204,6 +204,7 @@
       "bin": "uv",
       "type": "installer",
       "url": "https://astral.sh/uv/install.sh",
+      "update_command": "uv self update",
       "version_cmd": ["uv", "--version"],
       "version_regex": "uv ([\\d.]+)"
     },
@@ -212,6 +213,7 @@
       "bin": "markdownlint-cli2",
       "type": "installer",
       "command": "npm install -g markdownlint-cli2",
+      "update_command": "npm update -g markdownlint-cli2",
       "version_cmd": ["markdownlint-cli2", "--version"],
       "version_regex": "markdownlint-cli2 v([\\d.]+)"
     },
@@ -220,6 +222,7 @@
       "bin": "claude",
       "type": "installer",
       "url": "https://claude.ai/install.sh",
+      "update_command": "claude update",
       "version_cmd": ["claude", "--version"],
       "version_regex": "([\\d.]+)"
     }
