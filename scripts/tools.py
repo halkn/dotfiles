@@ -54,6 +54,7 @@ class ToolSpec:
     bin_path_in_archive: str = ""
     # installer 専用
     url: str = ""
+    command: str = ""
 
     @classmethod
     def from_dict(cls, d: dict) -> "ToolSpec":
@@ -266,12 +267,16 @@ def _install_github_release(spec: ToolSpec, client: httpx.Client) -> None:
 
 
 def _install_installer(spec: ToolSpec) -> None:
-    console.print(f"  Running installer from {spec.url}")
-    subprocess.run(
-        f"curl -fsSL {shlex.quote(spec.url)} | sh",
-        shell=True,
-        check=True,
-    )
+    if spec.command:
+        console.print(f"  Running: {spec.command}")
+        subprocess.run(spec.command, shell=True, check=True)
+    else:
+        console.print(f"  Running installer from {spec.url}")
+        subprocess.run(
+            f"curl -fsSL {shlex.quote(spec.url)} | sh",
+            shell=True,
+            check=True,
+        )
 
 
 def do_install(spec: ToolSpec, client: httpx.Client) -> None:

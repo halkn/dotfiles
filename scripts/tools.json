@@ -200,20 +200,20 @@
       }
     },
     {
-      "name": "mise",
-      "bin": "mise",
-      "type": "installer",
-      "url": "https://mise.run",
-      "version_cmd": ["mise", "--version"],
-      "version_regex": "([\\d.]+)"
-    },
-    {
       "name": "uv",
       "bin": "uv",
       "type": "installer",
       "url": "https://astral.sh/uv/install.sh",
       "version_cmd": ["uv", "--version"],
       "version_regex": "uv ([\\d.]+)"
+    },
+    {
+      "name": "claude",
+      "bin": "claude",
+      "type": "installer",
+      "command": "npm install -g @anthropic-ai/claude-code",
+      "version_cmd": ["claude", "--version"],
+      "version_regex": "([\\d.]+)"
     }
   ]
 }
