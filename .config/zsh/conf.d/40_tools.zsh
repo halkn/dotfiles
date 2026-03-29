@@ -1,8 +1,3 @@
-# ── mise ─────────────────────────────────────────────
-if command -v mise > /dev/null 2>&1; then
-  eval "$(mise activate zsh --shims)"
-fi
-
 # ── uv ───────────────────────────────────────────────
 if command -v uv > /dev/null 2>&1; then
   _uv_comp=$ZCACHEDIR/completions/_uv

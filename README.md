@@ -8,9 +8,6 @@ This is my dotfiles.
 # Link .config
 ln -s ~/.dotfiles/.config ~/.config
 
-# See: https://mise.jdx.dev/getting-started.html
-curl https://mise.run | sh
-
 # See: https://docs.deno.com/runtime/getting_started/installation/
 curl -fsSL https://deno.land/install.sh | sh
 deno install -g -A --name markdownlint-cli2 npm:markdownlint-cli2
