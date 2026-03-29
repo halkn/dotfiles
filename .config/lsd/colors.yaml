@@ -1,0 +1,62 @@
+---
+# lsd color theme based on kanagawa.nvim (wave)
+#
+# Kanagawa palette → ANSI 256 approximations:
+#   springGreen  #98BB6C → 107
+#   carpYellow   #E6C384 → 222
+#   autumnYellow #DCA561 → 179
+#   autumnRed    #C34043 → 131
+#   crystalBlue  #7E9CD8 → 110
+#   waveAqua2    #7AA89F →  73
+#   waveAqua1    #6A9589 →  66
+#   surimiOrange #FFA066 → 209
+#   oniViolet    #957FB8 →  97
+#   fujiWhite    #DCD7BA → 187
+#   oldWhite     #C8C093 → 144
+#   fujiGray     #727169 → 243
+
+user: 187       # fujiWhite
+group: 144      # oldWhite
+
+permission:
+  read: 107     # springGreen
+  write: 222    # carpYellow
+  exec: 209     # surimiOrange
+  exec-sticky: 97   # oniViolet
+  no-access: 243    # fujiGray
+  octal: 73         # waveAqua2
+  acl: 66           # waveAqua1
+  context: 110      # crystalBlue
+
+date:
+  hour-old: 107   # springGreen  (新しい)
+  day-old: 110    # crystalBlue  (やや古い)
+  older: 243      # fujiGray     (古い)
+
+size:
+  none: 243     # fujiGray
+  small: 187    # fujiWhite
+  medium: 222   # carpYellow
+  large: 209    # surimiOrange
+
+inode:
+  valid: 97     # oniViolet
+  invalid: 243  # fujiGray
+
+links:
+  valid: 97     # oniViolet
+  invalid: 243  # fujiGray
+
+tree-edge: 243  # fujiGray
+
+git-status:
+  default: 243        # fujiGray
+  unmodified: 243     # fujiGray
+  ignored: 243        # fujiGray
+  new-in-index: 107   # springGreen
+  new-in-workdir: 107 # springGreen
+  typechange: 222     # carpYellow
+  deleted: 131        # autumnRed
+  renamed: 110        # crystalBlue
+  modified: 179       # autumnYellow
+  conflicted: 131     # autumnRed

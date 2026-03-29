@@ -27,14 +27,14 @@ if command -v deno > /dev/null 2>&1; then
   unset _deno_comp _deno_bin
 fi
 
-# ── eza ──────────────────────────────────────────────
-if command -v eza > /dev/null 2>&1; then
-  alias ls='eza --group-directories-first'
-  alias ll='eza -l --group-directories-first --time-style=long-iso --git'
-  alias la='eza -la --group-directories-first --time-style=long-iso --git'
-  alias ltr='eza -l --sort=modified --reverse'
-  alias lst='eza -l --sort=modified'
-  alias tree='eza --tree --group-directories-first --time-style=long-iso -I .git'
+# ── lsd ──────────────────────────────────────────────
+if command -v lsd > /dev/null 2>&1; then
+  alias ls='lsd'
+  alias ll='lsd -l'
+  alias la='lsd -la'
+  alias ltr='lsd -l --timesort --reverse'
+  alias lst='lsd -l --timesort'
+  alias tree='lsd --tree -I .git'
 fi
 
 # ── nvim ─────────────────────────────────────────────
