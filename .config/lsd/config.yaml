@@ -1,0 +1,36 @@
+---
+# lsd configuration
+
+# 表示する列と順序
+blocks:
+  - permission
+  - size
+  - date
+  - name
+  - git
+
+# ソート設定
+sorting:
+  column: name
+  reverse: false
+  dir-grouping: first
+
+# 日付フォーマット
+date: "+%Y-%m-%d %H:%M"
+
+# サイズ表示 (K/M/G などの短縮形)
+size: short
+
+# アイコン (Nerd Font 使用)
+icons:
+  theme: fancy
+  when: auto
+  separator: " "
+
+# 色設定
+color:
+  theme: custom
+  when: auto
+
+# シンボリックリンクターゲットを表示
+dereference: false
