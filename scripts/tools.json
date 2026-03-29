@@ -164,6 +164,7 @@
       "extract": "tar",
       "opt_dir": "~/.local/opt/lua-language-server",
       "bin_path_in_archive": "bin/lua-language-server",
+      "strip_components": 0,
       "version_cmd": ["lua-language-server", "--version"],
       "version_regex": "([\\d.]+)",
       "platforms": {

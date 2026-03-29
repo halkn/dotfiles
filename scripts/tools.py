@@ -52,6 +52,7 @@ class ToolSpec:
     extract: str = "raw_binary"
     opt_dir: str = ""
     bin_path_in_archive: str = ""
+    strip_components: int = 1
     # installer 専用
     url: str = ""
     command: str = ""
@@ -129,13 +130,15 @@ def _download(url: str, dest: Path, client: httpx.Client) -> None:
         dest.write_bytes(resp.read())
 
 
-def _strip_top_component(members: list[tarfile.TarInfo]) -> Iterator[tarfile.TarInfo]:
+def _strip_components(
+    members: list[tarfile.TarInfo], n: int
+) -> Iterator[tarfile.TarInfo]:
     for m in members:
         parts = Path(m.name).parts
-        if len(parts) <= 1:
+        if len(parts) <= n:
             continue
         m2 = copy.copy(m)
-        m2.name = str(Path(*parts[1:]))
+        m2.name = str(Path(*parts[n:]))
         yield m2
 
 
@@ -168,11 +171,10 @@ def _install_tar(spec: ToolSpec, url: str, client: httpx.Client) -> None:
 
         try:
             with tarfile.open(tmp_path, "r:gz") as tf:
-                tf.extractall(
-                    opt_dir,
-                    members=list(_strip_top_component(tf.getmembers())),
-                    filter="data",
+                members = list(
+                    _strip_components(tf.getmembers(), spec.strip_components)
                 )
+                tf.extractall(opt_dir, members=members, filter="data")
         except Exception:
             if backup.exists():
                 shutil.rmtree(opt_dir, ignore_errors=True)
