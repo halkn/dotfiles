@@ -59,8 +59,8 @@ class ToolSpec:
     update_command: str = ""
 
     def __post_init__(self) -> None:
-        if not self.name and self.repo:
-            self.name = self.repo.split("/")[-1]
+        if not self.name:
+            self.name = self.repo.split("/")[-1] if self.repo else self.bin
         if not self.bin:
             self.bin = self.name
         if not self.version_cmd:

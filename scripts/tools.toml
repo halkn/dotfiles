@@ -76,7 +76,7 @@ darwin-arm64 = "ghq_darwin_arm64.zip"
 
 
 [[tools]]
-name = "gh"
+bin = "gh"
 repo = "cli/cli"
 version_regex = 'gh version ([\d.]+)'
 
@@ -107,7 +107,7 @@ darwin-arm64 = "lua-language-server-{version}-darwin-arm64.tar.gz"
 
 
 [[tools]]
-name = "shfmt"
+bin = "shfmt"
 repo = "mvdan/sh"
 version_regex = 'v([\d.]+)'
 
@@ -126,7 +126,7 @@ darwin-arm64 = "shellcheck-{tag}.darwin.aarch64.tar.xz"
 
 
 [[tools]]
-name = "uv"
+bin = "uv"
 type = "installer"
 url = "https://astral.sh/uv/install.sh"
 update_command = "uv self update"
@@ -134,7 +134,7 @@ version_regex = 'uv ([\d.]+)'
 
 
 [[tools]]
-name = "markdownlint-cli2"
+bin = "markdownlint-cli2"
 type = "installer"
 command = "npm install -g markdownlint-cli2"
 update_command = "npm update -g markdownlint-cli2"
@@ -142,7 +142,7 @@ version_regex = 'markdownlint-cli2 v([\d.]+)'
 
 
 [[tools]]
-name = "claude"
+bin = "claude"
 type = "installer"
 url = "https://claude.ai/install.sh"
 update_command = "claude update"
