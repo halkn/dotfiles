@@ -2,7 +2,7 @@
 name = "neovim"
 bin = "nvim"
 version = "nightly"
-repo = "neovim/neovim"
+repo = "neovim"
 opt_dir = "~/.local/opt/neovim"
 bin_path_in_archive = "bin/nvim"
 version_regex = 'NVIM v([\d.]+-dev[^\s]*|[\d.]+)'
@@ -14,7 +14,7 @@ darwin-arm64 = "nvim-macos-arm64.tar.gz"
 
 [[tools]]
 name = "tree-sitter"
-repo = "tree-sitter/tree-sitter"
+repo = "tree-sitter"
 version_regex = 'tree-sitter (\S+)'
 
 [tools.platforms]
@@ -25,7 +25,7 @@ darwin-arm64 = "tree-sitter-macos-arm64.gz"
 [[tools]]
 name = "ripgrep"
 bin = "rg"
-repo = "BurntSushi/ripgrep"
+repo = "BurntSushi"
 version_regex = 'ripgrep ([\d.]+)'
 
 [tools.platforms]
@@ -35,7 +35,7 @@ darwin-arm64 = "ripgrep-{version}-aarch64-apple-darwin.tar.gz"
 
 [[tools]]
 name = "fd"
-repo = "sharkdp/fd"
+repo = "sharkdp"
 version_regex = 'fd ([\d.]+)'
 
 [tools.platforms]
@@ -45,7 +45,7 @@ darwin-arm64 = "fd-{tag}-aarch64-apple-darwin.tar.gz"
 
 [[tools]]
 name = "fzf"
-repo = "junegunn/fzf"
+repo = "junegunn"
 version_regex = '([\d.]+)'
 
 [tools.platforms]
@@ -55,7 +55,7 @@ darwin-arm64 = "fzf-{version}-darwin_arm64.tar.gz"
 
 [[tools]]
 name = "lsd"
-repo = "lsd-rs/lsd"
+repo = "lsd-rs"
 version_regex = 'lsd ([\d.]+)'
 
 [tools.platforms]
@@ -65,7 +65,7 @@ darwin-arm64 = "lsd-{tag}-aarch64-apple-darwin.tar.gz"
 
 [[tools]]
 name = "delta"
-repo = "dandavison/delta"
+repo = "dandavison"
 version_regex = 'delta ([\d.]+)'
 
 [tools.platforms]
@@ -75,7 +75,7 @@ darwin-arm64 = "delta-{version}-aarch64-apple-darwin.tar.gz"
 
 [[tools]]
 name = "ghq"
-repo = "x-motemen/ghq"
+repo = "x-motemen"
 version_regex = 'ghq version ([\d.]+)'
 
 [tools.platforms]
@@ -85,7 +85,7 @@ darwin-arm64 = "ghq_darwin_arm64.zip"
 
 [[tools]]
 name = "gh"
-repo = "cli/cli"
+repo = "cli"
 version_regex = 'gh version ([\d.]+)'
 
 [tools.platforms]
@@ -95,7 +95,7 @@ darwin-arm64 = "gh_{version}_macOS_arm64.zip"
 
 [[tools]]
 name = "starship"
-repo = "starship/starship"
+repo = "starship"
 version_regex = 'starship ([\d.]+)'
 
 [tools.platforms]
@@ -105,7 +105,7 @@ darwin-arm64 = "starship-aarch64-apple-darwin.tar.gz"
 
 [[tools]]
 name = "lua-language-server"
-repo = "LuaLS/lua-language-server"
+repo = "LuaLS"
 opt_dir = "~/.local/opt/lua-language-server"
 bin_path_in_archive = "bin/lua-language-server"
 strip_components = 0
@@ -128,7 +128,7 @@ darwin-arm64 = "shfmt_{tag}_darwin_arm64"
 
 [[tools]]
 name = "shellcheck"
-repo = "koalaman/shellcheck"
+repo = "koalaman"
 version_regex = 'version: ([\d.]+)'
 
 [tools.platforms]

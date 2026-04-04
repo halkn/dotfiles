@@ -61,6 +61,8 @@ class ToolSpec:
     def __post_init__(self) -> None:
         if not self.bin:
             self.bin = self.name
+        if self.repo and "/" not in self.repo:
+            self.repo = f"{self.repo}/{self.name}"
         if not self.version_cmd:
             self.version_cmd = [self.bin, "--version"]
         if not self.extract:
