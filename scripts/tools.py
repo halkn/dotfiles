@@ -32,7 +32,6 @@ from rich.console import Console
 from rich.table import Table
 
 BIN_DIR = Path(os.environ.get("XDG_BIN_HOME", Path.home() / ".local" / "bin"))
-OPT_DIR = Path.home() / ".local" / "opt"
 TOOLS_TOML = Path(__file__).parent / "tools.toml"
 
 console = Console()
@@ -98,8 +97,6 @@ def detect_platform() -> str:
 
 
 def get_installed_version(spec: ToolSpec) -> str | None:
-    if not spec.version_cmd:
-        return "installed" if shutil.which(spec.bin) else None
     try:
         out = subprocess.check_output(
             spec.version_cmd, stderr=subprocess.STDOUT, text=True
@@ -119,10 +116,8 @@ def _github_headers() -> dict[str, str]:
 
 
 def get_latest_tag(spec: ToolSpec, client: httpx.Client) -> str:
-    if spec.version not in ("latest", "nightly"):
+    if spec.version != "latest":
         return spec.version
-    if spec.version == "nightly":
-        return "nightly"
     url = f"https://api.github.com/repos/{spec.repo}/releases/latest"
     resp = client.get(url, headers=_github_headers())
     resp.raise_for_status()
@@ -362,7 +357,7 @@ def cmd_list(tools: list[ToolSpec]) -> None:
 
 def cmd_check(tools: list[ToolSpec], client: httpx.Client) -> None:
     table = Table(title="Version Check")
-    table.add_column("Name", style="cyan")
+    table.add_column("Bin", style="cyan")
     table.add_column("Installed")
     table.add_column("Latest")
     table.add_column("Status")
@@ -427,9 +422,9 @@ def main() -> None:
     with httpx.Client(follow_redirects=True, timeout=120.0) as client:
         match args.command:
             case "install":
-                cmd_install(tools, getattr(args, "tool", None), client)
+                cmd_install(tools, args.tool, client)
             case "update":
-                cmd_update(tools, getattr(args, "tool", None), client)
+                cmd_update(tools, args.tool, client)
             case "check":
                 cmd_check(tools, client)
 
