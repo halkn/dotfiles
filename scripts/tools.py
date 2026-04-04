@@ -11,7 +11,6 @@
 import argparse
 import copy
 import gzip
-import json
 import os
 import platform
 import re
@@ -22,6 +21,7 @@ import subprocess
 import sys
 import tarfile
 import tempfile
+import tomllib
 import zipfile
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -32,24 +32,22 @@ from rich.console import Console
 from rich.table import Table
 
 BIN_DIR = Path(os.environ.get("XDG_BIN_HOME", Path.home() / ".local" / "bin"))
-OPT_DIR = Path.home() / ".local" / "opt"
-TOOLS_JSON = Path(__file__).parent / "tools.json"
+TOOLS_TOML = Path(__file__).parent / "tools.toml"
 
 console = Console()
 
 
 @dataclass
 class ToolSpec:
-    name: str
-    bin: str
-    type: str  # "github_release" | "installer"
+    bin: str = ""
+    type: str = "github_release"  # "github_release" | "installer"
     version: str = "latest"
     version_cmd: list[str] = field(default_factory=list)
     version_regex: str = r"(\S+)"
     # github_release 専用
     repo: str = ""
     platforms: dict[str, str] = field(default_factory=dict)
-    extract: str = "raw_binary"
+    extract: str = ""
     opt_dir: str = ""
     bin_path_in_archive: str = ""
     strip_components: int = 1
@@ -58,15 +56,41 @@ class ToolSpec:
     command: str = ""
     update_command: str = ""
 
+    def __post_init__(self) -> None:
+        if not self.version_cmd:
+            self.version_cmd = [self.bin, "--version"]
+        if not self.extract:
+            self.extract = self._infer_extract()
+
+    def _infer_extract(self) -> str:
+        if not self.platforms:
+            return "raw_binary"
+        filename = next(iter(self.platforms.values()))
+        if filename.endswith(".tar.xz"):
+            return "tar_xz_binary"
+        if filename.endswith(".tar.gz"):
+            return "tar" if self.opt_dir else "tar_binary"
+        if filename.endswith(".gz"):
+            return "gz_binary"
+        if filename.endswith(".zip"):
+            return "zip_binary"
+        return "raw_binary"
+
     @classmethod
     def from_dict(cls, d: dict) -> "ToolSpec":
         known = {f for f in cls.__dataclass_fields__}
         return cls(**{k: v for k, v in d.items() if k in known})
 
 
-def load_tools(path: Path = TOOLS_JSON) -> list[ToolSpec]:
-    data = json.loads(path.read_text())
-    return [ToolSpec.from_dict(t) for t in data["tools"]]
+def load_tools(path: Path = TOOLS_TOML) -> list[ToolSpec]:
+    with open(path, "rb") as f:
+        data = tomllib.load(f)
+    tools = []
+    for t in data.get("github_release", []):
+        tools.append(ToolSpec.from_dict({**t, "type": "github_release"}))
+    for t in data.get("installer", []):
+        tools.append(ToolSpec.from_dict({**t, "type": "installer"}))
+    return tools
 
 
 def detect_platform() -> str:
@@ -78,8 +102,6 @@ def detect_platform() -> str:
 
 
 def get_installed_version(spec: ToolSpec) -> str | None:
-    if not spec.version_cmd:
-        return "installed" if shutil.which(spec.bin) else None
     try:
         out = subprocess.check_output(
             spec.version_cmd, stderr=subprocess.STDOUT, text=True
@@ -99,10 +121,8 @@ def _github_headers() -> dict[str, str]:
 
 
 def get_latest_tag(spec: ToolSpec, client: httpx.Client) -> str:
-    if spec.version not in ("latest", "nightly"):
+    if spec.version != "latest":
         return spec.version
-    if spec.version == "nightly":
-        return "nightly"
     url = f"https://api.github.com/repos/{spec.repo}/releases/latest"
     resp = client.get(url, headers=_github_headers())
     resp.raise_for_status()
@@ -118,7 +138,7 @@ def resolve_asset_url(spec: ToolSpec, tag: str) -> str:
     plat = detect_platform()
     template = spec.platforms.get(plat)
     if template is None:
-        raise RuntimeError(f"{spec.name}: no asset for platform '{plat}'")
+        raise RuntimeError(f"{spec.bin}: no asset for platform '{plat}'")
     asset = _render_asset(template, tag)
     base = f"https://github.com/{spec.repo}/releases/download/{tag}"
     return f"{base}/{asset}"
@@ -285,7 +305,7 @@ def _run_installer(spec: ToolSpec, update: bool = False) -> None:
 
 def do_install(spec: ToolSpec, client: httpx.Client, update: bool = False) -> None:
     label = "Updating" if update else "Installing"
-    console.print(f"[bold cyan]{label} {spec.name}[/bold cyan]")
+    console.print(f"[bold cyan]{label} {spec.bin}[/bold cyan]")
     try:
         match spec.type:
             case "github_release":
@@ -302,7 +322,7 @@ def do_install(spec: ToolSpec, client: httpx.Client, update: bool = False) -> No
 def cmd_install(
     tools: list[ToolSpec], target: str | None, client: httpx.Client
 ) -> None:
-    targets = [t for t in tools if target is None or t.name == target]
+    targets = [t for t in tools if target is None or t.bin == target]
     if not targets:
         console.print(f"[red]Tool not found: {target}[/red]")
         sys.exit(1)
@@ -310,14 +330,14 @@ def cmd_install(
         installed = get_installed_version(spec)
         if installed is not None and target is None:
             console.print(
-                f"[dim]  {spec.name}: already installed ({installed}), skipping[/dim]"
+                f"[dim]  {spec.bin}: already installed ({installed}), skipping[/dim]"
             )
             continue
         do_install(spec, client)
 
 
 def cmd_update(tools: list[ToolSpec], target: str | None, client: httpx.Client) -> None:
-    targets = [t for t in tools if target is None or t.name == target]
+    targets = [t for t in tools if target is None or t.bin == target]
     if not targets:
         console.print(f"[red]Tool not found: {target}[/red]")
         sys.exit(1)
@@ -327,8 +347,7 @@ def cmd_update(tools: list[ToolSpec], target: str | None, client: httpx.Client) 
 
 def cmd_list(tools: list[ToolSpec]) -> None:
     table = Table(title="Managed Tools")
-    table.add_column("Name", style="cyan")
-    table.add_column("Bin")
+    table.add_column("Bin", style="cyan")
     table.add_column("Type")
     table.add_column("Version Config")
     table.add_column("Installed")
@@ -336,14 +355,14 @@ def cmd_list(tools: list[ToolSpec]) -> None:
     for spec in tools:
         installed = get_installed_version(spec)
         installed_str = installed if installed else "[red]not installed[/red]"
-        table.add_row(spec.name, spec.bin, spec.type, spec.version, installed_str)
+        table.add_row(spec.bin, spec.type, spec.version, installed_str)
 
     console.print(table)
 
 
 def cmd_check(tools: list[ToolSpec], client: httpx.Client) -> None:
     table = Table(title="Version Check")
-    table.add_column("Name", style="cyan")
+    table.add_column("Bin", style="cyan")
     table.add_column("Installed")
     table.add_column("Latest")
     table.add_column("Status")
@@ -353,12 +372,12 @@ def cmd_check(tools: list[ToolSpec], client: httpx.Client) -> None:
         installed_str = installed or "[red]not installed[/red]"
 
         if spec.type == "installer":
-            table.add_row(spec.name, installed_str, "-", "[dim]installer[/dim]")
+            table.add_row(spec.bin, installed_str, "-", "[dim]installer[/dim]")
             continue
 
         if spec.version == "nightly":
             table.add_row(
-                spec.name, installed_str, "nightly", "[dim]always latest[/dim]"
+                spec.bin, installed_str, "nightly", "[dim]always latest[/dim]"
             )
             continue
 
@@ -366,7 +385,7 @@ def cmd_check(tools: list[ToolSpec], client: httpx.Client) -> None:
             tag = get_latest_tag(spec, client)
             latest = tag.lstrip("v")
         except Exception as e:
-            table.add_row(spec.name, installed_str, f"[red]error: {e}[/red]", "")
+            table.add_row(spec.bin, installed_str, f"[red]error: {e}[/red]", "")
             continue
 
         if installed is None:
@@ -376,7 +395,7 @@ def cmd_check(tools: list[ToolSpec], client: httpx.Client) -> None:
         else:
             status = "[yellow]outdated[/yellow]"
 
-        table.add_row(spec.name, installed_str, latest, status)
+        table.add_row(spec.bin, installed_str, latest, status)
 
     console.print(table)
 
@@ -408,9 +427,9 @@ def main() -> None:
     with httpx.Client(follow_redirects=True, timeout=120.0) as client:
         match args.command:
             case "install":
-                cmd_install(tools, getattr(args, "tool", None), client)
+                cmd_install(tools, args.tool, client)
             case "update":
-                cmd_update(tools, getattr(args, "tool", None), client)
+                cmd_update(tools, args.tool, client)
             case "check":
                 cmd_check(tools, client)
 
