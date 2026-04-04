@@ -2,7 +2,6 @@
 name = "neovim"
 bin = "nvim"
 version = "nightly"
-extract = "tar"
 repo = "neovim/neovim"
 opt_dir = "~/.local/opt/neovim"
 bin_path_in_archive = "bin/nvim"
@@ -15,7 +14,6 @@ darwin-arm64 = "nvim-macos-arm64.tar.gz"
 
 [[tools]]
 name = "tree-sitter"
-extract = "gz_binary"
 repo = "tree-sitter/tree-sitter"
 version_regex = 'tree-sitter (\S+)'
 
@@ -77,7 +75,6 @@ darwin-arm64 = "delta-{version}-aarch64-apple-darwin.tar.gz"
 
 [[tools]]
 name = "ghq"
-extract = "zip_binary"
 repo = "x-motemen/ghq"
 version_regex = 'ghq version ([\d.]+)'
 
@@ -108,7 +105,6 @@ darwin-arm64 = "starship-aarch64-apple-darwin.tar.gz"
 
 [[tools]]
 name = "lua-language-server"
-extract = "tar"
 repo = "LuaLS/lua-language-server"
 opt_dir = "~/.local/opt/lua-language-server"
 bin_path_in_archive = "bin/lua-language-server"
@@ -122,7 +118,6 @@ darwin-arm64 = "lua-language-server-{version}-darwin-arm64.tar.gz"
 
 [[tools]]
 name = "shfmt"
-extract = "raw_binary"
 repo = "mvdan/sh"
 version_regex = 'v([\d.]+)'
 
@@ -133,7 +128,6 @@ darwin-arm64 = "shfmt_{tag}_darwin_arm64"
 
 [[tools]]
 name = "shellcheck"
-extract = "tar_xz_binary"
 repo = "koalaman/shellcheck"
 version_regex = 'version: ([\d.]+)'
 

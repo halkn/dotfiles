@@ -49,7 +49,7 @@ class ToolSpec:
     # github_release 専用
     repo: str = ""
     platforms: dict[str, str] = field(default_factory=dict)
-    extract: str = "tar_binary"
+    extract: str = ""
     opt_dir: str = ""
     bin_path_in_archive: str = ""
     strip_components: int = 1
@@ -63,6 +63,22 @@ class ToolSpec:
             self.bin = self.name
         if not self.version_cmd:
             self.version_cmd = [self.bin, "--version"]
+        if not self.extract:
+            self.extract = self._infer_extract()
+
+    def _infer_extract(self) -> str:
+        if not self.platforms:
+            return "raw_binary"
+        filename = next(iter(self.platforms.values()))
+        if filename.endswith(".tar.xz"):
+            return "tar_xz_binary"
+        if filename.endswith(".tar.gz"):
+            return "tar" if self.opt_dir else "tar_binary"
+        if filename.endswith(".gz"):
+            return "gz_binary"
+        if filename.endswith(".zip"):
+            return "zip_binary"
+        return "raw_binary"
 
     @classmethod
     def from_dict(cls, d: dict) -> "ToolSpec":
