@@ -40,7 +40,7 @@ console = Console()
 
 @dataclass
 class ToolSpec:
-    name: str
+    name: str = ""
     bin: str = ""
     type: str = "github_release"  # "github_release" | "installer"
     version: str = "latest"
@@ -59,10 +59,10 @@ class ToolSpec:
     update_command: str = ""
 
     def __post_init__(self) -> None:
+        if not self.name and self.repo:
+            self.name = self.repo.split("/")[-1]
         if not self.bin:
             self.bin = self.name
-        if self.repo and "/" not in self.repo:
-            self.repo = f"{self.repo}/{self.name}"
         if not self.version_cmd:
             self.version_cmd = [self.bin, "--version"]
         if not self.extract:
