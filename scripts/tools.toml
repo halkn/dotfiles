@@ -1,0 +1,228 @@
+[[tools]]
+name = "neovim"
+bin = "nvim"
+type = "github_release"
+repo = "neovim/neovim"
+version = "nightly"
+extract = "tar"
+opt_dir = "~/.local/opt/neovim"
+bin_path_in_archive = "bin/nvim"
+version_cmd = ["nvim", "--version"]
+version_regex = 'NVIM v([\d.]+-dev[^\s]*|[\d.]+)'
+
+[tools.platforms]
+linux-x86_64 = "nvim-linux-x86_64.tar.gz"
+darwin-arm64 = "nvim-macos-arm64.tar.gz"
+
+
+[[tools]]
+name = "tree-sitter"
+bin = "tree-sitter"
+type = "github_release"
+repo = "tree-sitter/tree-sitter"
+version = "latest"
+extract = "gz_binary"
+version_cmd = ["tree-sitter", "--version"]
+version_regex = 'tree-sitter (\S+)'
+
+[tools.platforms]
+linux-x86_64 = "tree-sitter-linux-x64.gz"
+darwin-arm64 = "tree-sitter-macos-arm64.gz"
+
+
+[[tools]]
+name = "ripgrep"
+bin = "rg"
+type = "github_release"
+repo = "BurntSushi/ripgrep"
+version = "latest"
+extract = "tar_binary"
+version_cmd = ["rg", "--version"]
+version_regex = 'ripgrep ([\d.]+)'
+
+[tools.platforms]
+linux-x86_64 = "ripgrep-{version}-x86_64-unknown-linux-musl.tar.gz"
+darwin-arm64 = "ripgrep-{version}-aarch64-apple-darwin.tar.gz"
+
+
+[[tools]]
+name = "fd"
+bin = "fd"
+type = "github_release"
+repo = "sharkdp/fd"
+version = "latest"
+extract = "tar_binary"
+version_cmd = ["fd", "--version"]
+version_regex = 'fd ([\d.]+)'
+
+[tools.platforms]
+linux-x86_64 = "fd-{tag}-x86_64-unknown-linux-gnu.tar.gz"
+darwin-arm64 = "fd-{tag}-aarch64-apple-darwin.tar.gz"
+
+
+[[tools]]
+name = "fzf"
+bin = "fzf"
+type = "github_release"
+repo = "junegunn/fzf"
+version = "latest"
+extract = "tar_binary"
+version_cmd = ["fzf", "--version"]
+version_regex = '([\d.]+)'
+
+[tools.platforms]
+linux-x86_64 = "fzf-{version}-linux_amd64.tar.gz"
+darwin-arm64 = "fzf-{version}-darwin_arm64.tar.gz"
+
+
+[[tools]]
+name = "lsd"
+bin = "lsd"
+type = "github_release"
+repo = "lsd-rs/lsd"
+version = "latest"
+extract = "tar_binary"
+version_cmd = ["lsd", "--version"]
+version_regex = 'lsd ([\d.]+)'
+
+[tools.platforms]
+linux-x86_64 = "lsd-{tag}-x86_64-unknown-linux-gnu.tar.gz"
+darwin-arm64 = "lsd-{tag}-aarch64-apple-darwin.tar.gz"
+
+
+[[tools]]
+name = "delta"
+bin = "delta"
+type = "github_release"
+repo = "dandavison/delta"
+version = "latest"
+extract = "tar_binary"
+version_cmd = ["delta", "--version"]
+version_regex = 'delta ([\d.]+)'
+
+[tools.platforms]
+linux-x86_64 = "delta-{version}-x86_64-unknown-linux-gnu.tar.gz"
+darwin-arm64 = "delta-{version}-aarch64-apple-darwin.tar.gz"
+
+
+[[tools]]
+name = "ghq"
+bin = "ghq"
+type = "github_release"
+repo = "x-motemen/ghq"
+version = "latest"
+extract = "zip_binary"
+version_cmd = ["ghq", "--version"]
+version_regex = 'ghq version ([\d.]+)'
+
+[tools.platforms]
+linux-x86_64 = "ghq_linux_amd64.zip"
+darwin-arm64 = "ghq_darwin_arm64.zip"
+
+
+[[tools]]
+name = "gh"
+bin = "gh"
+type = "github_release"
+repo = "cli/cli"
+version = "latest"
+extract = "tar_binary"
+version_cmd = ["gh", "--version"]
+version_regex = 'gh version ([\d.]+)'
+
+[tools.platforms]
+linux-x86_64 = "gh_{version}_linux_amd64.tar.gz"
+darwin-arm64 = "gh_{version}_macOS_arm64.zip"
+
+
+[[tools]]
+name = "starship"
+bin = "starship"
+type = "github_release"
+repo = "starship/starship"
+version = "latest"
+extract = "tar_binary"
+version_cmd = ["starship", "--version"]
+version_regex = 'starship ([\d.]+)'
+
+[tools.platforms]
+linux-x86_64 = "starship-x86_64-unknown-linux-gnu.tar.gz"
+darwin-arm64 = "starship-aarch64-apple-darwin.tar.gz"
+
+
+[[tools]]
+name = "lua-language-server"
+bin = "lua-language-server"
+type = "github_release"
+repo = "LuaLS/lua-language-server"
+version = "latest"
+extract = "tar"
+opt_dir = "~/.local/opt/lua-language-server"
+bin_path_in_archive = "bin/lua-language-server"
+strip_components = 0
+version_cmd = ["lua-language-server", "--version"]
+version_regex = '([\d.]+)'
+
+[tools.platforms]
+linux-x86_64 = "lua-language-server-{version}-linux-x64.tar.gz"
+darwin-arm64 = "lua-language-server-{version}-darwin-arm64.tar.gz"
+
+
+[[tools]]
+name = "shfmt"
+bin = "shfmt"
+type = "github_release"
+repo = "mvdan/sh"
+version = "latest"
+extract = "raw_binary"
+version_cmd = ["shfmt", "--version"]
+version_regex = 'v([\d.]+)'
+
+[tools.platforms]
+linux-x86_64 = "shfmt_{tag}_linux_amd64"
+darwin-arm64 = "shfmt_{tag}_darwin_arm64"
+
+
+[[tools]]
+name = "shellcheck"
+bin = "shellcheck"
+type = "github_release"
+repo = "koalaman/shellcheck"
+version = "latest"
+extract = "tar_xz_binary"
+version_cmd = ["shellcheck", "--version"]
+version_regex = 'version: ([\d.]+)'
+
+[tools.platforms]
+linux-x86_64 = "shellcheck-{tag}.linux.x86_64.tar.xz"
+darwin-arm64 = "shellcheck-{tag}.darwin.aarch64.tar.xz"
+
+
+[[tools]]
+name = "uv"
+bin = "uv"
+type = "installer"
+url = "https://astral.sh/uv/install.sh"
+update_command = "uv self update"
+version_cmd = ["uv", "--version"]
+version_regex = 'uv ([\d.]+)'
+
+
+[[tools]]
+name = "markdownlint-cli2"
+bin = "markdownlint-cli2"
+type = "installer"
+command = "npm install -g markdownlint-cli2"
+update_command = "npm update -g markdownlint-cli2"
+version_cmd = ["markdownlint-cli2", "--version"]
+version_regex = 'markdownlint-cli2 v([\d.]+)'
+
+
+[[tools]]
+name = "claude"
+bin = "claude"
+type = "installer"
+url = "https://claude.ai/install.sh"
+update_command = "claude update"
+version_cmd = ["claude", "--version"]
+version_regex = '([\d.]+)'

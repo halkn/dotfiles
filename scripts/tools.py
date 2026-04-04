@@ -11,7 +11,6 @@
 import argparse
 import copy
 import gzip
-import json
 import os
 import platform
 import re
@@ -22,6 +21,7 @@ import subprocess
 import sys
 import tarfile
 import tempfile
+import tomllib
 import zipfile
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -33,7 +33,7 @@ from rich.table import Table
 
 BIN_DIR = Path(os.environ.get("XDG_BIN_HOME", Path.home() / ".local" / "bin"))
 OPT_DIR = Path.home() / ".local" / "opt"
-TOOLS_JSON = Path(__file__).parent / "tools.json"
+TOOLS_TOML = Path(__file__).parent / "tools.toml"
 
 console = Console()
 
@@ -64,8 +64,9 @@ class ToolSpec:
         return cls(**{k: v for k, v in d.items() if k in known})
 
 
-def load_tools(path: Path = TOOLS_JSON) -> list[ToolSpec]:
-    data = json.loads(path.read_text())
+def load_tools(path: Path = TOOLS_TOML) -> list[ToolSpec]:
+    with open(path, "rb") as f:
+        data = tomllib.load(f)
     return [ToolSpec.from_dict(t) for t in data["tools"]]
 
 
