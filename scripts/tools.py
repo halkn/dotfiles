@@ -85,7 +85,12 @@ class ToolSpec:
 def load_tools(path: Path = TOOLS_TOML) -> list[ToolSpec]:
     with open(path, "rb") as f:
         data = tomllib.load(f)
-    return [ToolSpec.from_dict(t) for t in data["tools"]]
+    tools = []
+    for t in data.get("github_release", []):
+        tools.append(ToolSpec.from_dict({**t, "type": "github_release"}))
+    for t in data.get("installer", []):
+        tools.append(ToolSpec.from_dict({**t, "type": "installer"}))
+    return tools
 
 
 def detect_platform() -> str:
