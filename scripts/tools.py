@@ -40,7 +40,6 @@ console = Console()
 
 @dataclass
 class ToolSpec:
-    name: str = ""
     bin: str = ""
     type: str = "github_release"  # "github_release" | "installer"
     version: str = "latest"
@@ -59,7 +58,6 @@ class ToolSpec:
     update_command: str = ""
 
     def __post_init__(self) -> None:
-        self.name = self.bin
         if not self.version_cmd:
             self.version_cmd = [self.bin, "--version"]
         if not self.extract:
@@ -140,7 +138,7 @@ def resolve_asset_url(spec: ToolSpec, tag: str) -> str:
     plat = detect_platform()
     template = spec.platforms.get(plat)
     if template is None:
-        raise RuntimeError(f"{spec.name}: no asset for platform '{plat}'")
+        raise RuntimeError(f"{spec.bin}: no asset for platform '{plat}'")
     asset = _render_asset(template, tag)
     base = f"https://github.com/{spec.repo}/releases/download/{tag}"
     return f"{base}/{asset}"
@@ -307,7 +305,7 @@ def _run_installer(spec: ToolSpec, update: bool = False) -> None:
 
 def do_install(spec: ToolSpec, client: httpx.Client, update: bool = False) -> None:
     label = "Updating" if update else "Installing"
-    console.print(f"[bold cyan]{label} {spec.name}[/bold cyan]")
+    console.print(f"[bold cyan]{label} {spec.bin}[/bold cyan]")
     try:
         match spec.type:
             case "github_release":
@@ -324,7 +322,7 @@ def do_install(spec: ToolSpec, client: httpx.Client, update: bool = False) -> No
 def cmd_install(
     tools: list[ToolSpec], target: str | None, client: httpx.Client
 ) -> None:
-    targets = [t for t in tools if target is None or t.name == target]
+    targets = [t for t in tools if target is None or t.bin == target]
     if not targets:
         console.print(f"[red]Tool not found: {target}[/red]")
         sys.exit(1)
@@ -332,14 +330,14 @@ def cmd_install(
         installed = get_installed_version(spec)
         if installed is not None and target is None:
             console.print(
-                f"[dim]  {spec.name}: already installed ({installed}), skipping[/dim]"
+                f"[dim]  {spec.bin}: already installed ({installed}), skipping[/dim]"
             )
             continue
         do_install(spec, client)
 
 
 def cmd_update(tools: list[ToolSpec], target: str | None, client: httpx.Client) -> None:
-    targets = [t for t in tools if target is None or t.name == target]
+    targets = [t for t in tools if target is None or t.bin == target]
     if not targets:
         console.print(f"[red]Tool not found: {target}[/red]")
         sys.exit(1)
@@ -349,8 +347,7 @@ def cmd_update(tools: list[ToolSpec], target: str | None, client: httpx.Client) 
 
 def cmd_list(tools: list[ToolSpec]) -> None:
     table = Table(title="Managed Tools")
-    table.add_column("Name", style="cyan")
-    table.add_column("Bin")
+    table.add_column("Bin", style="cyan")
     table.add_column("Type")
     table.add_column("Version Config")
     table.add_column("Installed")
@@ -358,7 +355,7 @@ def cmd_list(tools: list[ToolSpec]) -> None:
     for spec in tools:
         installed = get_installed_version(spec)
         installed_str = installed if installed else "[red]not installed[/red]"
-        table.add_row(spec.name, spec.bin, spec.type, spec.version, installed_str)
+        table.add_row(spec.bin, spec.type, spec.version, installed_str)
 
     console.print(table)
 
@@ -375,12 +372,12 @@ def cmd_check(tools: list[ToolSpec], client: httpx.Client) -> None:
         installed_str = installed or "[red]not installed[/red]"
 
         if spec.type == "installer":
-            table.add_row(spec.name, installed_str, "-", "[dim]installer[/dim]")
+            table.add_row(spec.bin, installed_str, "-", "[dim]installer[/dim]")
             continue
 
         if spec.version == "nightly":
             table.add_row(
-                spec.name, installed_str, "nightly", "[dim]always latest[/dim]"
+                spec.bin, installed_str, "nightly", "[dim]always latest[/dim]"
             )
             continue
 
@@ -388,7 +385,7 @@ def cmd_check(tools: list[ToolSpec], client: httpx.Client) -> None:
             tag = get_latest_tag(spec, client)
             latest = tag.lstrip("v")
         except Exception as e:
-            table.add_row(spec.name, installed_str, f"[red]error: {e}[/red]", "")
+            table.add_row(spec.bin, installed_str, f"[red]error: {e}[/red]", "")
             continue
 
         if installed is None:
@@ -398,7 +395,7 @@ def cmd_check(tools: list[ToolSpec], client: httpx.Client) -> None:
         else:
             status = "[yellow]outdated[/yellow]"
 
-        table.add_row(spec.name, installed_str, latest, status)
+        table.add_row(spec.bin, installed_str, latest, status)
 
     console.print(table)
 
