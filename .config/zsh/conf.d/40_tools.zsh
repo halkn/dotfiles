@@ -45,11 +45,11 @@ if command -v nvim > /dev/null 2>&1; then
   alias vimdiff='nvim -d'
 fi
 
-# ── zellij ───────────────────────────────────────────
-if command -v zellij > /dev/null 2>&1; then
-  # ターミナル起動時に自動でzellijを開始（既にzellij内でなければ）
-  if [[ -z "$ZELLIJ" && -z "$ZELLIJ_SESSION_NAME" ]]; then
-    zellij attach --create
+# ── tmux ─────────────────────────────────────────────
+if command -v tmux > /dev/null 2>&1; then
+  # ターミナル起動時に自動でtmuxを開始（既にtmux内でなければ）
+  if [[ -z "$TMUX" ]]; then
+    tmux attach-session 2>/dev/null || tmux new-session
   fi
 fi
 
