@@ -4,7 +4,8 @@ return {
   config = function()
     require("conform").setup({
       formatters_by_ft = {
-        markdown = { "markdownlint-cli2" }
+        markdown = { "markdownlint-cli2" },
+        sh = { "shfmt" }
       },
       default_format_opts = {
         lsp_format = "fallback",
@@ -17,7 +18,7 @@ return {
 
     vim.api.nvim_create_autocmd("FileType", {
       group = au,
-      pattern = { "markdown" },
+      pattern = { "markdown", "sh" },
       callback = function(ev)
         vim.keymap.set(
           "n",

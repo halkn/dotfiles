@@ -94,7 +94,7 @@ vim.api.nvim_create_autocmd('LspProgress', {
 
     local done = value.kind == 'end'
     local icon = done and '  '
-      or spinner[math.floor(vim.uv.hrtime() / (1e6 * 80)) % #spinner + 1]
+        or spinner[math.floor(vim.uv.hrtime() / (1e6 * 80)) % #spinner + 1]
 
     vim.notify(icon .. ' ' .. vim.trim(msg), vim.log.levels.INFO, {
       id = 'lsp_progress_' .. client.id,
@@ -110,6 +110,6 @@ local lspservers = {
   "pyright",
   "ruff",
   "azure_pipelines_ls",
-  "bashls",
+  -- "bashls",
 }
 vim.lsp.enable(lspservers)
