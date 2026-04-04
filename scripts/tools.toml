@@ -6,7 +6,6 @@ extract = "tar"
 repo = "neovim/neovim"
 opt_dir = "~/.local/opt/neovim"
 bin_path_in_archive = "bin/nvim"
-version_cmd = ["nvim", "--version"]
 version_regex = 'NVIM v([\d.]+-dev[^\s]*|[\d.]+)'
 
 [tools.platforms]
@@ -18,7 +17,6 @@ darwin-arm64 = "nvim-macos-arm64.tar.gz"
 name = "tree-sitter"
 extract = "gz_binary"
 repo = "tree-sitter/tree-sitter"
-version_cmd = ["tree-sitter", "--version"]
 version_regex = 'tree-sitter (\S+)'
 
 [tools.platforms]
@@ -29,9 +27,7 @@ darwin-arm64 = "tree-sitter-macos-arm64.gz"
 [[tools]]
 name = "ripgrep"
 bin = "rg"
-extract = "tar_binary"
 repo = "BurntSushi/ripgrep"
-version_cmd = ["rg", "--version"]
 version_regex = 'ripgrep ([\d.]+)'
 
 [tools.platforms]
@@ -41,9 +37,7 @@ darwin-arm64 = "ripgrep-{version}-aarch64-apple-darwin.tar.gz"
 
 [[tools]]
 name = "fd"
-extract = "tar_binary"
 repo = "sharkdp/fd"
-version_cmd = ["fd", "--version"]
 version_regex = 'fd ([\d.]+)'
 
 [tools.platforms]
@@ -53,9 +47,7 @@ darwin-arm64 = "fd-{tag}-aarch64-apple-darwin.tar.gz"
 
 [[tools]]
 name = "fzf"
-extract = "tar_binary"
 repo = "junegunn/fzf"
-version_cmd = ["fzf", "--version"]
 version_regex = '([\d.]+)'
 
 [tools.platforms]
@@ -65,9 +57,7 @@ darwin-arm64 = "fzf-{version}-darwin_arm64.tar.gz"
 
 [[tools]]
 name = "lsd"
-extract = "tar_binary"
 repo = "lsd-rs/lsd"
-version_cmd = ["lsd", "--version"]
 version_regex = 'lsd ([\d.]+)'
 
 [tools.platforms]
@@ -77,9 +67,7 @@ darwin-arm64 = "lsd-{tag}-aarch64-apple-darwin.tar.gz"
 
 [[tools]]
 name = "delta"
-extract = "tar_binary"
 repo = "dandavison/delta"
-version_cmd = ["delta", "--version"]
 version_regex = 'delta ([\d.]+)'
 
 [tools.platforms]
@@ -91,7 +79,6 @@ darwin-arm64 = "delta-{version}-aarch64-apple-darwin.tar.gz"
 name = "ghq"
 extract = "zip_binary"
 repo = "x-motemen/ghq"
-version_cmd = ["ghq", "--version"]
 version_regex = 'ghq version ([\d.]+)'
 
 [tools.platforms]
@@ -101,9 +88,7 @@ darwin-arm64 = "ghq_darwin_arm64.zip"
 
 [[tools]]
 name = "gh"
-extract = "tar_binary"
 repo = "cli/cli"
-version_cmd = ["gh", "--version"]
 version_regex = 'gh version ([\d.]+)'
 
 [tools.platforms]
@@ -113,9 +98,7 @@ darwin-arm64 = "gh_{version}_macOS_arm64.zip"
 
 [[tools]]
 name = "starship"
-extract = "tar_binary"
 repo = "starship/starship"
-version_cmd = ["starship", "--version"]
 version_regex = 'starship ([\d.]+)'
 
 [tools.platforms]
@@ -130,7 +113,6 @@ repo = "LuaLS/lua-language-server"
 opt_dir = "~/.local/opt/lua-language-server"
 bin_path_in_archive = "bin/lua-language-server"
 strip_components = 0
-version_cmd = ["lua-language-server", "--version"]
 version_regex = '([\d.]+)'
 
 [tools.platforms]
@@ -142,7 +124,6 @@ darwin-arm64 = "lua-language-server-{version}-darwin-arm64.tar.gz"
 name = "shfmt"
 extract = "raw_binary"
 repo = "mvdan/sh"
-version_cmd = ["shfmt", "--version"]
 version_regex = 'v([\d.]+)'
 
 [tools.platforms]
@@ -154,7 +135,6 @@ darwin-arm64 = "shfmt_{tag}_darwin_arm64"
 name = "shellcheck"
 extract = "tar_xz_binary"
 repo = "koalaman/shellcheck"
-version_cmd = ["shellcheck", "--version"]
 version_regex = 'version: ([\d.]+)'
 
 [tools.platforms]
@@ -167,7 +147,6 @@ name = "uv"
 type = "installer"
 url = "https://astral.sh/uv/install.sh"
 update_command = "uv self update"
-version_cmd = ["uv", "--version"]
 version_regex = 'uv ([\d.]+)'
 
 
@@ -176,7 +155,6 @@ name = "markdownlint-cli2"
 type = "installer"
 command = "npm install -g markdownlint-cli2"
 update_command = "npm update -g markdownlint-cli2"
-version_cmd = ["markdownlint-cli2", "--version"]
 version_regex = 'markdownlint-cli2 v([\d.]+)'
 
 
@@ -185,5 +163,4 @@ name = "claude"
 type = "installer"
 url = "https://claude.ai/install.sh"
 update_command = "claude update"
-version_cmd = ["claude", "--version"]
 version_regex = '([\d.]+)'

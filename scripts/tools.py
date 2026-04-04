@@ -49,7 +49,7 @@ class ToolSpec:
     # github_release 専用
     repo: str = ""
     platforms: dict[str, str] = field(default_factory=dict)
-    extract: str = "raw_binary"
+    extract: str = "tar_binary"
     opt_dir: str = ""
     bin_path_in_archive: str = ""
     strip_components: int = 1
@@ -61,6 +61,8 @@ class ToolSpec:
     def __post_init__(self) -> None:
         if not self.bin:
             self.bin = self.name
+        if not self.version_cmd:
+            self.version_cmd = [self.bin, "--version"]
 
     @classmethod
     def from_dict(cls, d: dict) -> "ToolSpec":
