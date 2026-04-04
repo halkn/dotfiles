@@ -41,8 +41,8 @@ console = Console()
 @dataclass
 class ToolSpec:
     name: str
-    bin: str
-    type: str  # "github_release" | "installer"
+    bin: str = ""
+    type: str = "github_release"  # "github_release" | "installer"
     version: str = "latest"
     version_cmd: list[str] = field(default_factory=list)
     version_regex: str = r"(\S+)"
@@ -57,6 +57,10 @@ class ToolSpec:
     url: str = ""
     command: str = ""
     update_command: str = ""
+
+    def __post_init__(self) -> None:
+        if not self.bin:
+            self.bin = self.name
 
     @classmethod
     def from_dict(cls, d: dict) -> "ToolSpec":
