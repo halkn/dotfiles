@@ -2,18 +2,6 @@ command -v fzf &>/dev/null || return
 
 source <(fzf --zsh)
 
-# ── ghq ─────────────────────────────────────────────
-if command -v ghq > /dev/null 2>&1; then
-  ghq-cd () {
-    local repo=$(ghq list | fzf)
-    if [ -n "$repo" ]; then
-      repo=$(ghq list --full-path --exact $repo)
-      cd ${repo} && la
-    fi
-  }
-  alias dev='ghq-cd'
-fi
-
 # ── util ────────────────────────────────────────────
 # fh - repeat history
 fh() {
