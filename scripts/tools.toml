@@ -72,16 +72,6 @@ darwin-arm64 = "delta-{version}-aarch64-apple-darwin.tar.gz"
 
 
 [[github_release]]
-bin = "ghq"
-repo = "x-motemen/ghq"
-version_regex = 'ghq version ([\d.]+)'
-
-[github_release.platforms]
-linux-x86_64 = "ghq_linux_amd64.zip"
-darwin-arm64 = "ghq_darwin_arm64.zip"
-
-
-[[github_release]]
 bin = "gh"
 repo = "cli/cli"
 version_regex = 'gh version ([\d.]+)'
