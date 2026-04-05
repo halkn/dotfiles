@@ -1,6 +1,6 @@
 return {
   src = "saghen/blink.cmp",
-  version = "v1.10.1",
+  version = "v1.10.2",
   config = function()
     require("blink.cmp").setup({
       keymap = {
