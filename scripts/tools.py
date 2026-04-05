@@ -40,17 +40,22 @@ console = Console()
 @dataclass
 class ToolSpec:
     bin: str = ""
-    type: str = "github_release"  # "github_release" | "installer"
+    type: str = "github_release"  # "github_release" | "url_release" | "installer"
     version: str = "latest"
     version_cmd: list[str] = field(default_factory=list)
     version_regex: str = r"(\S+)"
-    # github_release 専用
-    repo: str = ""
+    # binary release 共通 (github_release / url_release)
     platforms: dict[str, str] = field(default_factory=dict)
     extract: str = ""
     opt_dir: str = ""
     bin_path_in_archive: str = ""
     strip_components: int = 1
+    extra_bins: list[str] = field(default_factory=list)
+    # github_release 専用
+    repo: str = ""
+    # url_release 専用
+    version_url: str = ""
+    version_url_regex: str = ""
     # installer 専用
     url: str = ""
     command: str = ""
@@ -66,9 +71,7 @@ class ToolSpec:
         if not self.platforms:
             return "raw_binary"
         filename = next(iter(self.platforms.values()))
-        if filename.endswith(".tar.xz"):
-            return "tar_xz_binary"
-        if filename.endswith(".tar.gz"):
+        if filename.endswith((".tar.gz", ".tar.xz")):
             return "tar" if self.opt_dir else "tar_binary"
         if filename.endswith(".gz"):
             return "gz_binary"
@@ -88,6 +91,8 @@ def load_tools(path: Path = TOOLS_TOML) -> list[ToolSpec]:
     tools = []
     for t in data.get("github_release", []):
         tools.append(ToolSpec.from_dict({**t, "type": "github_release"}))
+    for t in data.get("url_release", []):
+        tools.append(ToolSpec.from_dict({**t, "type": "url_release"}))
     for t in data.get("installer", []):
         tools.append(ToolSpec.from_dict({**t, "type": "installer"}))
     return tools
@@ -112,6 +117,14 @@ def get_installed_version(spec: ToolSpec) -> str | None:
         return None
 
 
+def _version_status(installed: str | None, latest: str) -> str:
+    if installed is None:
+        return "[red]not installed[/red]"
+    if installed == latest or installed.lstrip("v") == latest:
+        return "[green]up-to-date[/green]"
+    return "[yellow]outdated[/yellow]"
+
+
 def _github_headers() -> dict[str, str]:
     headers: dict[str, str] = {"Accept": "application/vnd.github+json"}
     token = os.environ.get("GITHUB_TOKEN")
@@ -129,19 +142,37 @@ def get_latest_tag(spec: ToolSpec, client: httpx.Client) -> str:
     return resp.json()["tag_name"]
 
 
-def _render_asset(template: str, tag: str) -> str:
-    version = tag.lstrip("v")
-    return template.replace("{tag}", tag).replace("{version}", version)
+def get_url_release_version(spec: ToolSpec, client: httpx.Client) -> str:
+    if not spec.version_url:
+        return spec.version
+    resp = client.get(spec.version_url)
+    resp.raise_for_status()
+    pattern = spec.version_url_regex or spec.version_regex
+    m = re.search(pattern, resp.text, re.DOTALL)
+    if not m:
+        raise RuntimeError(f"Version not found in {spec.version_url}")
+    return m.group(1)
 
 
-def resolve_asset_url(spec: ToolSpec, tag: str) -> str:
+def _get_platform_template(spec: ToolSpec) -> str:
     plat = detect_platform()
     template = spec.platforms.get(plat)
     if template is None:
         raise RuntimeError(f"{spec.bin}: no asset for platform '{plat}'")
-    asset = _render_asset(template, tag)
-    base = f"https://github.com/{spec.repo}/releases/download/{tag}"
-    return f"{base}/{asset}"
+    return template
+
+
+def resolve_asset_url(spec: ToolSpec, tag: str) -> str:
+    template = _get_platform_template(spec)
+    version = tag.lstrip("v")
+    asset = template.replace("{tag}", tag).replace("{version}", version)
+    return f"https://github.com/{spec.repo}/releases/download/{tag}/{asset}"
+
+
+def resolve_url_release_url(spec: ToolSpec, version: str) -> str:
+    template = _get_platform_template(spec)
+    v = version.lstrip("v")
+    return template.replace("{version}", v).replace("{tag}", version)
 
 
 def _download(url: str, dest: Path, client: httpx.Client) -> None:
@@ -162,11 +193,8 @@ def _strip_components(
         yield m2
 
 
-def _extract_binary_from_tar(
-    archive: Path, bin_name: str, dest: Path, xz: bool = False
-) -> None:
-    opener = tarfile.open(archive, "r:xz") if xz else tarfile.open(archive, "r:gz")
-    with opener as tf:
+def _extract_binary_from_tar(archive: Path, bin_name: str, dest: Path) -> None:
+    with tarfile.open(archive, "r:*") as tf:
         for member in tf.getmembers():
             if Path(member.name).name == bin_name and member.isfile():
                 member_copy = copy.copy(member)
@@ -181,7 +209,7 @@ def _install_tar(spec: ToolSpec, url: str, client: httpx.Client) -> None:
     backup = opt_dir.with_name(opt_dir.name + ".bak")
 
     with tempfile.TemporaryDirectory() as tmpdir:
-        tmp_path = Path(tmpdir) / "archive.tar.gz"
+        tmp_path = Path(tmpdir) / "archive.tar"
         console.print(f"  Downloading {url}")
         _download(url, tmp_path, client)
 
@@ -190,7 +218,7 @@ def _install_tar(spec: ToolSpec, url: str, client: httpx.Client) -> None:
         opt_dir.mkdir(parents=True, exist_ok=True)
 
         try:
-            with tarfile.open(tmp_path, "r:gz") as tf:
+            with tarfile.open(tmp_path, "r:*") as tf:
                 members = list(
                     _strip_components(tf.getmembers(), spec.strip_components)
                 )
@@ -205,23 +233,25 @@ def _install_tar(spec: ToolSpec, url: str, client: httpx.Client) -> None:
             shutil.rmtree(backup)
 
     BIN_DIR.mkdir(parents=True, exist_ok=True)
-    bin_source = opt_dir / spec.bin_path_in_archive
     bin_link = BIN_DIR / spec.bin
     bin_link.unlink(missing_ok=True)
-    bin_link.symlink_to(bin_source)
+    bin_link.symlink_to(opt_dir / spec.bin_path_in_archive)
+
+    bin_dir_in_archive = Path(spec.bin_path_in_archive).parent
+    for extra in spec.extra_bins:
+        link = BIN_DIR / extra
+        link.unlink(missing_ok=True)
+        link.symlink_to(opt_dir / bin_dir_in_archive / extra)
 
 
-def _install_tar_binary(
-    spec: ToolSpec, url: str, client: httpx.Client, xz: bool = False
-) -> None:
-    suffix = ".tar.xz" if xz else ".tar.gz"
+def _install_tar_binary(spec: ToolSpec, url: str, client: httpx.Client) -> None:
     with tempfile.TemporaryDirectory() as tmpdir:
-        tmp_path = Path(tmpdir) / f"archive{suffix}"
+        tmp_path = Path(tmpdir) / "archive.tar"
         console.print(f"  Downloading {url}")
         _download(url, tmp_path, client)
 
         BIN_DIR.mkdir(parents=True, exist_ok=True)
-        _extract_binary_from_tar(tmp_path, spec.bin, BIN_DIR, xz=xz)
+        _extract_binary_from_tar(tmp_path, spec.bin, BIN_DIR)
 
     dest = BIN_DIR / spec.bin
     dest.chmod(dest.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
@@ -269,16 +299,12 @@ def _install_raw_binary(spec: ToolSpec, url: str, client: httpx.Client) -> None:
     dest.chmod(dest.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
 
 
-def _install_github_release(spec: ToolSpec, client: httpx.Client) -> None:
-    tag = get_latest_tag(spec, client)
-    url = resolve_asset_url(spec, tag)
+def _dispatch_extract(spec: ToolSpec, url: str, client: httpx.Client) -> None:
     match spec.extract:
         case "tar":
             _install_tar(spec, url, client)
-        case "tar_binary":
+        case "tar_binary" | "tar_xz_binary":  # tar_xz_binary は後方互換のため残す
             _install_tar_binary(spec, url, client)
-        case "tar_xz_binary":
-            _install_tar_binary(spec, url, client, xz=True)
         case "gz_binary":
             _install_gz_binary(spec, url, client)
         case "zip_binary":
@@ -287,6 +313,18 @@ def _install_github_release(spec: ToolSpec, client: httpx.Client) -> None:
             _install_raw_binary(spec, url, client)
         case _:
             raise ValueError(f"Unknown extract type: {spec.extract}")
+
+
+def _install_github_release(spec: ToolSpec, client: httpx.Client) -> None:
+    tag = get_latest_tag(spec, client)
+    url = resolve_asset_url(spec, tag)
+    _dispatch_extract(spec, url, client)
+
+
+def _install_url_release(spec: ToolSpec, client: httpx.Client) -> None:
+    version = get_url_release_version(spec, client)
+    url = resolve_url_release_url(spec, version)
+    _dispatch_extract(spec, url, client)
 
 
 def _run_installer(spec: ToolSpec, update: bool = False) -> None:
@@ -310,6 +348,8 @@ def do_install(spec: ToolSpec, client: httpx.Client, update: bool = False) -> No
         match spec.type:
             case "github_release":
                 _install_github_release(spec, client)
+            case "url_release":
+                _install_url_release(spec, client)
             case "installer":
                 _run_installer(spec, update=update)
             case _:
@@ -382,20 +422,15 @@ def cmd_check(tools: list[ToolSpec], client: httpx.Client) -> None:
             continue
 
         try:
-            tag = get_latest_tag(spec, client)
-            latest = tag.lstrip("v")
+            if spec.type == "url_release":
+                latest = get_url_release_version(spec, client).lstrip("v")
+            else:
+                latest = get_latest_tag(spec, client).lstrip("v")
         except Exception as e:
             table.add_row(spec.bin, installed_str, f"[red]error: {e}[/red]", "")
             continue
 
-        if installed is None:
-            status = "[red]not installed[/red]"
-        elif installed == latest or installed.lstrip("v") == latest:
-            status = "[green]up-to-date[/green]"
-        else:
-            status = "[yellow]outdated[/yellow]"
-
-        table.add_row(spec.bin, installed_str, latest, status)
+        table.add_row(spec.bin, installed_str, latest, _version_status(installed, latest))
 
     console.print(table)
 

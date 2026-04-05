@@ -61,5 +61,6 @@ export FZF_DEFAULT_OPTS="
 typeset -U path
 path=(
   $XDG_BIN_HOME(N-/)
+  $XDG_DATA_HOME/npm/bin(N-/)
   $path
 )
