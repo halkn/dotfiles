@@ -10,27 +10,8 @@ ln -s ~/.dotfiles/.config ~/.config
 
 # See: https://github.com/astral-sh/uv
 curl -LsSf https://astral.sh/uv/install.sh | sh
-
-# Install all tools
-uv run scripts/tools.py install
-
 ```
 
 ## Tool Manager
 
-```sh
-# List all tools and installed versions
-uv run scripts/tools.py list
-
-# Check installed vs latest versions
-uv run scripts/tools.py check
-
-# Install a specific tool
-uv run scripts/tools.py install <name>
-
-# Update all tools
-uv run scripts/tools.py update
-
-# Update a specific tool
-uv run scripts/tools.py update <name>
-```
+Tool management has been moved to [halkn/ptm](https://github.com/halkn/ptm).
