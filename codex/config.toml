@@ -1,0 +1,34 @@
+model = "gpt-5.4"
+approval_policy = "on-request"
+sandbox_mode = "read-only"
+web_search = "cached"
+personality = "pragmatic"
+
+cli_auth_credentials_store = "file"
+file_opener = "none"
+
+[shell_environment_policy]
+inherit = "core"
+exclude = [
+  "AWS_*",
+  "AZURE_*",
+  "SNOWFLAKE_*",
+  "OPENAI_API_KEY",
+  "GITHUB_TOKEN",
+  "GH_TOKEN",
+]
+
+[history]
+persistence = "none"
+
+[tui]
+notifications = false
+animations = true
+show_tooltips = true
+alternate_screen = "auto"
+status_line = [
+  "model-with-reasoning",
+  "context-remaining",
+  "git-branch",
+  "current-dir",
+]
