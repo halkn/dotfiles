@@ -107,7 +107,8 @@ vim.api.nvim_create_autocmd('LspProgress', {
 --setup
 local lspservers = {
   "luals",
-  "pyright",
+  -- "pyright",
+  "ty",
   "ruff",
   "azure_pipelines_ls",
   -- "bashls",
