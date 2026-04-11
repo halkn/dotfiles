@@ -8,6 +8,11 @@ This is my dotfiles.
 # Link .config
 ln -s ~/.dotfiles/.config ~/.config
 
+# Initialize Codex home and link tracked config only
+mkdir -p ~/.codex
+ln -snf ~/.dotfiles/codex/config.toml ~/.codex/config.toml
+ln -snf ~/.dotfiles/codex/AGENTS.md ~/.codex/AGENTS.md
+
 # See: https://github.com/astral-sh/uv
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
