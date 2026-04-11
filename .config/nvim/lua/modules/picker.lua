@@ -556,6 +556,8 @@ local function set_prompt_keymaps()
 
   -- 確定
   vim.keymap.set("i", "<CR>", function() M._accept() end, opts)
+  vim.keymap.set("i", "<C-v>", function() M._accept_with_split("vsplit") end, opts)
+  vim.keymap.set("i", "<C-x>", function() M._accept_with_split("split") end, opts)
 
   -- 閉じる
   vim.keymap.set("i", "<Esc>", function() M.close() end, opts)
@@ -572,6 +574,59 @@ local function set_prompt_keymaps()
 end
 
 -- SECTION 9: Core --------------------------------------------------------
+function M._accept_with_split(split_cmd)
+  local item = state.filtered[state.cursor_idx]
+  local src = state.source_name or ""
+  local on_select = state.on_select
+  local origin_buf = state.origin_buf -- close() 前に保存
+  M.close()
+
+  if not item then return end
+
+  -- vim.ui.select はスプリット非対応（通常の選択として扱う）
+  if on_select then
+    on_select(item)
+    return
+  end
+
+  if src == "files" or src == "select" then
+    vim.cmd(split_cmd .. " " .. vim.fn.fnameescape(item.text))
+    return
+  end
+
+  if src == "buffers" then
+    if item.buf then
+      vim.cmd(split_cmd)
+      vim.api.nvim_set_current_buf(item.buf)
+    else
+      vim.cmd(split_cmd .. " " .. vim.fn.fnameescape(item.text))
+    end
+    return
+  end
+
+  if src == "grep" then
+    local path, lnum = item.text:match("^([^:]+):(%d+):")
+    if path then
+      vim.cmd(split_cmd .. " " .. vim.fn.fnameescape(path))
+      if lnum then
+        vim.api.nvim_win_set_cursor(0, { tonumber(lnum), 0 })
+      end
+    end
+    return
+  end
+
+  if src == "buf_lines" then
+    if origin_buf and vim.api.nvim_buf_is_valid(origin_buf) then
+      vim.cmd(split_cmd)
+      vim.api.nvim_set_current_buf(origin_buf)
+      if item.lnum then
+        vim.api.nvim_win_set_cursor(0, { item.lnum, 0 })
+      end
+    end
+    return
+  end
+end
+
 function M._accept()
   local item = state.filtered[state.cursor_idx]
   -- close() より先に取り出す（close() で nil にリセットされるため）
