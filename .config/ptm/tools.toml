@@ -131,17 +131,13 @@ update_command = "uv self update"
 version_regex = 'uv ([\d.]+)'
 
 
-[[installer]]
+[[npm]]
 bin = "markdownlint-cli2"
-command = "npm install -g markdownlint-cli2"
-update_command = "npm update -g markdownlint-cli2"
 version_regex = 'markdownlint-cli2 v([\d.]+)'
 
 
-[[installer]]
+[[npm]]
 bin = "yaml-language-server"
-command = "npm install -g yaml-language-server"
-update_command = "npm update -g yaml-language-server"
 version_regex = '([\d.]+)'
 
 
