@@ -1,26 +1,35 @@
-[[github_release]]
-bin = "nvim"
-version = "nightly"
-repo = "neovim/neovim"
-opt_dir = "~/.local/opt/neovim"
-bin_path_in_archive = "bin/nvim"
-version_regex = 'NVIM v([\d.]+-dev[^\s]*|[\d.]+)'
-
-[github_release.platforms]
-linux-x86_64 = "nvim-linux-x86_64.tar.gz"
-darwin-arm64 = "nvim-macos-arm64.tar.gz"
+# core
+[[installer]]
+bin = "uv"
+url = "https://astral.sh/uv/install.sh"
+update_command = "uv self update"
+version_regex = 'uv ([\d.]+)'
 
 
-[[github_release]]
-bin = "tree-sitter"
-repo = "tree-sitter/tree-sitter"
-version_regex = 'tree-sitter (\S+)'
-
-[github_release.platforms]
-linux-x86_64 = "tree-sitter-linux-x64.gz"
-darwin-arm64 = "tree-sitter-macos-arm64.gz"
+[[installer]]
+bin = "claude"
+url = "https://claude.ai/install.sh"
+update_command = "claude update"
+version_regex = '([\d.]+)'
 
 
+[[url_release]]
+bin = "node"
+version = "lts"
+version_url = "https://nodejs.org/dist/index.json"
+version_url_regex = '"version":"(v[\d.]+)"[^}]*"lts":"'
+opt_dir = "~/.local/opt/node"
+bin_path_in_archive = "bin/node"
+strip_components = 1
+extra_bins = ["npm", "npx", "corepack"]
+version_regex = 'v([\d.]+)'
+
+[url_release.platforms]
+linux-x86_64 = "https://nodejs.org/dist/v{version}/node-v{version}-linux-x64.tar.xz"
+darwin-arm64  = "https://nodejs.org/dist/v{version}/node-v{version}-darwin-arm64.tar.xz"
+
+
+# shell
 [[github_release]]
 bin = "rg"
 repo = "BurntSushi/ripgrep"
@@ -91,6 +100,30 @@ linux-x86_64 = "starship-x86_64-unknown-linux-gnu.tar.gz"
 darwin-arm64 = "starship-aarch64-apple-darwin.tar.gz"
 
 
+# editor
+[[github_release]]
+bin = "nvim"
+version = "nightly"
+repo = "neovim/neovim"
+opt_dir = "~/.local/opt/neovim"
+bin_path_in_archive = "bin/nvim"
+version_regex = 'NVIM v([\d.]+-dev[^\s]*|[\d.]+)'
+
+[github_release.platforms]
+linux-x86_64 = "nvim-linux-x86_64.tar.gz"
+darwin-arm64 = "nvim-macos-arm64.tar.gz"
+
+
+[[github_release]]
+bin = "tree-sitter"
+repo = "tree-sitter/tree-sitter"
+version_regex = 'tree-sitter (\S+)'
+
+[github_release.platforms]
+linux-x86_64 = "tree-sitter-linux-x64.gz"
+darwin-arm64 = "tree-sitter-macos-arm64.gz"
+
+
 [[github_release]]
 bin = "lua-language-server"
 repo = "LuaLS/lua-language-server"
@@ -102,6 +135,11 @@ version_regex = '([\d.]+)'
 [github_release.platforms]
 linux-x86_64 = "lua-language-server-{version}-linux-x64.tar.gz"
 darwin-arm64 = "lua-language-server-{version}-darwin-arm64.tar.gz"
+
+
+[[npm]]
+bin = "yaml-language-server"
+version_regex = '([\d.]+)'
 
 
 [[github_release]]
@@ -124,41 +162,6 @@ linux-x86_64 = "shellcheck-{tag}.linux.x86_64.tar.xz"
 darwin-arm64 = "shellcheck-{tag}.darwin.aarch64.tar.xz"
 
 
-[[installer]]
-bin = "uv"
-url = "https://astral.sh/uv/install.sh"
-update_command = "uv self update"
-version_regex = 'uv ([\d.]+)'
-
-
 [[npm]]
 bin = "markdownlint-cli2"
 version_regex = 'markdownlint-cli2 v([\d.]+)'
-
-
-[[npm]]
-bin = "yaml-language-server"
-version_regex = '([\d.]+)'
-
-
-[[installer]]
-bin = "claude"
-url = "https://claude.ai/install.sh"
-update_command = "claude update"
-version_regex = '([\d.]+)'
-
-
-[[url_release]]
-bin = "node"
-version = "lts"
-version_url = "https://nodejs.org/dist/index.json"
-version_url_regex = '"version":"(v[\d.]+)"[^}]*"lts":"'
-opt_dir = "~/.local/opt/node"
-bin_path_in_archive = "bin/node"
-strip_components = 1
-extra_bins = ["npm", "npx", "corepack"]
-version_regex = 'v([\d.]+)'
-
-[url_release.platforms]
-linux-x86_64 = "https://nodejs.org/dist/v{version}/node-v{version}-linux-x64.tar.xz"
-darwin-arm64  = "https://nodejs.org/dist/v{version}/node-v{version}-darwin-arm64.tar.xz"
