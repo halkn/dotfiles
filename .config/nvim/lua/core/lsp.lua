@@ -74,9 +74,10 @@ vim.api.nvim_create_autocmd('LspAttach', {
 
     -- ruff
     if client.name == 'ruff' then
-      -- Disable hover only when Pyright is attached for this buffer.
+      -- Disable hover when another Python type checker is attached.
       local pyright = vim.lsp.get_clients({ bufnr = ev.buf, name = "pyright" })
-      if #pyright > 0 then
+      local ty = vim.lsp.get_clients({ bufnr = ev.buf, name = "ty" })
+      if #pyright > 0 or #ty > 0 then
         client.server_capabilities.hoverProvider = false
       end
     end
