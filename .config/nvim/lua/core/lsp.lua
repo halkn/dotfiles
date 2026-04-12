@@ -1,5 +1,6 @@
 -- lsp config
 local group = vim.api.nvim_create_augroup('vimrc_lspconfig', { clear = true })
+local format_group = vim.api.nvim_create_augroup('vimrc_lspformat', { clear = true })
 vim.api.nvim_create_autocmd('LspAttach', {
   group = group,
   callback = function(ev)
@@ -44,35 +45,44 @@ vim.api.nvim_create_autocmd('LspAttach', {
     -- format
     if client:supports_method('textDocument/formatting') then
       vim.keymap.set("n", "<LocalLeader>f", vim.lsp.buf.format, bufopts)
-      vim.api.nvim_create_autocmd("BufWritePre", {
-        group = group,
-        buffer = ev.buf,
-        callback = function()
-          vim.lsp.buf.format({ bufnr = ev.buf, id = client.id })
-          if client.name == "ruff" then
-            vim.lsp.buf.code_action({
-              context = {
-                diagnostics = {},
-                only = { "source.organizeImports" },
-              },
-              apply = true,
-            })
-            vim.lsp.buf.code_action({
-              context = {
-                diagnostics = {},
-                only = { "source.fixAll" },
-              },
-              apply = true,
-            })
+      -- markdown/sh formatting is handled by conform.nvim.
+      local ft = vim.bo[ev.buf].filetype
+      if ft ~= "markdown" and ft ~= "sh" then
+        vim.api.nvim_clear_autocmds({ group = format_group, buffer = ev.buf, event = "BufWritePre" })
+        vim.api.nvim_create_autocmd("BufWritePre", {
+          group = format_group,
+          buffer = ev.buf,
+          desc = "LSP format on save",
+          callback = function()
+            vim.lsp.buf.format({ bufnr = ev.buf, id = client.id })
+            if client.name == "ruff" then
+              vim.lsp.buf.code_action({
+                context = {
+                  diagnostics = {},
+                  only = { "source.organizeImports" },
+                },
+                apply = true,
+              })
+              vim.lsp.buf.code_action({
+                context = {
+                  diagnostics = {},
+                  only = { "source.fixAll" },
+                },
+                apply = true,
+              })
+            end
           end
-        end
-      })
+        })
+      end
     end
 
     -- ruff
     if client.name == 'ruff' then
-      -- Disable hover in favor of Pyright
-      client.server_capabilities.hoverProvider = false
+      -- Disable hover only when Pyright is attached for this buffer.
+      local pyright = vim.lsp.get_clients({ bufnr = ev.buf, name = "pyright" })
+      if #pyright > 0 then
+        client.server_capabilities.hoverProvider = false
+      end
     end
   end,
 })
