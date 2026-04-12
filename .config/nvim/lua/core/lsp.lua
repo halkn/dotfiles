@@ -45,35 +45,31 @@ vim.api.nvim_create_autocmd('LspAttach', {
     -- format
     if client:supports_method('textDocument/formatting') then
       vim.keymap.set("n", "<LocalLeader>f", vim.lsp.buf.format, bufopts)
-      -- markdown/sh formatting is handled by conform.nvim.
-      local ft = vim.bo[ev.buf].filetype
-      if ft ~= "markdown" and ft ~= "sh" then
-        vim.api.nvim_clear_autocmds({ group = format_group, buffer = ev.buf, event = "BufWritePre" })
-        vim.api.nvim_create_autocmd("BufWritePre", {
-          group = format_group,
-          buffer = ev.buf,
-          desc = "LSP format on save",
-          callback = function()
-            vim.lsp.buf.format({ bufnr = ev.buf, id = client.id })
-            if client.name == "ruff" then
-              vim.lsp.buf.code_action({
-                context = {
-                  diagnostics = {},
-                  only = { "source.organizeImports" },
-                },
-                apply = true,
-              })
-              vim.lsp.buf.code_action({
-                context = {
-                  diagnostics = {},
-                  only = { "source.fixAll" },
-                },
-                apply = true,
-              })
-            end
+      vim.api.nvim_clear_autocmds({ group = format_group, buffer = ev.buf, event = "BufWritePre" })
+      vim.api.nvim_create_autocmd("BufWritePre", {
+        group = format_group,
+        buffer = ev.buf,
+        desc = "LSP format on save",
+        callback = function()
+          vim.lsp.buf.format({ bufnr = ev.buf, id = client.id })
+          if client.name == "ruff" then
+            vim.lsp.buf.code_action({
+              context = {
+                diagnostics = {},
+                only = { "source.organizeImports" },
+              },
+              apply = true,
+            })
+            vim.lsp.buf.code_action({
+              context = {
+                diagnostics = {},
+                only = { "source.fixAll" },
+              },
+              apply = true,
+            })
           end
-        })
-      end
+        end
+      })
     end
 
     -- ruff
