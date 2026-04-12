@@ -3,7 +3,8 @@ local config = {
   cmd = { 'azure-pipelines-language-server', '--stdio' },
   filetypes = { 'yaml' },
   root_markers = {
-    "azure-piplies.yml",
+    "azure-pipelines.yml",
+    "azure-pipelines.yaml",
     ".git/",
   },
   single_file_support = true,

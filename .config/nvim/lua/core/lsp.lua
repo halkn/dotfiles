@@ -1,5 +1,6 @@
 -- lsp config
 local group = vim.api.nvim_create_augroup('vimrc_lspconfig', { clear = true })
+local format_group = vim.api.nvim_create_augroup('vimrc_lspformat', { clear = true })
 vim.api.nvim_create_autocmd('LspAttach', {
   group = group,
   callback = function(ev)
@@ -44,9 +45,11 @@ vim.api.nvim_create_autocmd('LspAttach', {
     -- format
     if client:supports_method('textDocument/formatting') then
       vim.keymap.set("n", "<LocalLeader>f", vim.lsp.buf.format, bufopts)
+      vim.api.nvim_clear_autocmds({ group = format_group, buffer = ev.buf, event = "BufWritePre" })
       vim.api.nvim_create_autocmd("BufWritePre", {
-        group = group,
+        group = format_group,
         buffer = ev.buf,
+        desc = "LSP format on save",
         callback = function()
           vim.lsp.buf.format({ bufnr = ev.buf, id = client.id })
           if client.name == "ruff" then
@@ -71,8 +74,12 @@ vim.api.nvim_create_autocmd('LspAttach', {
 
     -- ruff
     if client.name == 'ruff' then
-      -- Disable hover in favor of Pyright
-      client.server_capabilities.hoverProvider = false
+      -- Disable hover when another Python type checker is attached.
+      local pyright = vim.lsp.get_clients({ bufnr = ev.buf, name = "pyright" })
+      local ty = vim.lsp.get_clients({ bufnr = ev.buf, name = "ty" })
+      if #pyright > 0 or #ty > 0 then
+        client.server_capabilities.hoverProvider = false
+      end
     end
   end,
 })
