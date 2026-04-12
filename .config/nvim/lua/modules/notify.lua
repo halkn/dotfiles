@@ -234,9 +234,15 @@ function M.setup()
 
   vim.notify = function(msg, level, opts)
     if not msg or msg == '' then return end
+    opts = opts or {}
+    if opts.id == nil then
+      id_counter = id_counter + 1
+      opts.id = id_counter
+    end
     vim.schedule(function()
       show(msg, level, opts)
     end)
+    return opts.id
   end
 
   vim.api.nvim_create_user_command('NotifyHistory', show_history, { desc = 'Show notification history' })

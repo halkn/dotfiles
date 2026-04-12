@@ -1,6 +1,7 @@
 -- picker.lua: 自前 fuzzy finder
 -- telescope/snacks 風の floating window UI
 local M = {}
+local original_ui_select = vim.ui.select
 
 -- SECTION 1: State -------------------------------------------------------
 local state = {
@@ -96,7 +97,7 @@ sources.files = {
   load = function(callback)
     local items = {}
     local job = vim.system(
-      { "rg", "--files", "--hidden", "--glob", "!**/.git" },
+      { "rg", "--files", "--hidden", "--glob", "!**/.git/*" },
       { text = true },
       function(result)
         -- パス収集のみ行い、アイコン取得はメインスレッドで実行する
@@ -781,6 +782,20 @@ function M.buf_lines()
 end
 
 function M.ui_select(items, opts, on_choice)
+  if type(opts) == "function" and on_choice == nil then
+    on_choice = opts
+    opts = nil
+  end
+  opts = opts or {}
+  on_choice = on_choice or function() end
+
+  if type(items) ~= "table" then
+    if original_ui_select then
+      return original_ui_select(items, opts, on_choice)
+    end
+    return on_choice(nil)
+  end
+
   local picker_items = vim.tbl_map(function(i)
     return { text = (opts.format_item or tostring)(i), value = i }
   end, items)
