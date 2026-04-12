@@ -118,7 +118,7 @@ local lspservers = {
   -- "pyright",
   "ty",
   "ruff",
-  "azure_pipelines_ls",
+  "yamlls",
   -- "bashls",
 }
 vim.lsp.enable(lspservers)
