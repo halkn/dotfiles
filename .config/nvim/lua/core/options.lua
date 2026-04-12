@@ -61,7 +61,7 @@ opt.swapfile = false
 opt.backup = false
 
 -- diff
-opt.diffopt = opt.diffopt + "vertical,indent-heuristic"
+opt.diffopt = opt.diffopt + "vertical,linematch:40,indent-heuristic,inline:char"
 
 -- edit
 opt.smarttab = true
@@ -107,7 +107,9 @@ end
 
 -- diagnostic
 vim.diagnostic.config({
-  virtual_text = true,
+  virtual_text = {
+    current_line = true,
+  },
   underline = true,
   update_in_insert = false,
   severity_sort = true,

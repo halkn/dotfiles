@@ -11,8 +11,30 @@ return {
       sections = {
         lualine_a = { 'mode' },
         lualine_b = { 'branch', 'diff', 'diagnostics' },
-        lualine_c = { 'filename' },
-        lualine_x = { 'encoding', 'fileformat', 'filetype' },
+        lualine_c = {
+          'filename',
+          {
+            function()
+              return vim.diagnostic.status()
+            end,
+            cond = function()
+              return vim.diagnostic.status() ~= ''
+            end,
+          },
+        },
+        lualine_x = {
+          {
+            function()
+              return vim.ui.progress_status()
+            end,
+            cond = function()
+              return vim.ui.progress_status() ~= ''
+            end,
+          },
+          'encoding',
+          'fileformat',
+          'filetype',
+        },
         lualine_y = { 'progress' },
         lualine_z = { 'location' },
       },
