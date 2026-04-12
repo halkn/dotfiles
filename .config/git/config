@@ -8,16 +8,19 @@
 [difftool]
   prompt = false
 [merge]
-  tool = codediff
-  conflictstyle = diff3
+  conflictstyle = zdiff3
 [mergetool]
   prompt = false
 [color]
   ui = true
 [fetch]
   prune = true
+  pruneTags = true
+[pull]
+  ff = only
 [push]
-  default = current
+  default = simple
+  autoSetupRemote = true
 [include]
   path = ~/.gitconfig.local
 [alias]
@@ -31,6 +34,12 @@
   pager = delta
 [interactive]
   diffFilter = delta --color-only
+[rerere]
+  enabled = true
+[init]
+  defaultBranch = main
+[safe]
+  bareRepository = explicit
 [delta]
   hunk-header-decoration-style = omit
   navigate = true
@@ -41,4 +50,3 @@
   file-decoration-style = none
   blame-code-style = syntax
   hyperlinks = true
-
