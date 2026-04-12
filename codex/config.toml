@@ -26,9 +26,8 @@ notifications = false
 animations = true
 show_tooltips = true
 alternate_screen = "auto"
-status_line = [
-  "model-with-reasoning",
-  "context-remaining",
-  "git-branch",
-  "current-dir",
-]
+status_line = ["model-with-reasoning", "context-remaining", "git-branch", "current-dir", "five-hour-limit", "weekly-limit", "fast-mode"]
+
+[plugins."github@openai-curated"]
+enabled = true
+
