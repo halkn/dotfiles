@@ -139,6 +139,13 @@ version_regex = 'markdownlint-cli2 v([\d.]+)'
 
 
 [[installer]]
+bin = "yaml-language-server"
+command = "npm install -g yaml-language-server"
+update_command = "npm update -g yaml-language-server"
+version_regex = '([\d.]+)'
+
+
+[[installer]]
 bin = "claude"
 url = "https://claude.ai/install.sh"
 update_command = "claude update"
