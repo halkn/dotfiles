@@ -92,8 +92,16 @@ local function redraw_statusline()
 end
 
 local function diagnostics_summary(bufnr)
-  local levels = vim.diagnostic.severity
-  local errors = #vim.diagnostic.get(bufnr, { severity = levels.ERROR })
+  local diag_status = vim.diagnostic.status
+  if type(diag_status) ~= 'function' then
+  local ok, status = pcall(diag_status, { bufnr = bufnr })
+  if not ok then
+    ok, status = pcall(diag_status, bufnr)
+  end
+  if not ok then
+    ok, status = pcall(diag_status)
+  end
+
   local warns = #vim.diagnostic.get(bufnr, { severity = levels.WARN })
   local hints = #vim.diagnostic.get(bufnr, { severity = levels.HINT })
   local info = #vim.diagnostic.get(bufnr, { severity = levels.INFO })
@@ -212,10 +220,6 @@ function M.setup()
   vim.o.statusline = '%!v:lua.dotfiles_statusline_render()'
 
   local group = vim.api.nvim_create_augroup('dotfiles_statusline', { clear = true })
-  if type(vim.diagnostic.status) ~= 'function' then
-    vim.notify('custom_statusline requires Neovim 0.12+', vim.log.levels.WARN)
-  end
-
   _G.custom_statusline_render = M.render
   vim.o.statusline = '%!v:lua.custom_statusline_render()'
   local group = vim.api.nvim_create_augroup('custom_statusline', { clear = true })
