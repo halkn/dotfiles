@@ -212,9 +212,9 @@ function M.setup()
   vim.o.statusline = '%!v:lua.dotfiles_statusline_render()'
 
   local group = vim.api.nvim_create_augroup('dotfiles_statusline', { clear = true })
-  vim.api.nvim_create_autocmd('DirChanged', {
-    group = group,
-    callback = function()
+  _G.custom_statusline_render = M.render
+  vim.o.statusline = '%!v:lua.custom_statusline_render()'
+  local group = vim.api.nvim_create_augroup('custom_statusline', { clear = true })
       branch_cache = {}
       redraw_statusline()
     end,
