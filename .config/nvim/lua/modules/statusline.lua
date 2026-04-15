@@ -46,6 +46,42 @@ local function section(parts)
   end, parts), ' | ')
 end
 
+local function truncate_tail(text, max_width)
+  if vim.fn.strdisplaywidth(text) <= max_width then
+    return text
+  end
+
+  local chars = vim.fn.strchars(text)
+  local keep = math.max(1, max_width - 1)
+  return '…' .. vim.fn.strcharpart(text, chars - keep)
+end
+
+local function buffer_name(bufnr)
+  local bt = vim.bo[bufnr].buftype
+  local ft = vim.bo[bufnr].filetype
+  local raw_name = vim.api.nvim_buf_get_name(bufnr)
+
+  if bt == '' then
+    local filename = vim.fn.fnamemodify(raw_name, ':~:.')
+    return filename ~= '' and filename or '[No Name]'
+  end
+
+  local kind = bt ~= '' and bt or (ft ~= '' and ft or 'buffer')
+  if raw_name == '' then
+    return ('[%s]'):format(kind)
+  end
+
+  local short = vim.fn.fnamemodify(raw_name, ':t')
+  if bt == 'terminal' then
+    short = raw_name:match('term://[^:]+:%d+:(.+)$') or short
+  end
+  if short == '' then
+    short = raw_name
+  end
+
+  return ('[%s] %s'):format(kind, truncate_tail(short, 28))
+end
+
 local function redraw_statusline()
   if vim.api.nvim__redraw then
     vim.api.nvim__redraw({ statusline = true })
@@ -139,11 +175,7 @@ function M.render()
   local winid = vim.g.statusline_winid or vim.api.nvim_get_current_win()
   local bufnr = vim.api.nvim_win_get_buf(winid)
   local mode = mode_names[vim.fn.mode(1)] or vim.fn.mode(1)
-
-  local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(bufnr), ':~:.')
-  if filename == '' then
-    filename = '[No Name]'
-  end
+  local filename = buffer_name(bufnr)
 
   local flags = {}
   if vim.bo[bufnr].modified then table.insert(flags, '[+]') end
