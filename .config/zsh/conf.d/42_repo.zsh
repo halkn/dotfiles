@@ -1,7 +1,7 @@
 repo() {
   local root=$HOME/dev
   local cmd="${1:-cd}"
-  (( $# > 0 )) && shift
+  (($# > 0)) && shift
 
   case "$cmd" in
     get)

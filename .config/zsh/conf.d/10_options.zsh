@@ -2,6 +2,9 @@
 export HISTFILE=$XDG_DATA_HOME/zsh/history
 export HISTSIZE=100000
 export SAVEHIST=10000
+setopt hist_expire_dups_first
+setopt hist_save_no_dups
+setopt hist_find_no_dups
 setopt hist_ignore_all_dups
 setopt hist_ignore_space
 setopt hist_reduce_blanks
@@ -30,6 +33,20 @@ setopt interactive_comments
 
 # ── keybind ──────────────────────────────────────────
 bindkey -e
+
+# ── named directory ──────────────────────────────────
+hash -d dot=$HOME/.dotfiles
+hash -d cfg=${XDG_CONFIG_HOME:-$HOME/.config}
+hash -d data=${XDG_DATA_HOME:-$HOME/.local/share}
+hash -d cache=${XDG_CACHE_HOME:-$HOME/.local/cache}
+hash -d state=${XDG_STATE_HOME:-$HOME/.local/state}
+hash -d bin=${XDG_BIN_HOME:-$HOME/.local/bin}
+
+# ── directory history ────────────────────────────────
+autoload -Uz chpwd_recent_dirs cdr add-zsh-hook
+add-zsh-hook chpwd chpwd_recent_dirs
+zstyle ':chpwd:*' recent-dirs-file "$ZSTATEDIR/chpwd-recent-dirs"
+zstyle ':chpwd:*' recent-dirs-max 200
 
 # ── completion ───────────────────────────────────────
 autoload -Uz compinit

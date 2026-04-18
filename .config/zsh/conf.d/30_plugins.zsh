@@ -12,7 +12,7 @@
 
 _zsh_plugins=(
   zsh-users/zsh-autosuggestions
-  zdharma-continuum/fast-syntax-highlighting  # replaces zsh-syntax-highlighting
+  zdharma-continuum/fast-syntax-highlighting # replaces zsh-syntax-highlighting
 )
 
 _zsh_plugin_entries=(
@@ -40,6 +40,9 @@ unset _e
 zsh-plugin-update() {
   for _p in $_zsh_plugins; do
     local _d=$ZPLUGINDIR/${_p#*/}
-    [[ -d $_d ]] && { print "updating: ${_p#*/}"; git -C "$_d" pull --ff-only }
+    [[ -d $_d ]] && {
+      print "updating: ${_p#*/}"
+      git -C "$_d" pull --ff-only
+    }
   done
 }
