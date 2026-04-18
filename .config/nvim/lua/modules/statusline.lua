@@ -140,7 +140,7 @@ local function buffer_name(bufnr)
   local raw_name = vim.api.nvim_buf_get_name(bufnr)
 
   if bt == '' then
-    local filename = vim.fn.fnamemodify(raw_name, ':~:.')
+    local filename = vim.fn.fnamemodify(raw_name, ':t')
     return filename ~= '' and filename or '[No Name]'
   end
 
@@ -326,11 +326,16 @@ local function build_context()
 end
 
 local function build_left(ctx)
+  local file_label = ctx.filename
+  if ctx.flags ~= '' then
+    file_label = ('%s %s'):format(file_label, ctx.flags)
+  end
+
   return {
     ctx.mode,
     ctx.branch,
-    ctx.filename,
-    ctx.flags,
+    file_label,
+    '',
     ctx.diagnostics,
   }
 end
