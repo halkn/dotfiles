@@ -1,4 +1,20 @@
 local M = {}
+local mode_style_names = {
+  n = 'DotfilesStatuslineModeNormal',
+  i = 'DotfilesStatuslineModeInsert',
+  v = 'DotfilesStatuslineModeVisual',
+  V = 'DotfilesStatuslineModeVisual',
+  ['\22'] = 'DotfilesStatuslineModeVisual',
+  c = 'DotfilesStatuslineModeCommand',
+  r = 'DotfilesStatuslineModeReplace',
+  R = 'DotfilesStatuslineModeReplace',
+  t = 'DotfilesStatuslineModeTerminal',
+}
+local compact_width = {
+  full = 140,
+  medium = 100,
+  narrow = 80,
+}
 
 local mode_names = {
   n = 'NORMAL',
@@ -40,10 +56,72 @@ local mode_names = {
 
 local branch_cache = {}
 
+local function normalize_mode(mode)
+  local c = mode:sub(1, 1)
+  if c == '\22' then
+    return '\22'
+  end
+  if c == 'n' then
+    return 'n'
+  end
+  if c == 'i' then
+    return 'i'
+  end
+  if c == 'v' or c == 'V' then
+    return c
+  end
+  if c == 'c' then
+    return 'c'
+  end
+  if c == 'r' or c == 'R' then
+    return c
+  end
+  if c == 't' then
+    return 't'
+  end
+  return mode
+end
+
 local function section(parts)
   return table.concat(vim.tbl_filter(function(x)
     return x and x ~= ''
   end, parts), ' | ')
+end
+
+local function hl(group, text)
+  if text == nil or text == '' then
+    return ''
+  end
+  return ('%%#%s#%s%%*'):format(group, text)
+end
+
+local function set_hl_from(group, source, opts)
+  local ok, base = pcall(vim.api.nvim_get_hl, 0, { name = source, link = false })
+  if not ok or type(base) ~= 'table' then
+    base = {}
+  end
+  local spec = vim.tbl_extend('force', base, opts or {})
+  vim.api.nvim_set_hl(0, group, spec)
+end
+
+local function setup_highlights()
+  vim.api.nvim_set_hl(0, 'DotfilesStatuslineSection', { link = 'StatusLine' })
+  vim.api.nvim_set_hl(0, 'DotfilesStatuslineMuted', { link = 'StatusLineNC' })
+  vim.api.nvim_set_hl(0, 'DotfilesStatuslineModeOther', { link = 'Title' })
+  set_hl_from('DotfilesStatuslineModeNormal', 'DiagnosticOk', { bold = true })
+  set_hl_from('DotfilesStatuslineModeInsert', 'DiagnosticInfo', { bold = true })
+  set_hl_from('DotfilesStatuslineModeVisual', 'DiagnosticHint', { bold = true })
+  set_hl_from('DotfilesStatuslineModeCommand', 'DiagnosticWarn', { bold = true })
+  set_hl_from('DotfilesStatuslineModeReplace', 'DiagnosticError', { bold = true })
+  set_hl_from('DotfilesStatuslineModeTerminal', 'Special', { bold = true })
+  set_hl_from('DotfilesStatuslineDiagError', 'DiagnosticError', { bold = true })
+  set_hl_from('DotfilesStatuslineDiagWarn', 'DiagnosticWarn', { bold = true })
+  set_hl_from('DotfilesStatuslineDiagInfo', 'DiagnosticInfo', { bold = true })
+  set_hl_from('DotfilesStatuslineDiagHint', 'DiagnosticHint', { bold = true })
+end
+
+local function width(text)
+  return vim.fn.strdisplaywidth(text)
 end
 
 local function truncate_tail(text, max_width)
@@ -91,26 +169,36 @@ local function redraw_statusline()
   vim.cmd.redrawstatus()
 end
 
-local function diagnostics_summary(bufnr)
-  local diag_status = vim.diagnostic.status
-  if type(diag_status) ~= 'function' then
-  local ok, status = pcall(diag_status, { bufnr = bufnr })
-  if not ok then
-    ok, status = pcall(diag_status, bufnr)
-  end
-  if not ok then
-    ok, status = pcall(diag_status)
-  end
+local function diagnostics_counts(bufnr)
+  local levels = vim.diagnostic.severity
+  return {
+    errors = #vim.diagnostic.get(bufnr, { severity = levels.ERROR }),
+    warns = #vim.diagnostic.get(bufnr, { severity = levels.WARN }),
+    info = #vim.diagnostic.get(bufnr, { severity = levels.INFO }),
+    hints = #vim.diagnostic.get(bufnr, { severity = levels.HINT }),
+  }
+end
 
-  local warns = #vim.diagnostic.get(bufnr, { severity = levels.WARN })
-  local hints = #vim.diagnostic.get(bufnr, { severity = levels.HINT })
-  local info = #vim.diagnostic.get(bufnr, { severity = levels.INFO })
+local function diagnostics_summary(bufnr, counts)
+  local diag_status = vim.diagnostic.status
+  if type(diag_status) == 'function' then
+    local ok, status = pcall(diag_status, { bufnr = bufnr })
+    if not ok then
+      ok, status = pcall(diag_status, bufnr)
+    end
+    if not ok then
+      ok, status = pcall(diag_status)
+    end
+    if ok and type(status) == 'string' and status ~= '' then
+      return status
+    end
+  end
 
   local out = {}
-  if errors > 0 then table.insert(out, ('E:%d'):format(errors)) end
-  if warns > 0 then table.insert(out, ('W:%d'):format(warns)) end
-  if info > 0 then table.insert(out, ('I:%d'):format(info)) end
-  if hints > 0 then table.insert(out, ('H:%d'):format(hints)) end
+  if counts.errors > 0 then table.insert(out, ('E:%d'):format(counts.errors)) end
+  if counts.warns > 0 then table.insert(out, ('W:%d'):format(counts.warns)) end
+  if counts.info > 0 then table.insert(out, ('I:%d'):format(counts.info)) end
+  if counts.hints > 0 then table.insert(out, ('H:%d'):format(counts.hints)) end
   return table.concat(out, ' ')
 end
 
@@ -179,50 +267,223 @@ local function progress_summary()
   return table.concat(pieces, ' ')
 end
 
-function M.render()
+local function buffer_flags(bufnr)
+  local flags = {}
+  if vim.bo[bufnr].modified then
+    table.insert(flags, '[+]')
+  end
+  if vim.bo[bufnr].readonly then
+    table.insert(flags, '[RO]')
+  end
+  return table.concat(flags, '')
+end
+
+local function file_encoding(bufnr)
+  local encoding = vim.bo[bufnr].fileencoding
+  if encoding ~= '' then
+    return encoding
+  end
+  return vim.o.encoding
+end
+
+local function window_width(winid)
+  local ok, win_width = pcall(vim.api.nvim_win_get_width, winid)
+  if ok and type(win_width) == 'number' and win_width > 0 then
+    return win_width
+  end
+  return vim.o.columns
+end
+
+local function build_context()
   local winid = vim.g.statusline_winid or vim.api.nvim_get_current_win()
   local bufnr = vim.api.nvim_win_get_buf(winid)
-  local mode = mode_names[vim.fn.mode(1)] or vim.fn.mode(1)
-  local filename = buffer_name(bufnr)
-
-  local flags = {}
-  if vim.bo[bufnr].modified then table.insert(flags, '[+]') end
-  if vim.bo[bufnr].readonly then table.insert(flags, '[RO]') end
-
+  local raw_mode = vim.fn.mode(1)
+  local mode_code = normalize_mode(raw_mode)
   local branch = git_branch(bufnr)
+  local diagnostics = diagnostics_counts(bufnr)
   if branch ~= '' then
     branch = ' ' .. branch
   end
 
-  local left = section({
-    mode,
-    branch,
-    filename,
-    table.concat(flags, ''),
-    diagnostics_summary(bufnr),
-  })
+  return {
+    winid = winid,
+    bufnr = bufnr,
+    width = window_width(winid),
+    mode = mode_names[raw_mode] or mode_names[mode_code] or raw_mode,
+    mode_code = mode_code,
+    branch = branch,
+    filename = buffer_name(bufnr),
+    flags = buffer_flags(bufnr),
+    diagnostics = diagnostics_summary(bufnr, diagnostics),
+    diagnostic_counts = diagnostics,
+    progress = progress_summary(),
+    filetype = vim.bo[bufnr].filetype,
+    encoding = file_encoding(bufnr),
+    fileformat = vim.bo[bufnr].fileformat,
+    percent = '%p%%',
+    location = '%l:%c',
+  }
+end
 
-  local right = section({
-    progress_summary(),
-    vim.bo[bufnr].filetype,
-    vim.bo[bufnr].fileencoding ~= '' and vim.bo[bufnr].fileencoding or vim.o.encoding,
-    vim.bo[bufnr].fileformat,
-    '%p%%',
-    '%l:%c',
-  })
+local function build_left(ctx)
+  return {
+    ctx.mode,
+    ctx.branch,
+    ctx.filename,
+    ctx.flags,
+    ctx.diagnostics,
+  }
+end
 
-  return (' %s %%= %s '):format(left, right)
+local function build_right(ctx)
+  return {
+    ctx.progress,
+    ctx.filetype,
+    ctx.encoding,
+    ctx.fileformat,
+    ctx.percent,
+    ctx.location,
+  }
+end
+
+local function compact_filename(ctx, max_width)
+  if width(ctx.filename) <= max_width then
+    return
+  end
+  ctx.filename = truncate_tail(ctx.filename, max_width)
+end
+
+local function compact_diagnostics(counts)
+  local total = counts.errors + counts.warns + counts.info + counts.hints
+  if total == 0 then
+    return ''
+  end
+
+  if counts.errors > 0 then
+    return ('E:%d'):format(counts.errors)
+  end
+  if counts.warns > 0 then
+    return ('W:%d'):format(counts.warns)
+  end
+  return ('D:%d'):format(total)
+end
+
+local function style_mode(ctx)
+  local mode = ctx.mode_code
+  local group = mode_style_names[mode]
+  if group then
+    return hl(group, ctx.mode)
+  end
+  return hl('DotfilesStatuslineModeOther', ctx.mode)
+end
+
+local function style_diagnostics(text)
+  if text == '' then
+    return ''
+  end
+
+  local styled = {}
+  for _, part in ipairs(vim.split(text, ' ', { trimempty = true })) do
+    local prefix = part:sub(1, 1)
+    local group = ({
+      E = 'DotfilesStatuslineDiagError',
+      W = 'DotfilesStatuslineDiagWarn',
+      I = 'DotfilesStatuslineDiagInfo',
+      H = 'DotfilesStatuslineDiagHint',
+      D = 'DotfilesStatuslineDiagInfo',
+    })[prefix] or 'DotfilesStatuslineSection'
+    table.insert(styled, hl(group, part))
+  end
+  return table.concat(styled, ' ')
+end
+
+local function style_parts(left, right, ctx)
+  left[1] = style_mode(ctx)
+  left[2] = hl('DotfilesStatuslineSection', left[2])
+  left[3] = hl('DotfilesStatuslineSection', left[3])
+  left[4] = hl('DotfilesStatuslineMuted', left[4])
+  left[5] = style_diagnostics(left[5])
+
+  right[1] = hl('DotfilesStatuslineMuted', right[1])
+  right[2] = hl('DotfilesStatuslineSection', right[2])
+  right[3] = hl('DotfilesStatuslineMuted', right[3])
+  right[4] = hl('DotfilesStatuslineMuted', right[4])
+  right[5] = hl('DotfilesStatuslineMuted', right[5])
+  right[6] = hl('DotfilesStatuslineSection', right[6])
+  return left, right
+end
+
+local function compact_parts(left, right, ctx)
+  if ctx.width >= compact_width.full then
+    return left, right
+  end
+
+  right[3] = ''
+  right[4] = ''
+  if ctx.width >= compact_width.medium then
+    return left, right
+  end
+
+  right[1] = ''
+  left[5] = compact_diagnostics(ctx.diagnostic_counts)
+  compact_filename(ctx, 32)
+  left[3] = ctx.filename
+  if ctx.width >= compact_width.narrow then
+    return left, right
+  end
+
+  left[2] = ''
+  left[5] = ''
+  compact_filename(ctx, 20)
+  left[3] = ctx.filename
+  return left, right
+end
+
+local function join_statusline(left, right)
+  return (' %s %%= %s '):format(section(left), section(right))
+end
+
+function M.render()
+  local ctx = build_context()
+  local left = build_left(ctx)
+  local right = build_right(ctx)
+  left, right = compact_parts(left, right, ctx)
+  left, right = style_parts(left, right, ctx)
+  return join_statusline(left, right)
 end
 
 function M.setup()
+  setup_highlights()
   _G.dotfiles_statusline_render = M.render
   vim.o.laststatus = 3
   vim.o.statusline = '%!v:lua.dotfiles_statusline_render()'
 
   local group = vim.api.nvim_create_augroup('dotfiles_statusline', { clear = true })
-  _G.custom_statusline_render = M.render
-  vim.o.statusline = '%!v:lua.custom_statusline_render()'
-  local group = vim.api.nvim_create_augroup('custom_statusline', { clear = true })
+  vim.api.nvim_create_autocmd({ 'BufEnter', 'BufWritePost', 'DirChanged', 'DiagnosticChanged' }, {
+    group = group,
+    callback = function()
+      branch_cache = {}
+      redraw_statusline()
+    end,
+  })
+
+  vim.api.nvim_create_autocmd({ 'ModeChanged', 'WinEnter', 'BufModifiedSet' }, {
+    group = group,
+    callback = redraw_statusline,
+  })
+
+  vim.api.nvim_create_autocmd('ColorScheme', {
+    group = group,
+    callback = function()
+      setup_highlights()
+      redraw_statusline()
+    end,
+  })
+
+  vim.api.nvim_create_autocmd('User', {
+    group = group,
+    pattern = 'GitSignsUpdate',
+    callback = function()
       branch_cache = {}
       redraw_statusline()
     end,
