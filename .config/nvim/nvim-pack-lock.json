@@ -21,12 +21,8 @@
       "rev": "aef7f5cec0a40dbe7f3304214850c472e2264b10",
       "src": "https://github.com/rebelot/kanagawa.nvim"
     },
-    "lualine.nvim": {
-      "rev": "a905eeebc4e63fdc48b5135d3bf8aea5618fb21c",
-      "src": "https://github.com/nvim-lualine/lualine.nvim"
-    },
     "mini.nvim": {
-      "rev": "4182d64727fb4876407af65c181b85428a4a70d1",
+      "rev": "418ef4930ddabe80f449c6f1323f8b6abb172d1c",
       "src": "https://github.com/nvim-mini/mini.nvim"
     },
     "nvim-lint": {
