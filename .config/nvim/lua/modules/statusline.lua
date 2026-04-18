@@ -54,7 +54,7 @@ local mode_names = {
   t = 'TERMINAL',
 }
 
-local branch_cache = {}
+local git_cache = {}
 
 local function normalize_mode(mode)
   local c = mode:sub(1, 1)
@@ -118,6 +118,10 @@ local function setup_highlights()
   set_hl_from('DotfilesStatuslineDiagWarn', 'DiagnosticWarn', { bold = true })
   set_hl_from('DotfilesStatuslineDiagInfo', 'DiagnosticInfo', { bold = true })
   set_hl_from('DotfilesStatuslineDiagHint', 'DiagnosticHint', { bold = true })
+  set_hl_from('DotfilesStatuslineGitAhead', 'DiagnosticInfo', { bold = true })
+  set_hl_from('DotfilesStatuslineGitBehind', 'DiagnosticWarn', { bold = true })
+  set_hl_from('DotfilesStatuslineGitDirty', 'DiffChange', { bold = true })
+  set_hl_from('DotfilesStatuslineGitUntracked', 'DiffAdd', { bold = true })
 end
 
 local function width(text)
@@ -224,30 +228,75 @@ local function find_git_root(path)
   return vim.fn.fnamemodify(git_dir, ':h')
 end
 
-local function git_branch(bufnr)
-  if type(vim.b[bufnr].gitsigns_head) == 'string' and vim.b[bufnr].gitsigns_head ~= '' then
-    return vim.b[bufnr].gitsigns_head
-  end
-
+local function git_root(bufnr)
   local file = vim.api.nvim_buf_get_name(bufnr)
   local base = file ~= '' and vim.fn.fnamemodify(file, ':p:h') or vim.uv.cwd()
-  local root = find_git_root(base)
+  return find_git_root(base)
+end
+
+local function git_info(bufnr)
+  local root = git_root(bufnr)
   if not root then
-    return ''
+    return { head = '', status = '' }
   end
 
-  if branch_cache[root] then
-    return branch_cache[root]
+  if git_cache[root] then
+    return git_cache[root]
   end
 
-  local name = vim.fn.systemlist({ 'git', '-C', root, 'branch', '--show-current' })[1] or ''
+  local lines = vim.fn.systemlist({ 'git', '-C', root, 'status', '--porcelain=2', '--branch' })
   if vim.v.shell_error ~= 0 then
-    branch_cache[root] = ''
-    return ''
+    git_cache[root] = { head = '', status = '' }
+    return git_cache[root]
   end
 
-  branch_cache[root] = name
-  return name
+  local head = ''
+  local oid = ''
+  local ahead = 0
+  local behind = 0
+  local changed = 0
+  local untracked = 0
+
+  for _, line in ipairs(lines) do
+    if vim.startswith(line, '# branch.head ') then
+      head = line:sub(15)
+    elseif vim.startswith(line, '# branch.oid ') then
+      oid = line:sub(14)
+    elseif vim.startswith(line, '# branch.ab ') then
+      local ahead_str, behind_str = line:match('%+(%d+) %-(%d+)')
+      ahead = tonumber(ahead_str) or 0
+      behind = tonumber(behind_str) or 0
+    elseif vim.startswith(line, '? ') then
+      untracked = untracked + 1
+    elseif vim.startswith(line, '1 ') or vim.startswith(line, '2 ') or vim.startswith(line, 'u ') then
+      changed = changed + 1
+    end
+  end
+
+  local parts = {}
+  if ahead > 0 then
+    table.insert(parts, ('↑%d'):format(ahead))
+  end
+  if behind > 0 then
+    table.insert(parts, ('↓%d'):format(behind))
+  end
+  if changed > 0 then
+    table.insert(parts, ('*%d'):format(changed))
+  end
+  if untracked > 0 then
+    table.insert(parts, ('?%d'):format(untracked))
+  end
+
+  if head == '(detached)' and oid ~= '' then
+    head = oid:sub(1, 7)
+  end
+
+  git_cache[root] = {
+    head = head,
+    status = table.concat(parts, ' '),
+  }
+
+  return git_cache[root]
 end
 
 local function progress_summary()
@@ -299,7 +348,8 @@ local function build_context()
   local bufnr = vim.api.nvim_win_get_buf(winid)
   local raw_mode = vim.fn.mode(1)
   local mode_code = normalize_mode(raw_mode)
-  local branch = git_branch(bufnr)
+  local git = git_info(bufnr)
+  local branch = git.head
   local diagnostics = diagnostics_counts(bufnr)
   if branch ~= '' then
     branch = ' ' .. branch
@@ -312,6 +362,7 @@ local function build_context()
     mode = mode_names[raw_mode] or mode_names[mode_code] or raw_mode,
     mode_code = mode_code,
     branch = branch,
+    git = git.status,
     filename = buffer_name(bufnr),
     flags = buffer_flags(bufnr),
     diagnostics = diagnostics_summary(bufnr, diagnostics),
@@ -326,6 +377,11 @@ local function build_context()
 end
 
 local function build_left(ctx)
+  local branch_label = ctx.branch
+  if branch_label ~= '' and ctx.git ~= '' then
+    branch_label = ('%s (%s)'):format(branch_label, ctx.git)
+  end
+
   local file_label = ctx.filename
   if ctx.flags ~= '' then
     file_label = ('%s %s'):format(file_label, ctx.flags)
@@ -333,7 +389,7 @@ local function build_left(ctx)
 
   return {
     ctx.mode,
-    ctx.branch,
+    branch_label,
     file_label,
     '',
     ctx.diagnostics,
@@ -373,6 +429,15 @@ local function compact_diagnostics(counts)
   return ('D:%d'):format(total)
 end
 
+local function compact_git_status(text)
+  if text == '' then
+    return ''
+  end
+
+  local parts = vim.split(text, ' ', { trimempty = true })
+  return parts[1] or ''
+end
+
 local function style_mode(ctx)
   local mode = ctx.mode_code
   local group = mode_style_names[mode]
@@ -402,9 +467,45 @@ local function style_diagnostics(text)
   return table.concat(styled, ' ')
 end
 
+local function style_git_status(text)
+  if text == '' then
+    return ''
+  end
+
+  local styled = {}
+  for _, part in ipairs(vim.split(text, ' ', { trimempty = true })) do
+    local prefix = part:sub(1, 1)
+    local group = ({
+      ['↑'] = 'DotfilesStatuslineGitAhead',
+      ['↓'] = 'DotfilesStatuslineGitBehind',
+      ['*'] = 'DotfilesStatuslineGitDirty',
+      ['?'] = 'DotfilesStatuslineGitUntracked',
+    })[prefix] or 'DotfilesStatuslineSection'
+    table.insert(styled, hl(group, part))
+  end
+  return table.concat(styled, ' ')
+end
+
+local function style_branch(ctx)
+  if ctx.branch == '' then
+    return ''
+  end
+
+  if ctx.git == '' then
+    return hl('DotfilesStatuslineSection', ctx.branch)
+  end
+
+  return table.concat({
+    hl('DotfilesStatuslineSection', ctx.branch),
+    hl('DotfilesStatuslineMuted', '('),
+    style_git_status(ctx.git),
+    hl('DotfilesStatuslineMuted', ')'),
+  }, '')
+end
+
 local function style_parts(left, right, ctx)
   left[1] = style_mode(ctx)
-  left[2] = hl('DotfilesStatuslineSection', left[2])
+  left[2] = style_branch(ctx)
   left[3] = hl('DotfilesStatuslineSection', left[3])
   left[4] = hl('DotfilesStatuslineMuted', left[4])
   left[5] = style_diagnostics(left[5])
@@ -429,6 +530,10 @@ local function compact_parts(left, right, ctx)
     return left, right
   end
 
+  ctx.git = compact_git_status(ctx.git)
+  if ctx.branch ~= '' then
+    left[2] = ctx.git ~= '' and ('%s (%s)'):format(ctx.branch, ctx.git) or ctx.branch
+  end
   right[1] = ''
   left[5] = compact_diagnostics(ctx.diagnostic_counts)
   compact_filename(ctx, 32)
@@ -438,6 +543,8 @@ local function compact_parts(left, right, ctx)
   end
 
   left[2] = ''
+  ctx.branch = ''
+  ctx.git = ''
   left[5] = ''
   compact_filename(ctx, 20)
   left[3] = ctx.filename
@@ -467,7 +574,7 @@ function M.setup()
   vim.api.nvim_create_autocmd({ 'BufEnter', 'BufWritePost', 'DirChanged', 'DiagnosticChanged' }, {
     group = group,
     callback = function()
-      branch_cache = {}
+      git_cache = {}
       redraw_statusline()
     end,
   })
@@ -481,15 +588,6 @@ function M.setup()
     group = group,
     callback = function()
       setup_highlights()
-      redraw_statusline()
-    end,
-  })
-
-  vim.api.nvim_create_autocmd('User', {
-    group = group,
-    pattern = 'GitSignsUpdate',
-    callback = function()
-      branch_cache = {}
       redraw_statusline()
     end,
   })
