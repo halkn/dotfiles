@@ -13,6 +13,17 @@
 ## Coding Style & Naming Conventions
 変更前に周辺ファイルの書き方を確認し、そのスタイルに合わせてください。Shell は `set -euo pipefail`、小文字の関数名、意味のある環境変数名を基本とします。Lua 設定は `.config/nvim/lua/{core,modules,plugins}/` に役割ごとに分け、プラグイン定義も機能単位で分割します。Markdown は短く実務的に書き、`markdownlint` を前提に整えます。Shell ファイルは `zsh` を含めて `shfmt` で repo の流儀に合わせて整形してください。
 
+## Neovim Design Principles
+Neovim 設定は「標準機能を軸に、足りない部分だけを小さく補う」方針で保ちます。初期化順序は `core`、`modules`、`plugins` を基本とし、`core` には常時必要な基本設定、`modules` には自作の UI や操作改善、`plugins` には外部依存の薄い機能別プラグインを置いてください。定番プラグインで置き換える前に、Neovim 組み込み API や既存 module で十分かを先に検討します。
+
+plugin は必要最小限に保ち、機能追加のために安易に数を増やさないでください。追加する場合は、責務が単一であること、標準機能では不足が明確であること、既存の操作感を崩さないことを条件にします。`lazy load` は原則として採用せず、起動時間の最適化よりも構成の単純さと初期化順序の明快さを優先してください。
+
+plugin manager は Neovim 標準を優先し、標準パッケージマネージャーで十分な機能がある限り外部 manager は増やしません。将来 Neovim 標準で置き換え可能な機能が入った場合は、既存 plugin の置き換えを検討してください。UI 系は `statusline`、`picker`、`notify` のように自作を優先し、LSP や formatter は言語別設定を分離して管理します。責務の重複は避け、特に format、lint、diagnostics、keymap はどの層が担当するかを明確にしてください。
+
+Lua formatter は `stylua`、linter は `selene` を正とし、`luals` は補完、定義ジャンプ、型、diagnostics を主担当にしてください。`luals` の built-in formatter を再び主担当に戻さないでください。`stylua` と `selene` は `ptm` で管理し、定義は `.config/ptm/tools.toml` に置きます。
+
+Neovim Lua を変更したときは次の順で確認してください。1. `stylua .config/nvim` で整形する。2. `selene .config/nvim` で lint を確認する。3. `nvim --headless -i NONE '+quitall'` で起動確認する。差分が広い場合は、意味変更と整形-only の変更を区別して確認してください。`statusline` や `vim` global のような Neovim 固有 API は、`selene.toml` と `nvim.yml` の前提を崩さないように扱ってください。
+
 ## Testing Guidelines
 統一的な test harness はないため、変更対象ごとに確認します。
 - Shell: `zsh` 変更時は `zsh -n .config/zsh/.zshrc .config/zsh/conf.d/*.zsh` を実行します。

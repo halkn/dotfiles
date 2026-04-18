@@ -1,6 +1,6 @@
 return {
-  src = "rebelot/kanagawa.nvim",
+  src = 'rebelot/kanagawa.nvim',
   config = function()
-    vim.cmd.colorscheme("kanagawa")
+    vim.cmd.colorscheme('kanagawa')
   end,
 }

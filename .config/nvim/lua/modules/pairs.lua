@@ -31,7 +31,9 @@ local function is_escaped()
 end
 
 local function close_pair(close)
-  if is_escaped() then return close end
+  if is_escaped() then
+    return close
+  end
   local _, after = get_cursor_context()
   if after == close then
     return '<Right>'
@@ -40,7 +42,9 @@ local function close_pair(close)
 end
 
 local function quote_pair(q)
-  if is_escaped() then return q end
+  if is_escaped() then
+    return q
+  end
   local before, after = get_cursor_context()
   if after == q then
     return '<Right>'
@@ -56,7 +60,7 @@ end
 
 local function backspace()
   local before, after = get_cursor_context()
-  for open, close in _G.pairs(pairs_map) do
+  for open, close in pairs(pairs_map) do
     if before == open and after == close then
       return '<BS><Del>'
     end
@@ -71,7 +75,7 @@ end
 
 local function cr()
   local before, after = get_cursor_context()
-  for open, close in _G.pairs(pairs_map) do
+  for open, close in pairs(pairs_map) do
     if before == open and after == close then
       return '<CR><C-o>O'
     end
@@ -86,16 +90,22 @@ end
 function M.setup()
   local opts = { expr = true, noremap = true }
 
-  for open, close in _G.pairs(pairs_map) do
+  for open, close in pairs(pairs_map) do
     vim.keymap.set('i', open, function()
-      if is_escaped() then return open end
+      if is_escaped() then
+        return open
+      end
       return open .. close .. '<Left>'
     end, opts)
-    vim.keymap.set('i', close, function() return close_pair(close) end, opts)
+    vim.keymap.set('i', close, function()
+      return close_pair(close)
+    end, opts)
   end
 
   for _, q in ipairs(quotes) do
-    vim.keymap.set('i', q, function() return quote_pair(q) end, opts)
+    vim.keymap.set('i', q, function()
+      return quote_pair(q)
+    end, opts)
   end
 
   vim.keymap.set('i', '<BS>', backspace, opts)

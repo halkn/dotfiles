@@ -15,7 +15,7 @@ local config = {
   },
   filetypes = { 'bash', 'sh' },
   root_markers = {
-    ".git/",
+    '.git/',
   },
   single_file_support = true,
 }

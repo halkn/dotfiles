@@ -1,10 +1,10 @@
 return {
-  src = "halkn/nvim-markview",
+  src = 'halkn/nvim-markview',
   config = function()
-    require("markview").setup({
+    require('markview').setup({
       keymaps = {
-        toggle = "<localleader>p",
+        toggle = '<localleader>p',
       },
     })
-  end
+  end,
 }

@@ -1,19 +1,20 @@
-local au = vim.api.nvim_create_augroup("vimrc_lint", { clear = true })
+local au = vim.api.nvim_create_augroup('vimrc_lint', { clear = true })
 return {
-  src = "mfussenegger/nvim-lint",
+  src = 'mfussenegger/nvim-lint',
   config = function()
-    local lint = require("lint")
+    local lint = require('lint')
     lint.linters_by_ft = {
-      markdown = { "markdownlint-cli2" },
-      sh = { "shellcheck" },
+      lua = { 'selene' },
+      markdown = { 'markdownlint-cli2' },
+      sh = { 'shellcheck' },
     }
 
-    vim.api.nvim_create_autocmd("BufWritePost", {
+    vim.api.nvim_create_autocmd('BufWritePost', {
       group = au,
-      pattern = { "*.md", "*.sh" },
+      pattern = { '*.lua', '*.md', '*.sh' },
       callback = function()
         lint.try_lint()
-      end
+      end,
     })
-  end
+  end,
 }

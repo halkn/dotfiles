@@ -20,7 +20,15 @@ local config = {
     })
   end,
   filetypes = { 'python' },
-  root_markers = { 'ty.toml', 'uv.lock', 'pyproject.toml', 'setup.py', 'setup.cfg', 'requirements.txt', '.git' },
+  root_markers = {
+    'ty.toml',
+    'uv.lock',
+    'pyproject.toml',
+    'setup.py',
+    'setup.cfg',
+    'requirements.txt',
+    '.git',
+  },
 }
 
 return config

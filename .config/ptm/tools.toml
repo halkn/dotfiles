@@ -137,6 +137,26 @@ linux-x86_64 = "lua-language-server-{version}-linux-x64.tar.gz"
 darwin-arm64 = "lua-language-server-{version}-darwin-arm64.tar.gz"
 
 
+[[github_release]]
+bin = "stylua"
+repo = "JohnnyMorganz/StyLua"
+version_regex = 'stylua ([\d.]+)'
+
+[github_release.platforms]
+linux-x86_64 = "stylua-linux-x86_64.zip"
+darwin-arm64 = "stylua-macos-aarch64.zip"
+
+
+[[github_release]]
+bin = "selene"
+repo = "Kampfkarren/selene"
+version_regex = '([\d.]+)'
+
+[github_release.platforms]
+linux-x86_64 = "selene-{version}-linux.zip"
+darwin-arm64 = "selene-{version}-macos.zip"
+
+
 [[npm]]
 bin = "yaml-language-server"
 version_regex = '([\d.]+)'

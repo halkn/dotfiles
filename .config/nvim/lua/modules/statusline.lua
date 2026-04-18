@@ -111,9 +111,12 @@ local function normalize_mode(mode)
 end
 
 local function section(parts)
-  return table.concat(vim.tbl_filter(function(x)
-    return x and x ~= ''
-  end, parts), ' | ')
+  return table.concat(
+    vim.tbl_filter(function(x)
+      return x and x ~= ''
+    end, parts),
+    ' | '
+  )
 end
 
 local function hl(group, text)
@@ -324,7 +327,11 @@ local function git_info(bufnr)
       behind = tonumber(behind_str) or 0
     elseif vim.startswith(line, '? ') then
       untracked = untracked + 1
-    elseif vim.startswith(line, '1 ') or vim.startswith(line, '2 ') or vim.startswith(line, 'u ') then
+    elseif
+      vim.startswith(line, '1 ')
+      or vim.startswith(line, '2 ')
+      or vim.startswith(line, 'u ')
+    then
       changed = changed + 1
     end
   end
@@ -664,9 +671,8 @@ end
 
 function M.setup()
   setup_highlights()
-  _G.dotfiles_statusline_render = M.render
   vim.o.laststatus = 3
-  vim.o.statusline = '%!v:lua.dotfiles_statusline_render()'
+  vim.o.statusline = "%!v:lua.require'modules.statusline'.render()"
 
   local group = vim.api.nvim_create_augroup('dotfiles_statusline', { clear = true })
   vim.api.nvim_create_autocmd({ 'BufEnter', 'BufWritePost', 'DirChanged', 'DiagnosticChanged' }, {
