@@ -15,6 +15,22 @@ local compact_width = {
   medium = 100,
   narrow = 80,
 }
+local left_part = {
+  mode = 1,
+  branch = 2,
+  file = 3,
+  spacer = 4,
+  diagnostics = 5,
+}
+local right_part = {
+  progress = 1,
+  filetype = 2,
+  encoding = 3,
+  fileformat = 4,
+  percent = 5,
+  location = 6,
+}
+local diagnostic_separator = '  '
 
 local mode_names = {
   n = 'NORMAL',
@@ -55,6 +71,18 @@ local mode_names = {
 }
 
 local git_cache = {}
+local diagnostic_fallback_icons = {
+  ERROR = 'E',
+  WARN = 'W',
+  INFO = 'I',
+  HINT = 'H',
+}
+local diagnostic_levels = {
+  { key = 'errors', severity = vim.diagnostic.severity.ERROR },
+  { key = 'warns', severity = vim.diagnostic.severity.WARN },
+  { key = 'info', severity = vim.diagnostic.severity.INFO },
+  { key = 'hints', severity = vim.diagnostic.severity.HINT },
+}
 
 local function normalize_mode(mode)
   local c = mode:sub(1, 1)
@@ -173,37 +201,65 @@ local function redraw_statusline()
   vim.cmd.redrawstatus()
 end
 
-local function diagnostics_counts(bufnr)
-  local levels = vim.diagnostic.severity
-  return {
-    errors = #vim.diagnostic.get(bufnr, { severity = levels.ERROR }),
-    warns = #vim.diagnostic.get(bufnr, { severity = levels.WARN }),
-    info = #vim.diagnostic.get(bufnr, { severity = levels.INFO }),
-    hints = #vim.diagnostic.get(bufnr, { severity = levels.HINT }),
-  }
+local function diagnostic_icon(severity)
+  local config = vim.diagnostic.config()
+  local signs = type(config) == 'table' and config.signs or nil
+  local text = type(signs) == 'table' and signs.text or nil
+  local icon = type(text) == 'table' and text[severity] or nil
+  if type(icon) ~= 'string' or icon == '' then
+    local level = vim.diagnostic.severity
+    local fallback = {
+      [level.ERROR] = diagnostic_fallback_icons.ERROR,
+      [level.WARN] = diagnostic_fallback_icons.WARN,
+      [level.INFO] = diagnostic_fallback_icons.INFO,
+      [level.HINT] = diagnostic_fallback_icons.HINT,
+    }
+    icon = fallback[severity] or 'D'
+  end
+  return vim.trim(icon)
 end
 
-local function diagnostics_summary(bufnr, counts)
-  local diag_status = vim.diagnostic.status
-  if type(diag_status) == 'function' then
-    local ok, status = pcall(diag_status, { bufnr = bufnr })
-    if not ok then
-      ok, status = pcall(diag_status, bufnr)
-    end
-    if not ok then
-      ok, status = pcall(diag_status)
-    end
-    if ok and type(status) == 'string' and status ~= '' then
-      return status
+local function diagnostic_statusline_icon(severity)
+  return diagnostic_icon(severity)
+end
+
+local function max_diagnostic_icon_width()
+  local level = vim.diagnostic.severity
+  return math.max(
+    vim.fn.strdisplaywidth(diagnostic_statusline_icon(level.ERROR)),
+    vim.fn.strdisplaywidth(diagnostic_statusline_icon(level.WARN)),
+    vim.fn.strdisplaywidth(diagnostic_statusline_icon(level.INFO)),
+    vim.fn.strdisplaywidth(diagnostic_statusline_icon(level.HINT))
+  )
+end
+
+local function format_diagnostic_count(severity, count)
+  local icon = diagnostic_statusline_icon(severity)
+  local pad = math.max(1, max_diagnostic_icon_width() - vim.fn.strdisplaywidth(icon) + 1)
+  return ('%s%s%d'):format(icon, string.rep(' ', pad), count)
+end
+
+local function format_diagnostic_entries(counts)
+  local out = {}
+  for _, entry in ipairs(diagnostic_levels) do
+    local count = counts[entry.key]
+    if count > 0 then
+      table.insert(out, format_diagnostic_count(entry.severity, count))
     end
   end
+  return out
+end
 
-  local out = {}
-  if counts.errors > 0 then table.insert(out, ('E:%d'):format(counts.errors)) end
-  if counts.warns > 0 then table.insert(out, ('W:%d'):format(counts.warns)) end
-  if counts.info > 0 then table.insert(out, ('I:%d'):format(counts.info)) end
-  if counts.hints > 0 then table.insert(out, ('H:%d'):format(counts.hints)) end
-  return table.concat(out, ' ')
+local function diagnostics_counts(bufnr)
+  local counts = {}
+  for _, entry in ipairs(diagnostic_levels) do
+    counts[entry.key] = #vim.diagnostic.get(bufnr, { severity = entry.severity })
+  end
+  return counts
+end
+
+local function diagnostics_summary(counts)
+  return table.concat(format_diagnostic_entries(counts), diagnostic_separator)
 end
 
 local function find_git_root(path)
@@ -396,7 +452,7 @@ local function build_context()
     git = git.status,
     filename = buffer_name(bufnr),
     flags = buffer_flags(bufnr),
-    diagnostics = diagnostics_summary(bufnr, diagnostics),
+    diagnostics = diagnostics_summary(diagnostics),
     diagnostic_counts = diagnostics,
     lsp_clients = lsp_clients,
     progress = progress_summary(),
@@ -408,21 +464,28 @@ local function build_context()
   }
 end
 
+local function branch_label(branch, git)
+  if branch == '' then
+    return ''
+  end
+  if git == '' then
+    return branch
+  end
+  return ('%s (%s)'):format(branch, git)
+end
+
+local function file_label(filename, flags)
+  if flags == '' then
+    return filename
+  end
+  return ('%s %s'):format(filename, flags)
+end
+
 local function build_left(ctx)
-  local branch_label = ctx.branch
-  if branch_label ~= '' and ctx.git ~= '' then
-    branch_label = ('%s (%s)'):format(branch_label, ctx.git)
-  end
-
-  local file_label = ctx.filename
-  if ctx.flags ~= '' then
-    file_label = ('%s %s'):format(file_label, ctx.flags)
-  end
-
   return {
     ctx.mode,
-    branch_label,
-    file_label,
+    branch_label(ctx.branch, ctx.git),
+    file_label(ctx.filename, ctx.flags),
     '',
     ctx.diagnostics,
   }
@@ -453,12 +516,12 @@ local function compact_diagnostics(counts)
   end
 
   if counts.errors > 0 then
-    return ('E:%d'):format(counts.errors)
+    return format_diagnostic_count(vim.diagnostic.severity.ERROR, counts.errors)
   end
   if counts.warns > 0 then
-    return ('W:%d'):format(counts.warns)
+    return format_diagnostic_count(vim.diagnostic.severity.WARN, counts.warns)
   end
-  return ('D:%d'):format(total)
+  return format_diagnostic_count(vim.diagnostic.severity.INFO, total)
 end
 
 local function compact_git_status(text)
@@ -484,19 +547,24 @@ local function style_diagnostics(text)
     return ''
   end
 
+  local levels = vim.diagnostic.severity
+  local groups = {
+    [diagnostic_statusline_icon(levels.ERROR)] = 'DotfilesStatuslineDiagError',
+    [diagnostic_statusline_icon(levels.WARN)] = 'DotfilesStatuslineDiagWarn',
+    [diagnostic_statusline_icon(levels.INFO)] = 'DotfilesStatuslineDiagInfo',
+    [diagnostic_statusline_icon(levels.HINT)] = 'DotfilesStatuslineDiagHint',
+    [diagnostic_fallback_icons.ERROR] = 'DotfilesStatuslineDiagError',
+    [diagnostic_fallback_icons.WARN] = 'DotfilesStatuslineDiagWarn',
+    [diagnostic_fallback_icons.INFO] = 'DotfilesStatuslineDiagInfo',
+    [diagnostic_fallback_icons.HINT] = 'DotfilesStatuslineDiagHint',
+  }
   local styled = {}
-  for _, part in ipairs(vim.split(text, ' ', { trimempty = true })) do
-    local prefix = part:sub(1, 1)
-    local group = ({
-      E = 'DotfilesStatuslineDiagError',
-      W = 'DotfilesStatuslineDiagWarn',
-      I = 'DotfilesStatuslineDiagInfo',
-      H = 'DotfilesStatuslineDiagHint',
-      D = 'DotfilesStatuslineDiagInfo',
-    })[prefix] or 'DotfilesStatuslineSection'
+  for _, part in ipairs(vim.split(text, diagnostic_separator, { trimempty = true, plain = true })) do
+    local icon = vim.trim((part:match('^([^%d]+)') or ''))
+    local group = groups[icon] or 'DotfilesStatuslineSection'
     table.insert(styled, hl(group, part))
   end
-  return table.concat(styled, ' ')
+  return table.concat(styled, diagnostic_separator)
 end
 
 local function style_git_status(text)
@@ -536,18 +604,18 @@ local function style_branch(ctx)
 end
 
 local function style_parts(left, right, ctx)
-  left[1] = style_mode(ctx)
-  left[2] = style_branch(ctx)
-  left[3] = hl('DotfilesStatuslineSection', left[3])
-  left[4] = hl('DotfilesStatuslineMuted', left[4])
-  left[5] = style_diagnostics(left[5])
+  left[left_part.mode] = style_mode(ctx)
+  left[left_part.branch] = style_branch(ctx)
+  left[left_part.file] = hl('DotfilesStatuslineSection', left[left_part.file])
+  left[left_part.spacer] = hl('DotfilesStatuslineMuted', left[left_part.spacer])
+  left[left_part.diagnostics] = style_diagnostics(left[left_part.diagnostics])
 
-  right[1] = hl('DotfilesStatuslineSection', right[1])
-  right[2] = hl('DotfilesStatuslineSection', right[2])
-  right[3] = hl('DotfilesStatuslineMuted', right[3])
-  right[4] = hl('DotfilesStatuslineMuted', right[4])
-  right[5] = hl('DotfilesStatuslineMuted', right[5])
-  right[6] = hl('DotfilesStatuslineSection', right[6])
+  right[right_part.progress] = hl('DotfilesStatuslineSection', right[right_part.progress])
+  right[right_part.filetype] = hl('DotfilesStatuslineSection', right[right_part.filetype])
+  right[right_part.encoding] = hl('DotfilesStatuslineMuted', right[right_part.encoding])
+  right[right_part.fileformat] = hl('DotfilesStatuslineMuted', right[right_part.fileformat])
+  right[right_part.percent] = hl('DotfilesStatuslineMuted', right[right_part.percent])
+  right[right_part.location] = hl('DotfilesStatuslineSection', right[right_part.location])
   return left, right
 end
 
@@ -556,30 +624,28 @@ local function compact_parts(left, right, ctx)
     return left, right
   end
 
-  right[3] = ''
-  right[4] = ''
+  right[right_part.encoding] = ''
+  right[right_part.fileformat] = ''
   if ctx.width >= compact_width.medium then
     return left, right
   end
 
   ctx.git = compact_git_status(ctx.git)
-  if ctx.branch ~= '' then
-    left[2] = ctx.git ~= '' and ('%s (%s)'):format(ctx.branch, ctx.git) or ctx.branch
-  end
-  left[5] = compact_diagnostics(ctx.diagnostic_counts)
+  left[left_part.branch] = branch_label(ctx.branch, ctx.git)
+  left[left_part.diagnostics] = compact_diagnostics(ctx.diagnostic_counts)
   compact_filename(ctx, 32)
-  left[3] = ctx.filename
+  left[left_part.file] = file_label(ctx.filename, ctx.flags)
   if ctx.width >= compact_width.narrow then
     return left, right
   end
 
-  left[2] = ''
+  left[left_part.branch] = ''
   ctx.branch = ''
   ctx.git = ''
-  left[5] = ''
-  right[1] = ''
+  left[left_part.diagnostics] = ''
+  right[right_part.progress] = ''
   compact_filename(ctx, 20)
-  left[3] = ctx.filename
+  left[left_part.file] = file_label(ctx.filename, ctx.flags)
   return left, right
 end
 
