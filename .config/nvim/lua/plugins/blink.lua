@@ -1,14 +1,14 @@
 return {
-  src = "saghen/blink.cmp",
-  version = "v1.10.2",
+  src = 'saghen/blink.cmp',
+  version = 'v1.10.2',
   config = function()
-    require("blink.cmp").setup({
+    require('blink.cmp').setup({
       keymap = {
         preset = 'super-tab',
       },
       cmdline = { enabled = true },
       appearance = {
-        nerd_font_variant = 'mono'
+        nerd_font_variant = 'mono',
       },
       signature = { enabled = true },
       completion = {
@@ -18,5 +18,5 @@ return {
         default = { 'lsp', 'path', 'snippets', 'buffer' },
       },
     })
-  end
+  end,
 }

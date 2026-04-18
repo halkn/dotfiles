@@ -8,11 +8,36 @@ local min_width = 30
 local max_width_ratio = 0.4
 
 local level_config = {
-  [vim.log.levels.ERROR] = { icon = ' ', hl = 'DiagnosticError', title_hl = 'NotifyTitleError', name = 'ERROR' },
-  [vim.log.levels.WARN]  = { icon = ' ', hl = 'DiagnosticWarn', title_hl = 'NotifyTitleWarn', name = 'WARN' },
-  [vim.log.levels.INFO]  = { icon = ' ', hl = 'DiagnosticInfo', title_hl = 'NotifyTitleInfo', name = 'INFO' },
-  [vim.log.levels.DEBUG] = { icon = ' ', hl = 'DiagnosticHint', title_hl = 'NotifyTitleDebug', name = 'DEBUG' },
-  [vim.log.levels.TRACE] = { icon = ' ', hl = 'DiagnosticHint', title_hl = 'NotifyTitleTrace', name = 'TRACE' },
+  [vim.log.levels.ERROR] = {
+    icon = ' ',
+    hl = 'DiagnosticError',
+    title_hl = 'NotifyTitleError',
+    name = 'ERROR',
+  },
+  [vim.log.levels.WARN] = {
+    icon = ' ',
+    hl = 'DiagnosticWarn',
+    title_hl = 'NotifyTitleWarn',
+    name = 'WARN',
+  },
+  [vim.log.levels.INFO] = {
+    icon = ' ',
+    hl = 'DiagnosticInfo',
+    title_hl = 'NotifyTitleInfo',
+    name = 'INFO',
+  },
+  [vim.log.levels.DEBUG] = {
+    icon = ' ',
+    hl = 'DiagnosticHint',
+    title_hl = 'NotifyTitleDebug',
+    name = 'DEBUG',
+  },
+  [vim.log.levels.TRACE] = {
+    icon = ' ',
+    hl = 'DiagnosticHint',
+    title_hl = 'NotifyTitleTrace',
+    name = 'TRACE',
+  },
 }
 
 local function setup_highlights()
@@ -70,7 +95,9 @@ end
 
 local function find_active(id)
   for _, n in ipairs(active) do
-    if n.id == id then return n end
+    if n.id == id then
+      return n
+    end
   end
   return nil
 end
@@ -97,9 +124,13 @@ local function reset_timer(entry, timeout)
     return
   end
   entry.timer = vim.uv.new_timer()
-  entry.timer:start(timeout, 0, vim.schedule_wrap(function()
-    remove_by_id(entry.id)
-  end))
+  entry.timer:start(
+    timeout,
+    0,
+    vim.schedule_wrap(function()
+      remove_by_id(entry.id)
+    end)
+  )
 end
 
 local id_counter = 0
@@ -114,21 +145,30 @@ local function show(msg, level, opts)
   local title = opts.title or ''
   local id = opts.id
   local timeout = opts.timeout
-  if timeout == nil or timeout == true then timeout = display_ms end
-  if timeout == false then timeout = 0 end
+  if timeout == nil or timeout == true then
+    timeout = display_ms
+  end
+  if timeout == false then
+    timeout = 0
+  end
 
   local lines = vim.split(msg, '\n', { trimempty = true })
-  if #lines == 0 then lines = { ' ' } end
+  if #lines == 0 then
+    lines = { ' ' }
+  end
   local width = calc_width(lines)
-  local border_title = title ~= '' and { { ' ' .. cfg.icon .. ' ' .. title .. ' ', cfg.title_hl } } or nil
+  local border_title = title ~= '' and { { ' ' .. cfg.icon .. ' ' .. title .. ' ', cfg.title_hl } }
+    or nil
 
   add_history(msg, level, title)
 
   -- Update existing notification with same id
   local existing = id and find_active(id)
   if existing then
-    if not (existing.win and vim.api.nvim_win_is_valid(existing.win))
-      or not (existing.buf and vim.api.nvim_buf_is_valid(existing.buf)) then
+    if
+      not (existing.win and vim.api.nvim_win_is_valid(existing.win))
+      or not (existing.buf and vim.api.nvim_buf_is_valid(existing.buf))
+    then
       remove_by_id(id)
       existing = nil
     end
@@ -175,7 +215,9 @@ local function show(msg, level, opts)
   vim.api.nvim_set_option_value('winhighlight', 'FloatBorder:' .. cfg.hl, { win = win })
 
   id_counter = id_counter + 1
-  if not id then id = id_counter end
+  if not id then
+    id = id_counter
+  end
   local entry = { id = id, win = win, buf = buf, timer = nil }
   table.insert(active, entry)
   reset_timer(entry, timeout)
@@ -196,7 +238,10 @@ local function show_history()
     local c = level_config[h.level] or level_config[vim.log.levels.INFO]
     local time = os.date('%H:%M:%S', h.time)
     local title = h.title ~= '' and (' [' .. h.title .. ']') or ''
-    table.insert(lines, string.format('%s %s %s%s: %s', time, c.icon, c.name, title, h.msg:gsub('\n', ' ')))
+    table.insert(
+      lines,
+      string.format('%s %s %s%s: %s', time, c.icon, c.name, title, h.msg:gsub('\n', ' '))
+    )
   end
 
   local buf = vim.api.nvim_create_buf(false, true)
@@ -233,7 +278,9 @@ function M.setup()
   })
 
   vim.notify = function(msg, level, opts)
-    if not msg or msg == '' then return end
+    if not msg or msg == '' then
+      return
+    end
     opts = opts or {}
     if opts.id == nil then
       id_counter = id_counter + 1
@@ -245,7 +292,11 @@ function M.setup()
     return opts.id
   end
 
-  vim.api.nvim_create_user_command('NotifyHistory', show_history, { desc = 'Show notification history' })
+  vim.api.nvim_create_user_command(
+    'NotifyHistory',
+    show_history,
+    { desc = 'Show notification history' }
+  )
 end
 
 return M

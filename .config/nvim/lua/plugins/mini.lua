@@ -10,5 +10,5 @@ return {
     vim.keymap.set('n', 'RR', 'R', { desc = 'Replace mode' })
     require('mini.splitjoin').setup({ mappings = { toggle = '<Leader>j' } })
     require('mini.surround').setup()
-  end
+  end,
 }

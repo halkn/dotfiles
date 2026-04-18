@@ -6,8 +6,8 @@ local ring_idx = 0
 
 -- 直前の paste 操作を記録（<C-p>/<C-n> で差し替えるため）
 local last_paste = {
-  tick = nil,   -- b:changedtick at paste
-  start = nil,  -- { row, col } 0-indexed
+  tick = nil, -- b:changedtick at paste
+  start = nil, -- { row, col } 0-indexed
   finish = nil, -- { row, col } 0-indexed
 }
 
@@ -24,12 +24,16 @@ local function highlight_paste()
     hl_timer:close()
   end
   hl_timer = vim.uv.new_timer()
-  hl_timer:start(200, 0, vim.schedule_wrap(function()
-    vim.api.nvim_buf_clear_namespace(buf, ns, 0, -1)
-    hl_timer:stop()
-    hl_timer:close()
-    hl_timer = nil
-  end))
+  hl_timer:start(
+    200,
+    0,
+    vim.schedule_wrap(function()
+      vim.api.nvim_buf_clear_namespace(buf, ns, 0, -1)
+      hl_timer:stop()
+      hl_timer:close()
+      hl_timer = nil
+    end)
+  )
 end
 
 local function add(entry)
@@ -75,11 +79,17 @@ local function cycle(delta)
   if last_paste.tick ~= vim.b.changedtick then
     return
   end
-  if #ring == 0 then return end
+  if #ring == 0 then
+    return
+  end
 
   local new_idx = ring_idx + delta
-  if new_idx < 1 then new_idx = #ring end
-  if new_idx > #ring then new_idx = 1 end
+  if new_idx < 1 then
+    new_idx = #ring
+  end
+  if new_idx > #ring then
+    new_idx = 1
+  end
   ring_idx = new_idx
 
   local entry = ring[ring_idx]
@@ -114,7 +124,9 @@ local function show_ring()
       return entry.regcontents:gsub('\n', '\\n')
     end,
   }, function(entry)
-    if not entry then return end
+    if not entry then
+      return
+    end
     local lines = vim.split(entry.regcontents, '\n', { plain = true })
     vim.api.nvim_put(lines, entry.regtype, true, true)
   end)
@@ -133,12 +145,24 @@ function M.setup()
   })
 
   local opts = { noremap = true, silent = true }
-  vim.keymap.set({ 'n', 'v' }, 'p', function() paste(true, false) end, opts)
-  vim.keymap.set({ 'n', 'v' }, 'P', function() paste(false, false) end, opts)
-  vim.keymap.set({ 'n', 'v' }, 'gp', function() paste(true, true) end, opts)
-  vim.keymap.set({ 'n', 'v' }, 'gP', function() paste(false, true) end, opts)
-  vim.keymap.set('n', '<C-p>', function() cycle(-1) end, opts)
-  vim.keymap.set('n', '<C-n>', function() cycle(1) end, opts)
+  vim.keymap.set({ 'n', 'v' }, 'p', function()
+    paste(true, false)
+  end, opts)
+  vim.keymap.set({ 'n', 'v' }, 'P', function()
+    paste(false, false)
+  end, opts)
+  vim.keymap.set({ 'n', 'v' }, 'gp', function()
+    paste(true, true)
+  end, opts)
+  vim.keymap.set({ 'n', 'v' }, 'gP', function()
+    paste(false, true)
+  end, opts)
+  vim.keymap.set('n', '<C-p>', function()
+    cycle(-1)
+  end, opts)
+  vim.keymap.set('n', '<C-n>', function()
+    cycle(1)
+  end, opts)
   vim.keymap.set('n', '<Leader>y', show_ring, opts)
 end
 

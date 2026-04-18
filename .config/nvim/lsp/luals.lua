@@ -27,11 +27,11 @@ local config = {
         globals = { 'vim' },
       },
       format = {
-        enable = true,
+        enable = false,
         defaultConfig = {
-          indent_style = "space",
-          indent_size = "2",
-        }
+          indent_style = 'space',
+          indent_size = '2',
+        },
       },
       completion = {
         callSnippet = 'Disable',
@@ -40,10 +40,13 @@ local config = {
       workspace = {
         checkThirdParty = false,
         library = {
-          vim.fs.joinpath(vim.fn.stdpath("data") --[[@as string]], "/site/pack/core/opt/mini.nvim/lua"),
-          vim.fs.joinpath(vim.fn.stdpath("config") --[[@as string]], "lua"),
-          vim.fs.joinpath(vim.env.VIMRUNTIME, "lua"),
-          "${3rd}/luv/library",
+          vim.fs.joinpath(
+            vim.fn.stdpath('data') --[[@as string]],
+            '/site/pack/core/opt/mini.nvim/lua'
+          ),
+          vim.fs.joinpath(vim.fn.stdpath('config') --[[@as string]], 'lua'),
+          vim.fs.joinpath(vim.env.VIMRUNTIME, 'lua'),
+          '${3rd}/luv/library',
         },
       },
       telemetry = {
