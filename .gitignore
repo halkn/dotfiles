@@ -1,2 +1,5 @@
+.config/zsh/*.zwc
+.config/zsh/conf.d/*.zwc
+
 # secret
 .config/gh/hosts.yml

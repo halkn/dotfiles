@@ -37,10 +37,22 @@ d() {
 
 # fcd - interactive change directory
 if command -v fd >/dev/null 2>&1; then
-  alias fcd='cd $(fd --type d --hidden --exclude .git | fzf \
-    --preview "eza -lah --color=always --icons {} && echo && eza --tree --level=2 --color=always --icons {}" \
-    --preview-window=right:60% \
-    --bind "ctrl-/:toggle-preview")'
+  fcd() {
+    local dir preview_cmd
+
+    if command -v lsd >/dev/null 2>&1; then
+      preview_cmd='lsd -lah {} && echo && lsd --tree --depth 2 {}'
+    else
+      preview_cmd='ls -lah {}'
+    fi
+
+    dir=$(fd --type d --hidden --exclude .git |
+      fzf \
+        --preview "$preview_cmd" \
+        --preview-window=right:60% \
+        --bind "ctrl-/:toggle-preview")
+    [[ -n "$dir" ]] && cd -- "$dir"
+  }
 fi
 
 # ── git ─────────────────────────────────────────────
