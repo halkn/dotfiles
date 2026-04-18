@@ -316,6 +316,36 @@ local function progress_summary()
   return table.concat(pieces, ' ')
 end
 
+local function lsp_clients_summary(bufnr)
+  local clients = vim.lsp.get_clients({ bufnr = bufnr })
+  if #clients == 0 then
+    return ''
+  end
+
+  local names = {}
+  local seen = {}
+  for _, client in ipairs(clients) do
+    if type(client.name) == 'string' and client.name ~= '' and not seen[client.name] then
+      seen[client.name] = true
+      table.insert(names, client.name)
+    end
+  end
+
+  table.sort(names)
+  return table.concat(names, ',')
+end
+
+local function filetype_summary(bufnr, lsp_clients)
+  local filetype = vim.bo[bufnr].filetype
+  if filetype == '' then
+    filetype = 'noft'
+  end
+  if lsp_clients == '' then
+    return filetype
+  end
+  return ('%s[%s]'):format(filetype, lsp_clients)
+end
+
 local function buffer_flags(bufnr)
   local flags = {}
   if vim.bo[bufnr].modified then
@@ -351,6 +381,7 @@ local function build_context()
   local git = git_info(bufnr)
   local branch = git.head
   local diagnostics = diagnostics_counts(bufnr)
+  local lsp_clients = lsp_clients_summary(bufnr)
   if branch ~= '' then
     branch = ' ' .. branch
   end
@@ -367,8 +398,9 @@ local function build_context()
     flags = buffer_flags(bufnr),
     diagnostics = diagnostics_summary(bufnr, diagnostics),
     diagnostic_counts = diagnostics,
+    lsp_clients = lsp_clients,
     progress = progress_summary(),
-    filetype = vim.bo[bufnr].filetype,
+    filetype = filetype_summary(bufnr, lsp_clients),
     encoding = file_encoding(bufnr),
     fileformat = vim.bo[bufnr].fileformat,
     percent = '%p%%',
@@ -510,7 +542,7 @@ local function style_parts(left, right, ctx)
   left[4] = hl('DotfilesStatuslineMuted', left[4])
   left[5] = style_diagnostics(left[5])
 
-  right[1] = hl('DotfilesStatuslineMuted', right[1])
+  right[1] = hl('DotfilesStatuslineSection', right[1])
   right[2] = hl('DotfilesStatuslineSection', right[2])
   right[3] = hl('DotfilesStatuslineMuted', right[3])
   right[4] = hl('DotfilesStatuslineMuted', right[4])
@@ -534,7 +566,6 @@ local function compact_parts(left, right, ctx)
   if ctx.branch ~= '' then
     left[2] = ctx.git ~= '' and ('%s (%s)'):format(ctx.branch, ctx.git) or ctx.branch
   end
-  right[1] = ''
   left[5] = compact_diagnostics(ctx.diagnostic_counts)
   compact_filename(ctx, 32)
   left[3] = ctx.filename
@@ -546,6 +577,7 @@ local function compact_parts(left, right, ctx)
   ctx.branch = ''
   ctx.git = ''
   left[5] = ''
+  right[1] = ''
   compact_filename(ctx, 20)
   left[3] = ctx.filename
   return left, right
@@ -580,6 +612,11 @@ function M.setup()
   })
 
   vim.api.nvim_create_autocmd({ 'ModeChanged', 'WinEnter', 'BufModifiedSet' }, {
+    group = group,
+    callback = redraw_statusline,
+  })
+
+  vim.api.nvim_create_autocmd({ 'LspAttach', 'LspDetach', 'LspProgress' }, {
     group = group,
     callback = redraw_statusline,
   })
