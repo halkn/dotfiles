@@ -10,23 +10,6 @@ if command -v uv >/dev/null 2>&1; then
   unset _uv_comp _uv_bin
 fi
 
-# ── deno ─────────────────────────────────────────────
-if ! command -v deno >/dev/null 2>&1 && [[ -x $DENO_INSTALL/bin/deno ]]; then
-  mkdir -p $XDG_BIN_HOME
-  ln -sf $DENO_INSTALL/bin/deno $XDG_BIN_HOME/deno
-fi
-
-if command -v deno >/dev/null 2>&1; then
-  _deno_comp=$ZCACHEDIR/completions/_deno
-  _deno_bin=$(command -v deno)
-  if [[ ! -f $_deno_comp || $_deno_bin -nt $_deno_comp ]]; then
-    mkdir -p ${_deno_comp:h}
-    deno completions zsh >$_deno_comp
-  fi
-  source $_deno_comp
-  unset _deno_comp _deno_bin
-fi
-
 # ── lsd ──────────────────────────────────────────────
 if command -v lsd >/dev/null 2>&1; then
   # Override the default ls aliases only when lsd is available.
