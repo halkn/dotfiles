@@ -1,0 +1,114 @@
+# installer
+[tools.uv]
+type = "installer"
+url = "https://astral.sh/uv/install.sh"
+update_command = "uv self update"
+version_regex = "uv ([\\d.]+)"
+
+[tools.claude]
+type = "installer"
+url = "https://claude.ai/install.sh"
+update_command = "claude update"
+version_regex = "([\\d.]+)"
+
+# url_release
+[tools.node]
+type = "url_release"
+version = "lts"
+version_url = "https://nodejs.org/dist/index.json"
+version_url_regex = "\"version\":\"(v[\\d.]+)\"[^}]*\"lts\":\""
+opt_dir = "~/.local/opt/node"
+bin_path_in_archive = "bin/node"
+strip_components = 1
+extra_bins = ["npm", "npx", "corepack"]
+version_regex = "v([\\d.]+)"
+
+# github_release
+[tools.rg]
+type = "github_release"
+repo = "BurntSushi/ripgrep"
+version_regex = "ripgrep ([\\d.]+)"
+
+[tools.fd]
+type = "github_release"
+repo = "sharkdp/fd"
+version_regex = "fd ([\\d.]+)"
+
+[tools.fzf]
+type = "github_release"
+repo = "junegunn/fzf"
+version_regex = "([\\d.]+)"
+
+[tools.lsd]
+type = "github_release"
+repo = "lsd-rs/lsd"
+version_regex = "lsd ([\\d.]+)"
+
+[tools.delta]
+type = "github_release"
+repo = "dandavison/delta"
+version_regex = "delta ([\\d.]+)"
+
+[tools.gh]
+type = "github_release"
+repo = "cli/cli"
+version_regex = "gh version ([\\d.]+)"
+
+[tools.starship]
+type = "github_release"
+repo = "starship/starship"
+version_regex = "starship ([\\d.]+)"
+
+[tools.nvim]
+type = "github_release"
+version = "nightly"
+repo = "neovim/neovim"
+opt_dir = "~/.local/opt/neovim"
+bin_path_in_archive = "bin/nvim"
+version_regex = "NVIM v([\\d.]+-dev[^\\s]*|[\\d.]+)"
+
+[tools.tree-sitter]
+type = "github_release"
+repo = "tree-sitter/tree-sitter"
+version_regex = "tree-sitter (\\S+)"
+
+[tools.lua-language-server]
+type = "github_release"
+repo = "LuaLS/lua-language-server"
+opt_dir = "~/.local/opt/lua-language-server"
+bin_path_in_archive = "bin/lua-language-server"
+strip_components = 0
+version_regex = "([\\d.]+)"
+
+[tools.stylua]
+type = "github_release"
+repo = "JohnnyMorganz/StyLua"
+version_regex = "stylua ([\\d.]+)"
+
+[tools.selene]
+type = "github_release"
+repo = "Kampfkarren/selene"
+version_regex = "([\\d.]+)"
+
+[tools.selene.platforms]
+linux-x86_64 = "selene-{version}-linux.zip"
+darwin-arm64 = "selene-{version}-macos.zip"
+
+[tools.shfmt]
+type = "github_release"
+repo = "mvdan/sh"
+version_regex = "v([\\d.]+)"
+
+[tools.shellcheck]
+type = "github_release"
+repo = "koalaman/shellcheck"
+version_regex = "version: ([\\d.]+)"
+
+# npm
+[tools.yaml-language-server]
+type = "npm"
+version_regex = "([\\d.]+)"
+
+[tools.markdownlint-cli2]
+type = "npm"
+version_regex = "markdownlint-cli2 v([\\d.]+)"
