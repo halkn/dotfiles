@@ -21,5 +21,11 @@ alias ..='cd ..'
 alias path='echo $PATH | tr ":" "\n"'
 alias zs='exec zsh'
 alias zb='for i in $(seq 1 10); do time zsh -i -c exit; done'
-alias dot='cd $HOME/.dotfiles && $EDITOR'
 alias :q='exit'
+dot() {
+  local target="${XDG_CONFIG_HOME:-$HOME/.config}"
+
+  [[ -d "$HOME/.dotfiles" ]] && target="$HOME/.dotfiles"
+
+  cd "$target"
+}

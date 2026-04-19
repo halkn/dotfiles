@@ -1,6 +1,7 @@
 # mkdir for zsh.
 mkdir -p "${ZDATADIR}"
 mkdir -p "${ZCACHEDIR}"
+mkdir -p "${ZSTATEDIR}"
 mkdir -p "${ZPLUGINDIR}"
 
 # load conf.d/*.zsh.
@@ -10,6 +11,5 @@ for f in "${ZDOTDIR}/conf.d"/*.zsh; do
 done
 
 # compile zshrc.
-[[ ! -f "${ZDOTDIR}/.zshrc.zwc" || "${ZDOTDIR}/.zshrc" -nt "${ZDOTDIR}/.zshrc.zwc" ]] \
-  && zcompile "${ZDOTDIR}/.zshrc"
-
+[[ ! -f "${ZDOTDIR}/.zshrc.zwc" || "${ZDOTDIR}/.zshrc" -nt "${ZDOTDIR}/.zshrc.zwc" ]] &&
+  zcompile "${ZDOTDIR}/.zshrc"
