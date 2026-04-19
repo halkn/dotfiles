@@ -16,14 +16,14 @@ repo() {
       case "$url" in
         *dev.azure.com*)
           host="dev.azure.com"
-          local path="${url#*dev.azure.com/}"
-          path="${path#*@dev.azure.com/}"
-          local org="${path%%/*}"
-          path="${path#*/}"
-          local project="${path%%/*}"
-          path="${path#*/}"
-          path="${path#_git/}"
-          name="${path%%/*}"
+          local repo_path="${url#*dev.azure.com/}"
+          repo_path="${repo_path#*@dev.azure.com/}"
+          local org="${repo_path%%/*}"
+          repo_path="${repo_path#*/}"
+          local project="${repo_path%%/*}"
+          repo_path="${repo_path#*/}"
+          repo_path="${repo_path#_git/}"
+          name="${repo_path%%/*}"
           dest=$root/$host/$org/$project/$name
           ;;
         https://*)

@@ -1,6 +1,6 @@
-command -v fzf &>/dev/null || return
-
-source <(fzf --zsh)
+if command -v fzf >/dev/null 2>&1; then
+  source <(fzf --zsh)
+fi
 
 # ── util ────────────────────────────────────────────
 # fh - repeat history
@@ -54,6 +54,79 @@ if command -v fd >/dev/null 2>&1; then
     [[ -n "$dir" ]] && cd -- "$dir"
   }
 fi
+
+# frm - interactive remove files
+frm() {
+  local target preview_cmd reply
+  local target_path
+  local sorted_dirs
+  local -a targets files dirs
+
+  if ! command -v fzf >/dev/null 2>&1; then
+    echo 'frm: fzf is not installed or not in PATH' >&2
+    return 1
+  fi
+
+  if command -v bat >/dev/null 2>&1 && command -v lsd >/dev/null 2>&1; then
+    preview_cmd='if [[ -d {} ]]; then lsd -lah {} && echo && lsd --tree --depth 2 {}; else bat --style=plain --color=always --line-range=:200 {}; fi'
+  elif command -v bat >/dev/null 2>&1; then
+    preview_cmd='if [[ -d {} ]]; then ls -lah {}; else bat --style=plain --color=always --line-range=:200 {}; fi'
+  elif command -v lsd >/dev/null 2>&1; then
+    preview_cmd='if [[ -d {} ]]; then lsd -lah {} && echo && lsd --tree --depth 2 {}; else sed -n "1,200p" {}; fi'
+  else
+    preview_cmd='if [[ -d {} ]]; then ls -lah {}; else sed -n "1,200p" {}; fi'
+  fi
+
+  if command -v fd >/dev/null 2>&1; then
+    target=$(fd --hidden --strip-cwd-prefix --exclude .git |
+      fzf \
+        --height 80% \
+        --layout reverse \
+        --border \
+        --multi \
+        --header 'TAB: multi-select  ENTER: mark for delete  CTRL-/: toggle preview' \
+        --preview "$preview_cmd" \
+        --preview-window=right:60% \
+        --bind 'ctrl-/:toggle-preview')
+  else
+    target=$(find . -path ./.git -prune -o -mindepth 1 -print |
+      sed 's#^\./##' |
+      fzf \
+        --height 80% \
+        --layout reverse \
+        --border \
+        --multi \
+        --header 'TAB: multi-select  ENTER: mark for delete  CTRL-/: toggle preview' \
+        --preview "$preview_cmd" \
+        --preview-window=right:60% \
+        --bind 'ctrl-/:toggle-preview')
+  fi
+  [[ -z "$target" ]] && return
+
+  targets=("${(@f)target}")
+
+  print 'remove targets:'
+  printf '  %s\n' "${targets[@]}"
+  read "reply?delete? [y/N]: "
+  [[ "$reply" =~ ^[Yy]$ ]] || return
+
+  for target_path in "${targets[@]}"; do
+    if [[ -d "$target_path" ]]; then
+      dirs+=("$target_path")
+    else
+      files+=("$target_path")
+    fi
+  done
+
+  [[ ${#files[@]} -gt 0 ]] && rm -- "${files[@]}"
+  if [[ ${#dirs[@]} -gt 0 ]]; then
+    sorted_dirs=$(printf '%s\n' "${dirs[@]}" | awk -F/ '{ print NF "\t" $0 }' | sort -rn | cut -f2-)
+    for target_path in ${(f)sorted_dirs}; do
+      [[ -e "$target_path" ]] || continue
+      rm -r -- "$target_path"
+    done
+  fi
+}
 
 # ── git ─────────────────────────────────────────────
 # ── opts ────────────────────────────────────────────

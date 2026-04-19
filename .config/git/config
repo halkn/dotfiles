@@ -26,10 +26,12 @@
 [alias]
   st = status
   br = branch
+  ba = branch -av
   sw = switch
   co = checkout
   df = difftool
   diff-narrow = -c delta.side-by-side=false diff
+  pm = "!f() { base=\"${1:-origin/main}\"; current=$(git branch --show-current); git for-each-ref --format='%(refname:short)' --merged=\"$base\" refs/heads | while IFS= read -r branch; do [ -n \"$branch\" ] || continue; [ \"$branch\" = \"$current\" ] && continue; [ \"$branch\" = \"main\" ] && continue; git branch -d \"$branch\"; done; }; f"
 [core]
   pager = delta
 [interactive]
