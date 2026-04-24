@@ -3,4 +3,3 @@ cache=${XDG_CACHE_HOME}/npm
 engine-strict=true
 ignore-scripts=true
 audit=true
-min-release-age=7

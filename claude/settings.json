@@ -25,10 +25,11 @@
     ],
     "defaultMode": "acceptEdits"
   },
-  "autoUpdatesChannel": "latest",
-  "language": "日本語",
   "statusLine": {
     "type": "command",
     "command": "~/.claude/statusline-command.sh"
-  }
+  },
+  "language": "日本語",
+  "autoUpdatesChannel": "latest",
+  "editorMode": "vim"
 }
