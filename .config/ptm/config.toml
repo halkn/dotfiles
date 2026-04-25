@@ -90,10 +90,6 @@ type = "github_release"
 repo = "Kampfkarren/selene"
 version_regex = "([\\d.]+)"
 
-[tools.selene.platforms]
-linux-x86_64 = "selene-{version}-linux.zip"
-darwin-arm64 = "selene-{version}-macos.zip"
-
 [tools.shfmt]
 type = "github_release"
 repo = "mvdan/sh"
