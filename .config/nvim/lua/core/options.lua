@@ -80,6 +80,7 @@ opt.cmdheight = 0
 opt.pumheight = 10
 opt.previewheight = 10
 opt.winwidth = 30
+opt.winborder = 'rounded'
 opt.cmdwinheight = 5
 opt.equalalways = false
 
