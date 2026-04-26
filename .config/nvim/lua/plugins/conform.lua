@@ -5,9 +5,11 @@ return {
     require('conform').setup({
       formatters_by_ft = vim.tbl_deep_extend('force', {
         markdown = { 'markdownlint-cli2' },
-        zsh = { 'shfmt' },
       }, require('lang').formatters_by_ft()),
       formatters = {
+        shfmt = {
+          command = require('tools').executable('shfmt'),
+        },
         stylua = {
           command = require('tools').executable('stylua'),
         },
@@ -23,7 +25,7 @@ return {
 
     vim.api.nvim_create_autocmd('FileType', {
       group = au,
-      pattern = vim.list_extend(require('lang').format_filetypes(), { 'markdown', 'zsh' }),
+      pattern = vim.list_extend(require('lang').format_filetypes(), { 'markdown' }),
       callback = function(ev)
         vim.keymap.set('n', '<LocalLeader>f', function()
           require('conform').format({ bufnr = ev.buf })

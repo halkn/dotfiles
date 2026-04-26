@@ -11,6 +11,17 @@ M.languages = {
     },
     linters_by_ft = {},
   },
+  zsh = {
+    enabled = true,
+    filetypes = { 'zsh' },
+    tools = { 'shfmt' },
+    formatters_by_ft = {
+      zsh = { 'shfmt' },
+    },
+    linters_by_ft = {
+      zsh = { 'zsh' },
+    },
+  },
 }
 
 local function enabled_languages()

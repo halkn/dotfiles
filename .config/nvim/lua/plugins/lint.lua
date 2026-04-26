@@ -5,7 +5,6 @@ return {
     local lint = require('lint')
     lint.linters_by_ft = vim.tbl_deep_extend('force', {
       markdown = { 'markdownlint-cli2' },
-      zsh = { 'zsh' },
     }, require('lang').linters_by_ft())
 
     vim.api.nvim_create_autocmd('BufWritePost', {
