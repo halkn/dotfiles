@@ -86,6 +86,29 @@ local function link_executable(tool, opt_dir)
   run({ 'ln', '-s', source, target })
 end
 
+local function replace_path(source, target)
+  local backup = target .. '.old'
+
+  remove_path(backup)
+  if vim.uv.fs_stat(target) ~= nil then
+    local ok, err = vim.uv.fs_rename(target, backup)
+    if not ok then
+      error(('failed to back up %s: %s'):format(target, err))
+    end
+  end
+
+  local ok, err = vim.uv.fs_rename(source, target)
+  if ok then
+    remove_path(backup)
+    return
+  end
+
+  if vim.uv.fs_stat(backup) ~= nil then
+    vim.uv.fs_rename(backup, target)
+  end
+  error(('failed to replace %s: %s'):format(target, err))
+end
+
 local function install_tool(tool, opts)
   opts = opts or {}
   ensure_command('curl')
@@ -98,8 +121,10 @@ local function install_tool(tool, opts)
   local extract_dir = vim.fs.joinpath(package_dir, 'extract')
   local archive_path = vim.fs.joinpath(package_dir, 'archive')
   local opt_dir = tools.opt_dir(tool.name)
+  local new_opt_dir = opt_dir .. '.new'
 
   remove_path(package_dir)
+  remove_path(new_opt_dir)
   ensure_dir(package_dir)
 
   local release = latest_release(tool)
@@ -114,11 +139,11 @@ local function install_tool(tool, opts)
   download_asset(asset.browser_download_url, archive_path)
   extract_archive(archive_path, extract_dir)
 
-  remove_path(opt_dir)
-  ensure_dir(opt_dir)
-  run({ 'cp', '-a', extract_dir .. '/.', opt_dir })
-  run({ 'chmod', '-R', 'u+rwX', opt_dir })
-  run({ 'chmod', 'u+x', vim.fs.joinpath(opt_dir, tool.executable_path) })
+  ensure_dir(new_opt_dir)
+  run({ 'cp', '-a', extract_dir .. '/.', new_opt_dir })
+  run({ 'chmod', '-R', 'u+rwX', new_opt_dir })
+  run({ 'chmod', 'u+x', vim.fs.joinpath(new_opt_dir, tool.executable_path) })
+  replace_path(new_opt_dir, opt_dir)
   link_executable(tool, opt_dir)
 
   return {

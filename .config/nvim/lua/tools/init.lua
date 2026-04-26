@@ -60,6 +60,19 @@ function M.resolve(name)
   return join(M.bin_dir(), executable_name(tool))
 end
 
+function M.executable(name)
+  local path = M.resolve(name)
+  if vim.fn.executable(path) == 1 then
+    return path
+  end
+
+  vim.notify(
+    ('Neovim managed tool is missing: %s (run :NvimToolsInstall %s)'):format(name, name),
+    vim.log.levels.WARN
+  )
+  return path
+end
+
 function M.is_installed(name)
   local path = M.resolve(name)
   return vim.fn.executable(path) == 1

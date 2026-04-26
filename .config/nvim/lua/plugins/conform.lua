@@ -9,7 +9,7 @@ return {
       }, require('lang').formatters_by_ft()),
       formatters = {
         stylua = {
-          command = require('tools').resolve('stylua'),
+          command = require('tools').executable('stylua'),
         },
       },
       default_format_opts = {
