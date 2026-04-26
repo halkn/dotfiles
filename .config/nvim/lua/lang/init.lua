@@ -22,6 +22,14 @@ M.languages = {
       zsh = { 'zsh' },
     },
   },
+  bash = {
+    enabled = false,
+    filetypes = { 'bash', 'sh' },
+    lsp = { 'bashls' },
+    tools = { 'shfmt', 'shellcheck' },
+    formatters_by_ft = {},
+    linters_by_ft = {},
+  },
 }
 
 local function enabled_languages()
