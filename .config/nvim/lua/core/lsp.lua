@@ -93,12 +93,12 @@ vim.api.nvim_create_autocmd('LspAttach', {
 })
 
 --setup
-local lspservers = {
-  'luals',
+local lspservers = require('lang').lsp_servers()
+vim.list_extend(lspservers, {
   -- "pyright",
   'ty',
   'ruff',
   'yamlls',
   -- "bashls",
-}
+})
 vim.lsp.enable(lspservers)
