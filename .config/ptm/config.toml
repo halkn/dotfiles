@@ -54,6 +54,11 @@ type = "github_release"
 repo = "cli/cli"
 version_regex = "gh version ([\\d.]+)"
 
+[tools.just]
+type = "github_release"
+repo = "casey/just"
+version_regex = "just ([\\d.]+)"
+
 [tools.starship]
 type = "github_release"
 repo = "starship/starship"

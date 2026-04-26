@@ -4,11 +4,12 @@
 このリポジトリは個人用 dotfiles と周辺ツール設定を管理します。主要な設定は `.config/` 配下にあり、`.config/nvim/` は Neovim、`.config/zsh/` はシェル起動、`.config/tmux/` と `.config/zellij/` はターミナル多重化、`.config/ptm/` はツール定義です。AI アシスタント設定は `codex/` と `claude/` にあります。新規ファイルは対象ツールの近くに配置し、既存のディレクトリ命名に合わせてください。
 
 ## Build, Test, and Development Commands
-- `ln -snf ~/.dotfiles/.config ~/.config`: 管理対象の設定をホーム配下へリンクします。
-- `git status --short`: 意図した dotfiles だけが変更されているか確認します。
-- `nvim --headless '+quitall'`: Neovim が runtime error なしで起動できるか確認します。
-- `zsh -n .config/zsh/.zshenv .config/zsh/conf.d/*.zsh`: `zsh` 設定の構文を確認します。
-- `git diff --check`: 余計な空白や patch 形式の崩れを検出します。
+- `just`: 利用できる task を一覧します。
+- `just setup`: 初回セットアップとして symlink 作成、`apt` 更新、`ptm install`、Neovim managed tools install を実行します。
+- `just lint`: 通常の検証として diff 空白確認、`zsh` 構文確認、Neovim Lua diagnostics、起動確認を実行します。
+- `just fmt`: Neovim Lua を managed `stylua` で整形します。
+- `just update`: `apt`、`ptm` 管理ツール、Neovim managed tools を更新します。
+- `just status`: 意図した dotfiles だけが変更されているか確認します。
 
 ## Coding Style & Naming Conventions
 変更前に周辺ファイルの書き方を確認し、そのスタイルに合わせてください。Shell は `set -euo pipefail`、小文字の関数名、意味のある環境変数名を基本とします。Lua 設定は `.config/nvim/lua/{core,modules,plugins}/` に役割ごとに分け、プラグイン定義も機能単位で分割します。Markdown は短く実務的に書き、`markdownlint` を前提に整えます。Shell ファイルは `zsh` を含めて `shfmt` で repo の流儀に合わせて整形してください。
@@ -22,13 +23,14 @@ plugin manager は Neovim 標準を優先し、標準パッケージマネージ
 
 Lua formatter は Neovim managed tools の `${XDG_DATA_HOME:-$HOME/.local/share}/nvim/managed-tools/bin/stylua`、diagnostics は `${XDG_DATA_HOME:-$HOME/.local/share}/nvim/managed-tools/bin/lua-language-server --check` と editor 内の `luals` を正としてください。`luals` の built-in formatter を再び主担当に戻さないでください。Neovim 内で使う `stylua`、`lua-language-server`、`tree-sitter` は `:NvimToolsInstall` / `:NvimToolsUpdate` で管理し、グローバル PATH には通しません。
 
-Neovim Lua を変更したときは次の順で確認してください。必要なら先に `nvim --headless -i NONE '+NvimToolsInstall' '+quitall'` で Neovim managed tools を入れます。1. `NVIM_TOOLS="${XDG_DATA_HOME:-$HOME/.local/share}/nvim/managed-tools/bin"` を設定し、`"$NVIM_TOOLS/stylua" .config/nvim` で整形し、`"$NVIM_TOOLS/stylua" --check .config/nvim` で整形済みであることを確認する。2. `"$NVIM_TOOLS/lua-language-server" --check=.config/nvim --checklevel=Warning --logpath=/tmp/luals-check-log --metapath=/tmp/luals-check-meta` で diagnostics を確認する。3. `nvim --headless -i NONE '+quitall'` で起動確認する。差分が広い場合は、意味変更と整形-only の変更を区別して確認してください。`statusline` や `vim` global のような Neovim 固有 API は、`.config/nvim/.luarc.json` の前提を崩さないように扱ってください。
+Neovim Lua を変更したときは、通常は `just fmt` で整形し、`just lint` で `stylua --check`、`lua-language-server --check`、`nvim --headless -i NONE '+quitall'` をまとめて確認します。managed tools がない場合は先に `just setup`、更新したい場合は `just update` を実行します。差分が広い場合は、意味変更と整形-only の変更を区別して確認してください。`statusline` や `vim` global のような Neovim 固有 API は、`.config/nvim/.luarc.json` の前提を崩さないように扱ってください。
 
 ## Testing Guidelines
 統一的な test harness はないため、変更対象ごとに確認します。
-- Shell: `zsh` 変更時は `zsh -n .config/zsh/.zshrc .config/zsh/conf.d/*.zsh` を実行します。
-- Neovim: Lua 変更後は `nvim --headless '+quitall'` で起動確認します。
-- 文書と整形: `*.md` は `markdownlint`、shell 系ファイルは `shfmt` で確認します。
+- 通常: `just lint` を実行します。
+- Neovim Lua: 変更後は `just fmt` と `just lint` を実行します。
+- Shell: `zsh` 変更時は `just lint` の `zsh -n` 確認を通します。
+- 文書と整形: `*.md` は `markdownlint`、shell 系ファイルは `shfmt` で確認します。既存警告が残っている場合は、対象ファイルに絞って確認してください。
 対話的な変更は PR に手動確認内容を 1 行で添えてください。
 
 ## Commit & Pull Request Guidelines
