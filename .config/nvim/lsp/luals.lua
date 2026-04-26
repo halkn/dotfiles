@@ -1,6 +1,6 @@
 --- @type vim.lsp.Config
 local config = {
-  cmd = { 'lua-language-server' },
+  cmd = { require('tools').resolve('lua-language-server') },
   filetypes = { 'lua' },
   root_markers = {
     '.luarc.json',
