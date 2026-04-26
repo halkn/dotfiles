@@ -2,6 +2,7 @@
 -- telescope/snacks 風の floating window UI
 local M = {}
 local original_ui_select = vim.ui.select
+local preview_ns = vim.api.nvim_create_namespace('dotfiles_picker_preview')
 
 -- SECTION 1: State -------------------------------------------------------
 local state = {
@@ -295,14 +296,14 @@ function M.close()
   -- ウィンドウ・バッファを閉じる
   for _, win_key in ipairs({ 'prompt_win', 'list_win', 'preview_win' }) do
     local win = state[win_key]
-    if win and vim.api.nvim_win_is_valid(win) then
+    if type(win) == 'number' and vim.api.nvim_win_is_valid(win) then
       vim.api.nvim_win_close(win, true)
     end
     state[win_key] = nil
   end
   for _, buf_key in ipairs({ 'prompt_buf', 'list_buf', 'preview_buf' }) do
     local buf = state[buf_key]
-    if buf and vim.api.nvim_buf_is_valid(buf) then
+    if type(buf) == 'number' and vim.api.nvim_buf_is_valid(buf) then
       vim.api.nvim_buf_delete(buf, { force = true })
     end
     state[buf_key] = nil
@@ -417,7 +418,12 @@ function M._preview_file(path, lnum)
   if lnum and state.preview_win and vim.api.nvim_win_is_valid(state.preview_win) then
     local safe_lnum = math.max(1, math.min(lnum, #lines))
     vim.api.nvim_win_set_cursor(state.preview_win, { safe_lnum, 0 })
-    vim.api.nvim_buf_add_highlight(state.preview_buf, -1, 'CursorLine', safe_lnum - 1, 0, -1)
+    vim.api.nvim_buf_clear_namespace(state.preview_buf, preview_ns, 0, -1)
+    vim.api.nvim_buf_set_extmark(state.preview_buf, preview_ns, safe_lnum - 1, 0, {
+      end_line = safe_lnum - 1,
+      end_col = #lines[safe_lnum],
+      hl_group = 'CursorLine',
+    })
   end
 end
 
@@ -809,6 +815,7 @@ end
 
 -- SECTION 10: Public API -------------------------------------------------
 function M.setup()
+  ---@diagnostic disable-next-line: duplicate-set-field
   vim.ui.select = function(items, opts, on_choice)
     M.ui_select(items, opts, on_choice)
   end
