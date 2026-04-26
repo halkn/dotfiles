@@ -4,7 +4,7 @@ local group_name = 'vimrc_config'
 vim.api.nvim_create_augroup(group_name, { clear = true })
 
 -- Quickfix
-autocmd('QuickfixCmdPost', {
+autocmd('QuickFixCmdPost', {
   group = group_name,
   pattern = { 'make', 'grep', 'grepadd', 'vimgrep', 'vimgrepadd' },
   callback = function()

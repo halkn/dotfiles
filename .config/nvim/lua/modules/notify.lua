@@ -277,6 +277,7 @@ function M.setup()
     callback = reposition,
   })
 
+  ---@diagnostic disable-next-line: duplicate-set-field
   vim.notify = function(msg, level, opts)
     if not msg or msg == '' then
       return

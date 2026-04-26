@@ -85,11 +85,6 @@ type = "github_release"
 repo = "JohnnyMorganz/StyLua"
 version_regex = "stylua ([\\d.]+)"
 
-[tools.selene]
-type = "github_release"
-repo = "Kampfkarren/selene"
-version_regex = "([\\d.]+)"
-
 [tools.shfmt]
 type = "github_release"
 repo = "mvdan/sh"

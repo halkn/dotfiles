@@ -1,0 +1,27 @@
+{
+  "$schema": "https://raw.githubusercontent.com/LuaLS/vscode-lua/master/setting/schema.json",
+  "runtime.version": "LuaJIT",
+  "runtime.path": [
+    "./?.lua",
+    "lua/?.lua",
+    "lua/?/init.lua"
+  ],
+  "diagnostics.globals": [
+    "vim"
+  ],
+  "format.enable": false,
+  "format.defaultConfig": {
+    "indent_style": "space",
+    "indent_size": "2"
+  },
+  "completion.callSnippet": "Disable",
+  "completion.keywordSnippet": "Disable",
+  "workspace.checkThirdParty": "Disable",
+  "workspace.library": [
+    "${env:HOME}/.local/share/nvim/site/pack/core/opt/mini.nvim/lua",
+    "${workspaceFolder}/lua",
+    "${env:HOME}/.local/opt/neovim/share/nvim/runtime/lua",
+    "${3rd}/luv/library"
+  ],
+  "telemetry.enable": false
+}

@@ -24,6 +24,9 @@ local function highlight_paste()
     hl_timer:close()
   end
   hl_timer = vim.uv.new_timer()
+  if not hl_timer then
+    return
+  end
   hl_timer:start(
     200,
     0,
@@ -137,8 +140,12 @@ function M.setup()
     group = vim.api.nvim_create_augroup('yankring', { clear = true }),
     callback = function()
       local ev = vim.v.event
+      local regcontents = ev.regcontents
+      if type(regcontents) == 'table' then
+        regcontents = table.concat(regcontents, '\n')
+      end
       add({
-        regcontents = table.concat(ev.regcontents, '\n'),
+        regcontents = regcontents,
         regtype = ev.regtype,
       })
     end,
