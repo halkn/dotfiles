@@ -5,27 +5,29 @@ This is my dotfiles.
 ## Setup
 
 ```sh
-# Link .config
-ln -s ~/.dotfiles/.config ~/.config
-
-# Initialize Codex home and link tracked config only
-mkdir -p ~/.codex
-ln -snf ~/.dotfiles/codex/config.toml ~/.codex/config.toml
-ln -snf ~/.dotfiles/codex/AGENTS.md ~/.codex/AGENTS.md
-
-# Initialize Claude home and link tracked config only
-mkdir -p ~/.claude
-ln -snf ~/.dotfiles/claude/settings.json ~/.claude/settings.json
-ln -snf ~/.dotfiles/claude/CLAUDE.md ~/.claude/CLAUDE.md
-ln -snf ~/.dotfiles/claude/statusline-command.sh ~/.claude/statusline-command.sh
-
-# See: https://github.com/astral-sh/uv
+# Bootstrap uv and ptm first.
 curl -LsSf https://astral.sh/uv/install.sh | sh
+uv tool install git+https://github.com/halkn/ptm
+
+# Then run the dotfiles setup task.
+just setup
 ```
 
 ## Tool Manager
 
 Tool management has been moved to [halkn/ptm](https://github.com/halkn/ptm).
+`just` itself is managed by `ptm` after the initial bootstrap.
+
+Useful tasks:
+
+```sh
+just          # List tasks
+just setup    # Link dotfiles, install apt packages, install ptm tools, install Neovim-managed tools
+just update   # Update apt packages, ptm tools, and Neovim-managed tools
+just fmt      # Format Neovim Lua files
+just lint     # Run repository checks
+just status   # Show git status
+```
 
 ## Neovim
 
@@ -34,17 +36,8 @@ Neovim Lua config uses the Neovim managed `stylua` for formatting and the manage
 When changing Neovim Lua settings:
 
 ```sh
-# Install/update Neovim-managed tools when needed
-nvim --headless -i NONE '+NvimToolsInstall' '+quitall'
-
-# Format and lint all Neovim Lua files
-NVIM_TOOLS="${XDG_DATA_HOME:-$HOME/.local/share}/nvim/managed-tools/bin"
-"$NVIM_TOOLS/stylua" .config/nvim
-"$NVIM_TOOLS/stylua" --check .config/nvim
-"$NVIM_TOOLS/lua-language-server" --check=.config/nvim --checklevel=Warning --logpath=/tmp/luals-check-log --metapath=/tmp/luals-check-meta
-
-# Smoke test startup
-nvim --headless -i NONE '+quitall'
+just fmt
+just lint
 ```
 
 Notes:
