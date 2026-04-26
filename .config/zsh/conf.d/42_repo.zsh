@@ -68,9 +68,9 @@ repo() {
       ;;
 
     list)
-      find $root -maxdepth 5 -name ".git" -type d |
-        sed "s|$root/||; s|/.git$||" |
-        sort
+      find $root -maxdepth 5 -name ".git" -type d \
+        | sed "s|$root/||; s|/.git$||" \
+        | sort
       ;;
 
     cd)

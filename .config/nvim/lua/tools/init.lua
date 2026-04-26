@@ -25,6 +25,14 @@ M.registry = {
     executable = 'stylua',
     executable_path = 'stylua',
   },
+  shfmt = {
+    name = 'shfmt',
+    repo = 'mvdan/sh',
+    asset_pattern = 'shfmt_v[%d%.]+_linux_amd64$',
+    asset_type = 'binary',
+    executable = 'shfmt',
+    executable_path = 'shfmt',
+  },
   ['tree-sitter'] = {
     name = 'tree-sitter',
     common = true,

@@ -74,6 +74,12 @@ local function extract_archive(archive_path, extract_dir)
   error(('unsupported archive format: %s'):format(archive_path))
 end
 
+local function install_binary(archive_path, tool, new_opt_dir)
+  ensure_dir(new_opt_dir)
+  local target = vim.fs.joinpath(new_opt_dir, tool.executable_path)
+  run({ 'cp', archive_path, target })
+end
+
 local function link_executable(tool, opt_dir)
   local source = vim.fs.joinpath(opt_dir, tool.executable_path)
   if vim.uv.fs_stat(source) == nil then
@@ -129,18 +135,25 @@ local function install_tool(tool, opts)
 
   local release = latest_release(tool)
   local asset = find_asset(tool, release)
-  archive_path = archive_path .. asset.name:match('(%.[^.]+)$')
+
   if asset.name:match('%.tar%.gz$') then
     archive_path = vim.fs.joinpath(package_dir, 'archive.tar.gz')
   elseif asset.name:match('%.zip$') then
     archive_path = vim.fs.joinpath(package_dir, 'archive.zip')
+  elseif tool.asset_type == 'binary' then
+    archive_path = vim.fs.joinpath(package_dir, asset.name)
+  else
+    archive_path = archive_path .. (asset.name:match('(%.[^.]+)$') or '')
   end
 
   download_asset(asset.browser_download_url, archive_path)
-  extract_archive(archive_path, extract_dir)
-
-  ensure_dir(new_opt_dir)
-  run({ 'cp', '-a', extract_dir .. '/.', new_opt_dir })
+  if tool.asset_type == 'binary' then
+    install_binary(archive_path, tool, new_opt_dir)
+  else
+    extract_archive(archive_path, extract_dir)
+    ensure_dir(new_opt_dir)
+    run({ 'cp', '-a', extract_dir .. '/.', new_opt_dir })
+  end
   run({ 'chmod', '-R', 'u+rwX', new_opt_dir })
   run({ 'chmod', 'u+x', vim.fs.joinpath(new_opt_dir, tool.executable_path) })
   replace_path(new_opt_dir, opt_dir)

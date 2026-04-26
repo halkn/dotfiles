@@ -3,6 +3,7 @@ set quiet
 config_dir := ".config"
 nvim_config := ".config/nvim"
 nvim_tools := "${XDG_DATA_HOME:-$HOME/.local/share}/nvim/managed-tools/bin"
+zsh_config := ".config/zsh/.zshenv .config/zsh/.zshrc .config/zsh/conf.d/*.zsh"
 luals_log := "/tmp/luals-check-log"
 luals_meta := "/tmp/luals-check-meta"
 
@@ -37,13 +38,15 @@ setup: _link
 
 [doc('Run repository checks that pass on the current tree')]
 lint: diff-check
-  zsh -n .config/zsh/.zshenv .config/zsh/.zshrc .config/zsh/conf.d/*.zsh
+  zsh -n {{zsh_config}}
+  {{nvim_tools}}/shfmt -d {{zsh_config}}
   {{nvim_tools}}/stylua --check {{nvim_config}}
   {{nvim_tools}}/lua-language-server --check={{nvim_config}} --checklevel=Warning --logpath={{luals_log}} --metapath={{luals_meta}}
   nvim --headless -i NONE '+quitall'
 
 [doc('Format files with configured formatters')]
 fmt:
+  {{nvim_tools}}/shfmt -w {{zsh_config}}
   {{nvim_tools}}/stylua {{nvim_config}}
 
 [doc('Update OS packages and ptm-managed tools')]

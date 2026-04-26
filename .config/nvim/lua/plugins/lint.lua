@@ -5,12 +5,11 @@ return {
     local lint = require('lint')
     lint.linters_by_ft = vim.tbl_deep_extend('force', {
       markdown = { 'markdownlint-cli2' },
-      sh = { 'shellcheck' },
     }, require('lang').linters_by_ft())
 
     vim.api.nvim_create_autocmd('BufWritePost', {
       group = au,
-      pattern = { '*.md', '*.sh' },
+      pattern = { '*.md', '*.zsh', '.zshenv', '.zshrc' },
       callback = function()
         lint.try_lint()
       end,

@@ -77,16 +77,6 @@ type = "github_release"
 repo = "tree-sitter/tree-sitter"
 version_regex = "tree-sitter (\\S+)"
 
-[tools.shfmt]
-type = "github_release"
-repo = "mvdan/sh"
-version_regex = "v([\\d.]+)"
-
-[tools.shellcheck]
-type = "github_release"
-repo = "koalaman/shellcheck"
-version_regex = "version: ([\\d.]+)"
-
 # npm
 [tools.yaml-language-server]
 type = "npm"
