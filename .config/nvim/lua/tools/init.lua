@@ -33,6 +33,13 @@ M.registry = {
     executable = 'shfmt',
     executable_path = 'shfmt',
   },
+  shellcheck = {
+    name = 'shellcheck',
+    repo = 'koalaman/shellcheck',
+    asset_pattern = 'shellcheck%-v[%d%.]+%.linux%.x86_64%.tar%.xz$',
+    executable = 'shellcheck',
+    executable_glob = 'shellcheck-*/shellcheck',
+  },
   ['tree-sitter'] = {
     name = 'tree-sitter',
     common = true,

@@ -71,7 +71,27 @@ local function extract_archive(archive_path, extract_dir)
     return
   end
 
+  if archive_path:match('%.tar%.xz$') then
+    ensure_command('tar')
+    run({ 'tar', '-xJf', archive_path, '-C', extract_dir })
+    return
+  end
+
   error(('unsupported archive format: %s'):format(archive_path))
+end
+
+local function executable_path(tool, opt_dir)
+  if tool.executable_path then
+    return vim.fs.joinpath(opt_dir, tool.executable_path)
+  end
+
+  if tool.executable_glob then
+    local matches = vim.fn.glob(vim.fs.joinpath(opt_dir, tool.executable_glob), false, true)
+    table.sort(matches)
+    return matches[1]
+  end
+
+  return nil
 end
 
 local function install_binary(archive_path, tool, new_opt_dir)
@@ -81,8 +101,8 @@ local function install_binary(archive_path, tool, new_opt_dir)
 end
 
 local function link_executable(tool, opt_dir)
-  local source = vim.fs.joinpath(opt_dir, tool.executable_path)
-  if vim.uv.fs_stat(source) == nil then
+  local source = executable_path(tool, opt_dir)
+  if source == nil or vim.uv.fs_stat(source) == nil then
     error(('executable not found after install: %s'):format(source))
   end
 
@@ -138,6 +158,8 @@ local function install_tool(tool, opts)
 
   if asset.name:match('%.tar%.gz$') then
     archive_path = vim.fs.joinpath(package_dir, 'archive.tar.gz')
+  elseif asset.name:match('%.tar%.xz$') then
+    archive_path = vim.fs.joinpath(package_dir, 'archive.tar.xz')
   elseif asset.name:match('%.zip$') then
     archive_path = vim.fs.joinpath(package_dir, 'archive.zip')
   elseif tool.asset_type == 'binary' then
@@ -155,7 +177,7 @@ local function install_tool(tool, opts)
     run({ 'cp', '-a', extract_dir .. '/.', new_opt_dir })
   end
   run({ 'chmod', '-R', 'u+rwX', new_opt_dir })
-  run({ 'chmod', 'u+x', vim.fs.joinpath(new_opt_dir, tool.executable_path) })
+  run({ 'chmod', 'u+x', executable_path(tool, new_opt_dir) })
   replace_path(new_opt_dir, opt_dir)
   link_executable(tool, opt_dir)
 

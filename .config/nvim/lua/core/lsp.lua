@@ -99,6 +99,5 @@ vim.list_extend(lspservers, {
   'ty',
   'ruff',
   'yamlls',
-  -- "bashls",
 })
 vim.lsp.enable(lspservers)
