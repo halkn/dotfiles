@@ -11,5 +11,5 @@ for f in "${ZDOTDIR}/conf.d"/*.zsh; do
 done
 
 # compile zshrc.
-[[ ! -f "${ZDOTDIR}/.zshrc.zwc" || "${ZDOTDIR}/.zshrc" -nt "${ZDOTDIR}/.zshrc.zwc" ]] &&
-  zcompile "${ZDOTDIR}/.zshrc"
+[[ ! -f "${ZDOTDIR}/.zshrc.zwc" || "${ZDOTDIR}/.zshrc" -nt "${ZDOTDIR}/.zshrc.zwc" ]] \
+  && zcompile "${ZDOTDIR}/.zshrc"

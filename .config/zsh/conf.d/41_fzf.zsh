@@ -46,8 +46,8 @@ if command -v fd >/dev/null 2>&1; then
       preview_cmd='ls -lah {}'
     fi
 
-    dir=$(fd --type d --hidden --exclude .git |
-      fzf \
+    dir=$(fd --type d --hidden --exclude .git \
+      | fzf \
         --preview "$preview_cmd" \
         --preview-window=right:60% \
         --bind "ctrl-/:toggle-preview")
@@ -78,8 +78,8 @@ frm() {
   fi
 
   if command -v fd >/dev/null 2>&1; then
-    target=$(fd --hidden --strip-cwd-prefix --exclude .git |
-      fzf \
+    target=$(fd --hidden --strip-cwd-prefix --exclude .git \
+      | fzf \
         --height 80% \
         --layout reverse \
         --border \
@@ -89,9 +89,9 @@ frm() {
         --preview-window=right:60% \
         --bind 'ctrl-/:toggle-preview')
   else
-    target=$(find . -path ./.git -prune -o -mindepth 1 -print |
-      sed 's#^\./##' |
-      fzf \
+    target=$(find . -path ./.git -prune -o -mindepth 1 -print \
+      | sed 's#^\./##' \
+      | fzf \
         --height 80% \
         --layout reverse \
         --border \
@@ -142,55 +142,55 @@ _fzf_git_opts=(
 # ── switch branch ───────────────────────────────────
 fgb() {
   local branch
-  branch=$(git branch -a --color=always |
-    grep -v HEAD |
-    fzf "${_fzf_git_opts[@]}" \
+  branch=$(git branch -a --color=always \
+    | grep -v HEAD \
+    | fzf "${_fzf_git_opts[@]}" \
       --no-multi \
       --ansi \
       --header 'ENTER: checkout  CTRL-_: toggle preview' \
-      --preview 'git log --oneline --graph --color=always $(echo {} | sed "s/^[* ]*//" | sed "s/\s.*//" | sed "s|remotes/||") | head -50' |
-    sed 's/^[* ]*//' | sed 's/\s.*//' | sed 's|remotes/||')
+      --preview 'git log --oneline --graph --color=always $(echo {} | sed "s/^[* ]*//" | sed "s/\s.*//" | sed "s|remotes/||") | head -50' \
+    | sed 's/^[* ]*//' | sed 's/\s.*//' | sed 's|remotes/||')
   [[ -n "$branch" ]] && git switch "$branch"
 }
 
 # ── stage/unstage ───────────────────────────────────
 fga() {
   local files
-  files=$(git -c color.status=always status --short |
-    fzf "${_fzf_git_opts[@]}" \
+  files=$(git -c color.status=always status --short \
+    | fzf "${_fzf_git_opts[@]}" \
       --ansi \
       --nth 2.. \
       --header 'TAB: multi-select  ENTER: git add  CTRL-U: unstage  CTRL-_: toggle preview' \
       --preview 'git diff --color=always -- {2} | delta' \
       --bind 'ctrl-u:execute-silent(git restore --staged {2})+reload(git -c color.status=always status --short)' \
-      --bind 'enter:execute-silent(git add {+2})+reload(git -c color.status=always status --short)' |
-    awk '{print $2}')
+      --bind 'enter:execute-silent(git add {+2})+reload(git -c color.status=always status --short)' \
+    | awk '{print $2}')
   [[ -n "$files" ]] && git status --short
 }
 
 # ── commit log ──────────────────────────────────────
 fgl() {
   local commit
-  commit=$(git log --oneline --color=always --decorate --all |
-    fzf "${_fzf_git_opts[@]}" \
+  commit=$(git log --oneline --color=always --decorate --all \
+    | fzf "${_fzf_git_opts[@]}" \
       --no-multi \
       --ansi \
       --header 'ENTER: show stat  CTRL-V: full diff  CTRL-S: stat  CTRL-_: toggle preview' \
       --preview 'git show --color=always --stat {1} | delta' \
       --bind 'ctrl-v:change-preview(git show --color=always {1} | delta)' \
-      --bind 'ctrl-s:change-preview(git show --color=always --stat {1} | delta)' |
-    awk '{print $1}')
+      --bind 'ctrl-s:change-preview(git show --color=always --stat {1} | delta)' \
+    | awk '{print $1}')
   [[ -n "$commit" ]] && git show --stat "$commit"
 }
 
 # ── worktree cd ─────────────────────────────────────
 fgw() {
   local worktree
-  worktree=$(git worktree list |
-    fzf "${_fzf_git_opts[@]}" \
+  worktree=$(git worktree list \
+    | fzf "${_fzf_git_opts[@]}" \
       --no-multi \
       --header 'ENTER: cd to worktree  CTRL-_: toggle preview' \
-      --preview 'eza --tree --color=always --level 2 {1}' |
-    awk '{print $1}')
+      --preview 'eza --tree --color=always --level 2 {1}' \
+    | awk '{print $1}')
   [[ -n "$worktree" ]] && cd "$worktree"
 }
