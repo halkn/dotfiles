@@ -72,19 +72,6 @@ type = "github_release"
 repo = "tree-sitter/tree-sitter"
 version_regex = "tree-sitter (\\S+)"
 
-[tools.lua-language-server]
-type = "github_release"
-repo = "LuaLS/lua-language-server"
-opt_dir = "~/.local/opt/lua-language-server"
-bin_path_in_archive = "bin/lua-language-server"
-strip_components = 0
-version_regex = "([\\d.]+)"
-
-[tools.stylua]
-type = "github_release"
-repo = "JohnnyMorganz/StyLua"
-version_regex = "stylua ([\\d.]+)"
-
 [tools.shfmt]
 type = "github_release"
 repo = "mvdan/sh"
