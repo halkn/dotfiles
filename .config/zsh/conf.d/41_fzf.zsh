@@ -161,7 +161,7 @@ fga() {
       --ansi \
       --nth 2.. \
       --header 'TAB: multi-select  ENTER: git add  CTRL-U: unstage  CTRL-_: toggle preview' \
-      --preview 'git diff --color=always -- {2} | delta' \
+      --preview 'git diff --color=always -- {2} | delta --paging=never --width "${FZF_PREVIEW_COLUMNS:-${COLUMNS:-80}}"' \
       --bind 'ctrl-u:execute-silent(git restore --staged {2})+reload(git -c color.status=always status --short)' \
       --bind 'enter:execute-silent(git add {+2})+reload(git -c color.status=always status --short)' \
     | awk '{print $2}')
@@ -176,9 +176,9 @@ fgl() {
       --no-multi \
       --ansi \
       --header 'ENTER: show stat  CTRL-V: full diff  CTRL-S: stat  CTRL-_: toggle preview' \
-      --preview 'git show --color=always --stat {1} | delta' \
-      --bind 'ctrl-v:change-preview(git show --color=always {1} | delta)' \
-      --bind 'ctrl-s:change-preview(git show --color=always --stat {1} | delta)' \
+      --preview 'git show --color=always --stat {1} | delta --paging=never --width "${FZF_PREVIEW_COLUMNS:-${COLUMNS:-80}}"' \
+      --bind 'ctrl-v:change-preview(git show --color=always {1} | delta --paging=never --width "${FZF_PREVIEW_COLUMNS:-${COLUMNS:-80}}")' \
+      --bind 'ctrl-s:change-preview(git show --color=always --stat {1} | delta --paging=never --width "${FZF_PREVIEW_COLUMNS:-${COLUMNS:-80}}")' \
     | awk '{print $1}')
   [[ -n "$commit" ]] && git show --stat "$commit"
 }
