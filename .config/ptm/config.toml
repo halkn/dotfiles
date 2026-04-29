@@ -5,23 +5,17 @@ url = "https://astral.sh/uv/install.sh"
 update_command = "uv self update"
 version_regex = "uv ([\\d.]+)"
 
+[tools.bun]
+type = "installer"
+command = "curl -fsSL https://bun.com/install | bash"
+update_command = "bun upgrade"
+version_regex = "([\\d.]+)"
+
 [tools.claude]
 type = "installer"
 url = "https://claude.ai/install.sh"
 update_command = "claude update"
 version_regex = "([\\d.]+)"
-
-# url_release
-[tools.node]
-type = "url_release"
-version = "lts"
-version_url = "https://nodejs.org/dist/index.json"
-version_url_regex = "\"version\":\"(v[\\d.]+)\"[^}]*\"lts\":\""
-opt_dir = "~/.local/opt/node"
-bin_path_in_archive = "bin/node"
-strip_components = 1
-extra_bins = ["npm", "npx", "corepack"]
-version_regex = "v([\\d.]+)"
 
 # github_release
 [tools.rg]
@@ -77,11 +71,15 @@ type = "github_release"
 repo = "tree-sitter/tree-sitter"
 version_regex = "tree-sitter (\\S+)"
 
-# npm
+# bun
 [tools.yaml-language-server]
-type = "npm"
+type = "installer"
+command = "bun install -g yaml-language-server"
+update_command = "bun install -g yaml-language-server"
 version_regex = "([\\d.]+)"
 
 [tools.markdownlint-cli2]
-type = "npm"
+type = "installer"
+command = "bun install -g markdownlint-cli2"
+update_command = "bun install -g markdownlint-cli2"
 version_regex = "markdownlint-cli2 v([\\d.]+)"
