@@ -98,6 +98,5 @@ vim.list_extend(lspservers, {
   -- "pyright",
   'ty',
   'ruff',
-  'yamlls',
 })
 vim.lsp.enable(lspservers)

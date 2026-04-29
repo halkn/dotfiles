@@ -71,13 +71,6 @@ type = "github_release"
 repo = "tree-sitter/tree-sitter"
 version_regex = "tree-sitter (\\S+)"
 
-# bun
-[tools.yaml-language-server]
-type = "installer"
-command = "bun install -g yaml-language-server"
-update_command = "bun install -g yaml-language-server"
-version_regex = "([\\d.]+)"
-
 [tools.markdownlint-cli2]
 type = "installer"
 command = "bun install -g markdownlint-cli2"

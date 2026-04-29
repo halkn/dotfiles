@@ -112,6 +112,33 @@ local function link_executable(tool, opt_dir)
   run({ 'ln', '-s', source, target })
 end
 
+local function package_spec(tool)
+  return ('%s@latest'):format(tool.package or tool.name)
+end
+
+local function package_version(tool, opt_dir)
+  local package_json_path =
+    vim.fs.joinpath(opt_dir, 'node_modules', tool.package or tool.name, 'package.json')
+  local lines = vim.fn.readfile(package_json_path)
+  local ok, decoded = pcall(vim.json.decode, table.concat(lines, '\n'))
+  if not ok or type(decoded) ~= 'table' then
+    return nil
+  end
+
+  return decoded.version
+end
+
+local function install_package(tool, new_opt_dir)
+  local package_manager = tool.package_manager or 'bun'
+  ensure_command(package_manager)
+  ensure_dir(new_opt_dir)
+  vim.fn.writefile(
+    { vim.json.encode({ private = true }) },
+    vim.fs.joinpath(new_opt_dir, 'package.json')
+  )
+  run({ package_manager, 'add', '--cwd', new_opt_dir, '--production', package_spec(tool) })
+end
+
 local function replace_path(source, target)
   local backup = target .. '.old'
 
@@ -149,8 +176,24 @@ local function install_tool(tool, opts)
   local opt_dir = tools.opt_dir(tool.name)
   local new_opt_dir = opt_dir .. '.new'
 
-  remove_path(package_dir)
   remove_path(new_opt_dir)
+
+  if tool.package then
+    install_package(tool, new_opt_dir)
+    run({ 'chmod', '-R', 'u+rwX', new_opt_dir })
+    run({ 'chmod', 'u+x', executable_path(tool, new_opt_dir) })
+    replace_path(new_opt_dir, opt_dir)
+    link_executable(tool, opt_dir)
+
+    return {
+      name = tool.name,
+      version = package_version(tool, opt_dir),
+      package = package_spec(tool),
+      path = tools.resolve(tool.name),
+    }
+  end
+
+  remove_path(package_dir)
   ensure_dir(package_dir)
 
   local release = latest_release(tool)

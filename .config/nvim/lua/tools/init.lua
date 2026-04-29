@@ -40,6 +40,13 @@ M.registry = {
     executable = 'shellcheck',
     executable_glob = 'shellcheck-*/shellcheck',
   },
+  ['yaml-language-server'] = {
+    name = 'yaml-language-server',
+    package = 'yaml-language-server',
+    package_manager = 'bun',
+    executable = 'yaml-language-server',
+    executable_path = join('node_modules', '.bin', 'yaml-language-server'),
+  },
   ['tree-sitter'] = {
     name = 'tree-sitter',
     common = true,
