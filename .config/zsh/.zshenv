@@ -21,8 +21,8 @@ export ZCACHEDIR=$XDG_CACHE_HOME/zsh
 export ZSTATEDIR=$XDG_STATE_HOME/zsh
 export ZPLUGINDIR=$XDG_DATA_HOME/zsh_plugins
 
-# node/npm
-export NPM_CONFIG_USERCONFIG=$XDG_CONFIG_HOME/npm/npmrc
+# bun
+export BUN_INSTALL="$HOME/.bun"
 
 # uv
 export UV_CACHE_DIR=$XDG_CACHE_HOME/uv
@@ -57,6 +57,6 @@ export FZF_DEFAULT_OPTS="
 typeset -U path
 path=(
   $XDG_BIN_HOME(N-/)
-  $XDG_DATA_HOME/npm/bin(N-/)
+  $BUN_INSTALL/bin(N-/)
   $path
 )
