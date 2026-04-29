@@ -4,7 +4,10 @@
 [status]
   showUntrackedFiles = all
 [diff]
+  algorithm = "histogram"
   colorMoved = default
+  mnemonicPrefix = true
+  renames = true
 [difftool]
   prompt = false
 [merge]
@@ -16,6 +19,7 @@
 [fetch]
   prune = true
   pruneTags = true
+  all = true
 [pull]
   ff = only
 [push]
@@ -38,6 +42,11 @@
   diffFilter = delta --color-only
 [rerere]
   enabled = true
+  autoupdate = true
+[rebase]
+  autoSquash = true
+  autoStash = true
+  updateRefs = true
 [init]
   defaultBranch = main
 [safe]
