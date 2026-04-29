@@ -30,6 +30,14 @@ M.languages = {
     formatters_by_ft = {},
     linters_by_ft = {},
   },
+  yaml = {
+    enabled = true,
+    filetypes = { 'yaml' },
+    lsp = { 'yamlls' },
+    tools = { 'yaml-language-server' },
+    formatters_by_ft = {},
+    linters_by_ft = {},
+  },
 }
 
 local function enabled_languages()
