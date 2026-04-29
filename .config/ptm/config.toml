@@ -72,7 +72,9 @@ repo = "tree-sitter/tree-sitter"
 version_regex = "tree-sitter (\\S+)"
 
 [tools.markdownlint-cli2]
-type = "installer"
-command = "bun install -g markdownlint-cli2"
-update_command = "bun install -g markdownlint-cli2"
+type = "bun"
 version_regex = "markdownlint-cli2 v([\\d.]+)"
+
+[tools.oxfmt]
+type = "bun"
+version_regex = "Version: ([\\d.]+)"
