@@ -78,7 +78,3 @@ version_regex = "markdownlint-cli2 v([\\d.]+)"
 type = "github_release"
 repo = "rvben/rumdl"
 version_regex = "rumdl ([\\d.]+)"
-
-[tools.oxfmt]
-type = "bun"
-version_regex = "Version: ([\\d.]+)"
