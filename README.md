@@ -31,7 +31,9 @@ just status   # Show git status
 
 ## Neovim
 
-Neovim Lua config uses the Neovim managed `stylua` for formatting and the managed `lua-language-server --check` for diagnostics. The shared LuaLS workspace config lives at `.config/nvim/.luarc.json`.
+Neovim Lua config uses the Neovim managed `stylua` for formatting and
+the managed `lua-language-server --check` for diagnostics. The shared LuaLS
+workspace config lives at `.config/nvim/.luarc.json`.
 
 When changing Neovim Lua settings:
 
@@ -44,6 +46,7 @@ Notes:
 
 - `luals` is not the formatter of record. Keep formatting on `stylua`.
 - `conform.nvim` owns format execution for Lua buffers, and LuaLS owns Lua diagnostics.
-- Neovim-managed tools live under `${XDG_DATA_HOME:-$HOME/.local/share}/nvim/managed-tools`; use absolute paths when running them outside Neovim.
+- Neovim-managed tools live under `${XDG_DATA_HOME:-$HOME/.local/share}/nvim/managed-tools`;
+  use absolute paths when running them outside Neovim.
 - `rumdl` LSP owns Markdown diagnostics and formatting; `nvim-lint` owns shell lint execution.
 - If `stylua` changes many files, review whether the diff is formatting-only before committing.

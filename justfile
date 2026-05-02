@@ -39,6 +39,7 @@ setup: _link
 [doc('Run repository checks that pass on the current tree')]
 lint: diff-check
   zsh -n {{zsh_config}}
+  rumdl check .
   {{nvim_tools}}/shfmt -d {{zsh_config}}
   {{nvim_tools}}/stylua --check {{nvim_config}}
   {{nvim_tools}}/lua-language-server --check={{nvim_config}} --checklevel=Warning --logpath={{luals_log}} --metapath={{luals_meta}}
@@ -46,6 +47,7 @@ lint: diff-check
 
 [doc('Format files with configured formatters')]
 fmt:
+  rumdl fmt .
   {{nvim_tools}}/shfmt -w {{zsh_config}}
   {{nvim_tools}}/stylua {{nvim_config}}
 

@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/rvben/rumdl/main/rumdl.schema.json
+
+[global]
+line-length = 100
+respect-gitignore = true
+
+[MD013]
+line-length = 100
+code-blocks = false
+tables = false
+headings = false
+
+[MD048]
+style = "backtick"
