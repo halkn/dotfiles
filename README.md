@@ -45,5 +45,5 @@ Notes:
 - `luals` is not the formatter of record. Keep formatting on `stylua`.
 - `conform.nvim` owns format execution for Lua buffers, and LuaLS owns Lua diagnostics.
 - Neovim-managed tools live under `${XDG_DATA_HOME:-$HOME/.local/share}/nvim/managed-tools`; use absolute paths when running them outside Neovim.
-- `nvim-lint` owns Markdown and shell lint execution.
+- `rumdl` LSP owns Markdown diagnostics and formatting; `nvim-lint` owns shell lint execution.
 - If `stylua` changes many files, review whether the diff is formatting-only before committing.

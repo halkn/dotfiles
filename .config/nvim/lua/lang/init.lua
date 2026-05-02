@@ -30,6 +30,13 @@ M.languages = {
     formatters_by_ft = {},
     linters_by_ft = {},
   },
+  markdown = {
+    enabled = true,
+    filetypes = { 'markdown' },
+    lsp = { 'rumdl' },
+    formatters_by_ft = {},
+    linters_by_ft = {},
+  },
   yaml = {
     enabled = true,
     filetypes = { 'yaml' },
