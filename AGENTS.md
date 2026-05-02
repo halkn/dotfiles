@@ -26,7 +26,7 @@ AI アシスタント設定は `codex/` と `claude/` にあります。
 Shell は `set -euo pipefail`、小文字の関数名、意味のある環境変数名を基本とします。
 Lua 設定は `.config/nvim/lua/{core,modules,plugins}/` に役割ごとに分け、
 プラグイン定義も機能単位で分割します。
-Markdown は短く実務的に書き、`markdownlint` を前提に整えます。
+Markdown は短く実務的に書き、`rumdl` を前提に整えます。
 Shell ファイルと Lua ファイルは、グローバル PATH の formatter ではなく
 `just fmt` が使う Neovim managed tools で整形してください。
 
@@ -71,7 +71,7 @@ managed tools がない場合は先に `just setup`、更新したい場合は `
 - 通常: `just lint` を実行します。
 - Neovim Lua: 変更後は `just fmt` と `just lint` を実行します。
 - Shell: `zsh` 変更時は `just lint` の `zsh -n` 確認を通します。
-- 文書と整形: `*.md` は `markdownlint`、shell 系ファイルは `shfmt` で確認します。
+- 文書と整形: `*.md` は `rumdl`、shell 系ファイルは `shfmt` で確認します。
   既存警告が残っている場合は、対象ファイルに絞って確認してください。
 
 対話的な変更は PR に手動確認内容を 1 行で添えてください。
