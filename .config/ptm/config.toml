@@ -60,7 +60,7 @@ version_regex = "starship ([\\d.]+)"
 
 [tools.nvim]
 type = "github_release"
-version = "stable"
+version = "latest"
 repo = "neovim/neovim"
 bin_path_in_archive = "bin/nvim"
 version_regex = "NVIM v([\\d.]+-dev[^\\s]*|[\\d.]+)"
