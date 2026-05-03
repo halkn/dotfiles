@@ -1,6 +1,7 @@
 .config/zsh/*.zwc
 .config/zsh/conf.d/*.zwc
 .rumdl_cache/
+.config/uv/uv-receipt.json
 
 # secret
-.config/gh/hosts.yml
+.config/gh/
