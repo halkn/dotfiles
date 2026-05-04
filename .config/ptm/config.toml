@@ -78,3 +78,8 @@ version_regex = "markdownlint-cli2 v([\\d.]+)"
 type = "github_release"
 repo = "rvben/rumdl"
 version_regex = "rumdl ([\\d.]+)"
+
+[tools.markado]
+type = "github_release"
+repo = "halkn/markado"
+version_regex = "([\\d.]+)"

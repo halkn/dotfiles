@@ -21,10 +21,6 @@
       "rev": "8ad3b4cdcc804b332c32db8f9743667e1bb82b99",
       "src": "https://github.com/rebelot/kanagawa.nvim"
     },
-    "md-render.nvim": {
-      "rev": "63d7cc5103855c06a07c4a00ea64dd082dd0940b",
-      "src": "https://github.com/delphinus/md-render.nvim"
-    },
     "mini.nvim": {
       "rev": "0f339bf5c93f392dc5d2417d47d7b9edc5f96fe8",
       "src": "https://github.com/nvim-mini/mini.nvim"
