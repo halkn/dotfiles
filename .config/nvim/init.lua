@@ -1,8 +1,6 @@
 -- core: load in always.
 for _, m in ipairs({
-  'core.options',
-  'core.mappings',
-  'core.autocmds',
+  'vimrc.core',
   'core.lsp',
 }) do
   require(m)
