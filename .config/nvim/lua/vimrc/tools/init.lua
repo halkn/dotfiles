@@ -4,10 +4,6 @@ local function join(...)
   return vim.fs.joinpath(...)
 end
 
-local function executable_name(tool)
-  return tool.executable or tool.name
-end
-
 M.root = vim.g.nvim_tools_root or join(vim.fn.stdpath('data'), 'managed-tools')
 
 M.registry = {
@@ -15,14 +11,12 @@ M.registry = {
     name = 'lua-language-server',
     repo = 'LuaLS/lua-language-server',
     asset_pattern = 'lua%-language%-server%-.*linux%-x64%.tar%.gz$',
-    executable = 'lua-language-server',
     executable_path = join('bin', 'lua-language-server'),
   },
   stylua = {
     name = 'stylua',
     repo = 'JohnnyMorganz/StyLua',
     asset_pattern = 'stylua%-linux%-x86_64%.zip$',
-    executable = 'stylua',
     executable_path = 'stylua',
   },
   shfmt = {
@@ -30,21 +24,18 @@ M.registry = {
     repo = 'mvdan/sh',
     asset_pattern = 'shfmt_v[%d%.]+_linux_amd64$',
     asset_type = 'binary',
-    executable = 'shfmt',
     executable_path = 'shfmt',
   },
   shellcheck = {
     name = 'shellcheck',
     repo = 'koalaman/shellcheck',
     asset_pattern = 'shellcheck%-v[%d%.]+%.linux%.x86_64%.tar%.xz$',
-    executable = 'shellcheck',
     executable_glob = 'shellcheck-*/shellcheck',
   },
   ['yaml-language-server'] = {
     name = 'yaml-language-server',
     package = 'yaml-language-server',
     package_manager = 'bun',
-    executable = 'yaml-language-server',
     executable_path = join('node_modules', '.bin', 'yaml-language-server'),
   },
   ['tree-sitter'] = {
@@ -52,7 +43,6 @@ M.registry = {
     common = true,
     repo = 'tree-sitter/tree-sitter',
     asset_pattern = 'tree%-sitter%-cli%-linux%-x64%.zip$',
-    executable = 'tree-sitter',
     executable_path = 'tree-sitter',
   },
 }
@@ -115,20 +105,7 @@ function M.resolve(name)
     error(('unknown managed tool: %s'):format(name))
   end
 
-  return join(M.bin_dir(), executable_name(tool))
-end
-
-function M.executable(name)
-  local path = M.resolve(name)
-  if vim.fn.executable(path) == 1 then
-    return path
-  end
-
-  vim.notify(
-    ('Neovim managed tool is missing: %s (run :NvimToolsInstall %s)'):format(name, name),
-    vim.log.levels.WARN
-  )
-  return path
+  return join(M.bin_dir(), tool.name)
 end
 
 function M.is_installed(name)
