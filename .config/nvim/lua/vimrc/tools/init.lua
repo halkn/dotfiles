@@ -114,7 +114,7 @@ end
 
 function M.required_by_languages()
   local by_tool = {}
-  local ok, lang = pcall(require, 'lang')
+  local ok, lang = pcall(require, 'vimrc.lang')
   if not ok then
     return by_tool
   end
