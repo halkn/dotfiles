@@ -1,8 +1,12 @@
 local M = {}
 
 local ring = {}
-local max_size = 30
 local ring_idx = 0
+
+M.config = {
+  highlight_ms = 200,
+  max_size = 30,
+}
 
 -- 直前の paste 操作を記録（<C-p>/<C-n> で差し替えるため）
 local last_paste = {
@@ -28,7 +32,7 @@ local function highlight_paste()
     return
   end
   hl_timer:start(
-    200,
+    M.config.highlight_ms,
     0,
     vim.schedule_wrap(function()
       vim.api.nvim_buf_clear_namespace(buf, ns, 0, -1)
@@ -45,7 +49,7 @@ local function add(entry)
     return
   end
   table.insert(ring, 1, entry)
-  if #ring > max_size then
+  if #ring > M.config.max_size then
     ring[#ring] = nil
   end
 end
@@ -135,7 +139,9 @@ local function show_ring()
   end)
 end
 
-function M.setup()
+function M.setup(opts)
+  M.config = vim.tbl_deep_extend('force', M.config, opts or {})
+
   vim.api.nvim_create_autocmd('TextYankPost', {
     group = vim.api.nvim_create_augroup('yankring', { clear = true }),
     callback = function()

@@ -2,10 +2,13 @@ local M = {}
 
 local active = {}
 local history = {}
-local max_history = 50
-local display_ms = 3000
-local min_width = 30
-local max_width_ratio = 0.4
+
+M.config = {
+  display_ms = 3000,
+  max_history = 50,
+  max_width_ratio = 0.4,
+  min_width = 30,
+}
 
 local level_config = {
   [vim.log.levels.ERROR] = {
@@ -48,11 +51,11 @@ local function setup_highlights()
 end
 
 local function calc_width(lines)
-  local width = min_width
+  local width = M.config.min_width
   for _, line in ipairs(lines) do
     width = math.max(width, vim.fn.strdisplaywidth(line) + 2)
   end
-  return math.min(width, math.floor(vim.o.columns * max_width_ratio))
+  return math.min(width, math.floor(vim.o.columns * M.config.max_width_ratio))
 end
 
 local function reposition()
@@ -109,7 +112,7 @@ local function add_history(msg, level, title)
     title = title,
     time = os.time(),
   })
-  if #history > max_history then
+  if #history > M.config.max_history then
     table.remove(history, 1)
   end
 end
@@ -146,7 +149,7 @@ local function show(msg, level, opts)
   local id = opts.id
   local timeout = opts.timeout
   if timeout == nil or timeout == true then
-    timeout = display_ms
+    timeout = M.config.display_ms
   end
   if timeout == false then
     timeout = 0
@@ -264,7 +267,9 @@ local function show_history()
   vim.keymap.set('n', 'q', '<cmd>close<CR>', { buffer = buf })
 end
 
-function M.setup()
+function M.setup(opts)
+  M.config = vim.tbl_deep_extend('force', M.config, opts or {})
+
   setup_highlights()
 
   local group = vim.api.nvim_create_augroup('notify_module', { clear = true })

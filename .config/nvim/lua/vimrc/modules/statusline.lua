@@ -1,4 +1,9 @@
 local M = {}
+
+M.config = {
+  statusline = "%!v:lua.require'vimrc.modules.statusline'.render()",
+}
+
 local mode_style_names = {
   n = 'DotfilesStatuslineModeNormal',
   i = 'DotfilesStatuslineModeInsert',
@@ -669,10 +674,12 @@ function M.render()
   return join_statusline(left, right)
 end
 
-function M.setup()
+function M.setup(opts)
+  M.config = vim.tbl_deep_extend('force', M.config, opts or {})
+
   setup_highlights()
   vim.o.laststatus = 3
-  vim.o.statusline = "%!v:lua.require'vimrc.modules.statusline'.render()"
+  vim.o.statusline = M.config.statusline
 
   local group = vim.api.nvim_create_augroup('dotfiles_statusline', { clear = true })
   vim.api.nvim_create_autocmd({ 'BufEnter', 'BufWritePost', 'DirChanged', 'DiagnosticChanged' }, {

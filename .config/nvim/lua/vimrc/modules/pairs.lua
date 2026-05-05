@@ -1,12 +1,13 @@
 local M = {}
 
-local pairs_map = {
-  ['('] = ')',
-  ['['] = ']',
-  ['{'] = '}',
+M.config = {
+  pairs = {
+    ['('] = ')',
+    ['['] = ']',
+    ['{'] = '}',
+  },
+  quotes = { '"', "'", '`' },
 }
-
-local quotes = { '"', "'", '`' }
 
 local function get_cursor_context()
   local col = vim.fn.col('.')
@@ -60,12 +61,12 @@ end
 
 local function backspace()
   local before, after = get_cursor_context()
-  for open, close in pairs(pairs_map) do
+  for open, close in pairs(M.config.pairs) do
     if before == open and after == close then
       return '<BS><Del>'
     end
   end
-  for _, q in ipairs(quotes) do
+  for _, q in ipairs(M.config.quotes) do
     if before == q and after == q then
       return '<BS><Del>'
     end
@@ -75,7 +76,7 @@ end
 
 local function cr()
   local before, after = get_cursor_context()
-  for open, close in pairs(pairs_map) do
+  for open, close in pairs(M.config.pairs) do
     if before == open and after == close then
       return '<CR><C-o>O'
     end
@@ -87,10 +88,12 @@ local function cr()
   return '<CR>'
 end
 
-function M.setup()
+function M.setup(opts)
+  M.config = vim.tbl_deep_extend('force', M.config, opts or {})
+
   local opts = { expr = true, noremap = true }
 
-  for open, close in pairs(pairs_map) do
+  for open, close in pairs(M.config.pairs) do
     vim.keymap.set('i', open, function()
       if is_escaped() then
         return open
@@ -102,7 +105,7 @@ function M.setup()
     end, opts)
   end
 
-  for _, q in ipairs(quotes) do
+  for _, q in ipairs(M.config.quotes) do
     vim.keymap.set('i', q, function()
       return quote_pair(q)
     end, opts)

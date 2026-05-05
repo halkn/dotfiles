@@ -1,7 +1,9 @@
 local M = {}
 
-local width_ratio = 0.85
-local height_ratio = 0.85
+M.config = {
+  height_ratio = 0.85,
+  width_ratio = 0.85,
+}
 
 local state = {
   buf = nil,
@@ -18,8 +20,8 @@ end
 
 ---@return vim.api.keyset.win_config
 local function floating_config()
-  local width = math.max(1, math.floor(vim.o.columns * width_ratio))
-  local height = math.max(1, math.floor(vim.o.lines * height_ratio))
+  local width = math.max(1, math.floor(vim.o.columns * M.config.width_ratio))
+  local height = math.max(1, math.floor(vim.o.lines * M.config.height_ratio))
   return {
     relative = 'editor',
     width = width,
@@ -86,7 +88,9 @@ function M.toggle()
   vim.cmd.startinsert()
 end
 
-function M.setup()
+function M.setup(opts)
+  M.config = vim.tbl_deep_extend('force', M.config, opts or {})
+
   vim.keymap.set({ 'n', 't' }, '<C-t>', M.toggle, { desc = 'Toggle Terminal' })
 end
 
