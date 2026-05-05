@@ -1,4 +1,4 @@
-local tools = require('tools')
+local tools = require('vimrc.tools')
 
 local M = {}
 

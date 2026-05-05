@@ -3,13 +3,13 @@ return {
   src = 'stevearc/conform.nvim',
   config = function()
     require('conform').setup({
-      formatters_by_ft = require('lang').formatters_by_ft(),
+      formatters_by_ft = require('vimrc.lang').formatters_by_ft(),
       formatters = {
         shfmt = {
-          command = require('tools').executable('shfmt'),
+          command = require('vimrc.tools').executable('shfmt'),
         },
         stylua = {
-          command = require('tools').executable('stylua'),
+          command = require('vimrc.tools').executable('stylua'),
         },
       },
       default_format_opts = {
@@ -23,7 +23,7 @@ return {
 
     vim.api.nvim_create_autocmd('FileType', {
       group = au,
-      pattern = require('lang').format_filetypes(),
+      pattern = require('vimrc.lang').format_filetypes(),
       callback = function(ev)
         vim.keymap.set('n', '<LocalLeader>f', function()
           require('conform').format({ bufnr = ev.buf })
