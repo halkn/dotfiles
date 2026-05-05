@@ -2,7 +2,7 @@
 -- telescope/snacks 風の floating window UI
 local M = {}
 local original_ui_select = vim.ui.select
-local preview_ns = vim.api.nvim_create_namespace('dotfiles_picker_preview')
+local preview_ns = vim.api.nvim_create_namespace('vimrc_picker_preview')
 
 M.config = {
   debounce_ms = 150,

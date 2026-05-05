@@ -5,15 +5,15 @@ M.config = {
 }
 
 local mode_style_names = {
-  n = 'DotfilesStatuslineModeNormal',
-  i = 'DotfilesStatuslineModeInsert',
-  v = 'DotfilesStatuslineModeVisual',
-  V = 'DotfilesStatuslineModeVisual',
-  ['\22'] = 'DotfilesStatuslineModeVisual',
-  c = 'DotfilesStatuslineModeCommand',
-  r = 'DotfilesStatuslineModeReplace',
-  R = 'DotfilesStatuslineModeReplace',
-  t = 'DotfilesStatuslineModeTerminal',
+  n = 'VimrcStatuslineModeNormal',
+  i = 'VimrcStatuslineModeInsert',
+  v = 'VimrcStatuslineModeVisual',
+  V = 'VimrcStatuslineModeVisual',
+  ['\22'] = 'VimrcStatuslineModeVisual',
+  c = 'VimrcStatuslineModeCommand',
+  r = 'VimrcStatuslineModeReplace',
+  R = 'VimrcStatuslineModeReplace',
+  t = 'VimrcStatuslineModeTerminal',
 }
 local compact_width = {
   full = 140,
@@ -141,23 +141,23 @@ local function set_hl_from(group, source, opts)
 end
 
 local function setup_highlights()
-  vim.api.nvim_set_hl(0, 'DotfilesStatuslineSection', { link = 'StatusLine' })
-  vim.api.nvim_set_hl(0, 'DotfilesStatuslineMuted', { link = 'StatusLineNC' })
-  vim.api.nvim_set_hl(0, 'DotfilesStatuslineModeOther', { link = 'Title' })
-  set_hl_from('DotfilesStatuslineModeNormal', 'DiagnosticOk', { bold = true })
-  set_hl_from('DotfilesStatuslineModeInsert', 'DiagnosticInfo', { bold = true })
-  set_hl_from('DotfilesStatuslineModeVisual', 'DiagnosticHint', { bold = true })
-  set_hl_from('DotfilesStatuslineModeCommand', 'DiagnosticWarn', { bold = true })
-  set_hl_from('DotfilesStatuslineModeReplace', 'DiagnosticError', { bold = true })
-  set_hl_from('DotfilesStatuslineModeTerminal', 'Special', { bold = true })
-  set_hl_from('DotfilesStatuslineDiagError', 'DiagnosticError', { bold = true })
-  set_hl_from('DotfilesStatuslineDiagWarn', 'DiagnosticWarn', { bold = true })
-  set_hl_from('DotfilesStatuslineDiagInfo', 'DiagnosticInfo', { bold = true })
-  set_hl_from('DotfilesStatuslineDiagHint', 'DiagnosticHint', { bold = true })
-  set_hl_from('DotfilesStatuslineGitAhead', 'DiagnosticInfo', { bold = true })
-  set_hl_from('DotfilesStatuslineGitBehind', 'DiagnosticWarn', { bold = true })
-  set_hl_from('DotfilesStatuslineGitDirty', 'DiffChange', { bold = true })
-  set_hl_from('DotfilesStatuslineGitUntracked', 'DiffAdd', { bold = true })
+  vim.api.nvim_set_hl(0, 'VimrcStatuslineSection', { link = 'StatusLine' })
+  vim.api.nvim_set_hl(0, 'VimrcStatuslineMuted', { link = 'StatusLineNC' })
+  vim.api.nvim_set_hl(0, 'VimrcStatuslineModeOther', { link = 'Title' })
+  set_hl_from('VimrcStatuslineModeNormal', 'DiagnosticOk', { bold = true })
+  set_hl_from('VimrcStatuslineModeInsert', 'DiagnosticInfo', { bold = true })
+  set_hl_from('VimrcStatuslineModeVisual', 'DiagnosticHint', { bold = true })
+  set_hl_from('VimrcStatuslineModeCommand', 'DiagnosticWarn', { bold = true })
+  set_hl_from('VimrcStatuslineModeReplace', 'DiagnosticError', { bold = true })
+  set_hl_from('VimrcStatuslineModeTerminal', 'Special', { bold = true })
+  set_hl_from('VimrcStatuslineDiagError', 'DiagnosticError', { bold = true })
+  set_hl_from('VimrcStatuslineDiagWarn', 'DiagnosticWarn', { bold = true })
+  set_hl_from('VimrcStatuslineDiagInfo', 'DiagnosticInfo', { bold = true })
+  set_hl_from('VimrcStatuslineDiagHint', 'DiagnosticHint', { bold = true })
+  set_hl_from('VimrcStatuslineGitAhead', 'DiagnosticInfo', { bold = true })
+  set_hl_from('VimrcStatuslineGitBehind', 'DiagnosticWarn', { bold = true })
+  set_hl_from('VimrcStatuslineGitDirty', 'DiffChange', { bold = true })
+  set_hl_from('VimrcStatuslineGitUntracked', 'DiffAdd', { bold = true })
 end
 
 local function width(text)
@@ -551,7 +551,7 @@ local function style_mode(ctx)
   if group then
     return hl(group, ctx.mode)
   end
-  return hl('DotfilesStatuslineModeOther', ctx.mode)
+  return hl('VimrcStatuslineModeOther', ctx.mode)
 end
 
 local function style_diagnostics(text)
@@ -561,19 +561,19 @@ local function style_diagnostics(text)
 
   local levels = vim.diagnostic.severity
   local groups = {
-    [diagnostic_statusline_icon(levels.ERROR)] = 'DotfilesStatuslineDiagError',
-    [diagnostic_statusline_icon(levels.WARN)] = 'DotfilesStatuslineDiagWarn',
-    [diagnostic_statusline_icon(levels.INFO)] = 'DotfilesStatuslineDiagInfo',
-    [diagnostic_statusline_icon(levels.HINT)] = 'DotfilesStatuslineDiagHint',
-    [diagnostic_fallback_icons.ERROR] = 'DotfilesStatuslineDiagError',
-    [diagnostic_fallback_icons.WARN] = 'DotfilesStatuslineDiagWarn',
-    [diagnostic_fallback_icons.INFO] = 'DotfilesStatuslineDiagInfo',
-    [diagnostic_fallback_icons.HINT] = 'DotfilesStatuslineDiagHint',
+    [diagnostic_statusline_icon(levels.ERROR)] = 'VimrcStatuslineDiagError',
+    [diagnostic_statusline_icon(levels.WARN)] = 'VimrcStatuslineDiagWarn',
+    [diagnostic_statusline_icon(levels.INFO)] = 'VimrcStatuslineDiagInfo',
+    [diagnostic_statusline_icon(levels.HINT)] = 'VimrcStatuslineDiagHint',
+    [diagnostic_fallback_icons.ERROR] = 'VimrcStatuslineDiagError',
+    [diagnostic_fallback_icons.WARN] = 'VimrcStatuslineDiagWarn',
+    [diagnostic_fallback_icons.INFO] = 'VimrcStatuslineDiagInfo',
+    [diagnostic_fallback_icons.HINT] = 'VimrcStatuslineDiagHint',
   }
   local styled = {}
   for _, part in ipairs(vim.split(text, diagnostic_separator, { trimempty = true, plain = true })) do
     local icon = vim.trim((part:match('^([^%d]+)') or ''))
-    local group = groups[icon] or 'DotfilesStatuslineSection'
+    local group = groups[icon] or 'VimrcStatuslineSection'
     table.insert(styled, hl(group, part))
   end
   return table.concat(styled, diagnostic_separator)
@@ -588,11 +588,11 @@ local function style_git_status(text)
   for _, part in ipairs(vim.split(text, ' ', { trimempty = true })) do
     local prefix = part:sub(1, 1)
     local group = ({
-      ['↑'] = 'DotfilesStatuslineGitAhead',
-      ['↓'] = 'DotfilesStatuslineGitBehind',
-      ['*'] = 'DotfilesStatuslineGitDirty',
-      ['?'] = 'DotfilesStatuslineGitUntracked',
-    })[prefix] or 'DotfilesStatuslineSection'
+      ['↑'] = 'VimrcStatuslineGitAhead',
+      ['↓'] = 'VimrcStatuslineGitBehind',
+      ['*'] = 'VimrcStatuslineGitDirty',
+      ['?'] = 'VimrcStatuslineGitUntracked',
+    })[prefix] or 'VimrcStatuslineSection'
     table.insert(styled, hl(group, part))
   end
   return table.concat(styled, ' ')
@@ -604,30 +604,30 @@ local function style_branch(ctx)
   end
 
   if ctx.git == '' then
-    return hl('DotfilesStatuslineSection', ctx.branch)
+    return hl('VimrcStatuslineSection', ctx.branch)
   end
 
   return table.concat({
-    hl('DotfilesStatuslineSection', ctx.branch),
-    hl('DotfilesStatuslineMuted', '('),
+    hl('VimrcStatuslineSection', ctx.branch),
+    hl('VimrcStatuslineMuted', '('),
     style_git_status(ctx.git),
-    hl('DotfilesStatuslineMuted', ')'),
+    hl('VimrcStatuslineMuted', ')'),
   }, '')
 end
 
 local function style_parts(left, right, ctx)
   left[left_part.mode] = style_mode(ctx)
   left[left_part.branch] = style_branch(ctx)
-  left[left_part.file] = hl('DotfilesStatuslineSection', left[left_part.file])
-  left[left_part.spacer] = hl('DotfilesStatuslineMuted', left[left_part.spacer])
+  left[left_part.file] = hl('VimrcStatuslineSection', left[left_part.file])
+  left[left_part.spacer] = hl('VimrcStatuslineMuted', left[left_part.spacer])
   left[left_part.diagnostics] = style_diagnostics(left[left_part.diagnostics])
 
-  right[right_part.progress] = hl('DotfilesStatuslineSection', right[right_part.progress])
-  right[right_part.filetype] = hl('DotfilesStatuslineSection', right[right_part.filetype])
-  right[right_part.encoding] = hl('DotfilesStatuslineMuted', right[right_part.encoding])
-  right[right_part.fileformat] = hl('DotfilesStatuslineMuted', right[right_part.fileformat])
-  right[right_part.percent] = hl('DotfilesStatuslineMuted', right[right_part.percent])
-  right[right_part.location] = hl('DotfilesStatuslineSection', right[right_part.location])
+  right[right_part.progress] = hl('VimrcStatuslineSection', right[right_part.progress])
+  right[right_part.filetype] = hl('VimrcStatuslineSection', right[right_part.filetype])
+  right[right_part.encoding] = hl('VimrcStatuslineMuted', right[right_part.encoding])
+  right[right_part.fileformat] = hl('VimrcStatuslineMuted', right[right_part.fileformat])
+  right[right_part.percent] = hl('VimrcStatuslineMuted', right[right_part.percent])
+  right[right_part.location] = hl('VimrcStatuslineSection', right[right_part.location])
   return left, right
 end
 
@@ -681,7 +681,7 @@ function M.setup(opts)
   vim.o.laststatus = 3
   vim.o.statusline = M.config.statusline
 
-  local group = vim.api.nvim_create_augroup('dotfiles_statusline', { clear = true })
+  local group = vim.api.nvim_create_augroup('vimrc_statusline', { clear = true })
   vim.api.nvim_create_autocmd({ 'BufEnter', 'BufWritePost', 'DirChanged', 'DiagnosticChanged' }, {
     group = group,
     callback = function()
