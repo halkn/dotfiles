@@ -4,6 +4,12 @@ local M = {}
 local original_ui_select = vim.ui.select
 local preview_ns = vim.api.nvim_create_namespace('dotfiles_picker_preview')
 
+M.config = {
+  debounce_ms = 150,
+  height_ratio = 0.8,
+  width_ratio = 0.9,
+}
+
 -- SECTION 1: State -------------------------------------------------------
 local state = {
   prompt_buf = nil,
@@ -51,8 +57,8 @@ end
 local function calc_layout()
   local total_w = vim.o.columns
   local total_h = vim.o.lines
-  local w = math.floor(total_w * 0.9)
-  local h = math.floor(total_h * 0.8)
+  local w = math.floor(total_w * M.config.width_ratio)
+  local h = math.floor(total_h * M.config.height_ratio)
   local row = math.floor((total_h - h) / 2)
   local col = math.floor((total_w - w) / 2)
   return { w = w, h = h, row = row, col = col }
@@ -511,7 +517,7 @@ local function _on_query_change()
 
   if src == 'grep' then
     if grep_debounced == nil then
-      grep_debounced = debounce(_run_grep, 150)
+      grep_debounced = debounce(_run_grep, M.config.debounce_ms)
     end
     grep_debounced(query)
     return
@@ -814,7 +820,9 @@ function M.open(source_name, opts)
 end
 
 -- SECTION 10: Public API -------------------------------------------------
-function M.setup()
+function M.setup(opts)
+  M.config = vim.tbl_deep_extend('force', M.config, opts or {})
+
   ---@diagnostic disable-next-line: duplicate-set-field
   vim.ui.select = function(items, opts, on_choice)
     M.ui_select(items, opts, on_choice)
