@@ -6,10 +6,10 @@ return {
       formatters_by_ft = require('vimrc.lang').formatters_by_ft(),
       formatters = {
         shfmt = {
-          command = require('vimrc.tools').executable('shfmt'),
+          command = 'shfmt',
         },
         stylua = {
-          command = require('vimrc.tools').executable('stylua'),
+          command = 'stylua',
         },
       },
       default_format_opts = {

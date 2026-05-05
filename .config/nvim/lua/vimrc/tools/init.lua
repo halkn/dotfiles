@@ -65,6 +65,42 @@ function M.bin_dir()
   return M.path('bin')
 end
 
+local function split_path(path)
+  return vim.split(path or '', ':', { plain = true, trimempty = true })
+end
+
+local function contains_path(paths, target)
+  for _, path in ipairs(paths) do
+    if path == target then
+      return true
+    end
+  end
+
+  return false
+end
+
+local function update_path(dir, mode)
+  mode = mode or 'prepend'
+  if mode == 'skip' then
+    return
+  end
+
+  local paths = split_path(vim.env.PATH)
+  if contains_path(paths, dir) then
+    return
+  end
+
+  if mode == 'prepend' then
+    table.insert(paths, 1, dir)
+  elseif mode == 'append' then
+    table.insert(paths, dir)
+  else
+    error(('invalid PATH mode: %s'):format(mode))
+  end
+
+  vim.env.PATH = table.concat(paths, ':')
+end
+
 function M.opt_dir(name)
   return M.path('opt', name)
 end
@@ -146,6 +182,13 @@ function M.default_tools()
   end
 
   return selected
+end
+
+function M.setup(opts)
+  opts = opts or {}
+
+  update_path(M.bin_dir(), opts.PATH or 'prepend')
+  require('vimrc.tools.commands').setup()
 end
 
 return M
