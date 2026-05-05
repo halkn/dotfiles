@@ -8,9 +8,16 @@ for _, m in ipairs({
   require(m)
 end
 
--- modules: load my modules.
-for _, f in ipairs(vim.fn.glob(vim.fn.stdpath('config') .. '/lua/modules/*.lua', false, true)) do
-  local name = 'modules.' .. vim.fn.fnamemodify(f, ':t:r')
+-- modules: load local modules.
+for _, name in ipairs({
+  'vimrc.modules.notify',
+  'vimrc.modules.pairs',
+  'vimrc.modules.picker',
+  'vimrc.modules.statusline',
+  'vimrc.modules.terminal',
+  'vimrc.modules.yankring',
+  'modules.nvim_tools',
+}) do
   local ok, mod = pcall(require, name)
   if ok then
     if type(mod) == 'table' and type(mod.setup) == 'function' then

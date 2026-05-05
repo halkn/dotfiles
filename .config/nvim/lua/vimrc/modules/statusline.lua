@@ -672,7 +672,7 @@ end
 function M.setup()
   setup_highlights()
   vim.o.laststatus = 3
-  vim.o.statusline = "%!v:lua.require'modules.statusline'.render()"
+  vim.o.statusline = "%!v:lua.require'vimrc.modules.statusline'.render()"
 
   local group = vim.api.nvim_create_augroup('dotfiles_statusline', { clear = true })
   vim.api.nvim_create_autocmd({ 'BufEnter', 'BufWritePost', 'DirChanged', 'DiagnosticChanged' }, {
