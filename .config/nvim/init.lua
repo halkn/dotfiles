@@ -1,7 +1,7 @@
 -- core: load in always.
 for _, m in ipairs({
   'vimrc.core',
-  'core.lsp',
+  'vimrc.lsp',
 }) do
   require(m)
 end
