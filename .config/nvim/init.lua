@@ -26,5 +26,5 @@ for _, name in ipairs({
   end
 end
 
--- plugins: load external plugins.
-require('plugins')
+-- pack: load external plugins.
+require('vimrc.pack')
