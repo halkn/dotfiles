@@ -1,6 +1,6 @@
 ---@type vim.lsp.Config
 local config = {
-  cmd = { require('vimrc.tools').executable('yaml-language-server'), '--stdio' },
+  cmd = { 'yaml-language-server', '--stdio' },
   filetypes = { 'yaml' },
   root_markers = {
     '.git/',

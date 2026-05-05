@@ -1,4 +1,5 @@
 local M = {}
+local configured = false
 
 local function notify_result(action, results)
   if #results == 0 then
@@ -13,6 +14,11 @@ local function notify_result(action, results)
 end
 
 function M.setup()
+  if configured then
+    return
+  end
+  configured = true
+
   vim.api.nvim_create_user_command('NvimToolsList', function()
     local tools = require('vimrc.tools')
     local required = tools.required_by_languages()
