@@ -1,6 +1,14 @@
 local M = {}
 
 M.languages = {
+  python = {
+    enabled = true,
+    filetypes = { 'python' },
+    lsp = { 'ty', 'ruff' },
+    format_client = 'ruff',
+    formatters_by_ft = {},
+    linters_by_ft = {},
+  },
   lua = {
     enabled = true,
     filetypes = { 'lua' },
@@ -27,6 +35,7 @@ M.languages = {
     filetypes = { 'bash', 'sh' },
     lsp = { 'bashls' },
     tools = { 'shfmt', 'shellcheck' },
+    format_client = 'bashls',
     formatters_by_ft = {},
     linters_by_ft = {},
   },
@@ -34,6 +43,7 @@ M.languages = {
     enabled = true,
     filetypes = { 'markdown' },
     lsp = { 'rumdl' },
+    format_client = 'rumdl',
     formatters_by_ft = {},
     linters_by_ft = {},
   },
@@ -42,6 +52,7 @@ M.languages = {
     filetypes = { 'yaml' },
     lsp = { 'yamlls' },
     tools = { 'yaml-language-server' },
+    format_client = 'yamlls',
     formatters_by_ft = {},
     linters_by_ft = {},
   },
@@ -78,6 +89,29 @@ function M.linters_by_ft()
   end)
 
   return by_ft
+end
+
+function M.language_for_filetype(filetype)
+  for _, language in pairs(M.languages) do
+    if language.enabled then
+      for _, language_filetype in ipairs(language.filetypes or {}) do
+        if language_filetype == filetype then
+          return language
+        end
+      end
+    end
+  end
+
+  return nil
+end
+
+function M.format_client_name(bufnr)
+  local language = M.language_for_filetype(vim.bo[bufnr].filetype)
+  if language == nil then
+    return nil
+  end
+
+  return language.format_client
 end
 
 function M.format_filetypes()
