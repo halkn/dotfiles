@@ -93,7 +93,7 @@ vim.api.nvim_create_autocmd('LspAttach', {
 })
 
 --setup
-local lspservers = require('lang').lsp_servers()
+local lspservers = require('vimrc.lang').lsp_servers()
 vim.list_extend(lspservers, {
   -- "pyright",
   'ty',

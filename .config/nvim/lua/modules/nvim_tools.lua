@@ -14,7 +14,7 @@ end
 
 function M.setup()
   vim.api.nvim_create_user_command('NvimToolsList', function()
-    local tools = require('tools')
+    local tools = require('vimrc.tools')
     local required = tools.required_by_languages()
     local lines = vim.tbl_map(function(item)
       local required_by = required[item.name] and table.concat(required[item.name], ',') or '-'
@@ -29,7 +29,7 @@ function M.setup()
   end, { desc = 'List Neovim managed tools' })
 
   vim.api.nvim_create_user_command('NvimToolsInstall', function(opts)
-    local ok, results = pcall(require('tools.installer').install, opts.args)
+    local ok, results = pcall(require('vimrc.tools.installer').install, opts.args)
     if not ok then
       vim.notify(results, vim.log.levels.ERROR)
       return
@@ -38,13 +38,13 @@ function M.setup()
   end, {
     nargs = '?',
     complete = function()
-      return vim.tbl_keys(require('tools').registry)
+      return vim.tbl_keys(require('vimrc.tools').registry)
     end,
     desc = 'Install Neovim managed tools',
   })
 
   vim.api.nvim_create_user_command('NvimToolsUpdate', function(opts)
-    local ok, results = pcall(require('tools.installer').update, opts.args)
+    local ok, results = pcall(require('vimrc.tools.installer').update, opts.args)
     if not ok then
       vim.notify(results, vim.log.levels.ERROR)
       return
@@ -53,7 +53,7 @@ function M.setup()
   end, {
     nargs = '?',
     complete = function()
-      return vim.tbl_keys(require('tools').registry)
+      return vim.tbl_keys(require('vimrc.tools').registry)
     end,
     desc = 'Update Neovim managed tools',
   })

@@ -11,9 +11,9 @@ local config = {
       --
       -- Default upstream pattern is "**/*@(.sh|.inc|.bash|.command)".
       globPattern = vim.env.GLOB_PATTERN or '*@(.sh|.inc|.bash|.command)',
-      shellcheckPath = require('tools').executable('shellcheck'),
+      shellcheckPath = require('vimrc.tools').executable('shellcheck'),
       shfmt = {
-        path = require('tools').executable('shfmt'),
+        path = require('vimrc.tools').executable('shfmt'),
       },
     },
   },
