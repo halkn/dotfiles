@@ -1,33 +1,41 @@
 local M = {}
 
+M.language_order = {
+  'python',
+  'lua',
+  'zsh',
+  'bash',
+  'markdown',
+  'yaml',
+}
+
 M.languages = {
   python = {
     enabled = true,
     filetypes = { 'python' },
     lsp = { 'ty', 'ruff' },
-    format_client = 'ruff',
-    formatters_by_ft = {},
-    linters_by_ft = {},
+    format = {
+      client = 'ruff',
+    },
   },
   lua = {
     enabled = true,
     filetypes = { 'lua' },
-    lsp = { 'luals' },
-    tools = { 'lua-language-server', 'stylua' },
-    formatters_by_ft = {
-      lua = { 'stylua' },
+    lsp = { 'luals', 'efm' },
+    tools = { 'lua-language-server', 'stylua', 'efm-langserver' },
+    format = {
+      client = 'efm',
+      tool = 'stylua',
     },
-    linters_by_ft = {},
   },
   zsh = {
     enabled = true,
     filetypes = { 'zsh' },
-    tools = { 'shfmt' },
-    formatters_by_ft = {
-      zsh = { 'shfmt' },
-    },
-    linters_by_ft = {
-      zsh = { 'zsh' },
+    tools = { 'shfmt', 'efm-langserver' },
+    lsp = { 'efm' },
+    format = {
+      client = 'efm',
+      tool = 'shfmt',
     },
   },
   bash = {
@@ -35,64 +43,94 @@ M.languages = {
     filetypes = { 'bash', 'sh' },
     lsp = { 'bashls' },
     tools = { 'shfmt', 'shellcheck' },
-    format_client = 'bashls',
-    formatters_by_ft = {},
-    linters_by_ft = {},
+    format = {
+      client = 'bashls',
+    },
   },
   markdown = {
     enabled = true,
     filetypes = { 'markdown' },
     lsp = { 'rumdl' },
-    format_client = 'rumdl',
-    formatters_by_ft = {},
-    linters_by_ft = {},
+    format = {
+      client = 'rumdl',
+    },
   },
   yaml = {
     enabled = true,
     filetypes = { 'yaml' },
     lsp = { 'yamlls' },
     tools = { 'yaml-language-server' },
-    format_client = 'yamlls',
-    formatters_by_ft = {},
-    linters_by_ft = {},
+    format = {
+      client = 'yamlls',
+    },
   },
 }
 
 local function enabled_languages()
-  return vim.iter(M.languages):filter(function(_, language)
-    return language.enabled
-  end)
+  local languages = {}
+  for _, name in ipairs(M.language_order) do
+    local language = M.languages[name]
+    if language and language.enabled then
+      table.insert(languages, { name = name, config = language })
+    end
+  end
+
+  return languages
 end
 
 function M.lsp_servers()
   local servers = {}
-  enabled_languages():each(function(_, language)
-    vim.list_extend(servers, language.lsp or {})
-  end)
+  local seen = {}
+  for _, language in ipairs(enabled_languages()) do
+    language = language.config
+    for _, server in ipairs(language.lsp or {}) do
+      if not seen[server] then
+        table.insert(servers, server)
+        seen[server] = true
+      end
+    end
+  end
 
   return servers
 end
 
-function M.formatters_by_ft()
-  local by_ft = {}
-  enabled_languages():each(function(_, language)
-    by_ft = vim.tbl_deep_extend('force', by_ft, language.formatters_by_ft or {})
-  end)
+function M.lsp_filetypes(server_name)
+  local filetypes = {}
+  local seen = {}
+  for _, language in ipairs(enabled_languages()) do
+    language = language.config
+    if vim.tbl_contains(language.lsp or {}, server_name) then
+      for _, filetype in ipairs(language.filetypes or {}) do
+        if not seen[filetype] then
+          table.insert(filetypes, filetype)
+          seen[filetype] = true
+        end
+      end
+    end
+  end
 
-  return by_ft
+  table.sort(filetypes)
+  return filetypes
 end
 
-function M.linters_by_ft()
-  local by_ft = {}
-  enabled_languages():each(function(_, language)
-    by_ft = vim.tbl_deep_extend('force', by_ft, language.linters_by_ft or {})
-  end)
+function M.format_tools_by_ft(client_name)
+  local tools = {}
+  for _, language in ipairs(enabled_languages()) do
+    language = language.config
+    local format = language.format
+    if format and format.client == client_name and format.tool then
+      for _, filetype in ipairs(language.filetypes or {}) do
+        tools[filetype] = format.tool
+      end
+    end
+  end
 
-  return by_ft
+  return tools
 end
 
 function M.language_for_filetype(filetype)
-  for _, language in pairs(M.languages) do
+  for _, language in ipairs(enabled_languages()) do
+    language = language.config
     if language.enabled then
       for _, language_filetype in ipairs(language.filetypes or {}) do
         if language_filetype == filetype then
@@ -111,13 +149,12 @@ function M.format_client_name(bufnr)
     return nil
   end
 
-  return language.format_client
-end
+  local format = language.format
+  if format == nil then
+    return nil
+  end
 
-function M.format_filetypes()
-  local filetypes = vim.tbl_keys(M.formatters_by_ft())
-  table.sort(filetypes)
-  return filetypes
+  return format.client
 end
 
 return M
