@@ -13,9 +13,14 @@ AI アシスタント設定は `codex/` と `claude/` にあります。
 
 - `just`: 利用できる task を一覧します。
 - `just setup`: symlink 作成、`apt` 更新、`ptm install`、Neovim managed tools install を実行します。
-- `just lint`: 通常の検証として diff 空白確認、`zsh` 構文確認、Neovim Lua diagnostics、起動確認を実行します。
-- `just fmt`: Neovim Lua を managed `stylua` で整形します。
+- `just setup-user`: `apt` に触れず、symlink 作成、`ptm install`、Neovim managed tools install を実行します。
+- `just lint`: 通常の検証として diff 空白確認、`zsh` 構文確認、
+  Markdown、formatter check、Neovim Lua diagnostics、起動確認を実行します。
+- `just fmt`: Markdown、zsh、Neovim Lua を既定 formatter で整形します。
+- `just fmt-check`: ファイルを書き換えずに Markdown、zsh、Neovim Lua の整形を確認します。
 - `just update`: `apt`、`ptm` 管理ツール、Neovim managed tools を更新します。
+- `just update-user`: `apt` に触れず、`ptm` 管理ツール、Neovim managed tools を更新します。
+- `just check-tools`: 検証に必要な command と Neovim managed tools の存在を確認します。
 - `just status`: 意図した dotfiles だけが変更されているか確認します。
 
 `just setup` と `just update` は system package や symlink に触れるため、
@@ -64,9 +69,9 @@ Neovim 内で使う LSP server と efm backend tool は
 `:NvimToolsInstall` / `:NvimToolsUpdate` で管理し、グローバル PATH には通しません。
 
 Neovim Lua を変更したときは、通常は `just fmt` で整形し、`just lint` で確認します。
-`just lint` は `stylua --check`、`lua-language-server --check`、
-`nvim --headless -i NONE '+quitall'` をまとめて確認します。
-managed tools がない場合は先に `just setup`、更新したい場合は `just update` を実行します。
+`just lint-lua` は `stylua --check` と `lua-language-server --check` を確認し、
+`just lint-nvim` は `nvim --headless -i NONE '+quitall'` で起動確認します。
+managed tools がない場合は先に `just setup-user`、更新したい場合は `just update-user` を実行します。
 差分が広い場合は、意味変更と整形-only の変更を区別して確認してください。
 `statusline` や `vim` global のような Neovim 固有 API は、
 `.config/nvim/.luarc.json` の前提を崩さないように扱ってください。
@@ -77,7 +82,7 @@ managed tools がない場合は先に `just setup`、更新したい場合は `
 
 - 通常: `just lint` を実行します。
 - Neovim Lua: 変更後は `just fmt` と `just lint` を実行します。
-- Shell: `zsh` 変更時は `just lint` の `zsh -n` 確認を通します。
+- Shell: `zsh` 変更時は `just lint-zsh` または `just lint` の `zsh -n` 確認を通します。
 - 文書と整形: `*.md` は `rumdl`、shell 系ファイルは `shfmt` で確認します。
   既存警告が残っている場合は、対象ファイルに絞って確認してください。
 
