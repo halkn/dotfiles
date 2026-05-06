@@ -1,7 +1,6 @@
 # mkdir for zsh.
 mkdir -p "${ZDATADIR}"
 mkdir -p "${ZCACHEDIR}"
-mkdir -p "${ZSTATEDIR}"
 mkdir -p "${ZPLUGINDIR}"
 
 # ── History ──────────────────────────────────────────
@@ -39,20 +38,6 @@ setopt interactive_comments
 
 # ── keybind ──────────────────────────────────────────
 bindkey -e
-
-# ── named directory ──────────────────────────────────
-hash -d dot=$HOME/.dotfiles
-hash -d cfg=${XDG_CONFIG_HOME:-$HOME/.config}
-hash -d data=${XDG_DATA_HOME:-$HOME/.local/share}
-hash -d cache=${XDG_CACHE_HOME:-$HOME/.local/cache}
-hash -d state=${XDG_STATE_HOME:-$HOME/.local/state}
-hash -d bin=${XDG_BIN_HOME:-$HOME/.local/bin}
-
-# ── directory history ────────────────────────────────
-autoload -Uz chpwd_recent_dirs cdr add-zsh-hook
-add-zsh-hook chpwd chpwd_recent_dirs
-zstyle ':chpwd:*' recent-dirs-file "$ZSTATEDIR/chpwd-recent-dirs"
-zstyle ':chpwd:*' recent-dirs-max 200
 
 # ── completion ───────────────────────────────────────
 autoload -Uz compinit
@@ -275,29 +260,12 @@ fcd() {
   [[ -n "$dir" ]] && cd -- "$dir"
 }
 
-# frm - interactive remove files
-frm() {
-  _fzx_available || return
-  fzx rm "$@"
-}
-
-# fgb - interactive git branch switch
-fgb() {
-  _fzx_available || return
-  fzx git branch "$@"
-}
-
-# fga - interactive git stage/unstage
-fga() {
-  _fzx_available || return
-  fzx git stage "$@"
-}
-
-# fgl - interactive git log
-fgl() {
-  _fzx_available || return
-  fzx git log "$@"
-}
+if command -v fzx >/dev/null 2>&1; then
+  alias frm='fzx rm'
+  alias fgb='fzx git branch'
+  alias fga='fzx git stage'
+  alias fgl='fzx git log'
+fi
 
 # fgw - interactive worktree change directory
 fgw() {

@@ -15,10 +15,8 @@ export XDG_STATE_HOME=~/.local/state
 
 # zsh
 skip_global_compinit=1
-export ZHOMEDIR=$XDG_CONFIG_HOME/zsh
 export ZDATADIR=$XDG_DATA_HOME/zsh
 export ZCACHEDIR=$XDG_CACHE_HOME/zsh
-export ZSTATEDIR=$XDG_STATE_HOME/zsh
 export ZPLUGINDIR=$XDG_DATA_HOME/zsh_plugins
 
 # bun
