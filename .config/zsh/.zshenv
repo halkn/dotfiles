@@ -15,9 +15,6 @@ export XDG_STATE_HOME=~/.local/state
 
 # zsh
 skip_global_compinit=1
-export ZDATADIR=$XDG_DATA_HOME/zsh
-export ZCACHEDIR=$XDG_CACHE_HOME/zsh
-export ZPLUGINDIR=$XDG_DATA_HOME/zsh_plugins
 
 # bun
 export BUN_INSTALL="$HOME/.bun"
@@ -34,20 +31,6 @@ export LESSHISTFILE=-
 
 # ripgrep
 export RIPGREP_CONFIG_PATH=$XDG_CONFIG_HOME/ripgrep/config
-
-# fzf
-export FZF_DEFAULT_OPTS="
-  --height 60%
-  --layout=reverse
-  --border
-  --info=inline
-  --preview-window=right:60%:wrap
-  --bind ctrl-u:preview-page-up,ctrl-d:preview-page-down
-  --bind ctrl-/:toggle-preview
-  --color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8
-  --color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc
-  --color=marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8
-"
 
 # ---------------------------------------------------------------------------
 # path

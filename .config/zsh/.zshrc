@@ -1,10 +1,13 @@
 # mkdir for zsh.
-mkdir -p "${ZDATADIR}"
-mkdir -p "${ZCACHEDIR}"
-mkdir -p "${ZPLUGINDIR}"
+zsh_data_dir=$XDG_DATA_HOME/zsh
+zsh_cache_dir=$XDG_CACHE_HOME/zsh
+zsh_plugin_dir=$XDG_DATA_HOME/zsh_plugins
+mkdir -p "$zsh_data_dir"
+mkdir -p "$zsh_cache_dir"
+mkdir -p "$zsh_plugin_dir"
 
 # ── History ──────────────────────────────────────────
-export HISTFILE=$XDG_DATA_HOME/zsh/history
+export HISTFILE=$zsh_data_dir/history
 export HISTSIZE=100000
 export SAVEHIST=10000
 setopt hist_expire_dups_first
@@ -43,10 +46,10 @@ bindkey -e
 autoload -Uz compinit
 # load compinit with XDG cache location for dump file
 # skip regeneration if dump file is less than 24 hours old
-if [[ -n $ZCACHEDIR/.zcompdump(#qN.mh+24) ]]; then
-  compinit -d $ZCACHEDIR/.zcompdump
+if [[ -n $zsh_cache_dir/.zcompdump(#qN.mh+24) ]]; then
+  compinit -d $zsh_cache_dir/.zcompdump
 else
-  compinit -C -d $ZCACHEDIR/.zcompdump
+  compinit -C -d $zsh_cache_dir/.zcompdump
 fi
 
 # Choose a completion candidate from the menu.
@@ -71,7 +74,7 @@ zstyle ':completion:*' group-name ''
 
 # use cache
 zstyle ':completion:*' use-cache yes
-zstyle ':completion:*' cache-path $ZCACHEDIR/zcompcache
+zstyle ':completion:*' cache-path $zsh_cache_dir/zcompcache
 
 # use detailed completion
 zstyle ':completion:*' verbose yes
@@ -155,7 +158,7 @@ zsh-plugin-install() {
 
   local _p _d
   for _p in $_zsh_plugins; do
-    _d=$ZPLUGINDIR/${_p#*/}
+    _d=$zsh_plugin_dir/${_p#*/}
     if [[ ! -d $_d ]]; then
       print "installing: ${_p#*/}"
       git clone --depth 1 "https://github.com/$_p" "$_d" || return 1
@@ -165,7 +168,7 @@ zsh-plugin-install() {
 
 typeset -a _zsh_missing_plugins=()
 for _p in $_zsh_plugins; do
-  _d=$ZPLUGINDIR/${_p#*/}
+  _d=$zsh_plugin_dir/${_p#*/}
   [[ -d $_d ]] || _zsh_missing_plugins+=("${_p#*/}")
 done
 unset _p _d
@@ -177,7 +180,7 @@ unset _zsh_missing_plugins
 
 # Source plugins (order matters)
 for _e in $_zsh_plugin_entries; do
-  [[ -f $ZPLUGINDIR/$_e ]] && source $ZPLUGINDIR/$_e
+  [[ -f $zsh_plugin_dir/$_e ]] && source $zsh_plugin_dir/$_e
 done
 unset _e
 
@@ -190,7 +193,7 @@ zsh-plugin-update() {
 
   local _p _d
   for _p in $_zsh_plugins; do
-    _d=$ZPLUGINDIR/${_p#*/}
+    _d=$zsh_plugin_dir/${_p#*/}
     [[ -d $_d ]] && {
       print "updating: ${_p#*/}"
       git -C "$_d" pull --ff-only
@@ -200,7 +203,7 @@ zsh-plugin-update() {
 
 # ── uv ───────────────────────────────────────────────
 if command -v uv >/dev/null 2>&1; then
-  _uv_comp=$ZCACHEDIR/completions/_uv
+  _uv_comp=$zsh_cache_dir/completions/_uv
   _uv_bin=$(command -v uv)
   if [[ ! -f $_uv_comp || $_uv_bin -nt $_uv_comp ]]; then
     mkdir -p ${_uv_comp:h}
@@ -231,6 +234,19 @@ if command -v nvim >/dev/null 2>&1; then
 fi
 
 # ── fzf ──────────────────────────────────────────────
+export FZF_DEFAULT_OPTS="
+  --height 60%
+  --layout=reverse
+  --border
+  --info=inline
+  --preview-window=right:60%:wrap
+  --bind ctrl-u:preview-page-up,ctrl-d:preview-page-down
+  --bind ctrl-/:toggle-preview
+  --color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8
+  --color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc
+  --color=marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8
+"
+
 if command -v fzf >/dev/null 2>&1; then
   source <(fzf --zsh)
 fi
