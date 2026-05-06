@@ -26,6 +26,12 @@ M.registry = {
     asset_type = 'binary',
     executable_path = 'shfmt',
   },
+  ['efm-langserver'] = {
+    name = 'efm-langserver',
+    repo = 'mattn/efm-langserver',
+    asset_pattern = 'efm%-langserver_v[%d%.]+_linux_amd64%.tar%.gz$',
+    executable_glob = 'efm-langserver_*/efm-langserver',
+  },
   shellcheck = {
     name = 'shellcheck',
     repo = 'koalaman/shellcheck',
@@ -132,8 +138,9 @@ function M.required_by_languages()
     return by_tool
   end
 
-  for language_name, language in pairs(lang.languages) do
-    if language.enabled and language.tools then
+  for _, language_name in ipairs(lang.language_order or {}) do
+    local language = lang.languages[language_name]
+    if language and language.enabled and language.tools then
       for _, tool_name in ipairs(language.tools) do
         by_tool[tool_name] = by_tool[tool_name] or {}
         table.insert(by_tool[tool_name], language_name)
