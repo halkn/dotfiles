@@ -44,13 +44,6 @@ M.registry = {
     package_manager = 'bun',
     executable_path = join('node_modules', '.bin', 'yaml-language-server'),
   },
-  ['tree-sitter'] = {
-    name = 'tree-sitter',
-    common = true,
-    repo = 'tree-sitter/tree-sitter',
-    asset_pattern = 'tree%-sitter%-cli%-linux%-x64%.zip$',
-    executable_path = 'tree-sitter',
-  },
 }
 
 function M.path(...)
@@ -131,9 +124,9 @@ function M.list()
   end, names)
 end
 
-function M.required_by_languages()
+function M.required_by_lsp_languages()
   local by_tool = {}
-  local ok, lang = pcall(require, 'vimrc.lang')
+  local ok, lang = pcall(require, 'vimrc.lsp.lang')
   if not ok then
     return by_tool
   end
@@ -151,18 +144,14 @@ function M.required_by_languages()
   return by_tool
 end
 
+M.required_by_languages = M.required_by_lsp_languages
+
 function M.default_tools()
   local selected = {}
-  local required = M.required_by_languages()
+  local required = M.required_by_lsp_languages()
 
   for name in pairs(required) do
     selected[name] = true
-  end
-
-  for name, tool in pairs(M.registry) do
-    if tool.common then
-      selected[name] = true
-    end
   end
 
   return selected

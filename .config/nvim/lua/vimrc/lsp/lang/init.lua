@@ -1,70 +1,9 @@
+local registry = require('vimrc.lsp.lang.registry')
+
 local M = {}
 
-M.language_order = {
-  'python',
-  'lua',
-  'zsh',
-  'bash',
-  'markdown',
-  'yaml',
-}
-
-M.languages = {
-  python = {
-    enabled = true,
-    filetypes = { 'python' },
-    lsp = { 'ty', 'ruff' },
-    format = {
-      client = 'ruff',
-    },
-  },
-  lua = {
-    enabled = true,
-    filetypes = { 'lua' },
-    lsp = { 'luals', 'efm' },
-    tools = { 'lua-language-server', 'stylua', 'efm-langserver' },
-    format = {
-      client = 'efm',
-      tool = 'stylua',
-    },
-  },
-  zsh = {
-    enabled = true,
-    filetypes = { 'zsh' },
-    tools = { 'shfmt', 'efm-langserver' },
-    lsp = { 'efm' },
-    format = {
-      client = 'efm',
-      tool = 'shfmt',
-    },
-  },
-  bash = {
-    enabled = false,
-    filetypes = { 'bash', 'sh' },
-    lsp = { 'bashls' },
-    tools = { 'shfmt', 'shellcheck' },
-    format = {
-      client = 'bashls',
-    },
-  },
-  markdown = {
-    enabled = true,
-    filetypes = { 'markdown' },
-    lsp = { 'rumdl' },
-    format = {
-      client = 'rumdl',
-    },
-  },
-  yaml = {
-    enabled = true,
-    filetypes = { 'yaml' },
-    lsp = { 'yamlls' },
-    tools = { 'yaml-language-server' },
-    format = {
-      client = 'yamlls',
-    },
-  },
-}
+M.language_order = registry.language_order
+M.languages = registry.languages
 
 local function enabled_languages()
   local languages = {}

@@ -1,4 +1,4 @@
-local lang = require('vimrc.lang')
+local lang = require('vimrc.lsp.lang')
 
 local formatters = {
   shfmt = {
