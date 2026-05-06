@@ -3,7 +3,7 @@ set quiet
 config_dir := ".config"
 nvim_config := ".config/nvim"
 nvim_tools := "${XDG_DATA_HOME:-$HOME/.local/share}/nvim/managed-tools/bin"
-zsh_config := ".config/zsh/.zshenv .config/zsh/.zshrc .config/zsh/conf.d/*.zsh"
+zsh_config := ".config/zsh/.zshenv .config/zsh/.zshrc"
 
 default:
   @just --list
