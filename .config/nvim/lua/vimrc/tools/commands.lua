@@ -21,18 +21,15 @@ function M.setup()
 
   vim.api.nvim_create_user_command('NvimToolsList', function()
     local tools = require('vimrc.tools')
-    local required = tools.required_by_languages()
+    local required = tools.required_by_lsp_languages()
     local lines = vim.tbl_map(function(item)
       local required_by = required[item.name] and table.concat(required[item.name], ',') or '-'
-      if tools.registry[item.name].common then
-        required_by = required_by == '-' and 'common' or (required_by .. ',common')
-      end
       local status = item.installed and 'installed' or 'missing'
       return ('%-20s %-9s required_by=%s path=%s'):format(item.name, status, required_by, item.path)
     end, tools.list())
 
     vim.notify(table.concat(lines, '\n'), vim.log.levels.INFO)
-  end, { desc = 'List Neovim managed tools' })
+  end, { desc = 'List Neovim managed LSP and efm backend tools' })
 
   vim.api.nvim_create_user_command('NvimToolsInstall', function(opts)
     local ok, results = pcall(require('vimrc.tools.installer').install, opts.args)
@@ -46,7 +43,7 @@ function M.setup()
     complete = function()
       return vim.tbl_keys(require('vimrc.tools').registry)
     end,
-    desc = 'Install Neovim managed tools',
+    desc = 'Install Neovim managed LSP and efm backend tools',
   })
 
   vim.api.nvim_create_user_command('NvimToolsUpdate', function(opts)
@@ -61,7 +58,7 @@ function M.setup()
     complete = function()
       return vim.tbl_keys(require('vimrc.tools').registry)
     end,
-    desc = 'Update Neovim managed tools',
+    desc = 'Update Neovim managed LSP and efm backend tools',
   })
 end
 
