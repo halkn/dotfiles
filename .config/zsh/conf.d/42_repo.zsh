@@ -1,88 +1,23 @@
 repo() {
-  local root=$HOME/dev
   local cmd="${1:-cd}"
   (($# > 0)) && shift
 
+  command -v fzx >/dev/null 2>&1 || {
+    print 'repo: fzx is not installed or not in PATH' >&2
+    return 1
+  }
+
   case "$cmd" in
-    get)
-      local url="$1"
-      [[ -z "$url" ]] && {
-        echo "usage: repo get <url|owner/repo>" >&2
-        return 1
-      }
-
-      local host owner name dest
-
-      case "$url" in
-        *dev.azure.com*)
-          host="dev.azure.com"
-          local repo_path="${url#*dev.azure.com/}"
-          repo_path="${repo_path#*@dev.azure.com/}"
-          local org="${repo_path%%/*}"
-          repo_path="${repo_path#*/}"
-          local project="${repo_path%%/*}"
-          repo_path="${repo_path#*/}"
-          repo_path="${repo_path#_git/}"
-          name="${repo_path%%/*}"
-          dest=$root/$host/$org/$project/$name
-          ;;
-        https://*)
-          local stripped="${url#https://}"
-          host="${stripped%%/*}"
-          stripped="${stripped#*/}"
-          owner="${stripped%%/*}"
-          stripped="${stripped#*/}"
-          name="${stripped%%/*}"
-          name="${name%.git}"
-          dest=$root/$host/$owner/$name
-          ;;
-        git@*)
-          local stripped="${url#git@}"
-          host="${stripped%%:*}"
-          stripped="${stripped#*:}"
-          owner="${stripped%%/*}"
-          name="${stripped#*/}"
-          name="${name%.git}"
-          dest=$root/$host/$owner/$name
-          ;;
-        */*)
-          host="github.com"
-          owner="${url%%/*}"
-          name="${url#*/}"
-          name="${name%.git}"
-          dest=$root/$host/$owner/$name
-          url="https://github.com/$owner/$name"
-          ;;
-        *)
-          echo "repo get: cannot parse '$url'" >&2
-          return 1
-          ;;
-      esac
-
-      if [[ -d "$dest/.git" ]]; then
-        echo "already exists: $dest"
-        return 0
-      fi
-      mkdir -p "${dest:h}"
-      git clone "$url" "$dest"
-      ;;
-
-    list)
-      find $root -maxdepth 5 -name ".git" -type d \
-        | sed "s|$root/||; s|/.git$||" \
-        | sort
-      ;;
-
     cd)
-      command -v fzf &>/dev/null || return
-      local rel
-      rel=$(repo list | fzf)
-      [[ -z "$rel" ]] && return
-      cd $root/$rel && la
+      local dir
+      dir=$(fzx repo cd "$@") || return
+      [[ -n "$dir" ]] && cd -- "$dir" && la
       ;;
-
+    get | list)
+      fzx repo "$cmd" "$@"
+      ;;
     *)
-      echo "usage: repo <get|list|cd>" >&2
+      print 'usage: repo <get|list|cd>' >&2
       return 1
       ;;
   esac
