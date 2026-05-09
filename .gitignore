@@ -1,5 +1,3 @@
-.config/zsh/*.zwc
-.config/zsh/conf.d/*.zwc
 .rumdl_cache/
 .config/uv/uv-receipt.json
 

@@ -79,10 +79,8 @@ zstyle ':completion:*' completer \
 
 # ── aliases ──────────────────────────────────────────
 # ls
-alias ls='ls --color=auto'
 alias ll='ls -lhF'
 alias la='ls -lhAF'
-alias ltr='ls -lhFtr'
 
 # human readable for du and df
 alias du='du -h'
@@ -92,9 +90,7 @@ alias df='df -h'
 alias ..='cd ..'
 
 # etc
-alias path='echo $PATH | tr ":" "\n"'
 alias zs='exec zsh'
-alias zb='for i in $(seq 1 10); do time zsh -i -c exit; done'
 alias :q='exit'
 dot() {
   local target="${XDG_CONFIG_HOME:-$HOME/.config}"
@@ -137,20 +133,17 @@ if command -v nvim >/dev/null 2>&1; then
 fi
 
 # ── fzf ──────────────────────────────────────────────
-export FZF_DEFAULT_OPTS="
-  --height 60%
-  --layout=reverse
-  --border
-  --info=inline
-  --preview-window=right:60%:wrap
-  --bind ctrl-u:preview-page-up,ctrl-d:preview-page-down
-  --bind ctrl-/:toggle-preview
-  --color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8
-  --color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc
-  --color=marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8
-"
-
 if command -v fzf >/dev/null 2>&1 && [[ -t 0 ]]; then
+  export FZF_DEFAULT_OPTS="
+    --height 60%
+    --layout=reverse
+    --border
+    --info=inline
+    --preview-window=right:60%:wrap
+    --bind ctrl-u:preview-page-up,ctrl-d:preview-page-down
+    --bind ctrl-/:toggle-preview
+  "
+
   source <(fzf --zsh)
 fi
 
@@ -242,7 +235,3 @@ if command -v starship >/dev/null 2>&1; then
   export STARSHIP_CACHE=$XDG_CACHE_HOME/starship/cache
   eval "$(starship init zsh)"
 fi
-
-# compile zshrc.
-[[ ! -f "${ZDOTDIR}/.zshrc.zwc" || "${ZDOTDIR}/.zshrc" -nt "${ZDOTDIR}/.zshrc.zwc" ]] \
-  && zcompile "${ZDOTDIR}/.zshrc"
