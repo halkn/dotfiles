@@ -12,19 +12,16 @@ AI アシスタント設定は `codex/` と `claude/` にあります。
 ## Build, Test, and Development Commands
 
 - `just`: 利用できる task を一覧します。
-- `just setup`: symlink 作成、`apt` 更新、`ptm install`、Neovim managed tools install を実行します。
-- `just setup-user`: `apt` に触れず、symlink 作成、`ptm install`、Neovim managed tools install を実行します。
+- `just setup`: symlink 作成、`ptm install`、zsh plugin install、
+  Neovim managed tools install を実行します。
 - `just lint`: 通常の検証として diff 空白確認、`zsh` 構文確認、
   Markdown、formatter check、Neovim Lua diagnostics、起動確認を実行します。
 - `just fmt`: Markdown、zsh、Neovim Lua を既定 formatter で整形します。
 - `just fmt-check`: ファイルを書き換えずに Markdown、zsh、Neovim Lua の整形を確認します。
-- `just update`: `apt`、`ptm` 管理ツール、Neovim managed tools を更新します。
-- `just update-user`: `apt` に触れず、`ptm` 管理ツール、Neovim managed tools を更新します。
-- `just check-tools`: 検証に必要な command と Neovim managed tools の存在を確認します。
-- `just status`: 意図した dotfiles だけが変更されているか確認します。
+- `just update`: `ptm` 管理ツール、zsh plugin、Neovim managed tools を更新します。
 
-`just setup` と `just update` は system package や symlink に触れるため、
-必要性を説明し、ユーザーの了承がある場合に実行してください。
+Agent は `just update` を自律実行せず、明示依頼がある場合だけ実行してください。
+system package 更新が必要な場合は、just task ではなくユーザーが個別に実行します。
 
 ## Coding Style & Naming Conventions
 
@@ -71,7 +68,7 @@ Neovim 内で使う LSP server と efm backend tool は
 Neovim Lua を変更したときは、通常は `just fmt` で整形し、`just lint` で確認します。
 `just lint-lua` は `stylua --check` と `lua-language-server --check` を確認し、
 `just lint-nvim` は `nvim --headless -i NONE '+quitall'` で起動確認します。
-managed tools がない場合は先に `just setup-user`、更新したい場合は `just update-user` を実行します。
+managed tools がない場合は先に `just setup`、更新したい場合は `just update` を実行します。
 差分が広い場合は、意味変更と整形-only の変更を区別して確認してください。
 `statusline` や `vim` global のような Neovim 固有 API は、
 `.config/nvim/.luarc.json` の前提を崩さないように扱ってください。

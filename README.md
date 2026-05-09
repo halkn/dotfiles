@@ -22,15 +22,11 @@ Useful tasks:
 
 ```sh
 just          # List tasks
-just setup    # Link dotfiles, install apt packages, install ptm tools, install Neovim-managed tools
-just setup-user # Link dotfiles and install user-space tools without apt
-just update   # Update apt packages, ptm tools, and Neovim-managed tools
-just update-user # Update user-space tools without apt
-just check-tools # Check required commands and managed tools
+just setup    # Link dotfiles and install ptm tools, zsh plugins, and Neovim-managed tools
+just update   # Update ptm tools, zsh plugins, and Neovim-managed tools
 just fmt      # Format Markdown, zsh files, and Neovim Lua files
 just fmt-check # Check formatting without writing files
 just lint     # Run repository checks
-just status   # Show git status
 ```
 
 ## Neovim

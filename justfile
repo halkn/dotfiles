@@ -4,26 +4,10 @@ config_dir := ".config"
 nvim_config := ".config/nvim"
 nvim_tools := "${XDG_DATA_HOME:-$HOME/.local/share}/nvim/managed-tools/bin"
 zsh_config := ".config/zsh/.zshenv .config/zsh/.zshrc"
+zsh_plugin_dir := "${XDG_DATA_HOME:-$HOME/.local/share}/zsh_plugins"
 
 default:
   @just --list
-
-[doc('Show repository status')]
-status:
-  git status --short
-
-[doc('Check for whitespace and patch formatting issues')]
-diff-check:
-  git diff --check
-
-[doc('Check required commands and managed tools')]
-check-tools:
-  command -v zsh >/dev/null
-  command -v rumdl >/dev/null
-  command -v nvim >/dev/null
-  test -x "{{nvim_tools}}/shfmt"
-  test -x "{{nvim_tools}}/stylua"
-  test -x "{{nvim_tools}}/lua-language-server"
 
 [private]
 _link:
@@ -39,55 +23,20 @@ _link:
 [doc('Link dotfiles into home directories')]
 link: _link
 
-[doc('Install Neovim managed tools')]
-install-tools:
-  nvim --headless -i NONE '+NvimToolsInstall' '+quitall'
-
-[doc('Update Neovim managed tools')]
-update-tools:
-  nvim --headless -i NONE '+NvimToolsUpdate' '+quitall'
-
-[doc('Run user-space setup without apt')]
-setup-user: _link
-  ptm install
-  just install-tools
-
-[doc('Run first-time setup')]
+[doc('Run setup')]
 setup: _link
-  sudo apt update -y
-  sudo apt upgrade -y
   ptm install
+  just install-zsh-plugins
   just install-tools
+
+[doc('Update user-space managed tools')]
+update:
+  ptm update
+  just update-zsh-plugins
+  just update-tools
 
 [doc('Run repository checks that pass on the current tree')]
 lint: diff-check check-tools lint-zsh lint-md lint-shfmt lint-lua lint-nvim
-
-[doc('Check zsh syntax')]
-lint-zsh:
-  zsh -n {{zsh_config}}
-
-[doc('Check Markdown')]
-lint-md:
-  rumdl check .
-
-[doc('Check shell formatting')]
-lint-shfmt:
-  {{nvim_tools}}/shfmt -d {{zsh_config}}
-
-[doc('Check Neovim Lua formatting')]
-lint-stylua:
-  {{nvim_tools}}/stylua --check {{nvim_config}}
-
-[doc('Check Neovim Lua diagnostics')]
-lint-luals:
-  luals_tmp="$(mktemp -d)" && trap 'rm -rf "$luals_tmp"' EXIT && "{{nvim_tools}}/lua-language-server" --check={{nvim_config}} --checklevel=Warning --logpath="$luals_tmp/log" --metapath="$luals_tmp/meta"
-
-[doc('Check Neovim Lua')]
-lint-lua: lint-stylua lint-luals
-
-[doc('Check Neovim startup')]
-lint-nvim:
-  NVIM_LOG_FILE=/dev/null nvim --headless -i NONE '+quitall'
 
 [doc('Check formatting without writing files')]
 fmt-check: lint-md lint-shfmt lint-stylua
@@ -98,14 +47,61 @@ fmt:
   {{nvim_tools}}/shfmt -w {{zsh_config}}
   {{nvim_tools}}/stylua {{nvim_config}}
 
-[doc('Update user-space managed tools without apt')]
-update-user:
-  ptm update
-  just update-tools
+[private]
+check-tools:
+  command -v zsh >/dev/null
+  command -v rumdl >/dev/null
+  command -v nvim >/dev/null
+  test -x "{{nvim_tools}}/shfmt"
+  test -x "{{nvim_tools}}/stylua"
+  test -x "{{nvim_tools}}/lua-language-server"
 
-[doc('Update OS packages and ptm-managed tools')]
-update:
-  sudo apt update -y
-  sudo apt upgrade -y
-  ptm update
-  just update-tools
+[private]
+install-tools:
+  nvim --headless -i NONE '+NvimToolsInstall' '+quitall'
+
+[private]
+update-tools:
+  nvim --headless -i NONE '+NvimToolsUpdate' '+quitall'
+
+[private]
+install-zsh-plugins:
+  mkdir -p "{{zsh_plugin_dir}}"
+  test -d "{{zsh_plugin_dir}}/zsh-autosuggestions" || git clone --depth 1 https://github.com/zsh-users/zsh-autosuggestions "{{zsh_plugin_dir}}/zsh-autosuggestions"
+  test -d "{{zsh_plugin_dir}}/fast-syntax-highlighting" || git clone --depth 1 https://github.com/zdharma-continuum/fast-syntax-highlighting "{{zsh_plugin_dir}}/fast-syntax-highlighting"
+
+[private]
+update-zsh-plugins: install-zsh-plugins
+  git -C "{{zsh_plugin_dir}}/zsh-autosuggestions" pull --ff-only
+  git -C "{{zsh_plugin_dir}}/fast-syntax-highlighting" pull --ff-only
+
+[private]
+diff-check:
+  git diff --check
+
+[private]
+lint-zsh:
+  zsh -n {{zsh_config}}
+
+[private]
+lint-md:
+  rumdl check .
+
+[private]
+lint-shfmt:
+  {{nvim_tools}}/shfmt -d {{zsh_config}}
+
+[private]
+lint-stylua:
+  {{nvim_tools}}/stylua --check {{nvim_config}}
+
+[private]
+lint-luals:
+  luals_tmp="$(mktemp -d)" && trap 'rm -rf "$luals_tmp"' EXIT && "{{nvim_tools}}/lua-language-server" --check={{nvim_config}} --checklevel=Warning --logpath="$luals_tmp/log" --metapath="$luals_tmp/meta"
+
+[private]
+lint-lua: lint-stylua lint-luals
+
+[private]
+lint-nvim:
+  NVIM_LOG_FILE=/dev/null nvim --headless -i NONE '+quitall'

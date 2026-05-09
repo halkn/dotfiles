@@ -104,89 +104,16 @@ dot() {
   cd "$target"
 }
 
-# ---------------------------------------------------------------------------
-# zsh plugin manager
-#
-# To add a plugin:
-#   1. Append "owner/repo" to _zsh_plugins
-#   2. Append its entry file to _zsh_plugin_entries (fpath-only plugins skip step 2)
-#   3. Run "zsh-plugin-install" to fetch any missing plugins
-#
-# To update all plugins:
-#   zsh-plugin-update
-# ---------------------------------------------------------------------------
+# ── plugins ──────────────────────────────────────────
+[[ -f "$zsh_plugin_dir/zsh-autosuggestions/zsh-autosuggestions.zsh" ]] \
+  && source "$zsh_plugin_dir/zsh-autosuggestions/zsh-autosuggestions.zsh"
 
-_zsh_plugins=(
-  zsh-users/zsh-autosuggestions
-  zdharma-continuum/fast-syntax-highlighting # replaces zsh-syntax-highlighting
-)
-
-_zsh_plugin_entries=(
-  zsh-autosuggestions/zsh-autosuggestions.zsh
-  fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh
-)
-
-zsh-plugin-install() {
-  if ! command -v git >/dev/null 2>&1; then
-    print "zsh: git is required to install plugins." >&2
-    return 1
-  fi
-
-  local _p _d
-  for _p in $_zsh_plugins; do
-    _d=$zsh_plugin_dir/${_p#*/}
-    if [[ ! -d $_d ]]; then
-      print "installing: ${_p#*/}"
-      git clone --depth 1 "https://github.com/$_p" "$_d" || return 1
-    fi
-  done
-}
-
-typeset -a _zsh_missing_plugins=()
-for _p in $_zsh_plugins; do
-  _d=$zsh_plugin_dir/${_p#*/}
-  [[ -d $_d ]] || _zsh_missing_plugins+=("${_p#*/}")
-done
-unset _p _d
-
-if ((${#_zsh_missing_plugins[@]} > 0)); then
-  print "zsh: missing plugins: ${_zsh_missing_plugins[*]} (run: zsh-plugin-install)" >&2
-fi
-unset _zsh_missing_plugins
-
-# Source plugins in entry order.
-for _e in $_zsh_plugin_entries; do
-  [[ -f $zsh_plugin_dir/$_e ]] && source $zsh_plugin_dir/$_e
-done
-unset _e
-
-# Update all installed plugins
-zsh-plugin-update() {
-  if ! command -v git >/dev/null 2>&1; then
-    print "zsh: git is required to update plugins." >&2
-    return 1
-  fi
-
-  local _p _d
-  for _p in $_zsh_plugins; do
-    _d=$zsh_plugin_dir/${_p#*/}
-    [[ -d $_d ]] && {
-      print "updating: ${_p#*/}"
-      git -C "$_d" pull --ff-only
-    }
-  done
-}
+[[ -f "$zsh_plugin_dir/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh" ]] \
+  && source "$zsh_plugin_dir/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
 
 # ── uv ───────────────────────────────────────────────
 if command -v uv >/dev/null 2>&1; then
-  _uv_comp=$zsh_cache_dir/completions/_uv
-  _uv_bin=$(command -v uv)
-  if [[ ! -f $_uv_comp || $_uv_bin -nt $_uv_comp ]]; then
-    mkdir -p ${_uv_comp:h}
-    uv generate-shell-completion zsh >$_uv_comp
-  fi
-  source $_uv_comp
-  unset _uv_comp _uv_bin
+  eval "$(uv generate-shell-completion zsh)"
 fi
 
 # ── lsd ──────────────────────────────────────────────
@@ -223,7 +150,7 @@ export FZF_DEFAULT_OPTS="
   --color=marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8
 "
 
-if command -v fzf >/dev/null 2>&1; then
+if command -v fzf >/dev/null 2>&1 && [[ -t 0 ]]; then
   source <(fzf --zsh)
 fi
 
