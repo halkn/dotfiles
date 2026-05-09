@@ -55,9 +55,7 @@ function M.format_buffer(bufnr)
 end
 
 function M.setup(client, bufnr)
-  if
-    not (client:supports_method('textDocument/formatting') and M.is_format_client(client, bufnr))
-  then
+  if not M.is_format_client(client, bufnr) then
     return
   end
 

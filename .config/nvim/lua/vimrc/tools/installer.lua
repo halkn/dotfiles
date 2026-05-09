@@ -100,6 +100,26 @@ local function install_binary(archive_path, tool, new_opt_dir)
   run({ 'cp', archive_path, target })
 end
 
+local function shell_quote(value)
+  return "'" .. tostring(value):gsub("'", [['"'"']]) .. "'"
+end
+
+local function write_executable_wrapper(tool, source, target)
+  local runner = tool.runner
+  ensure_command(runner.command)
+
+  local argv = { runner.command }
+  vim.list_extend(argv, runner.args or {})
+  table.insert(argv, source)
+
+  local command = vim.tbl_map(shell_quote, argv)
+  vim.fn.writefile({
+    '#!/usr/bin/env sh',
+    ('exec %s "$@"'):format(table.concat(command, ' ')),
+  }, target)
+  run({ 'chmod', 'u+x', target })
+end
+
 local function link_executable(tool, opt_dir)
   local source = executable_path(tool, opt_dir)
   if source == nil or vim.uv.fs_stat(source) == nil then
@@ -109,6 +129,11 @@ local function link_executable(tool, opt_dir)
   local target = tools.resolve(tool.name)
   ensure_dir(tools.bin_dir())
   remove_path(target)
+  if tool.runner then
+    write_executable_wrapper(tool, source, target)
+    return
+  end
+
   run({ 'ln', '-s', source, target })
 end
 
