@@ -43,6 +43,10 @@ M.registry = {
     package = 'yaml-language-server',
     package_manager = 'bun',
     executable_path = join('node_modules', '.bin', 'yaml-language-server'),
+    runner = {
+      command = 'bun',
+      args = { 'run', '--bun' },
+    },
   },
 }
 
