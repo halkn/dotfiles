@@ -79,10 +79,8 @@ zstyle ':completion:*' completer \
 
 # ── aliases ──────────────────────────────────────────
 # ls
-alias ls='ls --color=auto'
 alias ll='ls -lhF'
 alias la='ls -lhAF'
-alias ltr='ls -lhFtr'
 
 # human readable for du and df
 alias du='du -h'
@@ -92,9 +90,7 @@ alias df='df -h'
 alias ..='cd ..'
 
 # etc
-alias path='echo $PATH | tr ":" "\n"'
 alias zs='exec zsh'
-alias zb='for i in $(seq 1 10); do time zsh -i -c exit; done'
 alias :q='exit'
 dot() {
   local target="${XDG_CONFIG_HOME:-$HOME/.config}"
@@ -104,89 +100,16 @@ dot() {
   cd "$target"
 }
 
-# ---------------------------------------------------------------------------
-# zsh plugin manager
-#
-# To add a plugin:
-#   1. Append "owner/repo" to _zsh_plugins
-#   2. Append its entry file to _zsh_plugin_entries (fpath-only plugins skip step 2)
-#   3. Run "zsh-plugin-install" to fetch any missing plugins
-#
-# To update all plugins:
-#   zsh-plugin-update
-# ---------------------------------------------------------------------------
+# ── plugins ──────────────────────────────────────────
+[[ -f "$zsh_plugin_dir/zsh-autosuggestions/zsh-autosuggestions.zsh" ]] \
+  && source "$zsh_plugin_dir/zsh-autosuggestions/zsh-autosuggestions.zsh"
 
-_zsh_plugins=(
-  zsh-users/zsh-autosuggestions
-  zdharma-continuum/fast-syntax-highlighting # replaces zsh-syntax-highlighting
-)
-
-_zsh_plugin_entries=(
-  zsh-autosuggestions/zsh-autosuggestions.zsh
-  fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh
-)
-
-zsh-plugin-install() {
-  if ! command -v git >/dev/null 2>&1; then
-    print "zsh: git is required to install plugins." >&2
-    return 1
-  fi
-
-  local _p _d
-  for _p in $_zsh_plugins; do
-    _d=$zsh_plugin_dir/${_p#*/}
-    if [[ ! -d $_d ]]; then
-      print "installing: ${_p#*/}"
-      git clone --depth 1 "https://github.com/$_p" "$_d" || return 1
-    fi
-  done
-}
-
-typeset -a _zsh_missing_plugins=()
-for _p in $_zsh_plugins; do
-  _d=$zsh_plugin_dir/${_p#*/}
-  [[ -d $_d ]] || _zsh_missing_plugins+=("${_p#*/}")
-done
-unset _p _d
-
-if ((${#_zsh_missing_plugins[@]} > 0)); then
-  print "zsh: missing plugins: ${_zsh_missing_plugins[*]} (run: zsh-plugin-install)" >&2
-fi
-unset _zsh_missing_plugins
-
-# Source plugins in entry order.
-for _e in $_zsh_plugin_entries; do
-  [[ -f $zsh_plugin_dir/$_e ]] && source $zsh_plugin_dir/$_e
-done
-unset _e
-
-# Update all installed plugins
-zsh-plugin-update() {
-  if ! command -v git >/dev/null 2>&1; then
-    print "zsh: git is required to update plugins." >&2
-    return 1
-  fi
-
-  local _p _d
-  for _p in $_zsh_plugins; do
-    _d=$zsh_plugin_dir/${_p#*/}
-    [[ -d $_d ]] && {
-      print "updating: ${_p#*/}"
-      git -C "$_d" pull --ff-only
-    }
-  done
-}
+[[ -f "$zsh_plugin_dir/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh" ]] \
+  && source "$zsh_plugin_dir/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
 
 # ── uv ───────────────────────────────────────────────
 if command -v uv >/dev/null 2>&1; then
-  _uv_comp=$zsh_cache_dir/completions/_uv
-  _uv_bin=$(command -v uv)
-  if [[ ! -f $_uv_comp || $_uv_bin -nt $_uv_comp ]]; then
-    mkdir -p ${_uv_comp:h}
-    uv generate-shell-completion zsh >$_uv_comp
-  fi
-  source $_uv_comp
-  unset _uv_comp _uv_bin
+  eval "$(uv generate-shell-completion zsh)"
 fi
 
 # ── lsd ──────────────────────────────────────────────
@@ -210,20 +133,17 @@ if command -v nvim >/dev/null 2>&1; then
 fi
 
 # ── fzf ──────────────────────────────────────────────
-export FZF_DEFAULT_OPTS="
-  --height 60%
-  --layout=reverse
-  --border
-  --info=inline
-  --preview-window=right:60%:wrap
-  --bind ctrl-u:preview-page-up,ctrl-d:preview-page-down
-  --bind ctrl-/:toggle-preview
-  --color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8
-  --color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc
-  --color=marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8
-"
+if command -v fzf >/dev/null 2>&1 && [[ -t 0 ]]; then
+  export FZF_DEFAULT_OPTS="
+    --height 60%
+    --layout=reverse
+    --border
+    --info=inline
+    --preview-window=right:60%:wrap
+    --bind ctrl-u:preview-page-up,ctrl-d:preview-page-down
+    --bind ctrl-/:toggle-preview
+  "
 
-if command -v fzf >/dev/null 2>&1; then
   source <(fzf --zsh)
 fi
 
@@ -315,7 +235,3 @@ if command -v starship >/dev/null 2>&1; then
   export STARSHIP_CACHE=$XDG_CACHE_HOME/starship/cache
   eval "$(starship init zsh)"
 fi
-
-# compile zshrc.
-[[ ! -f "${ZDOTDIR}/.zshrc.zwc" || "${ZDOTDIR}/.zshrc" -nt "${ZDOTDIR}/.zshrc.zwc" ]] \
-  && zcompile "${ZDOTDIR}/.zshrc"
