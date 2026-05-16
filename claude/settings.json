@@ -122,6 +122,7 @@
         "~/.config/uv",
         "~/.cache/uv",
         "~/.local/share/uv",
+        "~/.local/share/ptm",
         "~/.local/bin"
       ]
     }
