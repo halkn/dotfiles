@@ -1,21 +1,55 @@
 # Global Instructions
 
-## Language
+## コミュニケーション
 
-Always respond in Japanese (日本語).
+- 常に日本語で回答する。
+- 簡潔・直接的に答える。
 
-## Communication Style
 
-- Be concise and direct.
-- Skip unnecessary explanations unless asked.
+## 開発スタイル
 
-## Environment
+- TDD で開発する（探索 → Red → Green → Refactoring）。ただし、設定ファイル・ドキュメント・小規模な修正、または Red が不自然な場合は最小の検証を優先する。
+- KPI やカバレッジ目標が与えられたら達成するまで試行する。達成不能な場合は原因・試したこと・次の選択肢を報告する。
+- 不明瞭な指示は質問して明確にする。低リスクで合理的に仮定できる場合は仮定を明示して進める。
 
-- OS: Linux (WSL2)
-- Shell: zsh
-- Editor: Neovim
+## コード設計
 
-## Git Workflow
+- 関心の分離を保つ
+- 可読性と保守性を重視する
+- API・型・schema などの境界は、既存の定義方法に合わせて明確に保つ
+- 静的検査可能なルールは、プロンプトではなく linter・formatter・型検査・CI に寄せる
+- 既存の設計・命名・検証方法を確認してから変更する
+- タスクの範囲外の整形・リファクタリングを混入しない
 
-- Always create a branch before starting work.
-- Write concise commit messages focused on the "why".
+## ツール
+
+- ツール・依存を追加する前に、既存構成で代替できるか確認する
+- GitHub: PR/issue/CI は `gh` を使う
+- 検索は `rg` を優先する
+
+## Git
+
+- 作業前に必ずブランチを作成する
+- 変更前後に `git status --short` を確認する
+- ユーザーの未コミット変更を戻さない
+- 破壊的操作（`git reset --hard`、強制 checkout、削除など）は事前に確認する
+- コミット・push・PR 作成は明示的に依頼された場合だけ行う
+- 1 つの変更は 1 つの目的に絞り、無関係な整形やリファクタリングを混ぜない
+- コミット prefix は小文字の conventional 形式: `fix:`, `add:`, `feat:`, `refactor:` など
+
+## 検証と報告
+
+- 変更後は対象に合った最小十分な検証を実行する
+- 検証できない場合は、理由と代替確認を報告する
+- 複雑な変更の場合のみ、完了後に変更点・実行した検証・残るリスクを簡潔に報告する
+
+## スキル作成
+
+新規 skill を作るとき、配置先を次の指針で決める:
+
+- **Claude グローバル** (`~/.claude/skills/`): 複数 repo に再利用する
+- **project 固有** (`<repo>/.claude/skills/`): 特定 repo のドメイン知識・規約・ファイルレイアウトに依存し、他 repo で使う見込みがない
+- **判断不能なとき**: ユーザーに「project 固有かグローバルか」を質問してから作成
+  （理由: 後から移動するとパス参照が壊れやすい）
+
+既存 skill を移動・分割・統合すると参照パスが壊れやすいため、先に影響範囲を確認してから変更する。

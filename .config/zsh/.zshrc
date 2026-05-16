@@ -107,6 +107,11 @@ dot() {
 [[ -f "$zsh_plugin_dir/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh" ]] \
   && source "$zsh_plugin_dir/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
 
+# ── gh ───────────────────────────────────────────────
+if command -v gh >/dev/null 2>&1; then
+  export GH_TOKEN=$(pass show github/token)
+fi
+
 # ── uv ───────────────────────────────────────────────
 if command -v uv >/dev/null 2>&1; then
   eval "$(uv generate-shell-completion zsh)"

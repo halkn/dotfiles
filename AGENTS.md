@@ -5,7 +5,7 @@
 このリポジトリは個人用 dotfiles と周辺ツール設定を管理します。
 主要な設定は `.config/` 配下にあり、`.config/nvim/` は Neovim、
 `.config/zsh/` はシェル起動、`.config/tmux/` と `.config/zellij/` は
-ターミナル多重化、`.config/ptm/` はツール定義です。
+ターミナル多重化、`.config/ptm/` はツール定義（`ptm` は managed tools 定義用の独自 CLI）です。
 AI アシスタント設定は `codex/` と `claude/` にあります。
 新規ファイルは対象ツールの近くに配置し、既存のディレクトリ命名に合わせてください。
 
@@ -68,7 +68,7 @@ Neovim 内で使う LSP server と efm backend tool は
 Neovim Lua を変更したときは、通常は `just fmt` で整形し、`just lint` で確認します。
 `just lint-lua` は `stylua --check` と `lua-language-server --check` を確認し、
 `just lint-nvim` は `nvim --headless -i NONE '+quitall'` で起動確認します。
-managed tools がない場合は先に `just setup`、更新したい場合は `just update` を実行します。
+managed tools がない場合は `just setup` を先に実行してください。
 差分が広い場合は、意味変更と整形-only の変更を区別して確認してください。
 `statusline` や `vim` global のような Neovim 固有 API は、
 `.config/nvim/.luarc.json` の前提を崩さないように扱ってください。
