@@ -5,6 +5,7 @@ nvim_config := ".config/nvim"
 nvim_tools := "${XDG_DATA_HOME:-$HOME/.local/share}/nvim/managed-tools/bin"
 zsh_config := ".config/zsh/.zshenv .config/zsh/.zshrc"
 zsh_plugin_dir := "${XDG_DATA_HOME:-$HOME/.local/share}/zsh_plugins"
+tmux_plugin_dir := "$HOME/.tmux/plugins"
 
 default:
   @just --list
@@ -27,12 +28,14 @@ link: _link
 setup: _link
   ptm install
   just install-zsh-plugins
+  just install-tmux-plugins
   just install-tools
 
 [doc('Update user-space managed tools')]
 update:
   ptm update
   just update-zsh-plugins
+  just update-tmux-plugins
   just update-tools
 
 [doc('Run repository checks that pass on the current tree')]
@@ -74,6 +77,15 @@ install-zsh-plugins:
 update-zsh-plugins: install-zsh-plugins
   git -C "{{zsh_plugin_dir}}/zsh-autosuggestions" pull --ff-only
   git -C "{{zsh_plugin_dir}}/fast-syntax-highlighting" pull --ff-only
+
+[private]
+install-tmux-plugins:
+  mkdir -p "{{tmux_plugin_dir}}"
+  test -d "{{tmux_plugin_dir}}/tmux-agent-sidebar" || git clone --depth 1 https://github.com/hiroppy/tmux-agent-sidebar "{{tmux_plugin_dir}}/tmux-agent-sidebar"
+
+[private]
+update-tmux-plugins: install-tmux-plugins
+  git -C "{{tmux_plugin_dir}}/tmux-agent-sidebar" pull --ff-only
 
 [private]
 diff-check:
