@@ -12,9 +12,6 @@ default:
 [private]
 _link:
   ln -snfT "$HOME/.dotfiles/{{config_dir}}" "$HOME/.config"
-  mkdir -p "$HOME/.codex"
-  ln -snf "$HOME/.dotfiles/codex/config.toml" "$HOME/.codex/config.toml"
-  ln -snf "$HOME/.dotfiles/codex/AGENTS.md" "$HOME/.codex/AGENTS.md"
   mkdir -p "$HOME/.claude"
   ln -snf "$HOME/.dotfiles/claude/settings.json" "$HOME/.claude/settings.json"
   ln -snf "$HOME/.dotfiles/claude/CLAUDE.md" "$HOME/.claude/CLAUDE.md"
@@ -25,12 +22,14 @@ link: _link
 
 [doc('Run setup')]
 setup: _link
+  just install-nix-tools
   ptm install
   just install-zsh-plugins
   just install-tools
 
 [doc('Update user-space managed tools')]
 update:
+  just update-nix-tools
   ptm update
   just update-zsh-plugins
   just update-tools
@@ -63,6 +62,15 @@ install-tools:
 [private]
 update-tools:
   nvim --headless -i NONE '+NvimToolsUpdate' '+quitall'
+
+[private]
+install-nix-tools:
+  nix profile list 2>/dev/null | grep -q dotfiles-tools || nix profile install path:.#default
+
+[private]
+update-nix-tools:
+  nix flake update
+  nix profile upgrade --all
 
 [private]
 install-zsh-plugins:

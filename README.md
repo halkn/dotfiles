@@ -5,25 +5,34 @@ This is my dotfiles.
 ## Setup
 
 ```sh
-# Bootstrap uv and ptm first.
-curl -LsSf https://astral.sh/uv/install.sh | sh
+# 1. Install Nix.
+sh <(curl --proto '=https' --tlsv1.2 -L https://nixos.org/nix/install) --daemon
+
+# 2. Link dotfiles (expands .config/nix/nix.conf, which enables flakes).
+ln -snfT "$HOME/.dotfiles/.config" "$HOME/.config"
+
+# 3. Install CLI tools via Nix (includes just and uv).
+nix profile install path:.#default
+
+# 4. Install ptm (for tools not in nixpkgs: claude, markado).
 uv tool install git+https://github.com/halkn/ptm
 
-# Then run the dotfiles setup task.
+# 5. Run the dotfiles setup task.
 just setup
 ```
 
 ## Tool Manager
 
-Tool management has been moved to [halkn/ptm](https://github.com/halkn/ptm).
-`just` itself is managed by `ptm` after the initial bootstrap.
+Most CLI tools are managed by [Nix](https://nixos.org) via `flake.nix`.
+Tools not available in nixpkgs (`claude`, `markado`) are still managed by
+[halkn/ptm](https://github.com/halkn/ptm).
 
 Useful tasks:
 
 ```sh
 just          # List tasks
-just setup    # Link dotfiles and install ptm tools, zsh plugins, and Neovim-managed tools
-just update   # Update ptm tools, zsh plugins, and Neovim-managed tools
+just setup    # Link dotfiles, install Nix tools, ptm tools, zsh plugins, and Neovim-managed tools
+just update   # Update Nix tools (flake.lock), ptm tools, zsh plugins, and Neovim-managed tools
 just fmt      # Format Markdown, zsh files, and Neovim Lua files
 just fmt-check # Check formatting without writing files
 just lint     # Run repository checks
