@@ -14,6 +14,7 @@
           ripgrep
           fd
           fzf
+          hyperfine
           lsd
           delta
           gh
