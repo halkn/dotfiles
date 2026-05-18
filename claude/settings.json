@@ -122,8 +122,9 @@
         "~/.config/uv",
         "~/.cache/uv",
         "~/.local/share/uv",
-        "~/.local/share/ptm",
-        "~/.local/bin"
+        "~/.local/bin",
+        "~/.nix-profile",
+        "/nix/store"
       ]
     }
   },

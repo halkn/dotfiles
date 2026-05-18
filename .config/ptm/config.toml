@@ -1,83 +1,9 @@
 # installer
-[tools.uv]
-type = "installer"
-url = "https://astral.sh/uv/install.sh"
-update_command = "uv self update"
-version_regex = "uv ([\\d.]+)"
-
-[tools.bun]
-type = "installer"
-command = "curl -fsSL https://bun.com/install | bash"
-update_command = "bun upgrade"
-version_regex = "([\\d.]+)"
-
 [tools.claude]
 type = "installer"
 url = "https://claude.ai/install.sh"
 update_command = "claude update"
 version_regex = "([\\d.]+)"
-
-# github_release
-[tools.rg]
-type = "github_release"
-repo = "BurntSushi/ripgrep"
-version_regex = "ripgrep ([\\d.]+)"
-
-[tools.fd]
-type = "github_release"
-repo = "sharkdp/fd"
-version_regex = "fd ([\\d.]+)"
-
-[tools.fzf]
-type = "github_release"
-repo = "junegunn/fzf"
-version_regex = "([\\d.]+)"
-
-[tools.lsd]
-type = "github_release"
-repo = "lsd-rs/lsd"
-version_regex = "lsd ([\\d.]+)"
-
-[tools.delta]
-type = "github_release"
-repo = "dandavison/delta"
-version_regex = "delta ([\\d.]+)"
-
-[tools.gh]
-type = "github_release"
-repo = "cli/cli"
-version_regex = "gh version ([\\d.]+)"
-
-[tools.just]
-type = "github_release"
-repo = "casey/just"
-version_regex = "just ([\\d.]+)"
-
-[tools.starship]
-type = "github_release"
-repo = "starship/starship"
-version_regex = "starship ([\\d.]+)"
-
-[tools.nvim]
-type = "github_release"
-version = "latest"
-repo = "neovim/neovim"
-bin_path_in_archive = "bin/nvim"
-version_regex = "NVIM v([\\d.]+-dev[^\\s]*|[\\d.]+)"
-
-[tools.tree-sitter]
-type = "github_release"
-repo = "tree-sitter/tree-sitter"
-version_regex = "tree-sitter (\\S+)"
-
-[tools.markdownlint-cli2]
-type = "bun"
-version_regex = "markdownlint-cli2 v([\\d.]+)"
-
-[tools.rumdl]
-type = "github_release"
-repo = "rvben/rumdl"
-version_regex = "rumdl ([\\d.]+)"
 
 [tools.markado]
 type = "github_release"
