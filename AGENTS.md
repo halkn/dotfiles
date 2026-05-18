@@ -64,8 +64,7 @@ Neovim 内で使う LSP server と efm backend tool は Nix (`flake.nix`) で管
 PATH 経由で参照します。
 
 Neovim Lua を変更したときは、通常は `just fmt` で整形し、`just lint` で確認します。
-`just lint-lua` は `stylua --check` と `lua-language-server --check` を確認し、
-`just lint-nvim` は `nvim --headless -i NONE '+quitall'` で起動確認します。
+`just lint` には `stylua --check`、`lua-language-server --check`、起動確認が含まれます。
 tools がない場合は `just setup` を先に実行してください。
 差分が広い場合は、意味変更と整形-only の変更を区別して確認してください。
 `statusline` や `vim` global のような Neovim 固有 API は、
