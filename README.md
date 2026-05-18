@@ -5,9 +5,8 @@ This is my dotfiles.
 ## Setup
 
 ```sh
-# Bootstrap uv and ptm first.
-curl -LsSf https://astral.sh/uv/install.sh | sh
-uv tool install git+https://github.com/halkn/ptm
+# Install mise first (see https://mise.jdx.dev/getting-started.html).
+curl https://mise.run | sh
 
 # Then run the dotfiles setup task.
 just setup
@@ -15,15 +14,17 @@ just setup
 
 ## Tool Manager
 
-Tool management has been moved to [halkn/ptm](https://github.com/halkn/ptm).
-`just` itself is managed by `ptm` after the initial bootstrap.
+Tool management is consolidated under [mise](https://mise.jdx.dev) via
+`.config/mise/config.toml`. CLI tools, Neovim-required LSP servers, formatters,
+and language runtimes are all installed and updated through mise. `just` itself
+is managed by mise after the initial bootstrap.
 
 Useful tasks:
 
 ```sh
 just          # List tasks
-just setup    # Link dotfiles and install ptm tools, zsh plugins, and Neovim-managed tools
-just update   # Update ptm tools, zsh plugins, and Neovim-managed tools
+just setup    # Link dotfiles, install mise tools, and install zsh plugins
+just update   # Update mise tools and zsh plugins
 just fmt      # Format Markdown, zsh files, and Neovim Lua files
 just fmt-check # Check formatting without writing files
 just lint     # Run repository checks
@@ -31,8 +32,8 @@ just lint     # Run repository checks
 
 ## Neovim
 
-Neovim Lua config uses the Neovim managed `stylua` for formatting and
-the managed `lua-language-server --check` for diagnostics. The shared LuaLS
+Neovim Lua config uses the mise-managed `stylua` for formatting and
+`lua-language-server --check` for diagnostics. The shared LuaLS
 workspace config lives at `.config/nvim/.luarc.json`.
 
 Core settings are split by responsibility:
@@ -61,7 +62,8 @@ Notes:
 
 - `luals` is not the formatter of record. Keep formatting on `stylua`.
 - LSP/formatter execution is configured in the Neovim Lua config; LuaLS owns Lua diagnostics.
-- Neovim-managed LSP servers and efm backend tools live under `${XDG_DATA_HOME:-$HOME/.local/share}/nvim/managed-tools`;
-  use absolute paths when running them outside Neovim.
+- LSP servers and efm backend tools are installed by mise and resolved via
+  the shell PATH (mise activate); when running them outside an activated shell,
+  use `mise exec -- <tool>` or `mise which <tool>`.
 - `rumdl` LSP owns Markdown diagnostics and formatting.
 - If `stylua` changes many files, review whether the diff is formatting-only before committing.

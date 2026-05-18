@@ -17,7 +17,6 @@ for _, name in ipairs({
   'vimrc.modules.statusline',
   'vimrc.modules.terminal',
   'vimrc.modules.yankring',
-  'vimrc.tools',
 }) do
   local ok, mod = pcall(require, name)
   if ok then

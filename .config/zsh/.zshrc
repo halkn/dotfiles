@@ -107,6 +107,12 @@ dot() {
 [[ -f "$zsh_plugin_dir/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh" ]] \
   && source "$zsh_plugin_dir/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
 
+# ── mise ─────────────────────────────────────────────
+# Activate mise before other tool detection so command -v sees managed tools.
+if command -v mise >/dev/null 2>&1; then
+  eval "$(mise activate zsh)"
+fi
+
 # ── gh ───────────────────────────────────────────────
 if command -v gh >/dev/null 2>&1; then
   export GH_TOKEN=$(pass show github/token)

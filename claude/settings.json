@@ -122,7 +122,7 @@
         "~/.config/uv",
         "~/.cache/uv",
         "~/.local/share/uv",
-        "~/.local/share/ptm",
+        "~/.local/share/mise",
         "~/.local/bin"
       ]
     }

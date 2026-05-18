@@ -1,0 +1,41 @@
+# Global tool definitions managed by mise.
+# Replaces the previous ptm (`.config/ptm/config.toml`) and Neovim managed-tools
+# (`lua/vimrc/tools/`) setups.
+
+[tools]
+# Language runtimes / package managers (also required by `npm:` backend)
+node = "lts"
+uv = "latest"
+bun = "latest"
+
+# Editor
+neovim = "latest"
+
+# CLI utilities
+delta = "latest"
+fd = "latest"
+fzf = "latest"
+gh = "latest"
+just = "latest"
+lsd = "latest"
+ripgrep = "latest"
+starship = "latest"
+tree-sitter = "latest"
+
+# Markdown / linting
+"ubi:rvben/rumdl" = "latest"
+"npm:markdownlint-cli2" = "latest"
+
+# Personal tools
+"ubi:halkn/markado" = "latest"
+
+# Neovim LSP, formatters, and linters (previously nvim-managed)
+efm-langserver = "latest"
+"lua-language-server" = "latest"
+shellcheck = "latest"
+shfmt = "latest"
+stylua = "latest"
+"npm:yaml-language-server" = "latest"
+
+# AI assistants
+"npm:@anthropic-ai/claude-code" = "latest"
