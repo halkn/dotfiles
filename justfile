@@ -96,7 +96,7 @@ lint-stylua:
 
 [private]
 lint-luals:
-  luals_tmp="$(mktemp -d)" && trap 'rm -rf "$luals_tmp"' EXIT && lua-language-server --check={{nvim_config}} --checklevel=Warning --logpath="$luals_tmp/log" --metapath="$luals_tmp/meta"
+  luals_tmp="$(mktemp -d)" && trap 'rm -rf "$luals_tmp"' EXIT && VIMRUNTIME="$(nvim --clean --headless -c 'lua io.write(vim.env.VIMRUNTIME)' +q 2>/dev/null)" lua-language-server --check={{nvim_config}} --checklevel=Warning --logpath="$luals_tmp/log" --metapath="$luals_tmp/meta"
 
 [private]
 lint-lua: lint-stylua lint-luals
