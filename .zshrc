@@ -107,14 +107,14 @@ dot() {
 [[ -f "$zsh_plugin_dir/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh" ]] \
   && source "$zsh_plugin_dir/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
 
-# ── gh ───────────────────────────────────────────────
-if command -v gh >/dev/null 2>&1; then
-  export GH_TOKEN=$(pass show github/token)
-fi
-
 # ── uv ───────────────────────────────────────────────
 if command -v uv >/dev/null 2>&1; then
-  eval "$(uv generate-shell-completion zsh)"
+  _uv_comp="$zsh_cache_dir/uv_completion.zsh"
+  if [[ ! -s "$_uv_comp" || "$(command -v uv)" -nt "$_uv_comp" ]]; then
+    uv generate-shell-completion zsh >|"$_uv_comp"
+  fi
+  source "$_uv_comp"
+  unset _uv_comp
 fi
 
 # ── lsd ──────────────────────────────────────────────
@@ -130,7 +130,6 @@ fi
 
 # ── nvim ─────────────────────────────────────────────
 if command -v nvim >/dev/null 2>&1; then
-  export EDITOR=nvim
   export MANPAGER='nvim +Man!'
   alias v='nvim'
   alias vim=nvim
@@ -221,8 +220,8 @@ repo() {
 }
 
 # ── tmux ─────────────────────────────────────────────
-export ZSH_TMUX_AUTO_START=${ZSH_TMUX_AUTO_START:-1}
-export ZSH_TMUX_SESSION_NAME=${ZSH_TMUX_SESSION_NAME:-main}
+ZSH_TMUX_AUTO_START=${ZSH_TMUX_AUTO_START:-1}
+ZSH_TMUX_SESSION_NAME=${ZSH_TMUX_SESSION_NAME:-main}
 
 if command -v tmux >/dev/null 2>&1 \
   && [[ -o interactive ]] \
