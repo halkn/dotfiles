@@ -1,0 +1,148 @@
+# Project-local mise tasks for the dotfiles repository.
+# Tool definitions live in `.config/mise/config.toml` (global).
+
+[env]
+NVIM_CONFIG = ".config/nvim"
+ZSH_CONFIG = ".config/zsh/.zshenv .config/zsh/.zshrc"
+ZSH_PLUGIN_DIR = "{{ env.XDG_DATA_HOME | default(value=env.HOME ~ '/.local/share') }}/zsh_plugins"
+
+[tasks.link]
+description = "Link dotfiles into home directories"
+quiet = true
+run = """
+set -euo pipefail
+ln -snfT "$HOME/.dotfiles/.config" "$HOME/.config"
+mkdir -p "$HOME/.codex"
+ln -snf "$HOME/.dotfiles/codex/config.toml" "$HOME/.codex/config.toml"
+ln -snf "$HOME/.dotfiles/codex/AGENTS.md" "$HOME/.codex/AGENTS.md"
+mkdir -p "$HOME/.claude"
+ln -snf "$HOME/.dotfiles/claude/settings.json" "$HOME/.claude/settings.json"
+ln -snf "$HOME/.dotfiles/claude/CLAUDE.md" "$HOME/.claude/CLAUDE.md"
+ln -snf "$HOME/.dotfiles/claude/statusline-command.sh" "$HOME/.claude/statusline-command.sh"
+"""
+
+[tasks.setup]
+description = "Link dotfiles, install mise tools, and install zsh plugins"
+quiet = true
+depends = ["link"]
+run = [
+  "mise install",
+  "mise run install-zsh-plugins",
+]
+
+[tasks.update]
+description = "Update mise-managed tools and zsh plugins"
+quiet = true
+run = [
+  "mise upgrade",
+  "mise run update-zsh-plugins",
+]
+
+[tasks.lint]
+description = "Run repository checks that pass on the current tree"
+quiet = true
+depends = [
+  "diff-check",
+  "check-tools",
+  "lint-zsh",
+  "lint-md",
+  "lint-shfmt",
+  "lint-lua",
+  "lint-nvim",
+]
+
+[tasks.fmt-check]
+description = "Check formatting without writing files"
+quiet = true
+depends = ["lint-md", "lint-shfmt", "lint-stylua"]
+
+[tasks.fmt]
+description = "Format files with configured formatters"
+quiet = true
+run = """
+set -euo pipefail
+rumdl fmt .
+shfmt -w $ZSH_CONFIG
+stylua $NVIM_CONFIG
+"""
+
+[tasks.check-tools]
+hide = true
+quiet = true
+run = """
+set -euo pipefail
+command -v zsh >/dev/null
+command -v mise >/dev/null
+command -v rumdl >/dev/null
+command -v nvim >/dev/null
+command -v shfmt >/dev/null
+command -v stylua >/dev/null
+command -v lua-language-server >/dev/null
+"""
+
+[tasks.install-zsh-plugins]
+hide = true
+quiet = true
+run = """
+set -euo pipefail
+mkdir -p "$ZSH_PLUGIN_DIR"
+test -d "$ZSH_PLUGIN_DIR/zsh-autosuggestions" \
+  || git clone --depth 1 https://github.com/zsh-users/zsh-autosuggestions "$ZSH_PLUGIN_DIR/zsh-autosuggestions"
+test -d "$ZSH_PLUGIN_DIR/fast-syntax-highlighting" \
+  || git clone --depth 1 https://github.com/zdharma-continuum/fast-syntax-highlighting "$ZSH_PLUGIN_DIR/fast-syntax-highlighting"
+"""
+
+[tasks.update-zsh-plugins]
+hide = true
+quiet = true
+depends = ["install-zsh-plugins"]
+run = """
+set -euo pipefail
+git -C "$ZSH_PLUGIN_DIR/zsh-autosuggestions" pull --ff-only
+git -C "$ZSH_PLUGIN_DIR/fast-syntax-highlighting" pull --ff-only
+"""
+
+[tasks.diff-check]
+hide = true
+quiet = true
+run = "git diff --check"
+
+[tasks.lint-zsh]
+hide = true
+quiet = true
+run = "zsh -n $ZSH_CONFIG"
+
+[tasks.lint-md]
+hide = true
+quiet = true
+run = "rumdl check ."
+
+[tasks.lint-shfmt]
+hide = true
+quiet = true
+run = "shfmt -d $ZSH_CONFIG"
+
+[tasks.lint-stylua]
+hide = true
+quiet = true
+run = "stylua --check $NVIM_CONFIG"
+
+[tasks.lint-luals]
+hide = true
+quiet = true
+run = """
+set -euo pipefail
+luals_tmp="$(mktemp -d)"
+trap 'rm -rf "$luals_tmp"' EXIT
+lua-language-server --check=$NVIM_CONFIG --checklevel=Warning --logpath="$luals_tmp/log" --metapath="$luals_tmp/meta"
+"""
+
+[tasks.lint-lua]
+hide = true
+quiet = true
+depends = ["lint-stylua", "lint-luals"]
+
+[tasks.lint-nvim]
+hide = true
+quiet = true
+run = "NVIM_LOG_FILE=/dev/null nvim --headless -i NONE '+quitall'"

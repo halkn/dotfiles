@@ -8,26 +8,29 @@ This is my dotfiles.
 # Install mise first (see https://mise.jdx.dev/getting-started.html).
 curl https://mise.run | sh
 
-# Then run the dotfiles setup task.
-just setup
+# Trust the project mise.toml, then run setup.
+mise trust
+mise run setup
 ```
 
 ## Tool Manager
 
-Tool management is consolidated under [mise](https://mise.jdx.dev) via
-`.config/mise/config.toml`. CLI tools, Neovim-required LSP servers, formatters,
-and language runtimes are all installed and updated through mise. `just` itself
-is managed by mise after the initial bootstrap.
+Tool and task management is consolidated under
+[mise](https://mise.jdx.dev). Tool definitions live in
+`.config/mise/config.toml` (global) and project tasks live in `mise.toml`
+at the repository root. CLI tools, Neovim-required LSP servers,
+formatters, and language runtimes are all installed and updated through
+mise.
 
 Useful tasks:
 
 ```sh
-just          # List tasks
-just setup    # Link dotfiles, install mise tools, and install zsh plugins
-just update   # Update mise tools and zsh plugins
-just fmt      # Format Markdown, zsh files, and Neovim Lua files
-just fmt-check # Check formatting without writing files
-just lint     # Run repository checks
+mise tasks            # List tasks
+mise run setup        # Link dotfiles, install mise tools, and install zsh plugins
+mise run update       # Update mise tools and zsh plugins
+mise run fmt          # Format Markdown, zsh files, and Neovim Lua files
+mise run fmt-check    # Check formatting without writing files
+mise run lint         # Run repository checks
 ```
 
 ## Neovim
@@ -54,8 +57,8 @@ LSP language settings keep data boundaries separate from runtime behavior:
 When changing Neovim Lua settings:
 
 ```sh
-just fmt
-just lint
+mise run fmt
+mise run lint
 ```
 
 Notes:
