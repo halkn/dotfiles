@@ -117,15 +117,14 @@ if command -v uv >/dev/null 2>&1; then
   unset _uv_comp
 fi
 
-# ── lsd ──────────────────────────────────────────────
-if command -v lsd >/dev/null 2>&1; then
-  # Override the default ls aliases only when lsd is available.
-  alias ls='lsd'
-  alias ll='lsd -l'
-  alias la='lsd -la'
-  alias ltr='lsd -l --timesort --reverse'
-  alias lst='lsd -l --timesort'
-  alias tree='lsd --tree -I .git'
+# ── eza ──────────────────────────────────────────────
+if command -v eza >/dev/null 2>&1; then
+  alias ls='eza --icons --group-directories-first'
+  alias ll='eza -l --icons --git --no-user --time-style=iso --group-directories-first'
+  alias la='eza -la --icons --git --no-user --time-style=iso --group-directories-first'
+  alias ltr='eza -l --icons --git --no-user --time-style=iso --sort=modified --group-directories-first'
+  alias lst='eza -l --icons --git --no-user --time-style=iso --sort=modified --reverse --group-directories-first'
+  alias tree='eza --tree --icons -I ".git" --group-directories-first'
 fi
 
 # ── nvim ─────────────────────────────────────────────
