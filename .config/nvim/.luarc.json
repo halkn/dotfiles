@@ -20,7 +20,7 @@
   "workspace.library": [
     "${env:HOME}/.local/share/nvim/site/pack/core/opt/mini.nvim/lua",
     "${workspaceFolder}/lua",
-    "${env:HOME}/.local/opt/neovim/share/nvim/runtime/lua",
+    "${env:VIMRUNTIME}/lua",
     "${3rd}/luv/library"
   ],
   "telemetry.enable": false

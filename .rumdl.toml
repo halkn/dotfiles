@@ -3,6 +3,7 @@
 [global]
 line-length = 100
 respect-gitignore = true
+exclude = ["**/CLAUDE.md", "AGENTS.md"]
 
 [MD013]
 line-length = 100
