@@ -6,7 +6,6 @@
 ---@field enabled boolean
 ---@field filetypes string[]
 ---@field lsp? string[]
----@field tools? string[]
 ---@field format? vimrc.lsp.lang.FormatConfig
 
 return {}

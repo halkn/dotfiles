@@ -10,6 +10,7 @@
       packages.x86_64-linux.default = pkgs.buildEnv {
         name = "dotfiles-tools";
         paths = with pkgs; [
+          # CLI tools
           ripgrep
           fd
           fzf
@@ -24,6 +25,14 @@
           bun
           rumdl
           markdownlint-cli2
+
+          # Neovim LSP / formatter tools
+          lua-language-server
+          stylua
+          shfmt
+          efm-langserver
+          shellcheck
+          yaml-language-server
         ];
       };
     };
