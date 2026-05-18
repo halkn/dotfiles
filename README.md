@@ -31,8 +31,8 @@ Useful tasks:
 
 ```sh
 just          # List tasks
-just setup    # Link dotfiles, install Nix tools, ptm tools, zsh plugins, and Neovim-managed tools
-just update   # Update Nix tools (flake.lock), ptm tools, zsh plugins, and Neovim-managed tools
+just setup    # Link dotfiles, install Nix tools, ptm tools, and zsh plugins
+just update   # Update Nix tools (flake.lock), ptm tools, and zsh plugins
 just fmt      # Format Markdown, zsh files, and Neovim Lua files
 just fmt-check # Check formatting without writing files
 just lint     # Run repository checks

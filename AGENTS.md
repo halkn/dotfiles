@@ -61,7 +61,7 @@ Lua formatter は `stylua` を正としてください。
 diagnostics は `lua-language-server --check` と editor 内の `luals` を正とします。
 `luals` の built-in formatter を再び主担当に戻さないでください。
 Neovim 内で使う LSP server と efm backend tool は Nix (`flake.nix`) で管理し、
-PATH 経由で参照します。`:NvimToolsList` で状態を確認できます。
+PATH 経由で参照します。
 
 Neovim Lua を変更したときは、通常は `just fmt` で整形し、`just lint` で確認します。
 `just lint-lua` は `stylua --check` と `lua-language-server --check` を確認し、
