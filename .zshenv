@@ -3,7 +3,7 @@
 # ---------------------------------------------------------------------------
 # common
 export LANG=C.UTF-8
-export EDITOR=vim
+export EDITOR=nvim
 export PAGER=less
 
 # XDG Base Directory

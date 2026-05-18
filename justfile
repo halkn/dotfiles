@@ -2,7 +2,7 @@ set quiet
 
 config_dir := ".config"
 nvim_config := ".config/nvim"
-zsh_config := ".config/zsh/.zshenv .config/zsh/.zshrc"
+zsh_config := ".zshenv .zshrc"
 zsh_plugin_dir := "${XDG_DATA_HOME:-$HOME/.local/share}/zsh_plugins"
 
 default:
@@ -11,6 +11,8 @@ default:
 [private]
 _link:
   ln -snfT "$HOME/.dotfiles/{{config_dir}}" "$HOME/.config"
+  ln -snf "$HOME/.dotfiles/.zshenv" "$HOME/.zshenv"
+  ln -snf "$HOME/.dotfiles/.zshrc" "$HOME/.zshrc"
   mkdir -p "$HOME/.claude"
   ln -snf "$HOME/.dotfiles/claude/settings.json" "$HOME/.claude/settings.json"
   ln -snf "$HOME/.dotfiles/claude/CLAUDE.md" "$HOME/.claude/CLAUDE.md"

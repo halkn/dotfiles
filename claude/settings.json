@@ -119,6 +119,7 @@
         "~/.gitconfig",
         "~/.gitconfig.local",
         "~/.config/git",
+        "~/.config/gh",
         "~/.config/uv",
         "~/.cache/uv",
         "~/.local/share/uv",
