@@ -15,7 +15,7 @@
           fd
           fzf
           hyperfine
-          lsd
+          eza
           delta
           gh
           just
