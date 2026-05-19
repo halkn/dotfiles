@@ -1,6 +1,19 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
+
+  "language": "japanese",
   "cleanupPeriodDays": 14,
+  "autoUpdatesChannel": "latest",
+  "includeCoAuthoredBy": false,
+
+  "tui": "fullscreen",
+  "editorMode": "vim",
+  "viewMode": "verbose",
+  "statusLine": {
+    "type": "command",
+    "command": "~/.claude/statusline-command.sh"
+  },
+
   "env": {
     "DISABLE_TELEMETRY": "1",
     "DISABLE_ERROR_REPORTING": "1",
@@ -8,8 +21,9 @@
     "BASH_DEFAULT_TIMEOUT_MS": "30000",
     "CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR": "1"
   },
-  "includeCoAuthoredBy": false,
+
   "permissions": {
+    "defaultMode": "acceptEdits",
     "allow": [
       "Bash(git status*)",
       "Bash(git diff*)",
@@ -24,17 +38,7 @@
       "Bash(git ls-files*)",
       "Bash(git rev-parse*)",
       "Bash(git switch*)",
-      "Bash(just *)",
-      "Bash(uv run python *)",
-      "Bash(uv run pytest *)",
-      "Bash(uv run ruff *)",
-      "Bash(uv run pyright *)",
-      "Bash(uv run ty *)",
-      "Bash(uv python list*)",
-      "Bash(uv tree*)",
-      "Bash(uv tool list*)",
-      "Bash(uv lock --check*)",
-      "Bash(uv version*)",
+
       "Bash(gh auth status*)",
       "Bash(gh repo list*)",
       "Bash(gh repo view*)",
@@ -51,19 +55,36 @@
       "Bash(gh workflow view*)",
       "Bash(gh release list*)",
       "Bash(gh release view*)",
+
+      "Bash(uv run python *)",
+      "Bash(uv run pytest *)",
+      "Bash(uv run ruff *)",
+      "Bash(uv run pyright *)",
+      "Bash(uv run ty *)",
+      "Bash(uv python list*)",
+      "Bash(uv tree*)",
+      "Bash(uv tool list*)",
+      "Bash(uv lock --check*)",
+      "Bash(uv version*)",
+
       "Bash(bun run *)",
       "Bash(bun test *)",
       "Bash(bun install*)",
       "Bash(bun add *)",
       "Bash(bun build *)",
       "Bash(bun --version*)",
-      "Bash(which *)",
+
+      "Bash(just *)",
       "Bash(rg *)",
       "Bash(eza *)",
       "Bash(tree *)",
       "Bash(jq *)",
       "Bash(ghq list*)",
-      "Read(~/.gitconfig)"
+      "Bash(which *)"
+    ],
+    "ask": [
+      "Bash(git add*)",
+      "Bash(git commit*)"
     ],
     "deny": [
       "Read(**/.env)",
@@ -72,40 +93,29 @@
       "Read(**/credentials/**)",
       "Read(**/*.pem)",
       "Read(**/*.key)",
-      "Bash(python *)",
-      "Bash(python3 *)",
-      "Bash(git checkout*)",
-      "Bash(git push*)",
-      "Bash(git reset --hard*)",
-      "Bash(git clean -f*)",
-      "Bash(git branch -D *)",
+
       "Bash(rm *)",
       "Bash(sudo *)",
       "Bash(curl *)",
       "Bash(wget *)",
+      "Bash(python *)",
+      "Bash(python3 *)",
+
+      "Bash(git push*)",
+      "Bash(git checkout*)",
+      "Bash(git reset --hard*)",
+      "Bash(git clean -f*)",
+      "Bash(git branch -D *)",
+
       "Bash(bun remove*)",
       "Bash(bun rm *)",
       "Bash(bun x *)",
       "Bash(bunx *)",
       "Bash(bun pm cache rm*)",
       "Bash(bun pm pkg delete*)"
-    ],
-    "ask": [
-      "Bash(git add*)",
-      "Bash(git commit*)"
-    ],
-    "defaultMode": "acceptEdits"
+    ]
   },
-  "statusLine": {
-    "type": "command",
-    "command": "~/.claude/statusline-command.sh"
-  },
-  "enabledPlugins": {
-    "skill-creator@claude-plugins-official": true,
-    "claude-md-management@claude-plugins-official": true
-  },
-  "viewMode": "verbose",
-  "language": "japanese",
+
   "sandbox": {
     "enabled": true,
     "failIfUnavailable": true,
@@ -142,12 +152,15 @@
         "~/.cache/uv",
         "~/.local/share/uv",
         "~/.local/bin",
+        "~/.bun/bin",
         "~/.nix-profile",
         "/nix/store"
       ]
     }
   },
-  "autoUpdatesChannel": "latest",
-  "tui": "fullscreen",
-  "editorMode": "vim"
+
+  "enabledPlugins": {
+    "skill-creator@claude-plugins-official": true,
+    "claude-md-management@claude-plugins-official": true
+  }
 }
