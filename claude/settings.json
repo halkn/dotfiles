@@ -118,12 +118,12 @@
       "Read(**/*.pem)",
       "Read(**/*.key)",
 
-      "Bash(rm *)",
-      "Bash(sudo *)",
-      "Bash(curl *)",
-      "Bash(wget *)",
-      "Bash(python *)",
-      "Bash(python3 *)",
+      "Bash(rm*)",
+      "Bash(sudo*)",
+      "Bash(curl*)",
+      "Bash(wget*)",
+      "Bash(python*)",
+      "Bash(python3*)",
 
       "Bash(git push --force*)",
       "Bash(git push -f*)",
@@ -153,9 +153,9 @@
       "Bash(git config --replace-all*)",
 
       "Bash(bun remove*)",
-      "Bash(bun rm *)",
-      "Bash(bun x *)",
-      "Bash(bunx *)",
+      "Bash(bun rm*)",
+      "Bash(bun x*)",
+      "Bash(bunx*)",
       "Bash(bun pm cache rm*)",
       "Bash(bun pm pkg delete*)"
     ]
