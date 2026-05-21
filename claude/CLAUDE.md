@@ -30,9 +30,10 @@
 ## Git
 
 - 作業前に必ずブランチを作成する
+- ブランチ切替は `git switch`、ファイル復元は `git restore` を使う（`git checkout` は使わない）
 - 変更前後に `git status --short` を確認する
 - ユーザーの未コミット変更を戻さない
-- 破壊的操作（`git reset --hard`、強制 checkout、削除など）は事前に確認する
+- 破壊的操作（`git reset --hard`、強制切替、削除など）は事前に確認する
 - コミット・push・PR 作成は明示的に依頼された場合だけ行う
 - 1 つの変更は 1 つの目的に絞り、無関係な整形やリファクタリングを混ぜない
 - コミット prefix は小文字の conventional 形式: `fix:`, `add:`, `feat:`, `refactor:` など
