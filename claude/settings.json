@@ -54,6 +54,7 @@
       "Bash(git remote get-url*)",
       "Bash(git config --get*)",
       "Bash(git config --list*)",
+      "Bash(git add*)",
 
       "Bash(gh auth status*)",
       "Bash(gh repo list*)",
@@ -99,7 +100,6 @@
       "Bash(which *)"
     ],
     "ask": [
-      "Bash(git add*)",
       "Bash(git commit*)",
       "Bash(git push*)",
       "Bash(git restore*)",
