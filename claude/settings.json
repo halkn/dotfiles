@@ -52,7 +52,10 @@
       "Bash(git remote -v *)",
       "Bash(git remote show *)",
       "Bash(git remote get-url *)",
-      "Bash(git config --get*)",
+      "Bash(git config --get *)",
+      "Bash(git config --get-all *)",
+      "Bash(git config --get-regexp *)",
+      "Bash(git config --get-urlmatch *)",
       "Bash(git config --list *)",
       "Bash(git add *)",
 
