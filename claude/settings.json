@@ -95,7 +95,6 @@
       "Bash(bun build *)",
       "Bash(bun --version *)",
 
-      "Bash(just *)",
       "Bash(rg *)",
       "Bash(eza *)",
       "Bash(tree *)",
