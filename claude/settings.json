@@ -84,17 +84,17 @@
       "Bash(uv python list *)",
       "Bash(uv tree *)",
       "Bash(uv tool list *)",
+      "Bash(uv pip list *)",
+      "Bash(uv pip show *)",
+      "Bash(uv pip freeze *)",
       "Bash(uv lock --check *)",
       "Bash(uv version *)",
 
       "Bash(bun run *)",
       "Bash(bun test *)",
-      "Bash(bun install *)",
-      "Bash(bun add *)",
       "Bash(bun build *)",
       "Bash(bun --version *)",
 
-      "Bash(just *)",
       "Bash(rg *)",
       "Bash(eza *)",
       "Bash(tree *)",
@@ -108,7 +108,17 @@
       "Bash(git restore*)",
       "Bash(git reset*)",
       "Bash(git rebase*)",
-      "Bash(git merge*)"
+      "Bash(git merge*)",
+
+      "Bash(uv add*)",
+      "Bash(uv sync*)",
+      "Bash(uv pip install*)",
+      "Bash(uv publish*)",
+
+      "Bash(bun add*)",
+      "Bash(bun install*)",
+      "Bash(bun update*)",
+      "Bash(bun publish*)"
     ],
     "deny": [
       "Read(**/.env)",
@@ -119,11 +129,18 @@
       "Read(**/*.key)",
 
       "Bash(rm*)",
+      "Bash(mv*)",
+      "Bash(dd*)",
       "Bash(sudo*)",
       "Bash(curl*)",
       "Bash(wget*)",
+      "Bash(nc*)",
+      "Bash(ssh*)",
+      "Bash(scp*)",
       "Bash(python*)",
       "Bash(python3*)",
+      "Bash(pip*)",
+      "Bash(pip3*)",
 
       "Bash(git push --force*)",
       "Bash(git push -f*)",
@@ -152,10 +169,20 @@
       "Bash(git config --unset*)",
       "Bash(git config --replace-all*)",
 
+      "Bash(uv remove*)",
+      "Bash(uvx*)",
+      "Bash(uv tool run*)",
+      "Bash(uv tool uninstall*)",
+      "Bash(uv python uninstall*)",
+      "Bash(uv cache clean*)",
+      "Bash(uv cache prune*)",
+      "Bash(uv self update*)",
+
       "Bash(bun remove*)",
       "Bash(bun rm*)",
       "Bash(bun x*)",
       "Bash(bunx*)",
+      "Bash(bun upgrade*)",
       "Bash(bun pm cache rm*)",
       "Bash(bun pm pkg delete*)"
     ]
