@@ -1,3 +1,6 @@
+[settings.npm]
+package_manager = "bun"
+
 [tools]
 # CLI tools
 ripgrep = "latest"
@@ -13,7 +16,6 @@ neovim = "latest"
 tree-sitter = "latest"
 uv = "latest"
 bun = "latest"
-node = "lts"
 rumdl = "latest"
 "npm:markdownlint-cli2" = "latest"
 
