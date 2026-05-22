@@ -131,6 +131,8 @@
       "Bash(wget*)",
       "Bash(python*)",
       "Bash(python3*)",
+      "Bash(pip*)",
+      "Bash(pip3*)",
 
       "Bash(git push --force*)",
       "Bash(git push -f*)",
