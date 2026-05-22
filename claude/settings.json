@@ -89,8 +89,6 @@
 
       "Bash(bun run *)",
       "Bash(bun test *)",
-      "Bash(bun install *)",
-      "Bash(bun add *)",
       "Bash(bun build *)",
       "Bash(bun --version *)",
 
@@ -108,7 +106,16 @@
       "Bash(git restore*)",
       "Bash(git reset*)",
       "Bash(git rebase*)",
-      "Bash(git merge*)"
+      "Bash(git merge*)",
+
+      "Bash(uv add*)",
+      "Bash(uv sync*)",
+      "Bash(uv pip install*)",
+      "Bash(uv publish*)",
+
+      "Bash(bun add*)",
+      "Bash(bun install*)",
+      "Bash(bun publish*)"
     ],
     "deny": [
       "Read(**/.env)",
@@ -152,10 +159,18 @@
       "Bash(git config --unset*)",
       "Bash(git config --replace-all*)",
 
+      "Bash(uv remove*)",
+      "Bash(uvx*)",
+      "Bash(uv tool run*)",
+      "Bash(uv cache clean*)",
+      "Bash(uv cache prune*)",
+      "Bash(uv self update*)",
+
       "Bash(bun remove*)",
       "Bash(bun rm*)",
       "Bash(bun x*)",
       "Bash(bunx*)",
+      "Bash(bun upgrade*)",
       "Bash(bun pm cache rm*)",
       "Bash(bun pm pkg delete*)"
     ]
