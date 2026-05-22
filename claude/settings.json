@@ -84,6 +84,9 @@
       "Bash(uv python list *)",
       "Bash(uv tree *)",
       "Bash(uv tool list *)",
+      "Bash(uv pip list *)",
+      "Bash(uv pip show *)",
+      "Bash(uv pip freeze *)",
       "Bash(uv lock --check *)",
       "Bash(uv version *)",
 
@@ -115,6 +118,7 @@
 
       "Bash(bun add*)",
       "Bash(bun install*)",
+      "Bash(bun update*)",
       "Bash(bun publish*)"
     ],
     "deny": [
@@ -164,6 +168,8 @@
       "Bash(uv remove*)",
       "Bash(uvx*)",
       "Bash(uv tool run*)",
+      "Bash(uv tool uninstall*)",
+      "Bash(uv python uninstall*)",
       "Bash(uv cache clean*)",
       "Bash(uv cache prune*)",
       "Bash(uv self update*)",
