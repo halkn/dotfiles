@@ -1,0 +1,26 @@
+[tools]
+# CLI tools
+ripgrep = "latest"
+fd = "latest"
+fzf = "latest"
+hyperfine = "latest"
+eza = "latest"
+delta = "latest"
+gh = "latest"
+just = "latest"
+starship = "latest"
+neovim = "latest"
+tree-sitter = "latest"
+uv = "latest"
+bun = "latest"
+node = "lts"
+rumdl = "latest"
+"npm:markdownlint-cli2" = "latest"
+
+# Neovim LSP / formatter tools
+lua-language-server = "latest"
+stylua = "latest"
+shfmt = "latest"
+efm-langserver = "latest"
+shellcheck = "latest"
+"npm:yaml-language-server" = "latest"

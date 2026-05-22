@@ -23,13 +23,13 @@ link: _link
 
 [doc('Run setup')]
 setup: _link
-  just install-nix-tools
+  just install-tools
   ptm install
   just install-zsh-plugins
 
 [doc('Update user-space managed tools')]
 update:
-  just update-nix-tools
+  just update-tools
   ptm update
   just update-zsh-plugins
 
@@ -55,13 +55,12 @@ check-tools:
   command -v lua-language-server >/dev/null
 
 [private]
-install-nix-tools:
-  nix profile list 2>/dev/null | grep -q dotfiles-tools || nix profile install path:.#default
+install-tools:
+  mise install
 
 [private]
-update-nix-tools:
-  nix flake update
-  nix profile upgrade --all
+update-tools:
+  mise upgrade
 
 [private]
 install-zsh-plugins:
