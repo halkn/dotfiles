@@ -38,6 +38,7 @@ in
       # dev
       neovim
       tree-sitter
+      git
       gh
       just
       uv
