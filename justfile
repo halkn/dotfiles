@@ -2,24 +2,24 @@ set quiet
 
 nvim_config := ".config/nvim"
 zsh_config := ".zshenv .zshrc"
-zsh_plugin_dir := "${XDG_DATA_HOME:-$HOME/.local/share}/zsh_plugins"
-hm_flake := ".#halkn"
+host := "wsl"
 
 default:
   @just --list
 
-[doc('Run setup')]
-setup:
-  home-manager switch --flake {{hm_flake}}
-  ptm install
-  just install-zsh-plugins
+[doc('Apply the NixOS-WSL system and home-manager config')]
+switch:
+  sudo nixos-rebuild switch --flake ".#{{host}}"
 
-[doc('Update user-space managed tools')]
+[doc('Install user-space tools not managed by Nix (ptm: claude, markado)')]
+setup:
+  ptm install
+
+[doc('Update flake inputs, rebuild, and update ptm tools')]
 update:
   nix flake update
-  home-manager switch --flake {{hm_flake}}
+  sudo nixos-rebuild switch --flake ".#{{host}}"
   ptm update
-  just update-zsh-plugins
 
 [doc('Run repository checks that pass on the current tree')]
 lint: diff-check check-tools lint-zsh lint-md lint-shfmt lint-lua lint-nvim
@@ -41,17 +41,6 @@ check-tools:
   command -v shfmt >/dev/null
   command -v stylua >/dev/null
   command -v lua-language-server >/dev/null
-
-[private]
-install-zsh-plugins:
-  mkdir -p "{{zsh_plugin_dir}}"
-  test -d "{{zsh_plugin_dir}}/zsh-autosuggestions" || git clone --depth 1 https://github.com/zsh-users/zsh-autosuggestions "{{zsh_plugin_dir}}/zsh-autosuggestions"
-  test -d "{{zsh_plugin_dir}}/fast-syntax-highlighting" || git clone --depth 1 https://github.com/zdharma-continuum/fast-syntax-highlighting "{{zsh_plugin_dir}}/fast-syntax-highlighting"
-
-[private]
-update-zsh-plugins: install-zsh-plugins
-  git -C "{{zsh_plugin_dir}}/zsh-autosuggestions" pull --ff-only
-  git -C "{{zsh_plugin_dir}}/fast-syntax-highlighting" pull --ff-only
 
 [private]
 diff-check:

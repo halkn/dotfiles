@@ -70,6 +70,14 @@ in
     "nix".source = link ".config/nix";
   };
 
+  # zsh plugins from nixpkgs, linked into the dir .zshrc already sources.
+  xdg.dataFile = {
+    "zsh_plugins/zsh-autosuggestions".source =
+      "${pkgs.zsh-autosuggestions}/share/zsh-autosuggestions";
+    "zsh_plugins/fast-syntax-highlighting".source =
+      "${pkgs.zsh-fast-syntax-highlighting}/share/zsh/site-functions";
+  };
+
   home.file = {
     ".zshenv".source = link ".zshenv";
     ".zshrc".source = link ".zshrc";

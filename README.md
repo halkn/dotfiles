@@ -28,16 +28,17 @@ sudo nixos-rebuild boot --flake "github:halkn/dotfiles#wsl" --no-write-lock-file
 #    you can rebuild locally.
 git clone https://github.com/halkn/dotfiles ~/.dotfiles
 
-# 5. Tools not in nixpkgs (claude, markado) and zsh plugins.
+# 5. Tools not in nixpkgs (claude, markado). zsh plugins come from home-manager.
 uv tool install git+https://github.com/halkn/ptm
 ptm install
-just install-zsh-plugins
 ```
 
-Apply later changes (quote the flake ref — zsh treats `#` as a glob operator):
+Apply later changes with `just switch` (or directly; quote the flake ref because
+zsh treats `#` as a glob operator):
 
 ```sh
-cd ~/.dotfiles && sudo nixos-rebuild switch --flake '.#wsl'
+cd ~/.dotfiles && just switch
+# equivalently: sudo nixos-rebuild switch --flake '.#wsl'
 ```
 
 ## Setup (standalone home-manager, non-NixOS Linux)
@@ -51,9 +52,9 @@ git clone https://github.com/halkn/dotfiles ~/.dotfiles
 nix run home-manager/master -- switch --flake "$HOME/.dotfiles#halkn" \
   --extra-experimental-features 'nix-command flakes'
 
-# 3. ptm tools and zsh plugins.
+# 3. Tools not in nixpkgs (zsh plugins come from home-manager).
 uv tool install git+https://github.com/halkn/ptm
-just setup
+ptm install
 ```
 
 ## Tool Manager
@@ -68,18 +69,19 @@ just setup
   (`home-manager switch --flake '.#halkn'`).
 - **Tools not in nixpkgs** (`claude`, `markado`):
   [halkn/ptm](https://github.com/halkn/ptm) via `ptm install` / `ptm update`.
-- **zsh plugins** (autosuggestions, fast-syntax-highlighting): `just install-zsh-plugins`
-  (git clone; not yet declarative).
+- **zsh plugins** (autosuggestions, fast-syntax-highlighting): declared in `home/default.nix`
+  via `xdg.dataFile`, linked from nixpkgs into the dir `.zshrc` already sources.
 
 Useful tasks:
 
 ```sh
 just           # List tasks
+just switch    # Apply the NixOS-WSL system + home-manager config
+just update    # Update flake inputs, rebuild, and update ptm tools
+just setup     # Install ptm tools (claude, markado)
 just fmt       # Format Markdown, zsh files, and Neovim Lua files
 just fmt-check # Check formatting without writing files
 just lint      # Run repository checks
-just setup     # Non-NixOS only: home-manager switch + ptm + zsh plugins
-just update    # Non-NixOS only: flake update + home-manager switch + ptm + zsh plugins
 ```
 
 ## Neovim
