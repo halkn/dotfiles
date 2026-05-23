@@ -2,43 +2,84 @@
 
 This is my dotfiles.
 
-## Setup
+## Structure
+
+- `flake.nix`: inputs and outputs.
+  - `nixosConfigurations.wsl`: NixOS-WSL host (system + home-manager module + zsh login shell).
+  - `homeConfigurations.halkn`: standalone home-manager for non-NixOS Linux.
+- `home/default.nix`: shared home-manager module (packages + out-of-store symlinks for
+  hand-written configs). Reused by both outputs.
+- `hosts/wsl/configuration.nix`: NixOS-WSL system settings (wsl, zsh login shell, timezone, stateVersion).
+
+## Setup (NixOS-WSL)
+
+```sh
+# 1. On Windows (PowerShell), import NixOS-WSL using the release `nixos.wsl`:
+#    wsl --install --from-file nixos.wsl
+
+# 2. First boot (default `nixos` user): build the system from this flake.
+#    `boot` avoids activating while logged in as the about-to-be-removed user;
+#    `--no-write-lock-file` is required because the GitHub flake is read-only.
+sudo nixos-rebuild boot --flake "github:halkn/dotfiles#wsl" --no-write-lock-file
+
+# 3. On Windows, `wsl --shutdown`, then reopen — you log in as `halkn` with zsh.
+
+# 4. Clone the repo to ~/.dotfiles so the out-of-store symlinks resolve and
+#    you can rebuild locally.
+git clone https://github.com/halkn/dotfiles ~/.dotfiles
+
+# 5. Tools not in nixpkgs (claude, markado) and zsh plugins.
+uv tool install git+https://github.com/halkn/ptm
+ptm install
+just install-zsh-plugins
+```
+
+Apply later changes (quote the flake ref — zsh treats `#` as a glob operator):
+
+```sh
+cd ~/.dotfiles && sudo nixos-rebuild switch --flake '.#wsl'
+```
+
+## Setup (standalone home-manager, non-NixOS Linux)
 
 ```sh
 # 1. Install Nix (multi-user daemon).
 sh <(curl --proto '=https' --tlsv1.2 -L https://nixos.org/nix/install) --daemon
 
-# 2. Clone this repo to ~/.dotfiles, then apply the home-manager config.
-#    Flakes are enabled inline on first run; afterwards ~/.config/nix/nix.conf keeps them on.
+# 2. Clone and apply the home-manager config.
+git clone https://github.com/halkn/dotfiles ~/.dotfiles
 nix run home-manager/master -- switch --flake "$HOME/.dotfiles#halkn" \
   --extra-experimental-features 'nix-command flakes'
 
-# 3. Install ptm (for tools not in nixpkgs: claude, markado).
+# 3. ptm tools and zsh plugins.
 uv tool install git+https://github.com/halkn/ptm
-
-# 4. Run the dotfiles setup task (re-applies home-manager, ptm tools, zsh plugins).
 just setup
 ```
 
 ## Tool Manager
 
-CLI tools and dotfile symlinks are managed by
-[home-manager](https://github.com/nix-community/home-manager) via `flake.nix`
-and `home/default.nix`. The package set lives in `home.packages`, and
-hand-written configs (`nvim`, `zsh`, `tmux`, etc.) are linked out-of-store so
-they stay editable in place. Apply changes with `home-manager switch --flake .#halkn`.
-Tools not available in nixpkgs (`claude`, `markado`) are still managed by
-[halkn/ptm](https://github.com/halkn/ptm).
+- **System / login shell / WSL settings** (NixOS-WSL only): `hosts/wsl/configuration.nix`,
+  applied by `nixos-rebuild`.
+- **CLI tools + dotfile symlinks**:
+  [home-manager](https://github.com/nix-community/home-manager) via `home/default.nix`.
+  Packages live in `home.packages`; hand-written configs (`nvim`, `zsh`, `tmux`, ...) are
+  linked out-of-store so they stay editable in place. On NixOS-WSL home-manager runs as a
+  NixOS module (applied by `nixos-rebuild`); elsewhere it runs standalone
+  (`home-manager switch --flake '.#halkn'`).
+- **Tools not in nixpkgs** (`claude`, `markado`):
+  [halkn/ptm](https://github.com/halkn/ptm) via `ptm install` / `ptm update`.
+- **zsh plugins** (autosuggestions, fast-syntax-highlighting): `just install-zsh-plugins`
+  (git clone; not yet declarative).
 
 Useful tasks:
 
 ```sh
-just          # List tasks
-just setup    # Link dotfiles, install Nix tools, ptm tools, and zsh plugins
-just update   # Update Nix tools (flake.lock), ptm tools, and zsh plugins
-just fmt      # Format Markdown, zsh files, and Neovim Lua files
+just           # List tasks
+just fmt       # Format Markdown, zsh files, and Neovim Lua files
 just fmt-check # Check formatting without writing files
-just lint     # Run repository checks
+just lint      # Run repository checks
+just setup     # Non-NixOS only: home-manager switch + ptm + zsh plugins
+just update    # Non-NixOS only: flake update + home-manager switch + ptm + zsh plugins
 ```
 
 ## Neovim
