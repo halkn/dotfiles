@@ -1,35 +1,23 @@
 set quiet
 
-config_dir := ".config"
 nvim_config := ".config/nvim"
 zsh_config := ".zshenv .zshrc"
 zsh_plugin_dir := "${XDG_DATA_HOME:-$HOME/.local/share}/zsh_plugins"
+hm_flake := ".#halkn"
 
 default:
   @just --list
 
-[private]
-_link:
-  ln -snfT "$HOME/.dotfiles/{{config_dir}}" "$HOME/.config"
-  ln -snf "$HOME/.dotfiles/.zshenv" "$HOME/.zshenv"
-  ln -snf "$HOME/.dotfiles/.zshrc" "$HOME/.zshrc"
-  mkdir -p "$HOME/.claude"
-  ln -snf "$HOME/.dotfiles/claude/settings.json" "$HOME/.claude/settings.json"
-  ln -snf "$HOME/.dotfiles/claude/CLAUDE.md" "$HOME/.claude/CLAUDE.md"
-  ln -snf "$HOME/.dotfiles/claude/statusline-command.sh" "$HOME/.claude/statusline-command.sh"
-
-[doc('Link dotfiles into home directories')]
-link: _link
-
 [doc('Run setup')]
-setup: _link
-  just install-nix-tools
+setup:
+  home-manager switch --flake {{hm_flake}}
   ptm install
   just install-zsh-plugins
 
 [doc('Update user-space managed tools')]
 update:
-  just update-nix-tools
+  nix flake update
+  home-manager switch --flake {{hm_flake}}
   ptm update
   just update-zsh-plugins
 
@@ -53,15 +41,6 @@ check-tools:
   command -v shfmt >/dev/null
   command -v stylua >/dev/null
   command -v lua-language-server >/dev/null
-
-[private]
-install-nix-tools:
-  nix profile list 2>/dev/null | grep -q dotfiles-tools || nix profile install path:.#default
-
-[private]
-update-nix-tools:
-  nix flake update
-  nix profile upgrade --all
 
 [private]
 install-zsh-plugins:

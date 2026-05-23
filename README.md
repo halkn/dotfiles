@@ -5,25 +5,28 @@ This is my dotfiles.
 ## Setup
 
 ```sh
-# 1. Install Nix.
+# 1. Install Nix (multi-user daemon).
 sh <(curl --proto '=https' --tlsv1.2 -L https://nixos.org/nix/install) --daemon
 
-# 2. Link dotfiles (expands .config/nix/nix.conf, which enables flakes).
-ln -snfT "$HOME/.dotfiles/.config" "$HOME/.config"
+# 2. Clone this repo to ~/.dotfiles, then apply the home-manager config.
+#    Flakes are enabled inline on first run; afterwards ~/.config/nix/nix.conf keeps them on.
+nix run home-manager/master -- switch --flake "$HOME/.dotfiles#halkn" \
+  --extra-experimental-features 'nix-command flakes'
 
-# 3. Install CLI tools via Nix (includes just and uv).
-nix profile install path:.#default
-
-# 4. Install ptm (for tools not in nixpkgs: claude, markado).
+# 3. Install ptm (for tools not in nixpkgs: claude, markado).
 uv tool install git+https://github.com/halkn/ptm
 
-# 5. Run the dotfiles setup task.
+# 4. Run the dotfiles setup task (re-applies home-manager, ptm tools, zsh plugins).
 just setup
 ```
 
 ## Tool Manager
 
-Most CLI tools are managed by [Nix](https://nixos.org) via `flake.nix`.
+CLI tools and dotfile symlinks are managed by
+[home-manager](https://github.com/nix-community/home-manager) via `flake.nix`
+and `home/default.nix`. The package set lives in `home.packages`, and
+hand-written configs (`nvim`, `zsh`, `tmux`, etc.) are linked out-of-store so
+they stay editable in place. Apply changes with `home-manager switch --flake .#halkn`.
 Tools not available in nixpkgs (`claude`, `markado`) are still managed by
 [halkn/ptm](https://github.com/halkn/ptm).
 

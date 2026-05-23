@@ -1,49 +1,22 @@
 {
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    home-manager = {
+      url = "github:nix-community/home-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+  };
 
   outputs =
-    { nixpkgs, ... }:
+    { nixpkgs, home-manager, ... }:
     let
-      pkgs = nixpkgs.legacyPackages.x86_64-linux;
+      system = "x86_64-linux";
+      pkgs = nixpkgs.legacyPackages.${system};
     in
     {
-      packages.x86_64-linux.default = pkgs.buildEnv {
-        name = "dotfiles-tools";
-        paths = with pkgs; [
-          # terminal
-          tmux
-          starship
-
-          # CLI utilities
-          ripgrep
-          fd
-          fzf
-          eza
-          delta
-          jq
-          curl
-          unzip
-          xclip
-          hyperfine
-
-          # dev
-          neovim
-          tree-sitter
-          gh
-          just
-          uv
-          bun
-
-          # LSP / Linter / Formatter
-          lua-language-server
-          stylua
-          shfmt
-          efm-langserver
-          shellcheck
-          yaml-language-server
-          rumdl
-          markdownlint-cli2
-        ];
+      homeConfigurations."halkn" = home-manager.lib.homeManagerConfiguration {
+        inherit pkgs;
+        modules = [ ./home ];
       };
     };
 }
