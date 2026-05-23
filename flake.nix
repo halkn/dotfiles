@@ -10,30 +10,39 @@
       packages.x86_64-linux.default = pkgs.buildEnv {
         name = "dotfiles-tools";
         paths = with pkgs; [
-          # CLI tools
+          # terminal
+          tmux
+          starship
+
+          # CLI utilities
           ripgrep
           fd
           fzf
-          hyperfine
           eza
           delta
-          gh
-          just
-          starship
+          jq
+          curl
+          unzip
+          xclip
+          hyperfine
+
+          # dev
           neovim
           tree-sitter
+          gh
+          just
           uv
           bun
-          rumdl
-          markdownlint-cli2
 
-          # Neovim LSP / formatter tools
+          # LSP / Linter / Formatter
           lua-language-server
           stylua
           shfmt
           efm-langserver
           shellcheck
           yaml-language-server
+          rumdl
+          markdownlint-cli2
         ];
       };
     };
