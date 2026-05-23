@@ -75,7 +75,7 @@ in
     "zsh_plugins/zsh-autosuggestions".source =
       "${pkgs.zsh-autosuggestions}/share/zsh-autosuggestions";
     "zsh_plugins/fast-syntax-highlighting".source =
-      "${pkgs.zsh-fast-syntax-highlighting}/share/zsh/site-functions";
+      "${pkgs.zsh-fast-syntax-highlighting}/share/zsh/plugins/fast-syntax-highlighting";
   };
 
   home.file = {
