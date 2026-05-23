@@ -20,16 +20,11 @@ in
   home.packages =
     with pkgs;
     [
-      # terminal
-      tmux
-      starship
-
       # CLI utilities
       ripgrep
       fd
       fzf
       eza
-      delta
       jq
       curl
       unzip
@@ -38,7 +33,6 @@ in
       # dev
       neovim
       tree-sitter
-      git
       gh
       just
       uv
@@ -61,10 +55,7 @@ in
   xdg.enable = true;
   xdg.configFile = {
     "nvim".source = link ".config/nvim";
-    "tmux".source = link ".config/tmux";
     "zellij".source = link ".config/zellij";
-    "starship".source = link ".config/starship";
-    "git".source = link ".config/git";
     "ripgrep".source = link ".config/ripgrep";
     "ptm".source = link ".config/ptm";
     "nix".source = link ".config/nix";
@@ -84,5 +75,83 @@ in
     ".claude/settings.json".source = link "claude/settings.json";
     ".claude/CLAUDE.md".source = link "claude/CLAUDE.md";
     ".claude/statusline-command.sh".source = link "claude/statusline-command.sh";
+  };
+
+  programs.git = {
+    enable = true;
+    delta = {
+      enable = true;
+      options = {
+        hunk-header-decoration-style = "omit";
+        navigate = true;
+        line-numbers = true;
+        side-by-side = true;
+        word-diff-regex = "\\S+";
+        file-style = "bold yellow ul";
+        file-decoration-style = "none";
+        blame-code-style = "syntax";
+        hyperlinks = true;
+      };
+    };
+    aliases = {
+      st = "status";
+      br = "branch";
+      ba = "branch -av";
+      sw = "switch";
+      df = "difftool";
+      diff-narrow = "-c delta.side-by-side=false diff";
+      pm = ''!f() { base="''${1:-origin/main}"; current=$(git branch --show-current); git for-each-ref --format='%(refname:short)' --merged="$base" refs/heads | while IFS= read -r branch; do [ -n "$branch" ] || continue; [ "$branch" = "$current" ] && continue; [ "$branch" = "main" ] && continue; git branch -d "$branch"; done; }; f'';
+    };
+    ignores = [
+      ".scratch/"
+      "**/.claude/settings.local.json"
+    ];
+    includes = [ { path = "~/.gitconfig.local"; } ];
+    extraConfig = {
+      status.showUntrackedFiles = "all";
+      diff = {
+        algorithm = "histogram";
+        colorMoved = "default";
+        mnemonicPrefix = true;
+        renames = true;
+      };
+      difftool.prompt = false;
+      merge.conflictstyle = "zdiff3";
+      mergetool.prompt = false;
+      color.ui = true;
+      fetch = {
+        prune = true;
+        pruneTags = true;
+        all = true;
+      };
+      pull.ff = "only";
+      push = {
+        default = "simple";
+        autoSetupRemote = true;
+      };
+      rerere = {
+        enabled = true;
+        autoupdate = true;
+      };
+      rebase = {
+        autoSquash = true;
+        autoStash = true;
+        updateRefs = true;
+      };
+      init.defaultBranch = "main";
+      safe.bareRepository = "explicit";
+    };
+  };
+
+  # Authored as TOML / tmux.conf in .config; programs.* generate the live files.
+  programs.starship = {
+    enable = true;
+    enableZshIntegration = false;
+    settings = builtins.fromTOML (builtins.readFile ../.config/starship/starship.toml);
+  };
+
+  programs.tmux = {
+    enable = true;
+    extraConfig = builtins.readFile ../.config/tmux/tmux.conf;
   };
 }

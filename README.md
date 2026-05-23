@@ -63,10 +63,13 @@ ptm install
   applied by `nixos-rebuild`.
 - **CLI tools + dotfile symlinks**:
   [home-manager](https://github.com/nix-community/home-manager) via `home/default.nix`.
-  Packages live in `home.packages`; hand-written configs (`nvim`, `zsh`, `tmux`, ...) are
-  linked out-of-store so they stay editable in place. On NixOS-WSL home-manager runs as a
-  NixOS module (applied by `nixos-rebuild`); elsewhere it runs standalone
-  (`home-manager switch --flake '.#halkn'`).
+  Packages live in `home.packages`; hand-written configs (`nvim`, `zsh`, `zellij`,
+  `ripgrep`, ...) are linked out-of-store so they stay editable in place. On NixOS-WSL
+  home-manager runs as a NixOS module (applied by `nixos-rebuild`); elsewhere it runs
+  standalone (`home-manager switch --flake '.#halkn'`).
+- **Generated configs** (`git`, `starship`, `tmux`): managed by their `programs.*`
+  modules in `home/default.nix`. `starship`/`tmux` are still authored as files under
+  `.config/` and read in via `fromTOML`/`readFile`; `git` is fully declared in Nix.
 - **Tools not in nixpkgs** (`claude`, `markado`):
   [halkn/ptm](https://github.com/halkn/ptm) via `ptm install` / `ptm update`.
 - **zsh plugins** (autosuggestions, fast-syntax-highlighting): declared in `home/default.nix`
