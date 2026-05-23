@@ -61,7 +61,7 @@ ptm install
 
 - **System / login shell / WSL settings** (NixOS-WSL only): `hosts/wsl/configuration.nix`,
   applied by `nixos-rebuild`.
-- **Linked configs** (`nvim`, `zellij`, ...):
+- **Linked configs** (`nvim`, ...):
   [home-manager](https://github.com/nix-community/home-manager) via `home/default.nix`
   links them out-of-store from the repo so they stay editable in place without a rebuild.
   On NixOS-WSL home-manager runs as a NixOS module (applied by `nixos-rebuild`); elsewhere

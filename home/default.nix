@@ -21,7 +21,6 @@ in
     with pkgs;
     [
       # CLI utilities
-      fd
       jq
       curl
       unzip
@@ -52,7 +51,6 @@ in
   xdg.enable = true;
   xdg.configFile = {
     "nvim".source = link ".config/nvim";
-    "zellij".source = link ".config/zellij";
     "ptm".source = link ".config/ptm";
     "nix".source = link ".config/nix";
   };
@@ -155,6 +153,16 @@ in
       "--hidden"
       "--glob=!.git/*"
       "--glob=!node_modules"
+    ];
+  };
+
+  # fd is smart-case by default; mirror ripgrep's hidden + ignore set.
+  programs.fd = {
+    enable = true;
+    hidden = true;
+    ignores = [
+      ".git/"
+      "node_modules"
     ];
   };
 

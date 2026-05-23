@@ -4,7 +4,7 @@
 
 このリポジトリは個人用 dotfiles と周辺ツール設定を管理します。
 主要な設定は `.config/` 配下にあり、`.config/nvim/` は Neovim、
-`.config/zsh/` はシェル起動、`.config/tmux/` と `.config/zellij/` は
+`.config/zsh/` はシェル起動、`.config/tmux/` は
 ターミナル多重化、`.config/ptm/` はツール定義（`ptm` は managed tools 定義用の独自 CLI）です。
 AI アシスタント設定は `codex/` と `claude/` にあります。
 新規ファイルは対象ツールの近くに配置し、既存のディレクトリ命名に合わせてください。
