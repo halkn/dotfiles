@@ -9,7 +9,7 @@ let
   link = path: config.lib.file.mkOutOfStoreSymlink "${dotfiles}/${path}";
 in
 {
-  home.username = "halkn";
+  home.username = lib.mkDefault "halkn";
   home.homeDirectory = lib.mkDefault (
     if pkgs.stdenv.isDarwin then "/Users/halkn" else "/home/halkn"
   );
