@@ -21,10 +21,7 @@ in
     with pkgs;
     [
       # CLI utilities
-      ripgrep
       fd
-      fzf
-      eza
       jq
       curl
       unzip
@@ -56,22 +53,11 @@ in
   xdg.configFile = {
     "nvim".source = link ".config/nvim";
     "zellij".source = link ".config/zellij";
-    "ripgrep".source = link ".config/ripgrep";
     "ptm".source = link ".config/ptm";
     "nix".source = link ".config/nix";
   };
 
-  # zsh plugins from nixpkgs, linked into the dir .zshrc already sources.
-  xdg.dataFile = {
-    "zsh_plugins/zsh-autosuggestions".source =
-      "${pkgs.zsh-autosuggestions}/share/zsh-autosuggestions";
-    "zsh_plugins/fast-syntax-highlighting".source =
-      "${pkgs.zsh-fast-syntax-highlighting}/share/zsh/plugins/fast-syntax-highlighting";
-  };
-
   home.file = {
-    ".zshenv".source = link ".zshenv";
-    ".zshrc".source = link ".zshrc";
     ".claude/settings.json".source = link "claude/settings.json";
     ".claude/CLAUDE.md".source = link "claude/CLAUDE.md";
     ".claude/statusline-command.sh".source = link "claude/statusline-command.sh";
@@ -148,12 +134,49 @@ in
   # Authored as TOML / tmux.conf in .config; programs.* generate the live files.
   programs.starship = {
     enable = true;
-    enableZshIntegration = false;
+    enableZshIntegration = true;
     settings = builtins.fromTOML (builtins.readFile ../.config/starship/starship.toml);
   };
 
   programs.tmux = {
     enable = true;
     extraConfig = builtins.readFile ../.config/tmux/tmux.conf;
+  };
+
+  programs.fzf = {
+    enable = true;
+    enableZshIntegration = true;
+  };
+
+  programs.ripgrep = {
+    enable = true;
+    arguments = [
+      "--smart-case"
+      "--hidden"
+      "--glob=!.git/*"
+      "--glob=!node_modules"
+    ];
+  };
+
+  programs.eza = {
+    enable = true;
+    enableZshIntegration = false;
+  };
+
+  # Hybrid zsh: env + body kept hand-written (envExtra/initContent), while
+  # plugins, completion-time integrations, and prompt come from home-manager.
+  programs.zsh = {
+    enable = true;
+    enableCompletion = false;
+    autosuggestion.enable = true;
+    plugins = [
+      {
+        name = "fast-syntax-highlighting";
+        src = pkgs.zsh-fast-syntax-highlighting;
+        file = "share/zsh/plugins/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh";
+      }
+    ];
+    envExtra = builtins.readFile ../.zshenv;
+    initContent = builtins.readFile ../.zshrc;
   };
 }

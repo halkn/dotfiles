@@ -4,11 +4,9 @@
 # Keep zsh-owned runtime files under XDG directories.
 zsh_data_dir=$XDG_DATA_HOME/zsh
 zsh_cache_dir=$XDG_CACHE_HOME/zsh
-zsh_plugin_dir=$XDG_DATA_HOME/zsh_plugins
 mkdir -p "$zsh_data_dir"
 mkdir -p "$zsh_cache_dir"
 mkdir -p "$zsh_cache_dir/zcompcache"
-mkdir -p "$zsh_plugin_dir"
 
 # ── History ──────────────────────────────────────────
 HISTFILE=$zsh_data_dir/history
@@ -103,13 +101,6 @@ dot() {
   cd "$target"
 }
 
-# ── plugins ──────────────────────────────────────────
-[[ -f "$zsh_plugin_dir/zsh-autosuggestions/zsh-autosuggestions.zsh" ]] \
-  && source "$zsh_plugin_dir/zsh-autosuggestions/zsh-autosuggestions.zsh"
-
-[[ -f "$zsh_plugin_dir/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh" ]] \
-  && source "$zsh_plugin_dir/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
-
 # ── uv ───────────────────────────────────────────────
 if command -v uv >/dev/null 2>&1; then
   _uv_comp="$zsh_cache_dir/uv_completion.zsh"
@@ -149,8 +140,6 @@ if command -v fzf >/dev/null 2>&1 && [[ -t 0 ]]; then
     --bind ctrl-u:preview-page-up,ctrl-d:preview-page-down
     --bind ctrl-/:toggle-preview
   "
-
-  source <(fzf --zsh)
 fi
 
 # Shell-state wrappers stay as functions; action-only commands can be aliases.
@@ -236,7 +225,4 @@ if command -v tmux >/dev/null 2>&1 \
 fi
 
 # ── starship ─────────────────────────────────────────
-if command -v starship >/dev/null 2>&1; then
-  export STARSHIP_CACHE=$XDG_CACHE_HOME/starship/cache
-  eval "$(starship init zsh)"
-fi
+export STARSHIP_CACHE=$XDG_CACHE_HOME/starship/cache

@@ -61,19 +61,19 @@ ptm install
 
 - **System / login shell / WSL settings** (NixOS-WSL only): `hosts/wsl/configuration.nix`,
   applied by `nixos-rebuild`.
-- **CLI tools + dotfile symlinks**:
-  [home-manager](https://github.com/nix-community/home-manager) via `home/default.nix`.
-  Packages live in `home.packages`; hand-written configs (`nvim`, `zsh`, `zellij`,
-  `ripgrep`, ...) are linked out-of-store so they stay editable in place. On NixOS-WSL
-  home-manager runs as a NixOS module (applied by `nixos-rebuild`); elsewhere it runs
-  standalone (`home-manager switch --flake '.#halkn'`).
-- **Generated configs** (`git`, `starship`, `tmux`): managed by their `programs.*`
-  modules in `home/default.nix`. `starship`/`tmux` are still authored as files under
-  `.config/` and read in via `fromTOML`/`readFile`; `git` is fully declared in Nix.
+- **Linked configs** (`nvim`, `zellij`, ...):
+  [home-manager](https://github.com/nix-community/home-manager) via `home/default.nix`
+  links them out-of-store from the repo so they stay editable in place without a rebuild.
+  On NixOS-WSL home-manager runs as a NixOS module (applied by `nixos-rebuild`); elsewhere
+  it runs standalone (`home-manager switch --flake '.#halkn'`).
+- **Managed configs** (`git`, `starship`, `tmux`, `fzf`, `ripgrep`, `eza`, `zsh`): handled
+  by their `programs.*` modules. `starship`/`tmux` and the zsh `.zshenv`/`.zshrc` are still
+  authored as files (read via `fromTOML`/`readFile`); the rest is declared in Nix. zsh is a
+  hybrid — plugins (autosuggestion, fast-syntax-highlighting) and the `fzf`/`starship`
+  integrations come from `programs.zsh`, while the hand-written body stays in `.zshrc`.
+  These take effect on rebuild (not live-edited like the linked configs).
 - **Tools not in nixpkgs** (`claude`, `markado`):
   [halkn/ptm](https://github.com/halkn/ptm) via `ptm install` / `ptm update`.
-- **zsh plugins** (autosuggestions, fast-syntax-highlighting): declared in `home/default.nix`
-  via `xdg.dataFile`, linked from nixpkgs into the dir `.zshrc` already sources.
 
 Useful tasks:
 
