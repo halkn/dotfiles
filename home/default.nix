@@ -52,7 +52,6 @@ in
   xdg.configFile = {
     "nvim".source = link ".config/nvim";
     "ptm".source = link ".config/ptm";
-    "nix".source = link ".config/nix";
   };
 
   home.file = {
