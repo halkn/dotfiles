@@ -24,13 +24,13 @@ link: _link
 [doc('Run setup')]
 setup: _link
   just install-tools
-  ptm install
+  just install-claude-code
   just install-zsh-plugins
 
 [doc('Update user-space managed tools')]
 update:
   just update-tools
-  ptm update
+  just update-claude-code
   just update-zsh-plugins
 
 [doc('Run repository checks that pass on the current tree')]
@@ -59,8 +59,16 @@ install-tools:
   mise install
 
 [private]
+install-claude-code:
+  curl -fsSL https://claude.ai/install.sh | bash
+
+[private]
 update-tools:
   mise upgrade
+
+[private]
+update-claude-code:
+  claude update
 
 [private]
 install-zsh-plugins:

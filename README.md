@@ -16,12 +16,12 @@ curl https://mise.run | sh
 ln -snfT "$HOME/.dotfiles/.config" "$HOME/.config"
 
 # 4. Open a new shell so mise shims are on PATH, then install CLI tools
-#    via mise (includes just and uv).
+#    via mise (includes just and node).
 exec "$SHELL"
 mise install
 
-# 5. Install ptm (for tools not in mise: claude, markado).
-uv tool install git+https://github.com/halkn/ptm
+# 5. Install Claude Code (native installer, includes auto-update).
+curl -fsSL https://claude.ai/install.sh | bash
 
 # 6. Run the dotfiles setup task.
 just setup
@@ -32,15 +32,16 @@ just setup
 Most CLI tools are managed by [mise](https://mise.jdx.dev) via
 `.config/mise/config.toml`. Tools are exposed through mise shims, which
 `.zshenv` adds to `PATH` at `${XDG_DATA_HOME:-$HOME/.local/share}/mise/shims`.
-Tools not available in mise (`claude`, `markado`) are still managed by
-[halkn/ptm](https://github.com/halkn/ptm).
+`markado` is managed via the mise GitHub backend (`github:halkn/markado`).
+Claude Code is installed via the native installer (`curl -fsSL https://claude.ai/install.sh | bash`)
+and updated via `claude update`.
 
 Useful tasks:
 
 ```sh
 just          # List tasks
-just setup    # Link dotfiles, install mise tools, ptm tools, and zsh plugins
-just update   # Update mise tools, ptm tools, and zsh plugins
+just setup    # Link dotfiles, install mise tools, Claude Code, and zsh plugins
+just update   # Update mise tools, Claude Code, and zsh plugins
 just fmt      # Format Markdown, zsh files, and Neovim Lua files
 just fmt-check # Check formatting without writing files
 just lint     # Run repository checks
