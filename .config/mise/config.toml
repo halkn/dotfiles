@@ -1,9 +1,8 @@
-[settings.npm]
-package_manager = "bun"
-
 [tools]
 # CLI tools
+node = "lts"
 ripgrep = "latest"
+jq = "latest"
 fd = "latest"
 fzf = "latest"
 hyperfine = "latest"
@@ -23,6 +22,6 @@ rumdl = "latest"
 lua-language-server = "latest"
 stylua = "latest"
 shfmt = "latest"
-efm-langserver = "latest"
+"github:mattn/efm-langserver" = "latest"
 shellcheck = "latest"
 "npm:yaml-language-server" = "latest"

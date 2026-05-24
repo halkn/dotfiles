@@ -5,21 +5,24 @@ This is my dotfiles.
 ## Setup
 
 ```sh
-# 1. Install mise.
+# 1. Install system dependencies.
+sudo apt install curl git build-essential procps bubblewrap socat unzip
+
+# 2. Install mise.
 curl https://mise.run | sh
 
-# 2. Link dotfiles.
+# 3. Link dotfiles.
 ln -snfT "$HOME/.dotfiles/.config" "$HOME/.config"
 
-# 3. Open a new shell so mise shims are on PATH, then install CLI tools
+# 4. Open a new shell so mise shims are on PATH, then install CLI tools
 #    via mise (includes just and uv).
 exec "$SHELL"
 mise install
 
-# 4. Install ptm (for tools not in mise: claude, markado).
+# 5. Install ptm (for tools not in mise: claude, markado).
 uv tool install git+https://github.com/halkn/ptm
 
-# 5. Run the dotfiles setup task.
+# 6. Run the dotfiles setup task.
 just setup
 ```
 
