@@ -28,7 +28,7 @@ sudo nixos-rebuild boot --flake "github:halkn/dotfiles#wsl" --no-write-lock-file
 #    you can rebuild locally.
 git clone https://github.com/halkn/dotfiles ~/.dotfiles
 
-# 5. Tools not in nixpkgs (claude, markado). zsh plugins come from home-manager.
+# 5. Tools not in nixpkgs (markado). zsh plugins come from home-manager.
 uv tool install git+https://github.com/halkn/ptm
 ptm install
 ```
@@ -74,7 +74,10 @@ ptm install
   and the `fzf`/`starship` integrations come from `programs.zsh`, while the hand-written body
   stays in `.config/zsh/.zshrc` (deployed to `$ZDOTDIR` = `~/.config/zsh`).
   These take effect on rebuild (not live-edited like the linked configs).
-- **Tools not in nixpkgs** (`claude`, `markado`):
+- **Claude Code** (`claude`): the unfree `pkgs.claude-code`, managed by the
+  `programs.claude-code` module (`settings`, `context`/`CLAUDE.md`); the statusline
+  script is linked from `claude/`.
+- **Tools not in nixpkgs** (`markado`):
   [halkn/ptm](https://github.com/halkn/ptm) via `ptm install` / `ptm update`.
 
 Useful tasks:
@@ -83,7 +86,7 @@ Useful tasks:
 just           # List tasks
 just switch    # Apply the NixOS-WSL system + home-manager config
 just update    # Update flake inputs, rebuild, and update ptm tools
-just setup     # Install ptm tools (claude, markado)
+just setup     # Install ptm tools (markado)
 just fmt       # Format Markdown, zsh files, and Neovim Lua files
 just fmt-check # Check formatting without writing files
 just lint      # Run repository checks
