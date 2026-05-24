@@ -91,19 +91,6 @@ if command -v uv >/dev/null 2>&1; then
   unset _uv_comp
 fi
 
-# ── fzf ──────────────────────────────────────────────
-if command -v fzf >/dev/null 2>&1 && [[ -t 0 ]]; then
-  export FZF_DEFAULT_OPTS="
-    --height 60%
-    --layout=reverse
-    --border
-    --info=inline
-    --preview-window=right:60%:wrap
-    --bind ctrl-u:preview-page-up,ctrl-d:preview-page-down
-    --bind ctrl-/:toggle-preview
-  "
-fi
-
 # Shell-state wrappers stay as functions; action-only commands can be aliases.
 _fzx_available() {
   command -v fzx >/dev/null 2>&1 || {

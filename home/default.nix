@@ -174,6 +174,15 @@ in
   programs.fzf = {
     enable = true;
     enableZshIntegration = true;
+    defaultOptions = [
+      "--height 60%"
+      "--layout=reverse"
+      "--border"
+      "--info=inline"
+      "--preview-window=right:60%:wrap"
+      "--bind ctrl-u:preview-page-up,ctrl-d:preview-page-down"
+      "--bind ctrl-/:toggle-preview"
+    ];
   };
 
   programs.ripgrep = {
