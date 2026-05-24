@@ -211,7 +211,7 @@ in
         file = "share/zsh/plugins/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh";
       }
     ];
-    envExtra = builtins.readFile ../.zshenv;
-    initContent = builtins.readFile ../.zshrc;
+    envExtra = builtins.readFile ../.config/zsh/.zshenv;
+    initContent = builtins.readFile ../.config/zsh/.zshrc;
   };
 }
