@@ -49,8 +49,6 @@ in
   # Hand-written configs stay in the repo and are linked out-of-store so they
   # remain editable in place without a home-manager rebuild.
   xdg.enable = true;
-  # Non-standard cache location; configHome/dataHome/stateHome keep their defaults.
-  xdg.cacheHome = "${config.home.homeDirectory}/.local/cache";
   xdg.configFile = {
     "nvim".source = link ".config/nvim";
     "ptm".source = link ".config/ptm";
