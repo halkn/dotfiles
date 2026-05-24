@@ -1,3 +1,6 @@
+# WSLg auto-sets WAYLAND_DISPLAY, but the socket is inaccessible in terminal sessions.
+[[ -n $WSL_DISTRO_NAME ]] && unset WAYLAND_DISPLAY
+
 # Keep zsh-owned runtime files under XDG directories.
 zsh_data_dir=$XDG_DATA_HOME/zsh
 zsh_cache_dir=$XDG_CACHE_HOME/zsh
