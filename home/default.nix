@@ -160,6 +160,8 @@ in
   };
 
   # Authored as TOML / tmux.conf in .config; programs.* generate the live files.
+  # starship.toml stays a file: it holds nerd-font (private-use) glyphs that do
+  # not survive being hand-transcribed into a nix attrset.
   programs.starship = {
     enable = true;
     enableZshIntegration = true;
