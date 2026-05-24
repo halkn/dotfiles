@@ -6,7 +6,6 @@ zsh_data_dir=$XDG_DATA_HOME/zsh
 zsh_cache_dir=$XDG_CACHE_HOME/zsh
 mkdir -p "$zsh_data_dir"
 mkdir -p "$zsh_cache_dir"
-mkdir -p "$zsh_cache_dir/zcompcache"
 
 # ── history ──────────────────────────────────────────
 # size / dedup / share are declared in programs.zsh.history;
@@ -32,44 +31,18 @@ setopt interactive_comments
 bindkey -e
 
 # ── completion ───────────────────────────────────────
-autoload -Uz compinit
+# compinit is run by programs.zsh (enableCompletion); only the zstyles we
+# want stay here, since there is no native option for them.
 zmodload -i zsh/complist
 
-_zcompdump="$zsh_cache_dir/.zcompdump"
-
-# Rebuild the dump roughly daily; otherwise trust the cached dump for startup speed.
-if [[ ! -s "$_zcompdump" || -n "$_zcompdump"(#qN.mh+23) ]]; then
-  compinit -d "$_zcompdump"
-else
-  compinit -C -d "$_zcompdump"
-fi
-
-unset _zcompdump
-
-zstyle ':completion:*:default' menu select=2
-zstyle ':completion:*:default' list-colors ''
-
-# Try exact completion first, then progressively looser matching.
+# Case-insensitive and partial-word matching.
 zstyle ':completion:*' matcher-list \
   '' \
   'm:{a-zA-Z}={A-Za-z}' \
   'm:{a-zA-Z}={A-Za-z} r:|[._-]=* r:|=*'
 
-zstyle ':completion:*' format '--- %d ---'
-zstyle ':completion:*' group-name ''
-
-zstyle ':completion:*' use-cache yes
-zstyle ':completion:*' cache-path "$zsh_cache_dir/zcompcache"
-
-zstyle ':completion:*' verbose yes
-
-setopt complete_in_word
-
-# Keep completers small; heavier fuzzy/correction completers are intentionally omitted.
-zstyle ':completion:*' completer \
-  _complete \
-  _match \
-  _prefix
+# Highlighted menu selection on the second tab.
+zstyle ':completion:*:default' menu select=2
 
 # ── cd helper ────────────────────────────────────────
 # Static aliases live in programs.zsh.shellAliases; only functions stay here.

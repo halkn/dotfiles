@@ -214,7 +214,7 @@ in
   # history, static aliases, plugins, integrations and prompt come from home-manager.
   programs.zsh = {
     enable = true;
-    enableCompletion = false;
+    enableCompletion = true;
     dotDir = "${config.xdg.configHome}/zsh";
     autosuggestion.enable = true;
     history = {
