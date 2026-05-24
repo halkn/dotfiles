@@ -33,6 +33,7 @@ in
       just
       uv
       bun
+      claude-code
 
       # LSP / Linter / Formatter
       lua-language-server
@@ -55,14 +56,9 @@ in
   };
 
   home.file = {
-    # statusline is a script referenced by claude settings; keep it linked.
+    ".claude/settings.json".source = link "claude/settings.json";
+    ".claude/CLAUDE.md".source = link "claude/CLAUDE.md";
     ".claude/statusline-command.sh".source = link "claude/statusline-command.sh";
-  };
-
-  programs.claude-code = {
-    enable = true;
-    settings = builtins.fromJSON (builtins.readFile ../claude/settings.json);
-    context = builtins.readFile ../claude/CLAUDE.md;
   };
 
   # Environment moved out of .zshenv; paths resolved at eval time so they do

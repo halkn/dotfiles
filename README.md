@@ -74,9 +74,9 @@ ptm install
   and the `fzf`/`starship` integrations come from `programs.zsh`, while the hand-written body
   stays in `.config/zsh/.zshrc` (deployed to `$ZDOTDIR` = `~/.config/zsh`).
   These take effect on rebuild (not live-edited like the linked configs).
-- **Claude Code** (`claude`): the unfree `pkgs.claude-code`, managed by the
-  `programs.claude-code` module (`settings`, `context`/`CLAUDE.md`); the statusline
-  script is linked from `claude/`.
+- **Claude Code** (`claude`): the unfree `pkgs.claude-code` in `home.packages`;
+  `settings.json`, `CLAUDE.md` and the statusline script stay linked from `claude/`
+  so they remain live-editable.
 - **Tools not in nixpkgs** (`markado`):
   [halkn/ptm](https://github.com/halkn/ptm) via `ptm install` / `ptm update`.
 
