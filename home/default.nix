@@ -275,6 +275,7 @@ in
       du = "du -h";
       df = "df -h";
       ".." = "cd ..";
+      dot = "cd $HOME/.dotfiles";
       zs = "exec zsh";
       ":q" = "exit";
     };

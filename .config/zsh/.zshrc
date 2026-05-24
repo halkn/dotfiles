@@ -42,16 +42,6 @@ zstyle ':completion:*' matcher-list \
 # Highlighted menu selection on the second tab.
 zstyle ':completion:*:default' menu select=2
 
-# ── cd helper ────────────────────────────────────────
-# Static aliases live in programs.zsh.shellAliases; only functions stay here.
-dot() {
-  local target="${XDG_CONFIG_HOME:-$HOME/.config}"
-
-  [[ -d "$HOME/.dotfiles" ]] && target="$HOME/.dotfiles"
-
-  cd "$target"
-}
-
 # Shell-state wrappers stay as functions; action-only commands can be aliases.
 _fzx_available() {
   command -v fzx >/dev/null 2>&1 || {
