@@ -159,15 +159,47 @@ in
     };
   };
 
-  # Authored as TOML / tmux.conf in .config; programs.* generate the live files.
-  # starship.toml stays a file: it holds nerd-font (private-use) glyphs that do
-  # not survive being hand-transcribed into a nix attrset.
   programs.starship = {
     enable = true;
     enableZshIntegration = true;
-    settings = builtins.fromTOML (builtins.readFile ../.config/starship/starship.toml);
+    # Nerd-font glyphs are built from codepoints via fromJSON so the source
+    # stays pure ASCII; raw private-use bytes get mangled by some editors.
+    settings =
+      let
+        branch = builtins.fromJSON ''"\uf418"''; # nf git branch glyph U+F418
+        tag = builtins.fromJSON ''"\uf412"''; # nf git commit tag glyph U+F412
+        promptR = builtins.fromJSON ''"\u276f"''; # prompt arrow right U+276F
+        promptL = builtins.fromJSON ''"\u276e"''; # prompt arrow left U+276E
+      in
+      {
+        format = "$username$hostname$directory$git_branch$git_state$git_status$python$cmd_duration$line_break$character";
+        directory.style = "blue";
+        character = {
+          success_symbol = "[${promptR}](purple)";
+          error_symbol = "[${promptR}](red)";
+          vimcmd_symbol = "[${promptL}](green)";
+        };
+        git_branch = {
+          symbol = "${branch} ";
+          style = "bright-black";
+        };
+        git_commit.tag_symbol = " ${tag} ";
+        git_status = {
+          format = "[[(*$conflicted$untracked$modified$staged$renamed$deleted)](218) ($ahead_behind$stashed)]($style)";
+          style = "cyan";
+        };
+        git_state = {
+          format = ''([\[$all_status$ahead_behind\]]($style))'';
+          style = "bright-black";
+        };
+        cmd_duration = {
+          format = "[$duration]($style) ";
+          style = "yellow";
+        };
+      };
   };
 
+  # tmux.conf is imperative; keep it hand-written and read it in verbatim.
   programs.tmux = {
     enable = true;
     extraConfig = builtins.readFile ../.config/tmux/tmux.conf;

@@ -67,8 +67,9 @@ ptm install
   On NixOS-WSL home-manager runs as a NixOS module (applied by `nixos-rebuild`); elsewhere
   it runs standalone (`home-manager switch --flake '.#halkn'`).
 - **Managed configs** (`git`, `starship`, `tmux`, `fzf`, `ripgrep`, `eza`, `zsh`): handled
-  by their `programs.*` modules. `starship`/`tmux` and the zsh files under `.config/zsh/`
-  are still authored as files (read via `fromTOML`/`readFile`); the rest is declared in Nix.
+  by their `programs.*` modules. `tmux` and the zsh body under `.config/zsh/` are still
+  authored as files (read via `readFile`); the rest, including `starship`, is declared
+  inline in Nix (its nerd-font glyphs are built from codepoints via `fromJSON`).
   zsh is a hybrid — history, static aliases, plugins (autosuggestion, fast-syntax-highlighting)
   and the `fzf`/`starship` integrations come from `programs.zsh`, while the hand-written body
   stays in `.config/zsh/.zshrc` (deployed to `$ZDOTDIR` = `~/.config/zsh`).
