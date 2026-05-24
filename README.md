@@ -5,28 +5,25 @@ This is my dotfiles.
 ## Structure
 
 - `flake.nix`: inputs and outputs.
-  - `nixosConfigurations.wsl`: NixOS-WSL host (system + home-manager module + zsh login shell).
-  - `homeConfigurations.halkn`: standalone home-manager for non-NixOS Linux.
-- `home/default.nix`: shared home-manager module (packages + out-of-store symlinks for
-  hand-written configs). Reused by both outputs.
-- `hosts/wsl/configuration.nix`: NixOS-WSL system settings (wsl, zsh login shell, timezone, stateVersion).
+  - `homeConfigurations.halkn`: standalone home-manager (WSL Ubuntu / non-NixOS Linux).
+- `home/default.nix`: the home-manager module (packages + out-of-store symlinks for
+  hand-written configs).
 
-## Setup (NixOS-WSL)
+## Setup (standalone home-manager, WSL Ubuntu)
 
 ```sh
-# 1. On Windows (PowerShell), import NixOS-WSL using the release `nixos.wsl`:
-#    wsl --install --from-file nixos.wsl
+# 1. Install Nix (multi-user daemon).
+sh <(curl --proto '=https' --tlsv1.2 -L https://nixos.org/nix/install) --daemon
 
-# 2. First boot (default `nixos` user): build the system from this flake.
-#    `boot` avoids activating while logged in as the about-to-be-removed user;
-#    `--no-write-lock-file` is required because the GitHub flake is read-only.
-sudo nixos-rebuild boot --flake "github:halkn/dotfiles#wsl" --no-write-lock-file
-
-# 3. On Windows, `wsl --shutdown`, then reopen — you log in as `halkn` with zsh.
-
-# 4. Clone the repo to ~/.dotfiles so the out-of-store symlinks resolve and
-#    you can rebuild locally.
+# 2. Clone the repo to ~/.dotfiles so the out-of-store symlinks resolve.
 git clone https://github.com/halkn/dotfiles ~/.dotfiles
+
+# 3. Apply the home-manager config.
+nix run home-manager/master -- switch --flake "$HOME/.dotfiles#halkn" \
+  --extra-experimental-features 'nix-command flakes'
+
+# 4. Make zsh the login shell (home-manager installs it but does not chsh).
+chsh -s "$(command -v zsh)"
 
 # 5. Tools not in nixpkgs (markado). zsh plugins come from home-manager.
 uv tool install git+https://github.com/halkn/ptm
@@ -38,34 +35,17 @@ zsh treats `#` as a glob operator):
 
 ```sh
 cd ~/.dotfiles && just switch
-# equivalently: sudo nixos-rebuild switch --flake '.#wsl'
-```
-
-## Setup (standalone home-manager, non-NixOS Linux)
-
-```sh
-# 1. Install Nix (multi-user daemon).
-sh <(curl --proto '=https' --tlsv1.2 -L https://nixos.org/nix/install) --daemon
-
-# 2. Clone and apply the home-manager config.
-git clone https://github.com/halkn/dotfiles ~/.dotfiles
-nix run home-manager/master -- switch --flake "$HOME/.dotfiles#halkn" \
-  --extra-experimental-features 'nix-command flakes'
-
-# 3. Tools not in nixpkgs (zsh plugins come from home-manager).
-uv tool install git+https://github.com/halkn/ptm
-ptm install
+# equivalently: home-manager switch --flake '.#halkn'
 ```
 
 ## Tool Manager
 
-- **System / login shell / WSL settings** (NixOS-WSL only): `hosts/wsl/configuration.nix`,
-  applied by `nixos-rebuild`.
+- **Login shell**: home-manager installs zsh and writes its config, but does not set
+  the login shell. Run `chsh -s "$(command -v zsh)"` once on a new machine.
 - **Linked configs** (`nvim`, ...):
   [home-manager](https://github.com/nix-community/home-manager) via `home/default.nix`
-  links them out-of-store from the repo so they stay editable in place without a rebuild.
-  On NixOS-WSL home-manager runs as a NixOS module (applied by `nixos-rebuild`); elsewhere
-  it runs standalone (`home-manager switch --flake '.#halkn'`).
+  links them out-of-store from the repo so they stay editable in place without a rebuild
+  (`home-manager switch --flake '.#halkn'`).
 - **Managed configs** (`git`, `starship`, `tmux`, `fzf`, `ripgrep`, `eza`, `zsh`): handled
   by their `programs.*` modules. `tmux` and the zsh body under `.config/zsh/` are still
   authored as files (read via `readFile`); the rest, including `starship`, is declared
@@ -84,7 +64,7 @@ Useful tasks:
 
 ```sh
 just           # List tasks
-just switch    # Apply the NixOS-WSL system + home-manager config
+just switch    # Apply the standalone home-manager config
 just update    # Update flake inputs, rebuild, and update ptm tools
 just setup     # Install ptm tools (markado)
 just fmt       # Format Markdown, zsh files, and Neovim Lua files

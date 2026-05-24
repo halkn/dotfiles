@@ -2,14 +2,14 @@ set quiet
 
 nvim_config := ".config/nvim"
 zsh_config := ".config/zsh/.zshrc"
-host := "wsl"
+hm_config := "halkn"
 
 default:
   @just --list
 
-[doc('Apply the NixOS-WSL system and home-manager config')]
+[doc('Apply the standalone home-manager config')]
 switch:
-  sudo nixos-rebuild switch --flake ".#{{host}}"
+  home-manager switch --flake ".#{{hm_config}}"
 
 [doc('Install user-space tools not managed by Nix (ptm: claude, markado)')]
 setup:
@@ -18,7 +18,7 @@ setup:
 [doc('Update flake inputs, rebuild, and update ptm tools')]
 update:
   nix flake update
-  sudo nixos-rebuild switch --flake ".#{{host}}"
+  home-manager switch --flake ".#{{hm_config}}"
   ptm update
 
 [doc('Run repository checks that pass on the current tree')]
