@@ -2,49 +2,94 @@
 
 This is my dotfiles.
 
-## Setup
+## Structure
+
+- `flake.nix`: inputs and outputs.
+  - `nixosConfigurations.wsl`: NixOS-WSL host (system + home-manager module + zsh login shell).
+  - `homeConfigurations.halkn`: standalone home-manager for non-NixOS Linux.
+- `home/default.nix`: shared home-manager module (packages + out-of-store symlinks for
+  hand-written configs). Reused by both outputs.
+- `hosts/wsl/configuration.nix`: NixOS-WSL system settings (wsl, zsh login shell, timezone, stateVersion).
+
+## Setup (NixOS-WSL)
 
 ```sh
-# 1. Install system dependencies.
-sudo apt update && sudo apt upgrade -y
-sudo apt install curl git build-essential procps bubblewrap socat unzip
+# 1. On Windows (PowerShell), import NixOS-WSL using the release `nixos.wsl`:
+#    wsl --install --from-file nixos.wsl
 
-# 2. Install mise.
-curl https://mise.run | sh
+# 2. First boot (default `nixos` user): build the system from this flake.
+#    `boot` avoids activating while logged in as the about-to-be-removed user;
+#    `--no-write-lock-file` is required because the GitHub flake is read-only.
+sudo nixos-rebuild boot --flake "github:halkn/dotfiles#wsl" --no-write-lock-file
 
-# 3. Link dotfiles.
-ln -snfT "$HOME/.dotfiles/.config" "$HOME/.config"
+# 3. On Windows, `wsl --shutdown`, then reopen — you log in as `halkn` with zsh.
 
-# 4. Open a new shell so mise shims are on PATH, then install CLI tools
-#    via mise (includes just and node).
-exec "$SHELL"
-mise install
+# 4. Clone the repo to ~/.dotfiles so the out-of-store symlinks resolve and
+#    you can rebuild locally.
+git clone https://github.com/halkn/dotfiles ~/.dotfiles
 
-# 5. Install Claude Code (native installer, includes auto-update).
-curl -fsSL https://claude.ai/install.sh | bash
+# 5. Tools not in nixpkgs (markado). zsh plugins come from home-manager.
+uv tool install git+https://github.com/halkn/ptm
+ptm install
+```
 
-# 6. Run the dotfiles setup task.
-just setup
+Apply later changes with `just switch` (or directly; quote the flake ref because
+zsh treats `#` as a glob operator):
+
+```sh
+cd ~/.dotfiles && just switch
+# equivalently: sudo nixos-rebuild switch --flake '.#wsl'
+```
+
+## Setup (standalone home-manager, non-NixOS Linux)
+
+```sh
+# 1. Install Nix (multi-user daemon).
+sh <(curl --proto '=https' --tlsv1.2 -L https://nixos.org/nix/install) --daemon
+
+# 2. Clone and apply the home-manager config.
+git clone https://github.com/halkn/dotfiles ~/.dotfiles
+nix run home-manager/master -- switch --flake "$HOME/.dotfiles#halkn" \
+  --extra-experimental-features 'nix-command flakes'
+
+# 3. Tools not in nixpkgs (zsh plugins come from home-manager).
+uv tool install git+https://github.com/halkn/ptm
+ptm install
 ```
 
 ## Tool Manager
 
-Most CLI tools are managed by [mise](https://mise.jdx.dev) via
-`.config/mise/config.toml`. Tools are exposed through mise shims, which
-`.zshenv` adds to `PATH` at `${XDG_DATA_HOME:-$HOME/.local/share}/mise/shims`.
-`markado` is managed via the mise GitHub backend (`github:halkn/markado`).
-Claude Code is installed via the native installer (`curl -fsSL https://claude.ai/install.sh | bash`)
-and updated via `claude update`.
+- **System / login shell / WSL settings** (NixOS-WSL only): `hosts/wsl/configuration.nix`,
+  applied by `nixos-rebuild`.
+- **Linked configs** (`nvim`, ...):
+  [home-manager](https://github.com/nix-community/home-manager) via `home/default.nix`
+  links them out-of-store from the repo so they stay editable in place without a rebuild.
+  On NixOS-WSL home-manager runs as a NixOS module (applied by `nixos-rebuild`); elsewhere
+  it runs standalone (`home-manager switch --flake '.#halkn'`).
+- **Managed configs** (`git`, `starship`, `tmux`, `fzf`, `ripgrep`, `eza`, `zsh`): handled
+  by their `programs.*` modules. `tmux` and the zsh body under `.config/zsh/` are still
+  authored as files (read via `readFile`); the rest, including `starship`, is declared
+  inline in Nix (its nerd-font glyphs are built from codepoints via `fromJSON`).
+  zsh is a hybrid — history, static aliases, plugins (autosuggestion, fast-syntax-highlighting)
+  and the `fzf`/`starship` integrations come from `programs.zsh`, while the hand-written body
+  stays in `.config/zsh/.zshrc` (deployed to `$ZDOTDIR` = `~/.config/zsh`).
+  These take effect on rebuild (not live-edited like the linked configs).
+- **Claude Code** (`claude`): the unfree `pkgs.claude-code` in `home.packages`;
+  `settings.json`, `CLAUDE.md` and the statusline script stay linked from `claude/`
+  so they remain live-editable.
+- **Tools not in nixpkgs** (`markado`):
+  [halkn/ptm](https://github.com/halkn/ptm) via `ptm install` / `ptm update`.
 
 Useful tasks:
 
 ```sh
-just          # List tasks
-just setup    # Link dotfiles, install mise tools, Claude Code, and zsh plugins
-just update   # Update mise tools, Claude Code, and zsh plugins
-just fmt      # Format Markdown, zsh files, and Neovim Lua files
+just           # List tasks
+just switch    # Apply the NixOS-WSL system + home-manager config
+just update    # Update flake inputs, rebuild, and update ptm tools
+just setup     # Install ptm tools (markado)
+just fmt       # Format Markdown, zsh files, and Neovim Lua files
 just fmt-check # Check formatting without writing files
-just lint     # Run repository checks
+just lint      # Run repository checks
 ```
 
 ## Neovim

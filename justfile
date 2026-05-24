@@ -1,37 +1,25 @@
 set quiet
 
-config_dir := ".config"
 nvim_config := ".config/nvim"
-zsh_config := ".zshenv .zshrc"
-zsh_plugin_dir := "${XDG_DATA_HOME:-$HOME/.local/share}/zsh_plugins"
+zsh_config := ".config/zsh/.zshrc"
+host := "wsl"
 
 default:
   @just --list
 
-[private]
-_link:
-  ln -snfT "$HOME/.dotfiles/{{config_dir}}" "$HOME/.config"
-  ln -snf "$HOME/.dotfiles/.zshenv" "$HOME/.zshenv"
-  ln -snf "$HOME/.dotfiles/.zshrc" "$HOME/.zshrc"
-  mkdir -p "$HOME/.claude"
-  ln -snf "$HOME/.dotfiles/claude/settings.json" "$HOME/.claude/settings.json"
-  ln -snf "$HOME/.dotfiles/claude/CLAUDE.md" "$HOME/.claude/CLAUDE.md"
-  ln -snf "$HOME/.dotfiles/claude/statusline-command.sh" "$HOME/.claude/statusline-command.sh"
+[doc('Apply the NixOS-WSL system and home-manager config')]
+switch:
+  sudo nixos-rebuild switch --flake ".#{{host}}"
 
-[doc('Link dotfiles into home directories')]
-link: _link
+[doc('Install user-space tools not managed by Nix (ptm: claude, markado)')]
+setup:
+  ptm install
 
-[doc('Run setup')]
-setup: _link
-  just install-tools
-  just install-claude-code
-  just install-zsh-plugins
-
-[doc('Update user-space managed tools')]
+[doc('Update flake inputs, rebuild, and update ptm tools')]
 update:
-  just update-tools
-  just update-claude-code
-  just update-zsh-plugins
+  nix flake update
+  sudo nixos-rebuild switch --flake ".#{{host}}"
+  ptm update
 
 [doc('Run repository checks that pass on the current tree')]
 lint: diff-check check-tools lint-zsh lint-md lint-shfmt lint-lua lint-nvim
@@ -53,33 +41,6 @@ check-tools:
   command -v shfmt >/dev/null
   command -v stylua >/dev/null
   command -v lua-language-server >/dev/null
-
-[private]
-install-tools:
-  mise install
-
-[private]
-install-claude-code:
-  curl -fsSL https://claude.ai/install.sh | bash
-
-[private]
-update-tools:
-  mise upgrade
-
-[private]
-update-claude-code:
-  claude update
-
-[private]
-install-zsh-plugins:
-  mkdir -p "{{zsh_plugin_dir}}"
-  test -d "{{zsh_plugin_dir}}/zsh-autosuggestions" || git clone --depth 1 https://github.com/zsh-users/zsh-autosuggestions "{{zsh_plugin_dir}}/zsh-autosuggestions"
-  test -d "{{zsh_plugin_dir}}/fast-syntax-highlighting" || git clone --depth 1 https://github.com/zdharma-continuum/fast-syntax-highlighting "{{zsh_plugin_dir}}/fast-syntax-highlighting"
-
-[private]
-update-zsh-plugins: install-zsh-plugins
-  git -C "{{zsh_plugin_dir}}/zsh-autosuggestions" pull --ff-only
-  git -C "{{zsh_plugin_dir}}/fast-syntax-highlighting" pull --ff-only
 
 [private]
 diff-check:
