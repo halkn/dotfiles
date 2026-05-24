@@ -171,11 +171,38 @@ in
   };
 
   # Hybrid zsh: env + body kept hand-written (envExtra/initContent), while
-  # plugins, completion-time integrations, and prompt come from home-manager.
+  # history, static aliases, plugins, integrations and prompt come from home-manager.
   programs.zsh = {
     enable = true;
     enableCompletion = false;
     autosuggestion.enable = true;
+    history = {
+      path = "${config.xdg.dataHome}/zsh/history";
+      size = 100000;
+      save = 10000;
+      expireDuplicatesFirst = true;
+      saveNoDups = true;
+      findNoDups = true;
+      ignoreAllDups = true;
+      ignoreSpace = true;
+      share = true;
+    };
+    shellAliases = {
+      ls = "eza --icons --group-directories-first";
+      ll = "eza -l --icons --git --no-user --time-style=iso --group-directories-first";
+      la = "eza -la --icons --git --no-user --time-style=iso --group-directories-first";
+      ltr = "eza -l --icons --git --no-user --time-style=iso --sort=modified --group-directories-first";
+      lst = "eza -l --icons --git --no-user --time-style=iso --sort=modified --reverse --group-directories-first";
+      tree = "eza --tree --icons -I .git --group-directories-first";
+      v = "nvim";
+      vim = "nvim";
+      vimdiff = "nvim -d";
+      du = "du -h";
+      df = "df -h";
+      ".." = "cd ..";
+      zs = "exec zsh";
+      ":q" = "exit";
+    };
     plugins = [
       {
         name = "fast-syntax-highlighting";

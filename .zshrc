@@ -8,17 +8,10 @@ mkdir -p "$zsh_data_dir"
 mkdir -p "$zsh_cache_dir"
 mkdir -p "$zsh_cache_dir/zcompcache"
 
-# ── History ──────────────────────────────────────────
-HISTFILE=$zsh_data_dir/history
-HISTSIZE=100000
-SAVEHIST=10000
-setopt hist_expire_dups_first
-setopt hist_save_no_dups
-setopt hist_find_no_dups
-setopt hist_ignore_all_dups
-setopt hist_ignore_space
+# ── history ──────────────────────────────────────────
+# size / dedup / share are declared in programs.zsh.history;
+# hist_reduce_blanks has no native option so it stays here.
 setopt hist_reduce_blanks
-setopt share_history
 
 # ── options ──────────────────────────────────────────
 setopt ignore_eof
@@ -78,21 +71,8 @@ zstyle ':completion:*' completer \
   _match \
   _prefix
 
-# ── aliases ──────────────────────────────────────────
-# ls
-alias ll='ls -lhF'
-alias la='ls -lhAF'
-
-# human readable for du and df
-alias du='du -h'
-alias df='df -h'
-
-# cd
-alias ..='cd ..'
-
-# etc
-alias zs='exec zsh'
-alias :q='exit'
+# ── cd helper ────────────────────────────────────────
+# Static aliases live in programs.zsh.shellAliases; only functions stay here.
 dot() {
   local target="${XDG_CONFIG_HOME:-$HOME/.config}"
 
@@ -111,23 +91,8 @@ if command -v uv >/dev/null 2>&1; then
   unset _uv_comp
 fi
 
-# ── eza ──────────────────────────────────────────────
-if command -v eza >/dev/null 2>&1; then
-  alias ls='eza --icons --group-directories-first'
-  alias ll='eza -l --icons --git --no-user --time-style=iso --group-directories-first'
-  alias la='eza -la --icons --git --no-user --time-style=iso --group-directories-first'
-  alias ltr='eza -l --icons --git --no-user --time-style=iso --sort=modified --group-directories-first'
-  alias lst='eza -l --icons --git --no-user --time-style=iso --sort=modified --reverse --group-directories-first'
-  alias tree='eza --tree --icons -I ".git" --group-directories-first'
-fi
-
 # ── nvim ─────────────────────────────────────────────
-if command -v nvim >/dev/null 2>&1; then
-  export MANPAGER='nvim +Man!'
-  alias v='nvim'
-  alias vim=nvim
-  alias vimdiff='nvim -d'
-fi
+export MANPAGER='nvim +Man!'
 
 # ── fzf ──────────────────────────────────────────────
 if command -v fzf >/dev/null 2>&1 && [[ -t 0 ]]; then
