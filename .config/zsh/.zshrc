@@ -3,9 +3,7 @@
 
 # Keep zsh-owned runtime files under XDG directories.
 zsh_data_dir=$XDG_DATA_HOME/zsh
-zsh_cache_dir=$XDG_CACHE_HOME/zsh
 mkdir -p "$zsh_data_dir"
-mkdir -p "$zsh_cache_dir"
 
 # ── history ──────────────────────────────────────────
 # size / dedup / share are declared in programs.zsh.history;
@@ -53,16 +51,6 @@ dot() {
 
   cd "$target"
 }
-
-# ── uv ───────────────────────────────────────────────
-if command -v uv >/dev/null 2>&1; then
-  _uv_comp="$zsh_cache_dir/uv_completion.zsh"
-  if [[ ! -s "$_uv_comp" || "$(command -v uv)" -nt "$_uv_comp" ]]; then
-    uv generate-shell-completion zsh >|"$_uv_comp"
-  fi
-  source "$_uv_comp"
-  unset _uv_comp
-fi
 
 # Shell-state wrappers stay as functions; action-only commands can be aliases.
 _fzx_available() {
