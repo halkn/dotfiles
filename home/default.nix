@@ -210,8 +210,8 @@ in
     enableZshIntegration = false;
   };
 
-  # Hybrid zsh: env + body kept hand-written (envExtra/initContent), while
-  # history, static aliases, plugins, integrations and prompt come from home-manager.
+  # Hybrid zsh: the interactive body stays hand-written (initContent), while
+  # env, history, aliases, plugins, integrations and prompt come from home-manager.
   programs.zsh = {
     enable = true;
     enableCompletion = true;
@@ -251,7 +251,6 @@ in
         file = "share/zsh/plugins/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh";
       }
     ];
-    envExtra = builtins.readFile ../.config/zsh/.zshenv;
     initContent = builtins.readFile ../.config/zsh/.zshrc;
   };
 }

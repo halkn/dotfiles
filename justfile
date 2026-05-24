@@ -1,7 +1,7 @@
 set quiet
 
 nvim_config := ".config/nvim"
-zsh_config := ".config/zsh/.zshenv .config/zsh/.zshrc"
+zsh_config := ".config/zsh/.zshrc"
 host := "wsl"
 
 default:
