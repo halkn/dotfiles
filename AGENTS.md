@@ -5,19 +5,19 @@
 このリポジトリは個人用 dotfiles と周辺ツール設定を管理します。
 主要な設定は `.config/` 配下にあり、`.config/nvim/` は Neovim、
 `.config/zsh/` はシェル起動、`.config/tmux/` と `.config/zellij/` は
-ターミナル多重化、`.config/ptm/` はツール定義（`ptm` は managed tools 定義用の独自 CLI）です。
+ターミナル多重化、`.config/mise/` はツール定義（mise で全 CLI ツールを管理）です。
 AI アシスタント設定は `codex/` と `claude/` にあります。
 新規ファイルは対象ツールの近くに配置し、既存のディレクトリ命名に合わせてください。
 
 ## Build, Test, and Development Commands
 
 - `just`: 利用できる task を一覧します。
-- `just setup`: symlink 作成、Nix tools install、`ptm install`、zsh plugin install を実行します。
+- `just setup`: symlink 作成、mise tools install、Claude Code install、zsh plugin install を実行します。
 - `just lint`: 通常の検証として diff 空白確認、`zsh` 構文確認、
   Markdown、formatter check、Neovim Lua diagnostics、起動確認を実行します。
 - `just fmt`: Markdown、zsh、Neovim Lua を既定 formatter で整形します。
 - `just fmt-check`: ファイルを書き換えずに Markdown、zsh、Neovim Lua の整形を確認します。
-- `just update`: Nix tools 更新 (`flake.lock`)、`ptm` 管理ツール、zsh plugin を更新します。
+- `just update`: mise tools 更新、`claude update`、zsh plugin を更新します。
 
 Agent は `just update` を自律実行せず、明示依頼がある場合だけ実行してください。
 system package 更新が必要な場合は、just task ではなくユーザーが個別に実行します。
@@ -29,7 +29,7 @@ Lua 設定は `.config/nvim/lua/vimrc/` 配下で役割ごとに分け、
 プラグイン定義は `.config/nvim/lua/plugins/` に機能単位で分割します。
 Markdown は短く実務的に書き、`rumdl` を前提に整えます。
 Shell ファイルと Lua ファイルは `just fmt` で整形してください。
-`shfmt` と `stylua` は Nix 管理のものが PATH に入っています。
+`shfmt` と `stylua` は mise 管理のものが PATH に入っています。
 
 ## Neovim Design Principles
 
@@ -60,7 +60,7 @@ LSP や formatter は言語別設定を分離して管理してください。
 Lua formatter は `stylua` を正としてください。
 diagnostics は `lua-language-server --check` と editor 内の `luals` を正とします。
 `luals` の built-in formatter を再び主担当に戻さないでください。
-Neovim 内で使う LSP server と efm backend tool は Nix (`flake.nix`) で管理し、
+Neovim 内で使う LSP server と efm backend tool は mise (`.config/mise/config.toml`) で管理し、
 PATH 経由で参照します。
 
 Neovim Lua を変更したときは、通常は `just fmt` で整形し、`just lint` で確認します。

@@ -23,14 +23,14 @@ link: _link
 
 [doc('Run setup')]
 setup: _link
-  just install-nix-tools
-  ptm install
+  just install-tools
+  just install-claude-code
   just install-zsh-plugins
 
 [doc('Update user-space managed tools')]
 update:
-  just update-nix-tools
-  ptm update
+  just update-tools
+  just update-claude-code
   just update-zsh-plugins
 
 [doc('Run repository checks that pass on the current tree')]
@@ -55,13 +55,20 @@ check-tools:
   command -v lua-language-server >/dev/null
 
 [private]
-install-nix-tools:
-  nix profile list 2>/dev/null | grep -q dotfiles-tools || nix profile install path:.#default
+install-tools:
+  mise install
 
 [private]
-update-nix-tools:
-  nix flake update
-  nix profile upgrade --all
+install-claude-code:
+  curl -fsSL https://claude.ai/install.sh | bash
+
+[private]
+update-tools:
+  mise upgrade
+
+[private]
+update-claude-code:
+  claude update
 
 [private]
 install-zsh-plugins:

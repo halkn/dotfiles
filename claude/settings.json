@@ -225,8 +225,7 @@
         "~/.local/share/uv",
         "~/.local/bin",
         "~/.bun/bin",
-        "~/.nix-profile",
-        "/nix/store"
+        "~/.local/share/mise"
       ]
     }
   },
