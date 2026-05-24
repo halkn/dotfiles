@@ -91,9 +91,6 @@ if command -v uv >/dev/null 2>&1; then
   unset _uv_comp
 fi
 
-# ── nvim ─────────────────────────────────────────────
-export MANPAGER='nvim +Man!'
-
 # ── fzf ──────────────────────────────────────────────
 if command -v fzf >/dev/null 2>&1 && [[ -t 0 ]]; then
   export FZF_DEFAULT_OPTS="
@@ -188,6 +185,3 @@ if command -v tmux >/dev/null 2>&1 \
   # Replace the login shell only when this is a real interactive terminal.
   exec tmux new-session -A -s "$ZSH_TMUX_SESSION_NAME"
 fi
-
-# ── starship ─────────────────────────────────────────
-export STARSHIP_CACHE=$XDG_CACHE_HOME/starship/cache

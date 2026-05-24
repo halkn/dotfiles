@@ -49,6 +49,8 @@ in
   # Hand-written configs stay in the repo and are linked out-of-store so they
   # remain editable in place without a home-manager rebuild.
   xdg.enable = true;
+  # Non-standard cache location; configHome/dataHome/stateHome keep their defaults.
+  xdg.cacheHome = "${config.home.homeDirectory}/.local/cache";
   xdg.configFile = {
     "nvim".source = link ".config/nvim";
     "ptm".source = link ".config/ptm";
@@ -59,6 +61,37 @@ in
     ".claude/CLAUDE.md".source = link "claude/CLAUDE.md";
     ".claude/statusline-command.sh".source = link "claude/statusline-command.sh";
   };
+
+  # Environment moved out of .zshenv; paths resolved at eval time so they do
+  # not depend on shell-time ordering of XDG_* exports.
+  home.sessionVariables = {
+    LANG = "C.UTF-8";
+    EDITOR = "nvim";
+    PAGER = "less";
+    MANPAGER = "nvim +Man!";
+    LESS = "-g -i -M -R -S -W -z-4 -x4";
+    LESSHISTFILE = "-";
+
+    XDG_CONFIG_HOME = config.xdg.configHome;
+    XDG_CACHE_HOME = config.xdg.cacheHome;
+    XDG_DATA_HOME = config.xdg.dataHome;
+    XDG_STATE_HOME = config.xdg.stateHome;
+    XDG_BIN_HOME = "${config.home.homeDirectory}/.local/bin";
+
+    BUN_INSTALL = "${config.home.homeDirectory}/.bun";
+
+    UV_CACHE_DIR = "${config.xdg.cacheHome}/uv";
+    UV_PYTHON_PREFERENCE = "only-managed";
+    UV_PROJECT_ENVIRONMENT = ".venv";
+    UV_COMPILE_BYTECODE = "true";
+
+    STARSHIP_CACHE = "${config.xdg.cacheHome}/starship/cache";
+  };
+
+  home.sessionPath = [
+    "${config.home.homeDirectory}/.local/bin"
+    "${config.home.homeDirectory}/.bun/bin"
+  ];
 
   programs.delta = {
     enable = true;

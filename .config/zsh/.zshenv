@@ -1,40 +1,6 @@
-# ---------------------------------------------------------------------------
-# environment variables
-# ---------------------------------------------------------------------------
-# common
-export LANG=C.UTF-8
-export EDITOR=nvim
-export PAGER=less
+# .zshenv is read by every zsh; keep it minimal.
+# Environment variables, XDG dirs and PATH are declared in home-manager
+# (home.sessionVariables / home.sessionPath).
 
-# XDG Base Directory
-export XDG_CONFIG_HOME=~/.config
-export XDG_CACHE_HOME=~/.local/cache
-export XDG_DATA_HOME=~/.local/share
-export XDG_BIN_HOME=~/.local/bin
-export XDG_STATE_HOME=~/.local/state
-
-# zsh
+# Skip the system-wide compinit; .zshrc runs its own.
 skip_global_compinit=1
-
-# bun
-export BUN_INSTALL="$HOME/.bun"
-
-# uv
-export UV_CACHE_DIR=$XDG_CACHE_HOME/uv
-export UV_PYTHON_PREFERENCE=only-managed
-export UV_PROJECT_ENVIRONMENT=.venv
-export UV_COMPILE_BYTECODE=true
-
-# less
-export LESS='-g -i -M -R -S -W -z-4 -x4'
-export LESSHISTFILE=-
-
-# ---------------------------------------------------------------------------
-# path
-# ---------------------------------------------------------------------------
-typeset -U path
-path=(
-  $XDG_BIN_HOME(N-/)
-  $BUN_INSTALL/bin(N-/)
-  $path
-)
