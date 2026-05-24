@@ -6,6 +6,7 @@ This is my dotfiles.
 
 ```sh
 # 1. Install system dependencies.
+sudo apt update && sudo apt upgrade -y
 sudo apt install curl git build-essential procps bubblewrap socat unzip
 
 # 2. Install mise.
