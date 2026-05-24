@@ -175,6 +175,7 @@ in
   programs.zsh = {
     enable = true;
     enableCompletion = false;
+    dotDir = "${config.xdg.configHome}/zsh";
     autosuggestion.enable = true;
     history = {
       path = "${config.xdg.dataHome}/zsh/history";
