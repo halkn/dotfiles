@@ -19,7 +19,9 @@ in
 
   # No NixOS to enable these system-wide, so persist them in the user nix.conf
   # (~/.config/nix/nix.conf). After the first switch, `home-manager switch
-  # --flake` and `just switch` work without extra flags.
+  # --flake` and `just switch` work without extra flags. home-manager needs an
+  # explicit nix.package to generate/validate the conf on non-NixOS.
+  nix.package = pkgs.nix;
   nix.settings.experimental-features = [
     "nix-command"
     "flakes"
