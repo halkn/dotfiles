@@ -97,15 +97,7 @@ repo() {
 }
 
 # ── tmux ─────────────────────────────────────────────
-ZSH_TMUX_AUTO_START=${ZSH_TMUX_AUTO_START:-1}
-ZSH_TMUX_SESSION_NAME=${ZSH_TMUX_SESSION_NAME:-main}
-
-if command -v tmux >/dev/null 2>&1 \
-  && [[ -o interactive ]] \
-  && [[ -z $TMUX ]] \
-  && [[ -t 0 ]] \
-  && [[ -t 1 ]] \
-  && [[ $ZSH_TMUX_AUTO_START == 1 ]]; then
-  # Replace the login shell only when this is a real interactive terminal.
-  exec tmux new-session -A -s "$ZSH_TMUX_SESSION_NAME"
+# Replace the shell with the main session, but only on a real terminal.
+if [[ -z $TMUX && -t 1 ]] && command -v tmux >/dev/null 2>&1; then
+  exec tmux new-session -A -s main
 fi
