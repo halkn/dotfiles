@@ -110,12 +110,6 @@ repo() {
   esac
 }
 
-# ── machine-local ────────────────────────────────────
-# Untracked per-machine overrides (PATH, env, aliases, secrets). Sourced after
-# the managed config so it can override, and before the tmux exec so env/PATH
-# propagate into the tmux server. Mirrors ~/.gitconfig.local for git.
-[[ -r ${ZDOTDIR:-$HOME}/.zshrc.local ]] && source "${ZDOTDIR:-$HOME}/.zshrc.local"
-
 # ── tmux ─────────────────────────────────────────────
 ZSH_TMUX_AUTO_START=${ZSH_TMUX_AUTO_START:-1}
 ZSH_TMUX_SESSION_NAME=${ZSH_TMUX_SESSION_NAME:-main}
