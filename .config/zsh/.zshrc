@@ -85,33 +85,15 @@ fgw() {
 }
 
 # ── repo (ghq) ───────────────────────────────────────
+# Fuzzy-select a ghq repo and cd into it. Use `ghq get`/`ghq list` directly.
 repo() {
-  local cmd="${1:-cd}"
-  (($# > 0)) && shift
-
-  command -v ghq >/dev/null 2>&1 || {
-    print 'repo: ghq is not installed or not in PATH' >&2
+  command -v ghq >/dev/null 2>&1 && command -v fzf >/dev/null 2>&1 || {
+    print 'repo: ghq and fzf are required' >&2
     return 1
   }
-
-  case "$cmd" in
-    cd)
-      command -v fzf >/dev/null 2>&1 || {
-        print 'repo: fzf is not installed or not in PATH' >&2
-        return 1
-      }
-      local dir
-      dir=$(ghq list --full-path | fzf "$@") || return
-      [[ -n "$dir" ]] && cd -- "$dir" && la
-      ;;
-    get | list)
-      ghq "$cmd" "$@"
-      ;;
-    *)
-      print 'usage: repo <get|list|cd>' >&2
-      return 1
-      ;;
-  esac
+  local dir
+  dir=$(ghq list --full-path | fzf "$@") || return
+  [[ -n "$dir" ]] && cd -- "$dir" && la
 }
 
 # ── tmux ─────────────────────────────────────────────
