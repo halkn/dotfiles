@@ -18,9 +18,12 @@ sh <(curl --proto '=https' --tlsv1.2 -L https://nixos.org/nix/install) --daemon
 # 2. Clone the repo to ~/.dotfiles so the out-of-store symlinks resolve.
 git clone https://github.com/halkn/dotfiles ~/.dotfiles
 
-# 3. Apply the home-manager config.
-nix run home-manager/master -- switch --flake "$HOME/.dotfiles#halkn" \
-  --extra-experimental-features 'nix-command flakes'
+# 3. Apply the home-manager config. Flakes are not enabled by default on a
+#    fresh Nix install, so enable them for this bootstrap shell via NIX_CONFIG
+#    (an env var, not a file, so home-manager can write ~/.config/nix/nix.conf
+#    itself). The config persists the setting, so later runs need no flag.
+export NIX_CONFIG="experimental-features = nix-command flakes"
+nix run home-manager/master -- switch --flake "$HOME/.dotfiles#halkn"
 
 # 4. Make zsh the login shell (home-manager installs it but does not chsh).
 chsh -s "$(command -v zsh)"

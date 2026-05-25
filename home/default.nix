@@ -17,6 +17,14 @@ in
 
   programs.home-manager.enable = true;
 
+  # No NixOS to enable these system-wide, so persist them in the user nix.conf
+  # (~/.config/nix/nix.conf). After the first switch, `home-manager switch
+  # --flake` and `just switch` work without extra flags.
+  nix.settings.experimental-features = [
+    "nix-command"
+    "flakes"
+  ];
+
   home.packages =
     with pkgs;
     [
