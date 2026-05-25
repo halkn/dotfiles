@@ -57,6 +57,9 @@ cd ~/.dotfiles && just switch
   and the `fzf`/`starship` integrations come from `programs.zsh`, while the hand-written body
   stays in `.config/zsh/.zshrc` (deployed to `$ZDOTDIR` = `~/.config/zsh`).
   These take effect on rebuild (not live-edited like the linked configs).
+- **Machine-local overrides** (untracked): the zshrc sources `$ZDOTDIR/.zshrc.local`
+  (`~/.config/zsh/.zshrc.local`) if present, and git includes `~/.gitconfig.local`.
+  Use these for per-machine PATH, env, aliases, or secrets that should not be committed.
 - **Claude Code** (`claude`): the unfree `pkgs.claude-code` in `home.packages`;
   `settings.json`, `CLAUDE.md` and the statusline script stay linked from `claude/`
   so they remain live-editable.
