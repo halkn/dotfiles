@@ -40,6 +40,7 @@ in
       neovim
       tree-sitter
       gh
+      ghq
       just
       uv
       bun

@@ -84,24 +84,28 @@ fgw() {
   [[ -n "$worktree" ]] && cd -- "$worktree"
 }
 
-# ── repo ─────────────────────────────────────────────
+# ── repo (ghq) ───────────────────────────────────────
 repo() {
   local cmd="${1:-cd}"
   (($# > 0)) && shift
 
-  command -v fzx >/dev/null 2>&1 || {
-    print 'repo: fzx is not installed or not in PATH' >&2
+  command -v ghq >/dev/null 2>&1 || {
+    print 'repo: ghq is not installed or not in PATH' >&2
     return 1
   }
 
   case "$cmd" in
     cd)
+      command -v fzf >/dev/null 2>&1 || {
+        print 'repo: fzf is not installed or not in PATH' >&2
+        return 1
+      }
       local dir
-      dir=$(fzx repo cd "$@") || return
+      dir=$(ghq list --full-path | fzf "$@") || return
       [[ -n "$dir" ]] && cd -- "$dir" && la
       ;;
     get | list)
-      fzx repo "$cmd" "$@"
+      ghq "$cmd" "$@"
       ;;
     *)
       print 'usage: repo <get|list|cd>' >&2
