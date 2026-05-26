@@ -303,7 +303,7 @@ in
       # Source untracked per-machine overrides last so they can override the
       # managed config. Mirrors the ~/.gitconfig.local include used for git.
       (lib.mkAfter ''
-        [[ -r "''${ZDOTDIR:-$HOME}/.zshrc.local" ]] && source "''${ZDOTDIR:-$HOME}/.zshrc.local"
+        [[ -r "$HOME/.zshrc.local" ]] && source "$HOME/.zshrc.local"
       '')
     ];
   };
