@@ -218,6 +218,7 @@ in
   # tmux.conf is imperative; keep it hand-written and read it in verbatim.
   programs.tmux = {
     enable = true;
+    plugins = [ pkgs.tmuxPlugins.tpm ];
     extraConfig = builtins.readFile ../.config/tmux/tmux.conf;
   };
 
