@@ -150,8 +150,7 @@
         "~/.config/git",
         "~/.config/gh",
         "~/.local/bin",
-        "~/.nix-profile",
-        "/nix/store"
+        "~/.nix-profile"
       ]
     }
   },
