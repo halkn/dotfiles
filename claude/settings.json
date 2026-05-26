@@ -29,6 +29,19 @@
       "Bash(gh pr checks *)",
       "Bash(gh run list *)",
       "Bash(gh run view *)",
+      "Bash(az repos list *)",
+      "Bash(az repos show *)",
+      "Bash(az repos pr list *)",
+      "Bash(az repos pr show *)",
+      "Bash(az pipelines list *)",
+      "Bash(az pipelines show *)",
+      "Bash(az pipelines runs list *)",
+      "Bash(az pipelines runs show *)",
+      "Bash(az boards work-item show *)",
+      "Bash(az boards query *)",
+      "Bash(az devops project list *)",
+      "Bash(az devops project show *)",
+      "Bash(az devops configure --list*)",
       "Bash(uv run pytest *)",
       "Bash(uv run ruff *)",
       "Bash(uv run pyright *)",
@@ -128,7 +141,10 @@
         "*.github.com",
         "pypi.org",
         "*.pypi.org",
-        "files.pythonhosted.org"
+        "files.pythonhosted.org",
+        "dev.azure.com",
+        "*.dev.azure.com",
+        "login.microsoftonline.com"
       ]
     },
     "filesystem": {
