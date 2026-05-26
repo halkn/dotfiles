@@ -150,7 +150,8 @@
     "filesystem": {
       "allowWrite": [
         "~/.cache/uv",
-        "~/.local/share/uv"
+        "~/.local/share/uv",
+        "~/.dotfiles/claude"
       ],
       "denyWrite": [
         "~/.ssh",
@@ -166,7 +167,8 @@
         "~/.config/git",
         "~/.config/gh",
         "~/.local/bin",
-        "~/.nix-profile"
+        "~/.nix-profile",
+        "~/.dotfiles/claude"
       ]
     }
   },
