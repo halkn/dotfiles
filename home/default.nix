@@ -45,6 +45,7 @@ in
       uv
       bun
       claude-code
+      azure-cli
 
       # LSP / Linter / Formatter
       lua-language-server
