@@ -45,7 +45,7 @@ in
       uv
       bun
       claude-code
-      azure-cli
+      (azure-cli.withExtensions [ azure-cli.extensions.azure-devops ])
 
       # LSP / Linter / Formatter
       lua-language-server
@@ -97,6 +97,9 @@ in
     UV_COMPILE_BYTECODE = "true";
 
     STARSHIP_CACHE = "${config.xdg.cacheHome}/starship/cache";
+
+    AZURE_CONFIG_DIR = "${config.xdg.configHome}/azure";
+    AZURE_CORE_COLLECT_TELEMETRY = "0";
   };
 
   home.sessionPath = [
