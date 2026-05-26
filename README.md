@@ -26,6 +26,8 @@ export NIX_CONFIG="experimental-features = nix-command flakes"
 nix run home-manager/master -- switch --flake "$HOME/.dotfiles#halkn"
 
 # 4. Make zsh the login shell (home-manager installs it but does not chsh).
+#    chsh only accepts shells listed in /etc/shells, so register it first.
+command -v zsh | sudo tee -a /etc/shells
 chsh -s "$(command -v zsh)"
 
 # 5. Tools not in nixpkgs (markado). zsh plugins come from home-manager.
@@ -44,7 +46,8 @@ cd ~/.dotfiles && just switch
 ## Tool Manager
 
 - **Login shell**: home-manager installs zsh and writes its config, but does not set
-  the login shell. Run `chsh -s "$(command -v zsh)"` once on a new machine.
+  the login shell. Run `command -v zsh | sudo tee -a /etc/shells` to register it,
+  then `chsh -s "$(command -v zsh)"` once on a new machine.
 - **Linked configs** (`nvim`, ...):
   [home-manager](https://github.com/nix-community/home-manager) via `home/default.nix`
   links them out-of-store from the repo so they stay editable in place without a rebuild
