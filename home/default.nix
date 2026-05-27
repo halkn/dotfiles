@@ -218,9 +218,18 @@ in
   # tmux.conf is imperative; keep it hand-written and read it in verbatim.
   programs.tmux = {
     enable = true;
-    plugins = [ pkgs.tmuxPlugins.tpm ];
     extraConfig = builtins.readFile ../.config/tmux/tmux.conf;
   };
+
+  # tpm is not packaged in nixpkgs, so bootstrap it on switch. The plugins
+  # listed in tmux.conf are still installed imperatively via `prefix + I`.
+  home.activation.installTpm = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    tpm_dir="$HOME/.tmux/plugins/tpm"
+    if [ ! -d "$tpm_dir" ]; then
+      $DRY_RUN_CMD ${pkgs.git}/bin/git clone --depth 1 \
+        https://github.com/tmux-plugins/tpm "$tpm_dir"
+    fi
+  '';
 
   programs.fzf = {
     enable = true;
