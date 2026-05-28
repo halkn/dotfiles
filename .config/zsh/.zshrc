@@ -93,9 +93,7 @@ repo() {
   }
   local dir
   dir=$(ghq list --full-path | fzf "$@") || return
-  # Resolve `la` at call time; home-manager defines shellAliases after
-  # initContent, so a literal `la` in this body is not alias-expanded.
-  [[ -n "$dir" ]] && cd -- "$dir" && eval "${aliases[la]:-ls}"
+  [[ -n "$dir" ]] && cd -- "$dir" && eza -la --icons --git --no-user --time-style=iso --group-directories-first
 }
 
 # ── tmux ─────────────────────────────────────────────
