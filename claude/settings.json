@@ -51,7 +51,12 @@
       "Bash(tree *)",
       "Bash(jq *)",
       "Bash(ghq list *)",
-      "Bash(which *)"
+      "Bash(which *)",
+      "WebFetch(domain:learn.microsoft.com)",
+      "WebFetch(domain:docs.microsoft.com)",
+      "WebFetch(domain:azure.microsoft.com)",
+      "WebFetch(domain:docs.snowflake.com)",
+      "WebFetch(domain:community.snowflake.com)"
     ],
     "deny": [
       "Read(**/.env)",
@@ -144,7 +149,12 @@
         "files.pythonhosted.org",
         "dev.azure.com",
         "*.dev.azure.com",
-        "login.microsoftonline.com"
+        "login.microsoftonline.com",
+        "learn.microsoft.com",
+        "docs.microsoft.com",
+        "azure.microsoft.com",
+        "docs.snowflake.com",
+        "community.snowflake.com"
       ]
     },
     "filesystem": {
