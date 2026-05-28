@@ -176,6 +176,7 @@
         "~/.gitconfig.local",
         "~/.config/git",
         "~/.config/gh",
+        "~/.azure",
         "~/.local/bin",
         "~/.nix-profile",
         "~/.dotfiles/claude"
