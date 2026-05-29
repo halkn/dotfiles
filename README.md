@@ -2,24 +2,89 @@
 
 This is my dotfiles.
 
-## Setup
+## Setup (WSL Ubuntu 26.04)
+
+Bootstraps a fresh WSL Ubuntu 26.04 instance. Run each step in order.
+
+### 0. Enable systemd (required for the Nix daemon)
+
+WSL needs systemd so the multi-user Nix daemon can run. Ubuntu 26.04 on
+recent WSL enables it by default; confirm with `cat /etc/wsl.conf`. If the
+`[boot]` section below is missing, add it, then restart WSL from Windows
+(`wsl.exe --shutdown`) and reopen the distribution.
+
+```ini
+# /etc/wsl.conf
+[boot]
+systemd=true
+```
+
+### 1. Install system packages
+
+These are provided by apt, not by `flake.nix`. `zsh` is the login shell and
+`git` is needed to clone this repository.
 
 ```sh
-# 1. Install Nix.
+sudo apt update
+sudo apt install -y git zsh curl
+```
+
+### 2. Clone the dotfiles
+
+The setup tasks and symlinks assume the repository lives at `~/.dotfiles`.
+
+```sh
+git clone https://github.com/halkn/dotfiles.git "$HOME/.dotfiles"
+cd "$HOME/.dotfiles"
+```
+
+### 3. Install Nix (multi-user)
+
+```sh
 sh <(curl --proto '=https' --tlsv1.2 -L https://nixos.org/nix/install) --daemon
+```
 
-# 2. Link dotfiles (expands .config/nix/nix.conf, which enables flakes).
+Open a new shell afterwards so `nix` is on `PATH` (the installer sources its
+profile from new login shells), then return to the repository:
+
+```sh
+cd "$HOME/.dotfiles"
+```
+
+### 4. Link config and install CLI tools
+
+Linking `.config` first puts `.config/nix/nix.conf` in place, which enables
+the `nix-command` and `flakes` features needed by `nix profile install`.
+
+```sh
+# Link .config (enables flakes), then install the Nix tool environment
+# (includes just, uv, neovim, and the LSP/lint/format tools).
 ln -snfT "$HOME/.dotfiles/.config" "$HOME/.config"
-
-# 3. Install CLI tools via Nix (includes just and uv).
 nix profile install path:.#default
 
-# 4. Install ptm (for tools not in nixpkgs: claude, markado).
+# Install ptm (for tools not in nixpkgs: claude, markado).
 uv tool install git+https://github.com/halkn/ptm
+```
 
-# 5. Run the dotfiles setup task.
+### 5. Run the dotfiles setup task
+
+`just setup` re-links every dotfile (zsh, claude, etc.), installs the Nix
+tools, runs `ptm install`, and installs zsh plugins. `ptm` lives in
+`~/.local/bin`, so put that on `PATH` before running it.
+
+```sh
+export PATH="$HOME/.local/bin:$PATH"
 just setup
 ```
+
+### 6. Make zsh the default shell
+
+```sh
+chsh -s "$(command -v zsh)"
+```
+
+Start a new login shell (or reopen WSL) to pick up the linked `.zshenv` and
+`.zshrc`.
 
 ## Tool Manager
 
