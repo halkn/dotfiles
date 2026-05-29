@@ -72,8 +72,9 @@ Run these on any platform after the prerequisites above.
    just setup
    ```
 
-5. Make zsh the default shell, then start a new login shell to load the
-   linked `.zshenv` and `.zshrc`.
+5. Make zsh the default shell (Linux/WSL only; macOS already defaults to
+   zsh), then start a new login shell to load the linked `.zshenv` and
+   `.zshrc`.
 
    ```sh
    chsh -s "$(command -v zsh)"
