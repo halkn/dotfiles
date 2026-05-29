@@ -240,3 +240,6 @@ if command -v starship >/dev/null 2>&1; then
   export STARSHIP_CACHE=$XDG_CACHE_HOME/starship/cache
   eval "$(starship init zsh)"
 fi
+
+# ── machine-local overrides (not tracked in git) ─────
+[[ -f "$ZDOTDIR/.zshrc.local" ]] && source "$ZDOTDIR/.zshrc.local"

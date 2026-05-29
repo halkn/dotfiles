@@ -82,7 +82,12 @@ Run these on any platform after the prerequisites above.
    ```
 
 When the bootstrap finishes, reopen the terminal (or start a new login
-shell) to enter zsh with the linked `.zshenv` and `.zshrc`.
+shell) to enter zsh with the linked config.
+
+zsh keeps its config under `.config/zsh` (XDG); the only file in `$HOME` is
+a small `.zshenv` stub that sets `ZDOTDIR` and hands off to it. Put
+machine-local settings in `.config/zsh/.zshenv.local` (environment) or
+`.config/zsh/.zshrc.local` (interactive); both are gitignored.
 
 ## Tool Manager
 

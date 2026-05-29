@@ -2,3 +2,7 @@
 
 # secret
 .config/gh/
+
+# machine-local zsh overrides
+.config/zsh/.zshenv.local
+.config/zsh/.zshrc.local
