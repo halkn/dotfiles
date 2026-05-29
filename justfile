@@ -24,13 +24,11 @@ link: _link
 [doc('Run setup')]
 setup: _link
   just install-nix-tools
-  ptm install
   just install-zsh-plugins
 
 [doc('Update user-space managed tools')]
 update:
   just update-nix-tools
-  ptm update
   just update-zsh-plugins
 
 [doc('Run repository checks that pass on the current tree')]

@@ -60,22 +60,17 @@ the `nix-command` and `flakes` features needed by `nix profile install`.
 
 ```sh
 # Link .config (enables flakes), then install the Nix tool environment
-# (includes just, uv, neovim, and the LSP/lint/format tools).
+# (includes just, neovim, and the LSP/lint/format tools).
 ln -snfT "$HOME/.dotfiles/.config" "$HOME/.config"
 nix profile install path:.#default
-
-# Install ptm (for tools not in nixpkgs: claude, markado).
-uv tool install git+https://github.com/halkn/ptm
 ```
 
 ### 5. Run the dotfiles setup task
 
 `just setup` re-links every dotfile (zsh, claude, etc.), installs the Nix
-tools, runs `ptm install`, and installs zsh plugins. `ptm` lives in
-`~/.local/bin`, so put that on `PATH` before running it.
+tools, and installs zsh plugins.
 
 ```sh
-export PATH="$HOME/.local/bin:$PATH"
 just setup
 ```
 
@@ -92,18 +87,30 @@ chsh -s "$(command -v zsh)"
 Start a new login shell (or reopen WSL) to pick up the linked `.zshenv` and
 `.zshrc`.
 
+### 7. Install Claude Code
+
+Claude Code releases frequently, so it is installed and updated with its
+official installer rather than through Nix.
+
+```sh
+curl -fsSL https://claude.ai/install.sh | bash
+```
+
+Update it in place with `claude update`.
+
 ## Tool Manager
 
-Most CLI tools are managed by [Nix](https://nixos.org) via `flake.nix`.
-Tools not available in nixpkgs (`claude`, `markado`) are still managed by
-[halkn/ptm](https://github.com/halkn/ptm).
+Most CLI tools are managed by [Nix](https://nixos.org) via `flake.nix`, and
+`just setup` / `just update` keep them and the zsh plugins in sync. Claude
+Code is the exception: it is managed by its own official installer (see
+step 7) because it updates frequently.
 
 Useful tasks:
 
 ```sh
 just          # List tasks
-just setup    # Link dotfiles, install Nix tools, ptm tools, and zsh plugins
-just update   # Update Nix tools (flake.lock), ptm tools, and zsh plugins
+just setup    # Link dotfiles, install Nix tools, and zsh plugins
+just update   # Update Nix tools (flake.lock) and zsh plugins
 just fmt      # Format Markdown, zsh files, and Neovim Lua files
 just fmt-check # Check formatting without writing files
 just lint     # Run repository checks
