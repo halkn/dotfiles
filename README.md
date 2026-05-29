@@ -98,6 +98,55 @@ curl -fsSL https://claude.ai/install.sh | bash
 
 Update it in place with `claude update`.
 
+### 8. Set up the Claude Code sandbox (Linux/WSL2)
+
+Claude Code runs Bash commands in a sandbox for filesystem and network
+isolation. On Linux and WSL2 this depends on two packages: `bubblewrap`
+(filesystem isolation) and `socat` (network proxy relay).
+
+```sh
+sudo apt-get install -y bubblewrap socat
+```
+
+The seccomp filter that blocks Unix-domain sockets is optional; install the
+helper only if `/sandbox` reports it missing:
+
+```sh
+npm install -g @anthropic-ai/sandbox-runtime
+```
+
+On Ubuntu 24.04 and later (including 26.04), the default AppArmor policy
+stops `bwrap` from creating the user namespaces it needs. Check whether the
+restriction is active:
+
+```sh
+sysctl kernel.apparmor_restrict_unprivileged_userns
+```
+
+If the key is absent or returns `0`, skip the next step. If it returns `1`,
+grant `bwrap` the capability and reload AppArmor:
+
+```sh
+sudo tee /etc/apparmor.d/bwrap > /dev/null <<'EOF'
+abi <abi/4.0>,
+include <tunables/global>
+
+profile bwrap /usr/bin/bwrap flags=(unconfined) {
+  userns,
+  include if exists <local/bwrap>
+}
+EOF
+sudo systemctl reload apparmor
+```
+
+WSL2 notes: sandboxed commands cannot launch Windows binaries (`cmd.exe`,
+`powershell.exe`, or anything under `/mnt/c/`); add such commands to
+`excludedCommands` to run them outside the sandbox. WSL1 is not supported.
+
+Enable the sandbox with `/sandbox` in a session, or set `sandbox.enabled`
+to `true` in `~/.claude/settings.json`. After installing the packages,
+restart Claude Code so `/sandbox` detects them.
+
 ## Tool Manager
 
 Most CLI tools are managed by [Nix](https://nixos.org) via `flake.nix`, and
