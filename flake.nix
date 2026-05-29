@@ -11,7 +11,6 @@
         name = "dotfiles-tools";
         paths = with pkgs; [
           # terminal
-          zsh
           tmux
           starship
 

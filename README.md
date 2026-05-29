@@ -22,13 +22,13 @@ Do the platform-specific prerequisites first, then run the common bootstrap.
    ```
 
 2. Install the apt packages. `git` and `curl` are normally already present
-   (`git` clones the repo, `curl` fetches the Nix installer); `bubblewrap`
-   and `socat` back the Claude Code sandbox. The rest of the CLI tools come
-   from `flake.nix`.
+   (`git` clones the repo, `curl` fetches the Nix installer); `zsh` is the
+   login shell, and `bubblewrap` and `socat` back the Claude Code sandbox.
+   The rest of the CLI tools come from `flake.nix`.
 
    ```sh
    sudo apt update
-   sudo apt install -y git curl bubblewrap socat
+   sudo apt install -y git curl zsh bubblewrap socat
    ```
 
 #### macOS
@@ -73,13 +73,10 @@ Run these on any platform after the prerequisites above.
    just setup
    ```
 
-5. Make zsh the default shell. `zsh` comes from the Nix profile, so on
-   Linux/WSL register its path in `/etc/shells` before `chsh` accepts it.
-   Start a new login shell afterwards to load the linked `.zshenv` and
-   `.zshrc`.
+5. Make zsh the default shell, then start a new login shell to load the
+   linked `.zshenv` and `.zshrc`.
 
    ```sh
-   command -v zsh | sudo tee -a /etc/shells
    chsh -s "$(command -v zsh)"
    ```
 
