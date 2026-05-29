@@ -21,13 +21,17 @@ systemd=true
 
 ### 1. Install system packages
 
-These are provided by apt, not by `flake.nix`. `zsh` is the login shell and
-`git` is needed to clone this repository.
+`git` (clone) and `zsh` (login shell) are provided neither by apt's default
+image nor by `flake.nix`, so install them with apt.
 
 ```sh
 sudo apt update
-sudo apt install -y git zsh curl
+sudo apt install -y git zsh
 ```
+
+`curl` is normally preinstalled on Ubuntu and is fetched as part of the Nix
+installer in step 3 (it is later also provided by `flake.nix`). Install it
+only if it is missing: `sudo apt install -y curl`.
 
 ### 2. Clone the dotfiles
 
