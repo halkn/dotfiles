@@ -5,43 +5,34 @@ This is my dotfiles.
 ## Setup
 
 ```sh
-# 1. Install system dependencies.
-sudo apt update && sudo apt upgrade -y
-sudo apt install curl git build-essential procps bubblewrap socat unzip
+# 1. Install Nix.
+sh <(curl --proto '=https' --tlsv1.2 -L https://nixos.org/nix/install) --daemon
 
-# 2. Install mise.
-curl https://mise.run | sh
-
-# 3. Link dotfiles.
+# 2. Link dotfiles (expands .config/nix/nix.conf, which enables flakes).
 ln -snfT "$HOME/.dotfiles/.config" "$HOME/.config"
 
-# 4. Open a new shell so mise shims are on PATH, then install CLI tools
-#    via mise (includes just and node).
-exec "$SHELL"
-mise install
+# 3. Install CLI tools via Nix (includes just and uv).
+nix profile install path:.#default
 
-# 5. Install Claude Code (native installer, includes auto-update).
-curl -fsSL https://claude.ai/install.sh | bash
+# 4. Install ptm (for tools not in nixpkgs: claude, markado).
+uv tool install git+https://github.com/halkn/ptm
 
-# 6. Run the dotfiles setup task.
+# 5. Run the dotfiles setup task.
 just setup
 ```
 
 ## Tool Manager
 
-Most CLI tools are managed by [mise](https://mise.jdx.dev) via
-`.config/mise/config.toml`. Tools are exposed through mise shims, which
-`.zshenv` adds to `PATH` at `${XDG_DATA_HOME:-$HOME/.local/share}/mise/shims`.
-`markado` is managed via the mise GitHub backend (`github:halkn/markado`).
-Claude Code is installed via the native installer (`curl -fsSL https://claude.ai/install.sh | bash`)
-and updated via `claude update`.
+Most CLI tools are managed by [Nix](https://nixos.org) via `flake.nix`.
+Tools not available in nixpkgs (`claude`, `markado`) are still managed by
+[halkn/ptm](https://github.com/halkn/ptm).
 
 Useful tasks:
 
 ```sh
 just          # List tasks
-just setup    # Link dotfiles, install mise tools, Claude Code, and zsh plugins
-just update   # Update mise tools, Claude Code, and zsh plugins
+just setup    # Link dotfiles, install Nix tools, ptm tools, and zsh plugins
+just update   # Update Nix tools (flake.lock), ptm tools, and zsh plugins
 just fmt      # Format Markdown, zsh files, and Neovim Lua files
 just fmt-check # Check formatting without writing files
 just lint     # Run repository checks
