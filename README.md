@@ -19,21 +19,17 @@ recent WSL enables it by default; confirm with `cat /etc/wsl.conf`. If the
 systemd=true
 ```
 
-### 1. Install git
+### 1. Prerequisites
 
-`git` and `zsh` are both managed by `flake.nix`, but the repository has to be
-cloned (step 2) before Nix exists, so install `git` with apt first. The
-flake's `git` becomes the managed version once the tools are installed.
+`git` and `curl` are normally already present on Ubuntu: `git` clones this
+repository (step 2) and `curl` fetches the Nix installer (step 3). The CLI
+tools, including the managed `git` and `zsh`, come from `flake.nix`, so no
+apt packages are required on a standard install. Install anything missing:
 
 ```sh
 sudo apt update
-sudo apt install -y git
+sudo apt install -y git curl
 ```
-
-`zsh` and the other CLI tools come from `flake.nix`, so no further apt
-packages are required. `curl` is normally preinstalled and is used to fetch
-the Nix installer in step 3; install it only if missing
-(`sudo apt install -y curl`).
 
 ### 2. Clone the dotfiles
 
