@@ -31,6 +31,15 @@ Do the platform-specific prerequisites first, then run the common bootstrap.
    sudo apt install -y git curl zsh bubblewrap socat
    ```
 
+3. Make zsh the default shell. apt registers it in `/etc/shells`, so `chsh`
+   accepts it directly. This only rewrites the login shell entry (it does
+   not read `.zshrc`), so order relative to the bootstrap does not matter;
+   it takes effect on the next login.
+
+   ```sh
+   chsh -s "$(command -v zsh)"
+   ```
+
 #### macOS
 
 _To be documented._ macOS skips the systemd step and already ships `zsh`
@@ -72,13 +81,8 @@ Run these on any platform after the prerequisites above.
    just setup
    ```
 
-5. Make zsh the default shell (Linux/WSL only; macOS already defaults to
-   zsh), then start a new login shell to load the linked `.zshenv` and
-   `.zshrc`.
-
-   ```sh
-   chsh -s "$(command -v zsh)"
-   ```
+When the bootstrap finishes, reopen the terminal (or start a new login
+shell) to enter zsh with the linked `.zshenv` and `.zshrc`.
 
 ## Tool Manager
 
