@@ -2,117 +2,101 @@
 
 This is my dotfiles.
 
-## Setup (WSL Ubuntu 26.04)
+## Setup
 
-Bootstraps a fresh WSL Ubuntu 26.04 instance. Run each step in order.
+Do the platform-specific prerequisites first, then run the common bootstrap.
 
-### 0. Enable systemd (required for the Nix daemon)
+### Platform prerequisites
 
-WSL needs systemd so the multi-user Nix daemon can run. Ubuntu 26.04 on
-recent WSL enables it by default; confirm with `cat /etc/wsl.conf`. If the
-`[boot]` section below is missing, add it, then restart WSL from Windows
-(`wsl.exe --shutdown`) and reopen the distribution.
+#### WSL Ubuntu
 
-```ini
-# /etc/wsl.conf
-[boot]
-systemd=true
-```
+1. Enable systemd so the multi-user Nix daemon can run. Confirm
+   `/etc/wsl.conf`; if the `[boot]` section is missing, add it, then run
+   `wsl.exe --shutdown` from Windows and reopen the distribution. Recent
+   WSL on Ubuntu 26.04 enables it by default.
 
-### 1. Prerequisites
+   ```ini
+   # /etc/wsl.conf
+   [boot]
+   systemd=true
+   ```
 
-`git` and `curl` are normally already present on Ubuntu: `git` clones this
-repository (step 2) and `curl` fetches the Nix installer (step 3). The CLI
-tools, including the managed `git` and `zsh`, come from `flake.nix`, so no
-apt packages are required on a standard install. Install anything missing:
+2. Install the apt packages. `git` and `curl` are normally already present
+   (`git` clones the repo, `curl` fetches the Nix installer); `bubblewrap`
+   and `socat` back the Claude Code sandbox. The rest of the CLI tools come
+   from `flake.nix`.
 
-```sh
-sudo apt update
-sudo apt install -y git curl
-```
+   ```sh
+   sudo apt update
+   sudo apt install -y git curl bubblewrap socat
+   ```
 
-### 2. Clone the dotfiles
+#### macOS
 
-The setup tasks and symlinks assume the repository lives at `~/.dotfiles`.
+_To be documented._ macOS skips the systemd step, already ships `zsh` as
+the default shell, and uses the built-in Seatbelt sandbox (no `bubblewrap`
+or `socat`), so only the apt-specific items above differ.
 
-```sh
-git clone https://github.com/halkn/dotfiles.git "$HOME/.dotfiles"
-cd "$HOME/.dotfiles"
-```
+### Bootstrap
 
-### 3. Install Nix (multi-user)
+Run these on any platform after the prerequisites above.
 
-```sh
-sh <(curl --proto '=https' --tlsv1.2 -L https://nixos.org/nix/install) --daemon
-```
+1. Clone the dotfiles. The setup tasks and symlinks assume the repository
+   lives at `~/.dotfiles`.
 
-Open a new shell afterwards so `nix` is on `PATH` (the installer sources its
-profile from new login shells), then return to the repository:
+   ```sh
+   git clone https://github.com/halkn/dotfiles.git "$HOME/.dotfiles"
+   cd "$HOME/.dotfiles"
+   ```
 
-```sh
-cd "$HOME/.dotfiles"
-```
+2. Install Nix (multi-user), then open a new shell so `nix` is on `PATH`
+   (the installer sources its profile from new login shells) and `cd` back
+   into the repository.
 
-### 4. Link config and install CLI tools
+   ```sh
+   sh <(curl --proto '=https' --tlsv1.2 -L https://nixos.org/nix/install) --daemon
+   ```
 
-Linking `.config` first puts `.config/nix/nix.conf` in place, which enables
-the `nix-command` and `flakes` features needed by `nix profile install`.
+3. Link `.config` and install the Nix tools. Linking first puts
+   `.config/nix/nix.conf` in place, which enables the `nix-command` and
+   `flakes` features needed by `nix profile install`.
 
-```sh
-# Link .config (enables flakes), then install the Nix tool environment
-# (includes just, neovim, and the LSP/lint/format tools).
-ln -snfT "$HOME/.dotfiles/.config" "$HOME/.config"
-nix profile install path:.#default
-```
+   ```sh
+   ln -snfT "$HOME/.dotfiles/.config" "$HOME/.config"
+   nix profile install path:.#default
+   ```
 
-### 5. Run the dotfiles setup task
+4. Run the setup task. `just setup` re-links every dotfile (zsh, claude,
+   etc.), installs the Nix tools, and installs zsh plugins.
 
-`just setup` re-links every dotfile (zsh, claude, etc.), installs the Nix
-tools, and installs zsh plugins.
+   ```sh
+   just setup
+   ```
 
-```sh
-just setup
-```
+5. Make zsh the default shell. `zsh` comes from the Nix profile, so on
+   Linux/WSL register its path in `/etc/shells` before `chsh` accepts it.
+   Start a new login shell afterwards to load the linked `.zshenv` and
+   `.zshrc`.
 
-### 6. Make zsh the default shell
+   ```sh
+   command -v zsh | sudo tee -a /etc/shells
+   chsh -s "$(command -v zsh)"
+   ```
 
-`zsh` now comes from the Nix profile, so register its path in `/etc/shells`
-before `chsh` accepts it.
+6. Install Claude Code. It releases frequently, so it uses its official
+   installer (updated in place with `claude update`) rather than Nix.
+   Enable its sandbox with `/sandbox`.
 
-```sh
-command -v zsh | sudo tee -a /etc/shells
-chsh -s "$(command -v zsh)"
-```
-
-Start a new login shell (or reopen WSL) to pick up the linked `.zshenv` and
-`.zshrc`.
-
-### 7. Install Claude Code
-
-Claude Code releases frequently, so it is installed and updated with its
-official installer rather than through Nix.
-
-```sh
-curl -fsSL https://claude.ai/install.sh | bash
-```
-
-Update it in place with `claude update`.
-
-### 8. Set up the Claude Code sandbox (Linux/WSL2)
-
-Claude Code sandboxes Bash commands using `bubblewrap` and `socat`. Install
-them with apt, then enable the sandbox with `/sandbox`.
-
-```sh
-sudo apt install -y bubblewrap socat
-```
+   ```sh
+   curl -fsSL https://claude.ai/install.sh | bash
+   ```
 
 ## Tool Manager
 
 Most CLI tools are managed by [Nix](https://nixos.org) via `flake.nix`, and
 `just setup` / `just update` keep them and the zsh plugins in sync. Claude
-Code is the exception: it is managed by its own official installer (see
-step 7) because it updates frequently.
+Code is the exception: it is managed by its own official installer because
+it updates frequently.
 
 Useful tasks:
 
