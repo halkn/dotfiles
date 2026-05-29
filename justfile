@@ -3,7 +3,6 @@ set quiet
 config_dir := ".config"
 nvim_config := ".config/nvim"
 zsh_config := ".zshenv .zshrc"
-zsh_plugin_dir := "${XDG_DATA_HOME:-$HOME/.local/share}/zsh_plugins"
 
 default:
   @just --list
@@ -25,13 +24,11 @@ link: _link
 setup: _link
   just install-nix-tools
   just install-claude
-  just install-zsh-plugins
 
 [doc('Update user-space managed tools')]
 update:
   just update-nix-tools
   just update-claude
-  just update-zsh-plugins
 
 [doc('Run repository checks that pass on the current tree')]
 lint: diff-check check-tools lint-zsh lint-md lint-shfmt lint-lua lint-nvim
@@ -70,17 +67,6 @@ install-claude:
 [private]
 update-claude:
   command -v claude >/dev/null && claude update || true
-
-[private]
-install-zsh-plugins:
-  mkdir -p "{{zsh_plugin_dir}}"
-  test -d "{{zsh_plugin_dir}}/zsh-autosuggestions" || git clone --depth 1 https://github.com/zsh-users/zsh-autosuggestions "{{zsh_plugin_dir}}/zsh-autosuggestions"
-  test -d "{{zsh_plugin_dir}}/fast-syntax-highlighting" || git clone --depth 1 https://github.com/zdharma-continuum/fast-syntax-highlighting "{{zsh_plugin_dir}}/fast-syntax-highlighting"
-
-[private]
-update-zsh-plugins: install-zsh-plugins
-  git -C "{{zsh_plugin_dir}}/zsh-autosuggestions" pull --ff-only
-  git -C "{{zsh_plugin_dir}}/fast-syntax-highlighting" pull --ff-only
 
 [private]
 diff-check:

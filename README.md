@@ -66,7 +66,7 @@ Run these on any platform after the prerequisites above.
    ```
 
 4. Run the setup task. `just setup` re-links every dotfile (zsh, claude,
-   etc.), installs the Nix tools, and installs zsh plugins.
+   etc.) and installs the Nix tools.
 
    ```sh
    just setup
@@ -81,15 +81,15 @@ Run these on any platform after the prerequisites above.
 
 ## Tool Manager
 
-Most CLI tools are managed by [Nix](https://nixos.org) via `flake.nix`, and
-`just setup` / `just update` keep them and the zsh plugins in sync.
+Most CLI tools and zsh plugins are managed by [Nix](https://nixos.org) via
+`flake.nix`, and `just setup` / `just update` keep them in sync.
 
 Useful tasks:
 
 ```sh
 just          # List tasks
-just setup    # Link dotfiles, install Nix tools, and zsh plugins
-just update   # Update Nix tools (flake.lock) and zsh plugins
+just setup    # Link dotfiles and install Nix tools
+just update   # Update Nix tools (flake.lock)
 just fmt      # Format Markdown, zsh files, and Neovim Lua files
 just fmt-check # Check formatting without writing files
 just lint     # Run repository checks

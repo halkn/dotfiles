@@ -12,12 +12,12 @@ AI アシスタント設定は `codex/` と `claude/` にあります。
 ## Build, Test, and Development Commands
 
 - `just`: 利用できる task を一覧します。
-- `just setup`: symlink 作成、Nix tools install、zsh plugin install を実行します。
+- `just setup`: symlink 作成、Nix tools install を実行します。
 - `just lint`: 通常の検証として diff 空白確認、`zsh` 構文確認、
   Markdown、formatter check、Neovim Lua diagnostics、起動確認を実行します。
 - `just fmt`: Markdown、zsh、Neovim Lua を既定 formatter で整形します。
 - `just fmt-check`: ファイルを書き換えずに Markdown、zsh、Neovim Lua の整形を確認します。
-- `just update`: Nix tools 更新 (`flake.lock`)、zsh plugin を更新します。
+- `just update`: Nix tools 更新 (`flake.lock`) を実行します。
 
 Agent は `just update` を自律実行せず、明示依頼がある場合だけ実行してください。
 system package 更新が必要な場合は、just task ではなくユーザーが個別に実行します。
