@@ -19,19 +19,21 @@ recent WSL enables it by default; confirm with `cat /etc/wsl.conf`. If the
 systemd=true
 ```
 
-### 1. Install system packages
+### 1. Install git
 
-`git` (clone) and `zsh` (login shell) are provided neither by apt's default
-image nor by `flake.nix`, so install them with apt.
+`git` and `zsh` are both managed by `flake.nix`, but the repository has to be
+cloned (step 2) before Nix exists, so install `git` with apt first. The
+flake's `git` becomes the managed version once the tools are installed.
 
 ```sh
 sudo apt update
-sudo apt install -y git zsh
+sudo apt install -y git
 ```
 
-`curl` is normally preinstalled on Ubuntu and is fetched as part of the Nix
-installer in step 3 (it is later also provided by `flake.nix`). Install it
-only if it is missing: `sudo apt install -y curl`.
+`zsh` and the other CLI tools come from `flake.nix`, so no further apt
+packages are required. `curl` is normally preinstalled and is used to fetch
+the Nix installer in step 3; install it only if missing
+(`sudo apt install -y curl`).
 
 ### 2. Clone the dotfiles
 
@@ -83,7 +85,11 @@ just setup
 
 ### 6. Make zsh the default shell
 
+`zsh` now comes from the Nix profile, so register its path in `/etc/shells`
+before `chsh` accepts it.
+
 ```sh
+command -v zsh | sudo tee -a /etc/shells
 chsh -s "$(command -v zsh)"
 ```
 

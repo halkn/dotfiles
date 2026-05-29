@@ -11,6 +11,7 @@
         name = "dotfiles-tools";
         paths = with pkgs; [
           # terminal
+          zsh
           tmux
           starship
 
@@ -29,6 +30,7 @@
           # dev
           neovim
           tree-sitter
+          git
           gh
           just
           uv
