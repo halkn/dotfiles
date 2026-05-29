@@ -22,12 +22,13 @@ Do the platform-specific prerequisites first, then run the common bootstrap.
    ```
 
 2. Install the apt packages. `git` and `curl` are normally already present
-   (`git` clones the repo, `curl` fetches the Nix installer) and `zsh` is
-   the login shell. The rest of the CLI tools come from `flake.nix`.
+   (`git` clones the repo, `curl` fetches the Nix installer), `zsh` is the
+   login shell, and `bubblewrap` and `socat` are sandbox prerequisites. The
+   rest of the CLI tools come from `flake.nix`.
 
    ```sh
    sudo apt update
-   sudo apt install -y git curl zsh
+   sudo apt install -y git curl zsh bubblewrap socat
    ```
 
 #### macOS
