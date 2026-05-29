@@ -24,11 +24,13 @@ link: _link
 [doc('Run setup')]
 setup: _link
   just install-nix-tools
+  just install-claude
   just install-zsh-plugins
 
 [doc('Update user-space managed tools')]
 update:
   just update-nix-tools
+  just update-claude
   just update-zsh-plugins
 
 [doc('Run repository checks that pass on the current tree')]
@@ -60,6 +62,14 @@ install-nix-tools:
 update-nix-tools:
   nix flake update
   nix profile upgrade --all
+
+[private]
+install-claude:
+  command -v claude >/dev/null || curl -fsSL https://claude.ai/install.sh | bash
+
+[private]
+update-claude:
+  command -v claude >/dev/null && claude update || true
 
 [private]
 install-zsh-plugins:

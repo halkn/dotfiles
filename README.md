@@ -80,20 +80,10 @@ Run these on any platform after the prerequisites above.
    chsh -s "$(command -v zsh)"
    ```
 
-6. Install Claude Code. It releases frequently, so it uses its official
-   installer (updated in place with `claude update`) rather than Nix.
-   Enable its sandbox with `/sandbox`.
-
-   ```sh
-   curl -fsSL https://claude.ai/install.sh | bash
-   ```
-
 ## Tool Manager
 
 Most CLI tools are managed by [Nix](https://nixos.org) via `flake.nix`, and
-`just setup` / `just update` keep them and the zsh plugins in sync. Claude
-Code is the exception: it is managed by its own official installer because
-it updates frequently.
+`just setup` / `just update` keep them and the zsh plugins in sync.
 
 Useful tasks:
 
