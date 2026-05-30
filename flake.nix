@@ -35,6 +35,7 @@
           tree-sitter
           git
           gh
+          ghq
           (azure-cli.withExtensions [ azure-cli.extensions.azure-devops ])
           snowflake-cli
           just
