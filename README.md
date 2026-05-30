@@ -89,6 +89,16 @@ a small `.zshenv` stub that sets `ZDOTDIR` and hands off to it. Put
 machine-local settings in `.config/zsh/.zshenv.local` (environment) or
 `.config/zsh/.zshrc.local` (interactive); both are gitignored.
 
+### Git identity
+
+The git config (`.config/git/config`) includes `~/.gitconfig.local`, which
+is not tracked here. Set your name and email there per machine:
+
+```sh
+git config -f ~/.gitconfig.local user.name "Your Name"
+git config -f ~/.gitconfig.local user.email "you@example.com"
+```
+
 ## Tool Manager
 
 Most CLI tools and zsh plugins are managed by [Nix](https://nixos.org) via
