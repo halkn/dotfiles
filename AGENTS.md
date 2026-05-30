@@ -12,7 +12,7 @@
 | `.config/<tool>/` | その他ツール設定（gh, git, starship 等） |
 | `codex/` | OpenAI Codex 設定（`AGENTS.md` + `config.toml`） |
 | `claude/` | Claude Code 設定（`CLAUDE.md` + `settings.json` + `statusline-command.sh`） |
-| `flake.nix` | Nix 管理ツールのバージョン定義（LSP server・formatter 等） |
+| `.config/mise/config.toml` | mise 管理ツールのバージョン定義（LSP server・formatter 等） |
 | `justfile` | 開発タスク定義 |
 
 `just link` が作成する symlink:
@@ -29,13 +29,13 @@
 ## Build, Test, and Development Commands
 
 - `just link`: dotfiles の symlink を `$HOME` に作成します（初回セットアップの第一歩）。
-- `just setup`: `just link` + Nix ツールインストール + Claude Code インストールを実行します。
+- `just setup`: `just link` + mise インストール + ツールインストール + zsh plugin clone + Claude Code インストールを実行します。
 - `just`: 利用できる task を一覧します。
 - `just lint`: 通常の検証として diff 空白確認、`zsh` 構文確認、
   Markdown、formatter check、Neovim Lua diagnostics、起動確認を実行します。
 - `just fmt`: Markdown、zsh、Neovim Lua を既定 formatter で整形します。
 - `just fmt-check`: ファイルを書き換えずに Markdown、zsh、Neovim Lua の整形を確認します。
-- `just update`: Nix tools 更新（`flake.lock`）と Claude Code 更新を実行します。
+- `just update`: mise tools 更新・zsh plugin 更新・Claude Code 更新を実行します。
 
 Agent は `just update` を自律実行せず、明示依頼がある場合だけ実行してください。
 system package 更新が必要な場合は、just task ではなくユーザーが個別に実行します。

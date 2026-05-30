@@ -1,0 +1,34 @@
+[tools]
+# terminal
+tmux = "latest"
+starship = "latest"
+
+# CLI utilities
+ripgrep = "latest"
+fd = "latest"
+fzf = "latest"
+eza = "latest"
+delta = "latest"
+jq = "latest"
+hyperfine = "latest"
+
+# dev
+neovim = "latest"
+tree-sitter = "latest"
+gh = "latest"
+ghq = "latest"
+just = "latest"
+uv = "latest"
+node = "latest"
+bun = "latest"
+"pipx:snowflake-cli" = "latest"
+
+# LSP / Linter / Formatter
+lua-language-server = "latest"
+stylua = "latest"
+shfmt = "latest"
+"github:mattn/efm-langserver" = "latest"
+shellcheck = "latest"
+"npm:yaml-language-server" = "latest"
+rumdl = "latest"
+"npm:markdownlint-cli2" = "latest"

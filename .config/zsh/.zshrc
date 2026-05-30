@@ -101,13 +101,18 @@ dot() {
   cd "$target"
 }
 
-# ── plugins (managed by Nix) ─────────────────────────
-nix_share=$HOME/.nix-profile/share
-[[ -f "$nix_share/zsh-autosuggestions/zsh-autosuggestions.zsh" ]] \
-  && source "$nix_share/zsh-autosuggestions/zsh-autosuggestions.zsh"
+# ── mise ─────────────────────────────────────────────
+if command -v mise >/dev/null 2>&1; then
+  eval "$(mise activate zsh)"
+fi
 
-[[ -f "$nix_share/zsh/plugins/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh" ]] \
-  && source "$nix_share/zsh/plugins/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
+# ── plugins (git clone) ───────────────────────────────
+zsh_plugins_dir=$XDG_DATA_HOME/zsh/plugins
+[[ -f "$zsh_plugins_dir/zsh-autosuggestions/zsh-autosuggestions.zsh" ]] \
+  && source "$zsh_plugins_dir/zsh-autosuggestions/zsh-autosuggestions.zsh"
+
+[[ -f "$zsh_plugins_dir/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh" ]] \
+  && source "$zsh_plugins_dir/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
 
 # ── uv ───────────────────────────────────────────────
 if command -v uv >/dev/null 2>&1; then

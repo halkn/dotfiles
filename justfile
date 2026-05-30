@@ -9,6 +9,11 @@ default:
 
 [private]
 _link:
+  #!/usr/bin/env bash
+  set -euo pipefail
+  if [[ -d "$HOME/.config" && ! -L "$HOME/.config" ]]; then
+    rm -rf "$HOME/.config"
+  fi
   ln -snfT "$HOME/.dotfiles/{{config_dir}}" "$HOME/.config"
   ln -snf "$HOME/.dotfiles/.zshenv" "$HOME/.zshenv"
   mkdir -p "$HOME/.claude"
@@ -21,12 +26,15 @@ link: _link
 
 [doc('Run setup')]
 setup: _link
-  just install-nix-tools
+  just install-mise
+  just install-mise-tools
+  just install-zsh-plugins
   just install-claude
 
 [doc('Update user-space managed tools')]
 update:
-  just update-nix-tools
+  just update-mise-tools
+  just update-zsh-plugins
   just update-claude
 
 [doc('Run repository checks that pass on the current tree')]
@@ -51,13 +59,36 @@ check-tools:
   command -v lua-language-server >/dev/null
 
 [private]
-install-nix-tools:
-  nix profile list 2>/dev/null | grep -q dotfiles-tools || nix profile install path:.#default
+install-mise:
+  command -v mise >/dev/null || curl https://mise.run | sh
 
 [private]
-update-nix-tools:
-  nix flake update
-  nix profile upgrade --all
+install-mise-tools:
+  mise install
+
+[private]
+update-mise-tools:
+  mise upgrade --all
+
+[private]
+install-zsh-plugins:
+  #!/usr/bin/env bash
+  set -euo pipefail
+  plugins_dir="${XDG_DATA_HOME:-$HOME/.local/share}/zsh/plugins"
+  mkdir -p "$plugins_dir"
+  test -d "$plugins_dir/zsh-autosuggestions" \
+    || git clone --depth=1 https://github.com/zsh-users/zsh-autosuggestions "$plugins_dir/zsh-autosuggestions"
+  test -d "$plugins_dir/fast-syntax-highlighting" \
+    || git clone --depth=1 https://github.com/zdharma-continuum/fast-syntax-highlighting "$plugins_dir/fast-syntax-highlighting"
+
+[private]
+update-zsh-plugins:
+  #!/usr/bin/env bash
+  set -euo pipefail
+  plugins_dir="${XDG_DATA_HOME:-$HOME/.local/share}/zsh/plugins"
+  for dir in "$plugins_dir"/*/; do
+    [[ -d "${dir}.git" ]] && git -C "$dir" pull --ff-only
+  done
 
 [private]
 install-claude:
