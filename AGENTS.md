@@ -3,95 +3,116 @@
 ## Project Structure & Module Organization
 
 このリポジトリは個人用 dotfiles と周辺ツール設定を管理します。
-主要な設定は `.config/` 配下にあり、`.config/nvim/` は Neovim、
-`.config/zsh/` はシェル起動、`.config/tmux/` はターミナル多重化です。
-AI アシスタント設定は `codex/` と `claude/` にあります。
+
+| ディレクトリ / ファイル | 用途 |
+|------------------------|------|
+| `.config/nvim/` | Neovim 設定 |
+| `.config/zsh/` | シェル起動設定 |
+| `.config/tmux/` | ターミナル多重化設定 |
+| `.config/<tool>/` | その他ツール設定（gh, git, starship 等） |
+| `codex/` | OpenAI Codex 設定（`AGENTS.md` + `config.toml`） |
+| `claude/` | Claude Code 設定（`CLAUDE.md` + `settings.json` + `statusline-command.sh`） |
+| `flake.nix` | Nix 管理ツールのバージョン定義（LSP server・formatter 等） |
+| `justfile` | 開発タスク定義 |
+
+`just link` が作成する symlink:
+
+| symlink | → 実体 |
+|---------|--------|
+| `~/.config` | `~/.dotfiles/.config` |
+| `~/.zshenv` | `~/.dotfiles/.zshenv` |
+| `~/.claude/CLAUDE.md` | `~/.dotfiles/claude/CLAUDE.md` |
+| `~/.claude/settings.json` | `~/.dotfiles/claude/settings.json` |
+
 新規ファイルは対象ツールの近くに配置し、既存のディレクトリ命名に合わせてください。
 
 ## Build, Test, and Development Commands
 
+- `just link`: dotfiles の symlink を `$HOME` に作成します（初回セットアップの第一歩）。
+- `just setup`: `just link` + Nix ツールインストール + Claude Code インストールを実行します。
 - `just`: 利用できる task を一覧します。
-- `just setup`: symlink 作成、Nix tools install を実行します。
 - `just lint`: 通常の検証として diff 空白確認、`zsh` 構文確認、
   Markdown、formatter check、Neovim Lua diagnostics、起動確認を実行します。
 - `just fmt`: Markdown、zsh、Neovim Lua を既定 formatter で整形します。
 - `just fmt-check`: ファイルを書き換えずに Markdown、zsh、Neovim Lua の整形を確認します。
-- `just update`: Nix tools 更新 (`flake.lock`) を実行します。
+- `just update`: Nix tools 更新（`flake.lock`）と Claude Code 更新を実行します。
 
 Agent は `just update` を自律実行せず、明示依頼がある場合だけ実行してください。
 system package 更新が必要な場合は、just task ではなくユーザーが個別に実行します。
 
 ## Coding Style & Naming Conventions
 
-Shell は `set -euo pipefail`、小文字の関数名、意味のある環境変数名を基本とします。
-Lua 設定は `.config/nvim/lua/vimrc/` 配下で役割ごとに分け、
-プラグイン定義は `.config/nvim/lua/plugins/` に機能単位で分割します。
-Markdown は短く実務的に書き、`rumdl` を前提に整えます。
-Shell ファイルと Lua ファイルは `just fmt` で整形してください。
-`shfmt` と `stylua` は Nix 管理のものが PATH に入っています。
+- **Shell**: `set -euo pipefail`、小文字の関数名、意味のある環境変数名を使う
+- **Lua**: `lua/vimrc/` 配下で役割ごとに分け、プラグイン定義は `lua/plugins/` に機能単位で分割する
+- **Markdown**: 短く実務的に書き、`rumdl` 準拠で整える
+- **整形**: Shell・Lua ファイルは `just fmt` で整形する（`shfmt`・`stylua` は Nix 管理）
 
 ## Neovim Design Principles
 
-Neovim 設定は「標準機能を軸に、足りない部分だけを小さく補う」方針で保ちます。
-初期化順序は `options`、`diagnostics`、`keymaps`、`autocmds`、`lsp`、`modules`、`plugins` を基本とします。
-`options` には起動時 option と provider 設定、`diagnostics` には `vim.diagnostic.config()`、
-`keymaps` には LSP 非依存の global keymap、`autocmds` には LSP 非依存の autocmd を置いてください。
-`lsp/lang/registry.lua` には LSP server、efm backend、formatter の言語別静的定義、
-`lsp/lang/schema.lua` には LuaLS 用の型境界、
-`lsp/lang/init.lua` には registry から派生値を返す query API を置いてください。
-`lsp/` には LSP attach、LSP keymap、format-on-save などの共通実行時処理を置き、
-`.config/nvim/lsp/*.lua` には Neovim 公式形式の server config を置いてください。
-`modules` には自作の UI や操作改善、`plugins` には外部依存の薄い機能別プラグインを置いてください。
-定番プラグインで置き換える前に、Neovim 組み込み API や既存 module で十分かを先に検討します。
+方針: 「標準機能を軸に、足りない部分だけを小さく補う」
 
-plugin は必要最小限に保ち、機能追加のために安易に数を増やさないでください。
-追加する場合は、責務が単一であること、標準機能では不足が明確であること、
-既存の操作感を崩さないことを条件にします。
-`lazy load` は原則として採用せず、構成の単純さと初期化順序の明快さを優先してください。
+**初期化順序** (`lua/vimrc/` 内): `options` → `diagnostics` → `keymaps` → `autocmds` → `lsp` → `modules` → `plugins`
 
-plugin manager は Neovim 標準を優先します。
-標準パッケージマネージャーで十分な機能がある限り、外部 manager は増やしません。
-将来 Neovim 標準で置き換え可能な機能が入った場合は、既存 plugin の置き換えを検討してください。
-UI 系は `statusline`、`picker`、`notify` のように自作を優先します。
-LSP や formatter は言語別設定を分離して管理してください。
-責務の重複は避け、特に format、lint、diagnostics、keymap は担当層を明確にしてください。
+**ファイル配置ルール:**
 
-Lua formatter は `stylua` を正としてください。
-diagnostics は `lua-language-server --check` と editor 内の `luals` を正とします。
-`luals` の built-in formatter を再び主担当に戻さないでください。
-Neovim 内で使う LSP server と efm backend tool は Nix (`flake.nix`) で管理し、
-PATH 経由で参照します。
+| パス | 役割 |
+|------|------|
+| `lua/vimrc/options.lua` | 起動時 option と provider 設定 |
+| `lua/vimrc/diagnostics.lua` | `vim.diagnostic.config()` |
+| `lua/vimrc/keymaps.lua` | LSP 非依存の global keymap |
+| `lua/vimrc/autocmds.lua` | LSP 非依存の autocmd |
+| `lua/vimrc/lsp/lang/registry.lua` | LSP server・efm backend・formatter の言語別静的定義 |
+| `lua/vimrc/lsp/lang/schema.lua` | LuaLS 用の型境界 |
+| `lua/vimrc/lsp/lang/init.lua` | registry から派生値を返す query API |
+| `lua/vimrc/lsp/` | LSP attach・keymap・format-on-save などの共通実行時処理 |
+| `lsp/*.lua` | Neovim 公式形式の server config（0.11+ 形式） |
+| `lua/vimrc/modules/` | 自作 UI・操作改善 |
+| `lua/plugins/` | 外部依存の機能別プラグイン定義 |
 
-Neovim Lua を変更したときは、通常は `just fmt` で整形し、`just lint` で確認します。
-`just lint` には `stylua --check`、`lua-language-server --check`、起動確認が含まれます。
-tools がない場合は `just setup` を先に実行してください。
-差分が広い場合は、意味変更と整形-only の変更を区別して確認してください。
-`statusline` や `vim` global のような Neovim 固有 API は、
-`.config/nvim/.luarc.json` の前提を崩さないように扱ってください。
+**Plugin 制約:**
+- `lazy load` は採用しない（初期化順序の明快さを優先）
+- 追加条件: 責務が単一・標準機能では不足が明確・既存の操作感を崩さない
+- plugin manager は Neovim 標準パッケージマネージャーを使用する
+- UI 系（`statusline`、`picker`、`notify`）は自作を優先する
+
+**ツールチェーン:**
+- formatter: `stylua` が正。`luals` の built-in formatter を主担当に戻さないこと
+- diagnostics: `lua-language-server --check` と editor 内の `luals` が正
+- LSP server・efm backend tool は `flake.nix` で管理し PATH 経由で参照する
+
+**変更時の手順:**
+1. `just fmt` で整形（`stylua` + `shfmt`）
+2. `just lint` で確認（`stylua --check`・`lua-language-server --check`・起動確認）
+3. tools がない場合は先に `just setup` を実行する
+4. `.config/nvim/.luarc.json` の前提（`statusline`・`vim` global 等）を崩さないこと
 
 ## Testing Guidelines
 
-統一的な test harness はないため、変更対象ごとに確認します。
+統一的な test harness はなく、変更対象ごとに最小の検証を実行してください。
 
-- 通常: `just lint` を実行します。
-- Neovim Lua: 変更後は `just fmt` と `just lint` を実行します。
-- Shell: `zsh` 変更時は `just lint-zsh` または `just lint` の `zsh -n` 確認を通します。
-- 文書と整形: `*.md` は `rumdl`、shell 系ファイルは `shfmt` で確認します。
-  既存警告が残っている場合は、対象ファイルに絞って確認してください。
+| 変更対象 | 確認コマンド |
+|----------|-------------|
+| 通常 | `just lint` |
+| Neovim Lua | `just fmt && just lint` |
+| Shell (zsh) | `just lint-zsh`（または `just lint` 内の `zsh -n`） |
+| Markdown | `rumdl check <file>` |
+| Shell 整形 | `shfmt -d <file>` |
 
+既存警告が残っている場合は対象ファイルに絞って確認してください。
 対話的な変更は PR に手動確認内容を 1 行で添えてください。
 
 ## Commit & Pull Request Guidelines
 
-最近の履歴では `fix: python lsp settings.` や `add: codex settings.` のような
-短い conventional 形式が使われています。
-`fix:`, `add:`, `feat:` などの小文字 prefix に短い英語要約を続け、
-1 つのツールまたは 1 つのテーマに絞ってコミットしてください。
-PR では変更理由、影響範囲 (`nvim`, `zsh`, `codex` など)、必要なら確認手順を明記します。
-見た目が変わる場合のみスクリーンショットを付けてください。
+**コミット:**
+- prefix は小文字 conventional 形式: `fix:`, `add:`, `feat:`, `refactor:` など
+- 短い英語要約を続け、1 つのツール・1 テーマに絞る（例: `fix: python lsp settings.`）
+
+**PR:**
+- 変更理由・影響範囲（`nvim`, `zsh`, `codex` 等）・確認手順を記載する
+- 見た目が変わる場合のみスクリーンショットを付ける
 
 ## Security & Configuration Tips
 
-シークレット、トークン、端末固有の認証情報はコミットしないでください。
-symlink や path は可能な限りポータブルに保ち、
-このリポジトリにローカル専用の状態ファイルを書き込まないでください。
+- シークレット・トークン・端末固有の認証情報はコミットしない
+- symlink と path は可能な限りポータブルに保つ
+- ローカル専用の状態ファイルをこのリポジトリに書き込まない
