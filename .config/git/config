@@ -50,7 +50,7 @@
 [ghq]
   root = ~/dev
 [url "git@github.com:"]
-  insteadOf = https://github.com/
+  pushInsteadOf = https://github.com/
 [delta]
   hunk-header-decoration-style = omit
   navigate = true
