@@ -4,11 +4,9 @@
 # Keep zsh-owned runtime files under XDG directories.
 zsh_data_dir=$XDG_DATA_HOME/zsh
 zsh_cache_dir=$XDG_CACHE_HOME/zsh
-zsh_plugin_dir=$XDG_DATA_HOME/zsh_plugins
 mkdir -p "$zsh_data_dir"
 mkdir -p "$zsh_cache_dir"
 mkdir -p "$zsh_cache_dir/zcompcache"
-mkdir -p "$zsh_plugin_dir"
 
 # ── History ──────────────────────────────────────────
 HISTFILE=$zsh_data_dir/history
@@ -103,12 +101,13 @@ dot() {
   cd "$target"
 }
 
-# ── plugins ──────────────────────────────────────────
-[[ -f "$zsh_plugin_dir/zsh-autosuggestions/zsh-autosuggestions.zsh" ]] \
-  && source "$zsh_plugin_dir/zsh-autosuggestions/zsh-autosuggestions.zsh"
+# ── plugins (managed by Nix) ─────────────────────────
+nix_share=$HOME/.nix-profile/share
+[[ -f "$nix_share/zsh-autosuggestions/zsh-autosuggestions.zsh" ]] \
+  && source "$nix_share/zsh-autosuggestions/zsh-autosuggestions.zsh"
 
-[[ -f "$zsh_plugin_dir/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh" ]] \
-  && source "$zsh_plugin_dir/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
+[[ -f "$nix_share/zsh/plugins/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh" ]] \
+  && source "$nix_share/zsh/plugins/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
 
 # ── uv ───────────────────────────────────────────────
 if command -v uv >/dev/null 2>&1; then
@@ -241,3 +240,6 @@ if command -v starship >/dev/null 2>&1; then
   export STARSHIP_CACHE=$XDG_CACHE_HOME/starship/cache
   eval "$(starship init zsh)"
 fi
+
+# ── machine-local overrides (not tracked in git) ─────
+[[ -f "$ZDOTDIR/.zshrc.local" ]] && source "$ZDOTDIR/.zshrc.local"

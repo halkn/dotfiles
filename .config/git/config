@@ -23,7 +23,7 @@
   default = simple
   autoSetupRemote = true
 [include]
-  path = ~/.gitconfig.local
+  path = config.local
 [alias]
   st = status
   br = branch

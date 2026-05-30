@@ -14,6 +14,10 @@
           tmux
           starship
 
+          # zsh plugins
+          zsh-autosuggestions
+          zsh-fast-syntax-highlighting
+
           # CLI utilities
           ripgrep
           fd
@@ -29,6 +33,7 @@
           # dev
           neovim
           tree-sitter
+          git
           gh
           just
           uv

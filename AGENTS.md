@@ -5,19 +5,19 @@
 このリポジトリは個人用 dotfiles と周辺ツール設定を管理します。
 主要な設定は `.config/` 配下にあり、`.config/nvim/` は Neovim、
 `.config/zsh/` はシェル起動、`.config/tmux/` と `.config/zellij/` は
-ターミナル多重化、`.config/ptm/` はツール定義（`ptm` は managed tools 定義用の独自 CLI）です。
+ターミナル多重化です。
 AI アシスタント設定は `codex/` と `claude/` にあります。
 新規ファイルは対象ツールの近くに配置し、既存のディレクトリ命名に合わせてください。
 
 ## Build, Test, and Development Commands
 
 - `just`: 利用できる task を一覧します。
-- `just setup`: symlink 作成、Nix tools install、`ptm install`、zsh plugin install を実行します。
+- `just setup`: symlink 作成、Nix tools install を実行します。
 - `just lint`: 通常の検証として diff 空白確認、`zsh` 構文確認、
   Markdown、formatter check、Neovim Lua diagnostics、起動確認を実行します。
 - `just fmt`: Markdown、zsh、Neovim Lua を既定 formatter で整形します。
 - `just fmt-check`: ファイルを書き換えずに Markdown、zsh、Neovim Lua の整形を確認します。
-- `just update`: Nix tools 更新 (`flake.lock`)、`ptm` 管理ツール、zsh plugin を更新します。
+- `just update`: Nix tools 更新 (`flake.lock`) を実行します。
 
 Agent は `just update` を自律実行せず、明示依頼がある場合だけ実行してください。
 system package 更新が必要な場合は、just task ではなくユーザーが個別に実行します。
