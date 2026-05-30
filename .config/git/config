@@ -47,6 +47,10 @@
   defaultBranch = main
 [safe]
   bareRepository = explicit
+[ghq]
+  root = ~/dev
+[url "git@github.com:"]
+  insteadOf = https://github.com/
 [delta]
   hunk-header-decoration-style = omit
   navigate = true
