@@ -109,8 +109,7 @@
     "filesystem": {
       "allowWrite": [
         "~/.cache/uv",
-        "~/.local/share/uv",
-        "~/.local/bin"
+        "~/.local/share/uv"
       ],
       "denyWrite": [
         "~/.ssh",
@@ -121,15 +120,12 @@
       ],
       "allowRead": [
         ".",
-        "~/.gitconfig",
-        "~/.gitconfig.local",
         "~/.config/git",
         "~/.config/gh",
         "~/.config/uv",
         "~/.cache/uv",
         "~/.local/share/uv",
         "~/.local/bin",
-        "~/.bun/bin",
         "~/.nix-profile",
         "/nix/store"
       ]
