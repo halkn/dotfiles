@@ -195,29 +195,23 @@ fgw() {
 }
 
 # ── repo ─────────────────────────────────────────────
+# Select a ghq-managed repository with fzf and cd into it.
+# `ghq get` / `ghq list` provide clone and listing directly.
 repo() {
-  local cmd="${1:-cd}"
-  (($# > 0)) && shift
-
-  command -v fzx >/dev/null 2>&1 || {
-    print 'repo: fzx is not installed or not in PATH' >&2
+  command -v ghq >/dev/null 2>&1 || {
+    print 'repo: ghq is not installed or not in PATH' >&2
+    return 1
+  }
+  command -v fzf >/dev/null 2>&1 || {
+    print 'repo: fzf is not installed or not in PATH' >&2
     return 1
   }
 
-  case "$cmd" in
-    cd)
-      local dir
-      dir=$(fzx repo cd "$@") || return
-      [[ -n "$dir" ]] && cd -- "$dir" && la
-      ;;
-    get | list)
-      fzx repo "$cmd" "$@"
-      ;;
-    *)
-      print 'usage: repo <get|list|cd>' >&2
-      return 1
-      ;;
-  esac
+  local dir
+  dir=$(ghq list --full-path | fzf \
+    --query="$*" \
+    --preview 'eza --tree --level=1 --icons {} 2>/dev/null || ls -la {}') || return
+  [[ -n "$dir" ]] && cd -- "$dir" && la
 }
 
 # ── tmux ─────────────────────────────────────────────
