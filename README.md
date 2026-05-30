@@ -91,12 +91,20 @@ machine-local settings in `.config/zsh/.zshenv.local` (environment) or
 
 ### Git identity
 
-The git config (`.config/git/config`) includes a sibling `config.local`,
-which is not tracked here. Set your name and email there per machine:
+The git config (`$XDG_CONFIG_HOME/git/config`) includes a relative
+`config.local` sibling, which resolves under `$XDG_CONFIG_HOME` and is not
+tracked here. Set your name and email there per machine:
 
 ```sh
-git config -f ~/.config/git/config.local user.name "Your Name"
-git config -f ~/.config/git/config.local user.email "you@example.com"
+git config -f "${XDG_CONFIG_HOME:-$HOME/.config}/git/config.local" user.name "Your Name"
+git config -f "${XDG_CONFIG_HOME:-$HOME/.config}/git/config.local" user.email "you@example.com"
+```
+
+Verify the effective identity (this reads the included `config.local`):
+
+```sh
+git config user.name
+git config user.email
 ```
 
 ## Tool Manager
