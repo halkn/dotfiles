@@ -1,5 +1,8 @@
 .rumdl_cache/
 
+# snowflake-cli generated files
+.config/snowflake/.cli_version.cache
+
 # secret
 .config/gh/
 

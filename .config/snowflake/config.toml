@@ -1,0 +1,7 @@
+[cli]
+ignore_new_version_warning = false
+
+[cli.logs]
+save_logs = true
+path = "~/.local/state/snowflake"
+level = "info"

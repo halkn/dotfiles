@@ -28,7 +28,26 @@
       "Bash(tree *)",
       "Bash(jq *)",
       "Bash(ghq list *)",
-      "Bash(which *)"
+      "Bash(which *)",
+      "Bash(az repos list *)",
+      "Bash(az repos show *)",
+      "Bash(az repos pr list *)",
+      "Bash(az repos pr show *)",
+      "Bash(az pipelines list *)",
+      "Bash(az pipelines show *)",
+      "Bash(az pipelines runs list *)",
+      "Bash(az pipelines runs show *)",
+      "Bash(az boards work-item show *)",
+      "Bash(az boards query *)",
+      "Bash(az devops project list *)",
+      "Bash(az devops project show *)",
+      "Bash(az devops configure --list*)",
+      "Bash(az devops invoke *)",
+      "WebFetch(domain:learn.microsoft.com)",
+      "WebFetch(domain:docs.microsoft.com)",
+      "WebFetch(domain:azure.microsoft.com)",
+      "WebFetch(domain:docs.snowflake.com)",
+      "WebFetch(domain:community.snowflake.com)"
     ],
     "deny": [
       "Read(**/.env)",
@@ -70,7 +89,15 @@
       "Bash(uv python uninstall*)",
       "Bash(uv cache clean*)",
       "Bash(uv cache prune*)",
-      "Bash(uv self update*)"
+      "Bash(uv self update*)",
+      "Bash(az devops invoke *--http-method post*)",
+      "Bash(az devops invoke *--http-method POST*)",
+      "Bash(az devops invoke *--http-method patch*)",
+      "Bash(az devops invoke *--http-method PATCH*)",
+      "Bash(az devops invoke *--http-method put*)",
+      "Bash(az devops invoke *--http-method PUT*)",
+      "Bash(az devops invoke *--http-method delete*)",
+      "Bash(az devops invoke *--http-method DELETE*)"
     ],
     "ask": [
       "Bash(git commit*)",
@@ -103,7 +130,15 @@
         "*.github.com",
         "pypi.org",
         "*.pypi.org",
-        "files.pythonhosted.org"
+        "files.pythonhosted.org",
+        "dev.azure.com",
+        "*.dev.azure.com",
+        "login.microsoftonline.com",
+        "learn.microsoft.com",
+        "docs.microsoft.com",
+        "azure.microsoft.com",
+        "docs.snowflake.com",
+        "community.snowflake.com"
       ]
     },
     "filesystem": {
@@ -127,7 +162,8 @@
         "~/.local/share/uv",
         "~/.local/bin",
         "~/.nix-profile",
-        "/nix/store"
+        "/nix/store",
+        "~/.azure"
       ]
     }
   },
