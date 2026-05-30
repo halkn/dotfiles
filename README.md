@@ -103,8 +103,7 @@ git config -f "${XDG_CONFIG_HOME:-$HOME/.config}/git/config.local" user.email "y
 Verify the effective identity (this reads the included `config.local`):
 
 ```sh
-git config user.name
-git config user.email
+git config user.name && git config user.email
 ```
 
 ## Tool Manager
