@@ -106,8 +106,8 @@ nix_share=$HOME/.nix-profile/share
 [[ -f "$nix_share/zsh-autosuggestions/zsh-autosuggestions.zsh" ]] \
   && source "$nix_share/zsh-autosuggestions/zsh-autosuggestions.zsh"
 
-[[ -f "$nix_share/zsh/site-functions/fast-syntax-highlighting.plugin.zsh" ]] \
-  && source "$nix_share/zsh/site-functions/fast-syntax-highlighting.plugin.zsh"
+[[ -f "$nix_share/zsh/plugins/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh" ]] \
+  && source "$nix_share/zsh/plugins/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
 
 # ── uv ───────────────────────────────────────────────
 if command -v uv >/dev/null 2>&1; then
