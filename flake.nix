@@ -35,6 +35,8 @@
           tree-sitter
           git
           gh
+          (azure-cli.withExtensions [ azure-cli.extensions.azure-devops ])
+          snowflake-cli
           just
           uv
           bun
