@@ -117,7 +117,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/block-python-yaml.sh"
+            "command": "~/.claude/hooks/block-python.sh"
           }
         ]
       }
