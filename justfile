@@ -23,6 +23,7 @@ link: _link
 setup: _link
   just install-nix-tools
   just install-claude
+  just install-tpm
 
 [doc('Update user-space managed tools')]
 update:
@@ -62,6 +63,10 @@ update-nix-tools:
 [private]
 install-claude:
   command -v claude >/dev/null || curl -fsSL https://claude.ai/install.sh | bash
+
+[private]
+install-tpm:
+  test -d "${XDG_CONFIG_HOME:-$HOME/.config}/tmux/plugins/tpm" || git clone https://github.com/tmux-plugins/tpm "${XDG_CONFIG_HOME:-$HOME/.config}/tmux/plugins/tpm"
 
 [private]
 update-claude:

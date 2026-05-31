@@ -116,7 +116,16 @@
   },
   "enabledPlugins": {
     "skill-creator@claude-plugins-official": true,
-    "claude-md-management@claude-plugins-official": true
+    "claude-md-management@claude-plugins-official": true,
+    "tmux-agent-sidebar@hiroppy": true
+  },
+  "extraKnownMarketplaces": {
+    "hiroppy": {
+      "source": {
+        "source": "directory",
+        "path": "~/.config/tmux/plugins/tmux-agent-sidebar"
+      }
+    }
   },
   "viewMode": "verbose",
   "language": "japanese",
