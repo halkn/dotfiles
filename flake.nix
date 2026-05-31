@@ -5,6 +5,24 @@
     { nixpkgs, ... }:
     let
       pkgs = nixpkgs.legacyPackages.x86_64-linux;
+
+      # Tools only accessible from within neovim
+      nvimTools = with pkgs; [
+        tree-sitter
+        efm-langserver
+        shellcheck
+        yaml-language-server
+      ];
+
+      neovimWrapped = pkgs.symlinkJoin {
+        name = "neovim-wrapped";
+        paths = [ pkgs.neovim ];
+        nativeBuildInputs = [ pkgs.makeWrapper ];
+        postBuild = ''
+          wrapProgram $out/bin/nvim \
+            --prefix PATH : ${pkgs.lib.makeBinPath nvimTools}
+        '';
+      };
     in
     {
       packages.x86_64-linux.default = pkgs.buildEnv {
@@ -31,8 +49,7 @@
           hyperfine
 
           # dev
-          neovim
-          tree-sitter
+          neovimWrapped
           git
           gh
           ghq
@@ -42,13 +59,10 @@
           uv
           bun
 
-          # LSP / Linter / Formatter
+          # Linter / Formatter (also used by just lint / just fmt)
           lua-language-server
           stylua
           shfmt
-          efm-langserver
-          shellcheck
-          yaml-language-server
           rumdl
           markdownlint-cli2
         ];
