@@ -25,6 +25,7 @@
 - ツール・依存を追加する前に、既存構成で代替できるか確認する
 - GitHub: PR/issue/CI は `gh` を使う
 - 検索は `rg` を優先する
+- YAML: 値の確認は `yq`（Go 版 mikefarah/yq）、構文は `just lint`（`python -c "import yaml"` は使わない）
 
 ## Git
 
@@ -42,7 +43,6 @@
 - 変更後は対象に合った最小十分な検証を実行する
 - 検証できない場合は、理由と代替確認を報告する
 - 複雑な変更の場合のみ、完了後に変更点・実行した検証・残るリスクを簡潔に報告する
-- YAML の確認・パース・問い合わせに Python（`python -c "import yaml"`、`... | python` 等）を使わない（JSON に対する `jq` のような用途で起動しない）。構文確認は `yaml-language-server` や対象 repo の `just lint` 等の既存手段、値の確認は `yq`（Go 版 mikefarah/yq）を使う
 
 ## スキル作成
 
