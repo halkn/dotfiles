@@ -28,38 +28,40 @@
       packages.x86_64-linux.default = pkgs.buildEnv {
         name = "dotfiles-tools";
         paths = with pkgs; [
-          # terminal
+          # terminal & shell
           tmux
           starship
-
-          # zsh plugins
           zsh-autosuggestions
           zsh-fast-syntax-highlighting
 
-          # CLI utilities
+          # cli
           ripgrep
           fd
           fzf
           eza
-          delta
           jq
           curl
           unzip
           xclip
           hyperfine
 
-          # dev
-          neovimWrapped
+          # vcs
           git
           gh
           ghq
-          (azure-cli.withExtensions [ azure-cli.extensions.azure-devops ])
-          snowflake-cli
+          delta
+
+          # dev tools
           just
           uv
           bun
+          (azure-cli.withExtensions [ azure-cli.extensions.azure-devops ])
+          snowflake-cli
 
-          # Linter / Formatter (also used by just lint / just fmt)
+          # editor
+          neovimWrapped
+
+          # lsp / lint / fmt
           lua-language-server
           stylua
           shfmt
