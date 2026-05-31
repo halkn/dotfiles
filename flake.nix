@@ -40,6 +40,7 @@
           fzf
           eza
           jq
+          yq-go
           curl
           unzip
           xclip

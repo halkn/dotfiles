@@ -43,7 +43,7 @@ while IFS= read -r seg; do
 	base="${prog##*/}"
 	base="$(printf '%s' "$base" | tr '[:upper:]' '[:lower:]')"
 	if is_python "$base"; then
-		echo "Python の実行は禁止です（任意コード実行のため）。型/構文確認は専用 LSP・linter、値の確認は jq/yq、Python が必要な場合は uv の専用サブコマンドを使ってください。" >&2
+		echo "Python の実行は禁止です（任意コード実行のため）。型/構文確認は専用 LSP・linter、値の確認は jq（JSON）・yq（YAML, Go 版 mikefarah/yq）、Python が必要な場合は uv の専用サブコマンドを使ってください。" >&2
 		exit 2
 	fi
 done <<EOF
