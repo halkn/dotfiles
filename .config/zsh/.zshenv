@@ -19,6 +19,9 @@ skip_global_compinit=1
 # bun
 export BUN_INSTALL="$HOME/.bun"
 
+# rumdl
+export RUMDL_CACHE_DIR=$XDG_CACHE_HOME/rumdl
+
 # uv
 export UV_CACHE_DIR=$XDG_CACHE_HOME/uv
 export UV_PYTHON_PREFERENCE=only-managed
