@@ -15,6 +15,8 @@ _link:
   ln -snf "$HOME/.dotfiles/claude/settings.json" "$HOME/.claude/settings.json"
   ln -snf "$HOME/.dotfiles/claude/CLAUDE.md" "$HOME/.claude/CLAUDE.md"
   ln -snf "$HOME/.dotfiles/claude/statusline-command.sh" "$HOME/.claude/statusline-command.sh"
+  mkdir -p "$HOME/.claude/hooks"
+  ln -snf "$HOME/.dotfiles/claude/hooks/block-python-yaml.sh" "$HOME/.claude/hooks/block-python-yaml.sh"
 
 [doc('Link dotfiles into home directories')]
 link: _link
