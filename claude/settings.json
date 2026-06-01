@@ -155,6 +155,7 @@
         "files.pythonhosted.org",
         "dev.azure.com",
         "*.dev.azure.com",
+        "*.vssps.visualstudio.com",
         "login.microsoftonline.com",
         "learn.microsoft.com",
         "docs.microsoft.com",
