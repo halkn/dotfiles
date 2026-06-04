@@ -1,6 +1,5 @@
 [tools]
 # terminal
-tmux = "latest"
 starship = "latest"
 
 # CLI utilities

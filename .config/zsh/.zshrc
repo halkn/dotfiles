@@ -101,11 +101,6 @@ dot() {
   cd "$target"
 }
 
-# ── mise ─────────────────────────────────────────────
-if command -v mise >/dev/null 2>&1; then
-  eval "$(mise activate zsh)"
-fi
-
 # ── plugins (git clone) ───────────────────────────────
 zsh_plugins_dir=$XDG_DATA_HOME/zsh/plugins
 [[ -f "$zsh_plugins_dir/zsh-autosuggestions/zsh-autosuggestions.zsh" ]] \

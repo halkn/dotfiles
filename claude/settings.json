@@ -143,8 +143,12 @@
     },
     "filesystem": {
       "allowWrite": [
+        "~/.azure",
         "~/.cache/uv",
-        "~/.local/share/uv"
+        "~/.local/share/uv",
+        "~/.cache/mise",
+        "~/.local/share/mise",
+        "~/.local/state/mise"
       ],
       "denyWrite": [
         "~/.ssh",
@@ -155,15 +159,16 @@
       ],
       "allowRead": [
         ".",
+        "~/.azure",
         "~/.config/git",
         "~/.config/gh",
+        "~/.config/ripgrep",
         "~/.config/uv",
-        "~/.cache/uv",
         "~/.local/share/uv",
-        "~/.local/bin",
-        "~/.nix-profile",
-        "/nix/store",
-        "~/.azure"
+        "~/.local/share/mise",
+        "~/.config/mise",
+        "~/.local/share/mise",
+        "~/.local/bin"
       ]
     }
   },
