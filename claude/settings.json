@@ -110,13 +110,35 @@
     ],
     "defaultMode": "acceptEdits"
   },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/block-python.sh"
+          }
+        ]
+      }
+    ]
+  },
   "statusLine": {
     "type": "command",
     "command": "~/.claude/statusline-command.sh"
   },
   "enabledPlugins": {
     "skill-creator@claude-plugins-official": true,
-    "claude-md-management@claude-plugins-official": true
+    "claude-md-management@claude-plugins-official": true,
+    "tmux-agent-sidebar@hiroppy": true
+  },
+  "extraKnownMarketplaces": {
+    "hiroppy": {
+      "source": {
+        "source": "directory",
+        "path": "~/.config/tmux/plugins/tmux-agent-sidebar"
+      }
+    }
   },
   "viewMode": "verbose",
   "language": "japanese",
@@ -133,6 +155,7 @@
         "files.pythonhosted.org",
         "dev.azure.com",
         "*.dev.azure.com",
+        "*.vssps.visualstudio.com",
         "login.microsoftonline.com",
         "learn.microsoft.com",
         "docs.microsoft.com",
@@ -167,7 +190,6 @@
         "~/.local/share/uv",
         "~/.local/share/mise",
         "~/.config/mise",
-        "~/.local/share/mise",
         "~/.local/bin"
       ]
     }

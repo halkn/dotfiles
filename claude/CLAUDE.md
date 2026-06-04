@@ -25,6 +25,7 @@
 - ツール・依存を追加する前に、既存構成で代替できるか確認する
 - GitHub: PR/issue/CI は `gh` を使う
 - 検索は `rg` を優先する
+- YAML: 値の確認は `yq`（Go 版 mikefarah/yq）、構文は `just lint`（`python -c "import yaml"` は使わない）
 
 ## Git
 

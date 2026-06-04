@@ -20,6 +20,8 @@ _link:
   ln -snf "$HOME/.dotfiles/claude/settings.json" "$HOME/.claude/settings.json"
   ln -snf "$HOME/.dotfiles/claude/CLAUDE.md" "$HOME/.claude/CLAUDE.md"
   ln -snf "$HOME/.dotfiles/claude/statusline-command.sh" "$HOME/.claude/statusline-command.sh"
+  mkdir -p "$HOME/.claude/hooks"
+  ln -snf "$HOME/.dotfiles/claude/hooks/block-python.sh" "$HOME/.claude/hooks/block-python.sh"
 
 [doc('Link dotfiles into home directories')]
 link: _link
@@ -30,6 +32,7 @@ setup: _link
   just install-mise-tools
   just install-zsh-plugins
   just install-claude
+  just install-tpm
 
 [doc('Update user-space managed tools')]
 update:
@@ -93,6 +96,10 @@ update-zsh-plugins:
 [private]
 install-claude:
   command -v claude >/dev/null || curl -fsSL https://claude.ai/install.sh | bash
+
+[private]
+install-tpm:
+  test -d "${XDG_CONFIG_HOME:-$HOME/.config}/tmux/plugins/tpm" || git clone https://github.com/tmux-plugins/tpm "${XDG_CONFIG_HOME:-$HOME/.config}/tmux/plugins/tpm"
 
 [private]
 update-claude:
