@@ -17,6 +17,7 @@ Install the required apt packages. `zsh` is the login shell, and
 sudo apt update
 sudo apt install -y git curl zsh tmux bubblewrap socat unzip xclip
 curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+az extension add --name azure-devops
 ```
 
 Make zsh the default shell. apt registers it in `/etc/shells`, so `chsh`

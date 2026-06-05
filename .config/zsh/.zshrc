@@ -102,7 +102,7 @@ dot() {
 }
 
 # ── plugins (git clone) ───────────────────────────────
-zsh_plugins_dir=$XDG_DATA_HOME/zsh/plugins
+zsh_plugins_dir=$zsh_data_dir/plugins
 [[ -f "$zsh_plugins_dir/zsh-autosuggestions/zsh-autosuggestions.zsh" ]] \
   && source "$zsh_plugins_dir/zsh-autosuggestions/zsh-autosuggestions.zsh"
 
