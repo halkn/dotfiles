@@ -2,25 +2,30 @@
 # terminal
 starship = "latest"
 
-# CLI utilities
+# cli
 ripgrep = "latest"
 fd = "latest"
 fzf = "latest"
 eza = "latest"
-delta = "latest"
 jq = "latest"
+yq = "latest"
 hyperfine = "latest"
 
-# dev
-neovim = "latest"
-tree-sitter = "latest"
+# vcs
 gh = "latest"
 ghq = "latest"
+delta = "latest"
+
+# dev
 just = "latest"
 uv = "latest"
 node = "latest"
 bun = "latest"
 "pipx:snowflake-cli" = "latest"
+
+# editor
+neovim = "latest"
+tree-sitter = "latest"
 
 # LSP / Linter / Formatter
 lua-language-server = "latest"
