@@ -10,40 +10,29 @@ Do the platform-specific prerequisites first, then run the common bootstrap.
 
 #### WSL Ubuntu
 
-1. Enable systemd so the multi-user Nix daemon can run. Confirm
-   `/etc/wsl.conf`; if the `[boot]` section is missing, add it, then run
-   `wsl.exe --shutdown` from Windows and reopen the distribution. Recent
-   WSL on Ubuntu 26.04 enables it by default.
+Install the required apt packages. `zsh` is the login shell, and
+`bubblewrap` and `socat` are sandbox prerequisites for Claude Code.
 
-   ```ini
-   # /etc/wsl.conf
-   [boot]
-   systemd=true
-   ```
+```sh
+sudo apt update
+sudo apt install -y git curl zsh tmux bubblewrap socat unzip xclip
+curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+az extension add --name azure-devops
+```
 
-2. Install the apt packages. `git` and `curl` are normally already present
-   (`git` clones the repo, `curl` fetches the Nix installer), `zsh` is the
-   login shell, and `bubblewrap` and `socat` are sandbox prerequisites. The
-   rest of the CLI tools come from `flake.nix`.
+Make zsh the default shell. apt registers it in `/etc/shells`, so `chsh`
+accepts it directly. This only rewrites the login shell entry (it does
+not read `.zshrc`), so order relative to the bootstrap does not matter;
+it takes effect on the next login.
 
-   ```sh
-   sudo apt update
-   sudo apt install -y git curl zsh bubblewrap socat
-   ```
-
-3. Make zsh the default shell. apt registers it in `/etc/shells`, so `chsh`
-   accepts it directly. This only rewrites the login shell entry (it does
-   not read `.zshrc`), so order relative to the bootstrap does not matter;
-   it takes effect on the next login.
-
-   ```sh
-   chsh -s "$(command -v zsh)"
-   ```
+```sh
+chsh -s "$(command -v zsh)"
+```
 
 #### macOS
 
-_To be documented._ macOS skips the systemd step and already ships `zsh`
-as the default shell, so only the apt-specific items above differ.
+_To be documented._ macOS already ships `zsh` as the default shell, so
+only the apt-specific step above differs.
 
 ### Bootstrap
 
@@ -57,27 +46,14 @@ Run these on any platform after the prerequisites above.
    cd "$HOME/.dotfiles"
    ```
 
-2. Install Nix (multi-user), then open a new shell so `nix` is on `PATH`
-   (the installer sources its profile from new login shells) and `cd` back
-   into the repository.
+2. Run the setup task. `just setup` installs mise, links every dotfile,
+   installs all tools, and clones the zsh plugins.
 
    ```sh
-   sh <(curl --proto '=https' --tlsv1.2 -L https://nixos.org/nix/install) --daemon
-   ```
-
-3. Link `.config` and install the Nix tools. Linking first puts
-   `.config/nix/nix.conf` in place, which enables the `nix-command` and
-   `flakes` features needed by `nix profile install`.
-
-   ```sh
-   ln -snfT "$HOME/.dotfiles/.config" "$HOME/.config"
-   nix profile install path:.#default
-   ```
-
-4. Run the setup task. `just setup` re-links every dotfile (zsh, claude,
-   etc.) and installs the Nix tools.
-
-   ```sh
+   # Bootstrap just via mise (one-time)
+   curl https://mise.run | sh
+   export PATH="$HOME/.local/bin:$HOME/.local/share/mise/shims:$PATH"
+   mise use --global just
    just setup
    ```
 
@@ -108,15 +84,17 @@ git config user.name && git config user.email
 
 ## Tool Manager
 
-Most CLI tools and zsh plugins are managed by [Nix](https://nixos.org) via
-`flake.nix`, and `just setup` / `just update` keep them in sync.
+Most CLI tools are managed by [mise](https://mise.jdx.dev) via
+`.config/mise/config.toml`, and `just setup` / `just update` keep them in sync.
+zsh plugins (`zsh-autosuggestions`, `fast-syntax-highlighting`) are managed as
+shallow git clones under `$XDG_DATA_HOME/zsh/plugins`.
 
 Useful tasks:
 
 ```sh
 just          # List tasks
-just setup    # Link dotfiles and install Nix tools
-just update   # Update Nix tools (flake.lock)
+just setup    # Link dotfiles, install mise tools, and clone zsh plugins
+just update   # Update mise tools and zsh plugins
 just fmt      # Format Markdown, zsh files, and Neovim Lua files
 just fmt-check # Check formatting without writing files
 just lint     # Run repository checks

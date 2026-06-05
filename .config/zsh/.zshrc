@@ -101,13 +101,13 @@ dot() {
   cd "$target"
 }
 
-# ── plugins (managed by Nix) ─────────────────────────
-nix_share=$HOME/.nix-profile/share
-[[ -f "$nix_share/zsh-autosuggestions/zsh-autosuggestions.zsh" ]] \
-  && source "$nix_share/zsh-autosuggestions/zsh-autosuggestions.zsh"
+# ── plugins (git clone) ───────────────────────────────
+zsh_plugins_dir=$zsh_data_dir/plugins
+[[ -f "$zsh_plugins_dir/zsh-autosuggestions/zsh-autosuggestions.zsh" ]] \
+  && source "$zsh_plugins_dir/zsh-autosuggestions/zsh-autosuggestions.zsh"
 
-[[ -f "$nix_share/zsh/plugins/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh" ]] \
-  && source "$nix_share/zsh/plugins/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
+[[ -f "$zsh_plugins_dir/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh" ]] \
+  && source "$zsh_plugins_dir/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
 
 # ── uv ───────────────────────────────────────────────
 if command -v uv >/dev/null 2>&1; then

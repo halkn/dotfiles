@@ -168,7 +168,10 @@
       "allowWrite": [
         "~/.azure",
         "~/.cache/uv",
-        "~/.local/share/uv"
+        "~/.local/share/uv",
+        "~/.cache/mise",
+        "~/.local/share/mise",
+        "~/.local/state/mise"
       ],
       "denyWrite": [
         "~/.ssh",
@@ -182,12 +185,11 @@
         "~/.azure",
         "~/.config/git",
         "~/.config/gh",
-        "~/.config/uv",
-        "~/.cache/uv",
-        "~/.local/share/uv",
         "~/.config/ripgrep",
-        "~/.nix-profile",
-        "/nix/store",
+        "~/.config/uv",
+        "~/.local/share/uv",
+        "~/.local/share/mise",
+        "~/.config/mise",
         "~/.local/bin"
       ]
     }
