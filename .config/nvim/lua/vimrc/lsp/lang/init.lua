@@ -67,6 +67,21 @@ function M.format_tools_by_ft(client_name)
   return tools
 end
 
+function M.lint_tools_by_ft(client_name)
+  local tools = {}
+  for _, language in ipairs(enabled_languages()) do
+    language = language.config
+    local lint = language.lint
+    if lint and lint.client == client_name then
+      for _, filetype in ipairs(language.filetypes or {}) do
+        tools[filetype] = lint.tool
+      end
+    end
+  end
+
+  return tools
+end
+
 function M.language_for_filetype(filetype)
   for _, language in ipairs(enabled_languages()) do
     language = language.config

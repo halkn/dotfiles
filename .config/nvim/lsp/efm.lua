@@ -9,25 +9,63 @@ local formatters = {
     formatCommand = 'stylua --search-parent-directories --stdin-filepath ${INPUT} -',
     formatStdin = true,
   },
+  yamlfmt = {
+    formatCommand = 'yamlfmt -in',
+    formatStdin = true,
+  },
+}
+
+local linters = {
+  yamllint = {
+    lintCommand = 'yamllint -f parsable -',
+    lintStdin = true,
+    lintFormats = {
+      '%f:%l:%c: [%trror] %m',
+      '%f:%l:%c: [%tarning] %m',
+    },
+  },
 }
 
 local format_tools_by_ft = lang.format_tools_by_ft('efm')
+local lint_tools_by_ft = lang.lint_tools_by_ft('efm')
 
 local function efm_filetypes()
-  local filetypes = vim.tbl_keys(format_tools_by_ft)
+  local seen, filetypes = {}, {}
+  for ft in pairs(format_tools_by_ft) do
+    if not seen[ft] then
+      table.insert(filetypes, ft)
+      seen[ft] = true
+    end
+  end
+  for ft in pairs(lint_tools_by_ft) do
+    if not seen[ft] then
+      table.insert(filetypes, ft)
+      seen[ft] = true
+    end
+  end
   table.sort(filetypes)
   return filetypes
 end
 
 local function efm_languages()
   local languages = {}
+
   for filetype, tool in pairs(format_tools_by_ft) do
     local formatter = formatters[tool]
     if formatter == nil then
       error(('missing efm formatter config: %s'):format(tool))
     end
+    languages[filetype] = languages[filetype] or {}
+    table.insert(languages[filetype], vim.deepcopy(formatter))
+  end
 
-    languages[filetype] = { vim.deepcopy(formatter) }
+  for filetype, tool in pairs(lint_tools_by_ft) do
+    local linter = linters[tool]
+    if linter == nil then
+      error(('missing efm linter config: %s'):format(tool))
+    end
+    languages[filetype] = languages[filetype] or {}
+    table.insert(languages[filetype], vim.deepcopy(linter))
   end
 
   return languages
@@ -43,6 +81,7 @@ local config = {
   single_file_support = true,
   init_options = {
     documentFormatting = true,
+    documentDiagnostics = true,
   },
   settings = {
     rootMarkers = {

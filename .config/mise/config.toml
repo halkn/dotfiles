@@ -26,5 +26,7 @@ neovim = "latest"
 tree-sitter = "latest"
 
 # LSP / Linter / Formatter
-"npm:yaml-language-server" = "latest"
+"github:mattn/efm-langserver" = "latest"
+"pipx:yamllint" = "latest"
+"github:google/yamlfmt" = "latest"
 rumdl = "latest"
