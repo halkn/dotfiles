@@ -23,6 +23,8 @@
 | `~/.zshenv` | `~/.dotfiles/.zshenv` |
 | `~/.claude/CLAUDE.md` | `~/.dotfiles/claude/CLAUDE.md` |
 | `~/.claude/settings.json` | `~/.dotfiles/claude/settings.json` |
+| `~/.claude/statusline-command.sh` | `~/.dotfiles/claude/statusline-command.sh` |
+| `~/.claude/hooks/block-python.sh` | `~/.dotfiles/claude/hooks/block-python.sh` |
 
 新規ファイルは対象ツールの近くに配置し、既存のディレクトリ命名に合わせてください。
 
@@ -80,7 +82,7 @@ system package 更新が必要な場合は、mise タスクではなくユーザ
 
 - formatter: `stylua` が正。`luals` の built-in formatter を主担当に戻さないこと
 - diagnostics: `lua-language-server --check` と editor 内の `luals` が正
-- LSP server・efm backend tool は `flake.nix` で管理し PATH 経由で参照する
+- LSP server・efm backend tool は mise（`.config/mise/config.toml`）で管理し PATH 経由で参照する
 
 **変更時の手順:**
 
