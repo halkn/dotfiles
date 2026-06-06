@@ -15,6 +15,7 @@ hyperfine = "latest"
 gh = "latest"
 ghq = "latest"
 delta = "latest"
+"github:dlvhdr/diffnav" = "latest"
 
 # dev
 uv = "latest"
