@@ -16,9 +16,6 @@ export XDG_STATE_HOME=~/.local/state
 # zsh
 skip_global_compinit=1
 
-# bun
-export BUN_INSTALL="$HOME/.bun"
-
 # rumdl
 export RUMDL_CACHE_DIR=$XDG_CACHE_HOME/rumdl
 
@@ -41,8 +38,7 @@ export RIPGREP_CONFIG_PATH=$XDG_CONFIG_HOME/ripgrep/config
 typeset -U path
 path=(
   $XDG_BIN_HOME(N-/)
-  $XDG_DATA_HOME/mise/shims(N-/)
-  $BUN_INSTALL/bin(N-/)
+  # $XDG_DATA_HOME/mise/shims(N-/)
   $path
 )
 

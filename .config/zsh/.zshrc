@@ -109,6 +109,10 @@ zsh_plugins_dir=$zsh_data_dir/plugins
 [[ -f "$zsh_plugins_dir/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh" ]] \
   && source "$zsh_plugins_dir/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
 
+if command -v mise >/dev/null 2>&1; then
+  eval "$(~/.local/bin/mise activate zsh)"
+fi
+
 # ── uv ───────────────────────────────────────────────
 if command -v uv >/dev/null 2>&1; then
   _uv_comp="$zsh_cache_dir/uv_completion.zsh"

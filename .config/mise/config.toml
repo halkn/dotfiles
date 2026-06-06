@@ -19,7 +19,6 @@ delta = "latest"
 # dev
 uv = "latest"
 node = "latest"
-bun = "latest"
 "pipx:snowflake-cli" = "latest"
 
 # editor
@@ -27,11 +26,5 @@ neovim = "latest"
 tree-sitter = "latest"
 
 # LSP / Linter / Formatter
-lua-language-server = "latest"
-stylua = "latest"
-shfmt = "latest"
-"github:mattn/efm-langserver" = "latest"
-shellcheck = "latest"
 "npm:yaml-language-server" = "latest"
 rumdl = "latest"
-"npm:markdownlint-cli2" = "latest"
