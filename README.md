@@ -46,15 +46,13 @@ Run these on any platform after the prerequisites above.
    cd "$HOME/.dotfiles"
    ```
 
-2. Run the setup task. `just setup` installs mise, links every dotfile,
-   installs all tools, and clones the zsh plugins.
+2. Run the setup task. `mise run setup` links every dotfile, installs all
+   tools, and clones the zsh plugins.
 
    ```sh
-   # Bootstrap just via mise (one-time)
    curl https://mise.run | sh
    export PATH="$HOME/.local/bin:$HOME/.local/share/mise/shims:$PATH"
-   mise use --global just
-   just setup
+   mise run setup
    ```
 
 When the bootstrap finishes, reopen the terminal (or start a new login
@@ -85,17 +83,17 @@ git config user.name && git config user.email
 ## Tool Manager
 
 Most CLI tools are managed by [mise](https://mise.jdx.dev) via
-`.config/mise/config.toml`, and `just setup` / `just update` keep them in sync.
+`.config/mise/config.toml`, and `mise run setup` / `mise run update` keep them in sync.
 zsh plugins (`zsh-autosuggestions`, `fast-syntax-highlighting`) are managed as
 shallow git clones under `$XDG_DATA_HOME/zsh/plugins`.
 
 Useful tasks:
 
 ```sh
-just          # List tasks
-just setup    # Link dotfiles, install mise tools, and clone zsh plugins
-just update   # Update mise tools and zsh plugins
-just fmt      # Format Markdown, zsh files, and Neovim Lua files
-just fmt-check # Check formatting without writing files
-just lint     # Run repository checks
+mise tasks         # List tasks
+mise run setup     # Link dotfiles, install mise tools, and clone zsh plugins
+mise run update    # Update mise tools and zsh plugins
+mise run fmt       # Format Markdown, zsh files, and Neovim Lua files
+mise run fmt-check # Check formatting without writing files
+mise run lint      # Run repository checks
 ```
