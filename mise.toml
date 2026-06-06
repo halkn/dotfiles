@@ -2,7 +2,6 @@
 # Neovim LSP / Formatter（dotfiles 固有ファイルタイプのみ）
 lua-language-server = "latest"
 stylua = "latest"
-"github:mattn/efm-langserver" = "latest"
 shfmt = "latest"
 
 [tasks.link]
