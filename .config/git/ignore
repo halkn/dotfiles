@@ -4,3 +4,6 @@
 # claude
 **/.claude/settings.local.json
 
+# mise
+mise.local.toml
+
