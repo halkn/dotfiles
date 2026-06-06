@@ -17,7 +17,6 @@ ghq = "latest"
 delta = "latest"
 
 # dev
-just = "latest"
 uv = "latest"
 node = "latest"
 bun = "latest"
