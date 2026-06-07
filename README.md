@@ -15,7 +15,7 @@ Install the required apt packages. `zsh` is the login shell, and
 
 ```sh
 sudo apt update
-sudo apt install -y git curl zsh tmux bubblewrap socat unzip xclip
+sudo apt install -y git curl zsh tmux bubblewrap socat unzip
 curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
 az extension add --name azure-devops
 ```
