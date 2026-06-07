@@ -21,6 +21,7 @@ delta = "latest"
 uv = "latest"
 node = "latest"
 "pipx:snowflake-cli" = "latest"
+"pipx:apm-cli" = "latest"
 
 # editor
 neovim = "latest"
