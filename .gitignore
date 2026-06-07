@@ -1,9 +1,6 @@
 # snowflake-cli generated files
 .config/snowflake/.cli_version.cache
 
-# tmux plugins (managed by TPM, stored in $XDG_CONFIG_HOME/tmux/plugins)
-.config/tmux/plugins/
-
 # secret
 .config/gh/
 
