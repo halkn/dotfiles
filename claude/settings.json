@@ -136,7 +136,7 @@
     "hiroppy": {
       "source": {
         "source": "directory",
-        "path": "~/.config/tmux/plugins/tmux-agent-sidebar"
+        "path": "~/.local/share/tmux/plugins/tmux-agent-sidebar"
       }
     }
   },
