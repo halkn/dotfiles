@@ -16,9 +16,11 @@ Install the required apt packages. `zsh` is the login shell, and
 ```sh
 sudo apt update
 sudo apt install -y git curl zsh tmux bubblewrap socat unzip
-curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
-az extension add --name azure-devops
 ```
+
+`azure-cli` is no longer installed here; mise manages it (see
+[Tool Manager](#tool-manager)). Its `azure-devops` extension is added
+after the bootstrap (see [Azure CLI extensions](#azure-cli-extensions)).
 
 Make zsh the default shell. apt registers it in `/etc/shells`, so `chsh`
 accepts it directly. This only rewrites the login shell entry (it does
@@ -57,6 +59,15 @@ Run these on any platform after the prerequisites above.
 
 When the bootstrap finishes, reopen the terminal (or start a new login
 shell) to enter zsh with the linked config.
+
+### Azure CLI extensions
+
+`azure-cli` itself is installed by mise during the bootstrap. After it is
+on `PATH`, add the Azure DevOps extension:
+
+```sh
+az extension add --name azure-devops
+```
 
 zsh keeps its config under `.config/zsh` (XDG); the only file in `$HOME` is
 a small `.zshenv` stub that sets `ZDOTDIR` and hands off to it. Put
