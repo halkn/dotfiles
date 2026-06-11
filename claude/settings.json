@@ -183,6 +183,7 @@
       "allowRead": [
         ".",
         "~/.azure",
+        "~/.claude/skills",
         "~/.config/git",
         "~/.config/gh",
         "~/.config/ripgrep",
