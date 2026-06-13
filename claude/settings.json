@@ -204,6 +204,5 @@
   "autoUpdatesChannel": "latest",
   "tui": "fullscreen",
   "theme": "dark",
-  "editorMode": "vim",
-  "model": "opus"
+  "editorMode": "vim"
 }
