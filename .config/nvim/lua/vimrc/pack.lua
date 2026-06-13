@@ -12,19 +12,119 @@ M.hooks = function(ev)
 end
 vim.api.nvim_create_autocmd('PackChanged', { callback = M.hooks })
 
--- load plugins -------------------------------------------------------------
-local plugs = {}
-for _, f in ipairs(vim.fn.glob(vim.fn.stdpath('config') .. '/lua/plugins/*.lua', false, true)) do
-  local name = vim.fn.fnamemodify(f, ':t:r')
-  if name ~= 'init' then
-    local ok, spec = pcall(require, 'plugins.' .. name)
-    if ok and spec.src then
-      table.insert(plugs, spec)
-    elseif not ok then
-      vim.notify('[plugins] ' .. name .. ': ' .. spec, vim.log.levels.WARN)
-    end
-  end
-end
+-- plugins ------------------------------------------------------------------
+local plugs = {
+  {
+    src = 'rebelot/kanagawa.nvim',
+    config = function()
+      vim.cmd.colorscheme('kanagawa')
+    end,
+  },
+  {
+    src = 'nvim-treesitter/nvim-treesitter',
+    config = function()
+      vim.api.nvim_create_autocmd('FileType', {
+        group = vim.api.nvim_create_augroup('vim-treesitter-start', {}),
+        callback = function()
+          pcall(vim.treesitter.start)
+        end,
+      })
+    end,
+  },
+  {
+    src = 'saghen/blink.cmp',
+    version = 'v1.10.2',
+    config = function()
+      require('blink.cmp').setup({
+        keymap = {
+          preset = 'super-tab',
+        },
+        cmdline = { enabled = true },
+        appearance = {
+          nerd_font_variant = 'mono',
+        },
+        signature = { enabled = true },
+        completion = {
+          documentation = { auto_show = true, auto_show_delay_ms = 500 },
+        },
+        sources = {
+          default = { 'lsp', 'path', 'snippets', 'buffer' },
+        },
+      })
+    end,
+  },
+  {
+    src = 'monaqa/dial.nvim',
+    config = function()
+      local augend = require('dial.augend')
+      require('dial.config').augends:register_group({
+        default = {
+          augend.integer.alias.decimal,
+          augend.integer.alias.hex,
+          augend.constant.alias.bool,
+          augend.date.alias['%Y/%m/%d'],
+          augend.date.alias['%Y-%m-%d'],
+          augend.date.alias['%H:%M'],
+          augend.date.alias['%Y年%-m月%-d日'],
+          augend.date.alias['%Y年%-m月%-d日(%ja)'],
+          augend.constant.alias.ja_weekday,
+          augend.constant.alias.ja_weekday_full,
+        },
+      })
+      vim.keymap.set({ 'n', 'x' }, '<C-a>', '<Plug>(dial-increment)')
+      vim.keymap.set({ 'n', 'x' }, '<C-x>', '<Plug>(dial-decrement)')
+      vim.keymap.set({ 'n', 'x' }, 'g<C-a>', 'g<Plug>(dial-increment)')
+      vim.keymap.set({ 'n', 'x' }, 'g<C-x>', 'g<Plug>(dial-decrement)')
+    end,
+  },
+  {
+    src = 'nvim-mini/mini.nvim',
+    config = function()
+      -- Text editing
+      require('mini.align').setup()
+      require('mini.operators').setup({
+        replace = { prefix = 'R' },
+        exchange = { prefix = 'g/' },
+      })
+      vim.keymap.set('n', 'RR', 'R', { desc = 'Replace mode' })
+      require('mini.splitjoin').setup({ mappings = { toggle = '<Leader>j' } })
+      require('mini.surround').setup()
+
+      -- Git diff
+      local md = require('mini.diff')
+      md.setup({
+        view = {
+          style = 'sign',
+        },
+      })
+      vim.keymap.set('n', ']c', function()
+        md.goto_hunk('next')
+      end, { desc = 'Next hunk' })
+      vim.keymap.set('n', '[c', function()
+        md.goto_hunk('prev')
+      end, { desc = 'Prev hunk' })
+      vim.keymap.set('n', ']C', function()
+        md.goto_hunk('last')
+      end, { desc = 'Last hunk' })
+      vim.keymap.set('n', '[C', function()
+        md.goto_hunk('first')
+      end, { desc = 'First hunk' })
+      vim.keymap.set('n', '<Leader>hs', function()
+        md.do_hunks(0, 'apply', { scope = 'cursor' })
+      end, { desc = 'Stage hunk' })
+      vim.keymap.set('n', '<Leader>hr', function()
+        md.do_hunks(0, 'reset', { scope = 'cursor' })
+      end, { desc = 'Reset hunk' })
+      vim.keymap.set('n', '<Leader>hp', md.toggle_overlay, { desc = 'Preview hunk' })
+
+      -- Git commands
+      local mg = require('mini.git')
+      mg.setup()
+      vim.keymap.set('n', '<Leader>hb', mg.show_at_cursor, { desc = 'Blame line' })
+      require('mini.input').setup({})
+    end,
+  },
+}
 
 -- vim.pack.add
 vim.pack.add(vim.tbl_map(function(s)
