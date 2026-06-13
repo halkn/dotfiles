@@ -25,6 +25,7 @@
 | `~/.claude/settings.json` | `~/.dotfiles/claude/settings.json` |
 | `~/.claude/statusline-command.sh` | `~/.dotfiles/claude/statusline-command.sh` |
 | `~/.claude/hooks/block-python.sh` | `~/.dotfiles/claude/hooks/block-python.sh` |
+| `~/.claude/hooks/block-secret-read.sh` | `~/.dotfiles/claude/hooks/block-secret-read.sh` |
 
 新規ファイルは対象ツールの近くに配置し、既存のディレクトリ命名に合わせてください。
 
