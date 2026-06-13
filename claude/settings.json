@@ -23,12 +23,19 @@
       "Bash(uv lock --check *)",
       "Bash(uv audit *)",
       "Bash(uv export *)",
-      "Bash(rg *)",
       "Bash(eza *)",
       "Bash(tree *)",
       "Bash(jq *)",
+      "Bash(yq *)",
       "Bash(ghq list *)",
       "Bash(which *)",
+      "Bash(echo)",
+      "Bash(echo *)",
+      "Bash(ls)",
+      "Bash(ls *)",
+      "Bash(wc *)",
+      "Bash(pwd)",
+      "Bash(cd *)",
       "Bash(az repos list *)",
       "Bash(az repos show *)",
       "Bash(az repos pr list *)",
@@ -56,8 +63,12 @@
       "Read(**/credentials/**)",
       "Read(**/*.pem)",
       "Read(**/*.key)",
-      "Bash(rm*)",
-      "Bash(mv*)",
+      "Read(**/*.p12)",
+      "Read(**/*.pfx)",
+      "Read(**/id_rsa*)",
+      "Read(**/id_ed25519*)",
+      "Read(**/id_ecdsa*)",
+      "Read(**/.ssh/**)",
       "Bash(dd*)",
       "Bash(shred*)",
       "Bash(truncate*)",
@@ -72,16 +83,15 @@
       "Bash(scp*)",
       "Bash(python*)",
       "Bash(pip*)",
-      "Bash(git push --force*)",
-      "Bash(git push -f*)",
       "Bash(git checkout*)",
-      "Bash(git filter-branch*)",
       "Bash(git reflog expire*)",
       "Bash(git gc --prune*)",
-      "Bash(git update-ref -d*)",
-      "Bash(git config --global*)",
-      "Bash(git config --unset*)",
-      "Bash(git config --replace-all*)",
+      "Bash(git push --force*)",
+      "Bash(git push -f*)",
+      "Bash(git push --delete*)",
+      "Bash(git push * --delete*)",
+      "Bash(git push * --force*)",
+      "Bash(git push * -f*)",
       "Bash(uv pip*)",
       "Bash(uvx*)",
       "Bash(uv tool run*)",
@@ -90,6 +100,10 @@
       "Bash(uv cache clean*)",
       "Bash(uv cache prune*)",
       "Bash(uv self update*)",
+      "Bash(uv add*)",
+      "Bash(uv sync*)",
+      "Bash(uv publish*)",
+      "Bash(uv remove*)",
       "Bash(az devops invoke *--http-method post*)",
       "Bash(az devops invoke *--http-method POST*)",
       "Bash(az devops invoke *--http-method patch*)",
@@ -102,11 +116,7 @@
     "ask": [
       "Bash(git commit*)",
       "Bash(git push*)",
-      "Bash(uv add*)",
-      "Bash(uv sync*)",
-      "Bash(uv publish*)",
-      "Bash(uv version*)",
-      "Bash(uv remove*)"
+      "Bash(uv version*)"
     ],
     "defaultMode": "acceptEdits"
   },
@@ -118,6 +128,10 @@
           {
             "type": "command",
             "command": "~/.claude/hooks/block-python.sh"
+          },
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/block-secret-read.sh"
           }
         ]
       }
@@ -150,18 +164,10 @@
       "allowedDomains": [
         "github.com",
         "*.github.com",
-        "pypi.org",
-        "*.pypi.org",
-        "files.pythonhosted.org",
         "dev.azure.com",
         "*.dev.azure.com",
         "*.vssps.visualstudio.com",
-        "login.microsoftonline.com",
-        "learn.microsoft.com",
-        "docs.microsoft.com",
-        "azure.microsoft.com",
-        "docs.snowflake.com",
-        "community.snowflake.com"
+        "login.microsoftonline.com"
       ]
     },
     "filesystem": {
@@ -198,5 +204,6 @@
   "autoUpdatesChannel": "latest",
   "tui": "fullscreen",
   "theme": "dark",
-  "editorMode": "vim"
+  "editorMode": "vim",
+  "model": "opus"
 }
