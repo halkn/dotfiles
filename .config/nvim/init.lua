@@ -11,10 +11,12 @@ end
 
 -- modules: load local modules.
 for _, name in ipairs({
+  'vimrc.modules.input',
   'vimrc.modules.notify',
   'vimrc.modules.pairs',
   'vimrc.modules.picker',
   'vimrc.modules.statusline',
+  'vimrc.modules.surround',
   'vimrc.modules.terminal',
   'vimrc.modules.yankring',
 }) do
