@@ -54,7 +54,7 @@ system package 更新が必要な場合は、mise タスクではなくユーザ
 
 方針: 「標準機能を軸に、足りない部分だけを小さく補う」
 
-**初期化順序** (`lua/vimrc/` 内): `options` → `diagnostics` → `keymaps` → `autocmds` → `lsp` → `modules` → `plugins`
+**初期化順序** (`lua/vimrc/` 内): `options` → `diagnostics` → `keymaps` → `autocmds` → `lsp` → `modules` → `pack`
 
 **ファイル配置ルール:**
 
@@ -70,7 +70,8 @@ system package 更新が必要な場合は、mise タスクではなくユーザ
 | `lua/vimrc/lsp/` | LSP attach・keymap・format-on-save などの共通実行時処理 |
 | `lsp/*.lua` | Neovim 公式形式の server config（0.11+ 形式） |
 | `lua/vimrc/modules/` | 自作 UI・操作改善 |
-| `lua/plugins/` | 外部依存の機能別プラグイン定義 |
+| `lua/vimrc/pack.lua` | `lua/plugins/` を読み込み `vim.pack.add` で登録するローダー |
+| `lua/plugins/` | 外部依存の機能別プラグイン定義（`{ src, config }` 形式） |
 
 **Plugin 制約:**
 
@@ -124,3 +125,14 @@ system package 更新が必要な場合は、mise タスクではなくユーザ
 - シークレット・トークン・端末固有の認証情報はコミットしない
 - symlink と path は可能な限りポータブルに保つ
 - ローカル専用の状態ファイルをこのリポジトリに書き込まない
+- `.config/gh/` は secret として gitignore 対象 — 読み取りや変更はしない
+
+## Machine-local Overrides（gitignore 対象）
+
+端末固有の設定は以下のファイルへ記述する（追跡外）:
+
+| ファイル | 用途 |
+|----------|------|
+| `.config/zsh/.zshenv.local` | 端末固有の環境変数 |
+| `.config/zsh/.zshrc.local` | 端末固有のインタラクティブ設定 |
+| `.config/git/config.local` | `user.name` / `user.email` など |
