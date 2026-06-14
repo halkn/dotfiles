@@ -21,7 +21,7 @@ local languages = {
   python = {
     enabled = true,
     filetypes = { 'python' },
-    lsp = { 'ty', 'ruff' },
+    lsp = { 'pyright', 'ruff' },
     format = { client = 'ruff' },
   },
   lua = {

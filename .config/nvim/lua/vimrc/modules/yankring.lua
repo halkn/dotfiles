@@ -22,7 +22,11 @@ local function highlight_paste()
   local s = vim.api.nvim_buf_get_mark(0, '[')
   local e = vim.api.nvim_buf_get_mark(0, ']')
   local buf = vim.api.nvim_get_current_buf()
-  vim.highlight.range(buf, ns, 'IncSearch', { s[1] - 1, s[2] }, { e[1] - 1, e[2] })
+  vim.api.nvim_buf_set_extmark(buf, ns, s[1] - 1, s[2], {
+    end_row = e[1] - 1,
+    end_col = e[2],
+    hl_group = 'IncSearch',
+  })
   if hl_timer then
     hl_timer:stop()
     hl_timer:close()
