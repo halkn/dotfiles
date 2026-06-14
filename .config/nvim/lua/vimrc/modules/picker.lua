@@ -3,11 +3,49 @@
 local M = {}
 local original_ui_select = vim.ui.select
 local preview_ns = vim.api.nvim_create_namespace('vimrc_picker_preview')
+local match_ns = vim.api.nvim_create_namespace('vimrc_picker_match')
 
 M.config = {
   debounce_ms = 150,
   height_ratio = 0.8,
   width_ratio = 0.9,
+  exclude_globs = {
+    '!**/.git/*',
+    '!*.png',
+    '!*.jpg',
+    '!*.jpeg',
+    '!*.gif',
+    '!*.bmp',
+    '!*.svg',
+    '!*.ico',
+    '!*.webp',
+    '!*.tiff',
+    '!*.psd',
+    '!*.icns',
+    '!*.pdf',
+    '!*.doc',
+    '!*.docx',
+    '!*.xls',
+    '!*.xlsx',
+    '!*.zip',
+    '!*.tar',
+    '!*.gz',
+    '!*.bz2',
+    '!*.xz',
+    '!*.7z',
+    '!*.mp3',
+    '!*.mp4',
+    '!*.avi',
+    '!*.mkv',
+    '!*.mov',
+    '!*.flac',
+    '!*.bin',
+    '!*.exe',
+    '!*.dll',
+    '!*.so',
+    '!*.dylib',
+    '!*.o',
+  },
 }
 
 -- SECTION 1: State -------------------------------------------------------
@@ -29,6 +67,7 @@ local state = {
   origin_buf = nil,
   on_select = nil,
   _augroup = nil,
+  no_ignore = false,
 }
 
 -- SECTION 2: Utilities ---------------------------------------------------
@@ -111,34 +150,42 @@ sources.files = {
   use_preview = true,
   load = function(callback)
     local items = {}
-    local job = vim.system(
-      { 'rg', '--files', '--hidden', '--glob', '!**/.git/*' },
-      { text = true },
-      function(result)
-        -- パス収集のみ行い、アイコン取得はメインスレッドで実行する
-        local raw = {}
-        if result.code == 0 and result.stdout then
-          for line in result.stdout:gmatch('[^\n]+') do
-            table.insert(raw, line)
-          end
+    local cmd = { 'rg', '--files', '--hidden' }
+    for _, glob in ipairs(M.config.exclude_globs) do
+      vim.list_extend(cmd, { '--glob', glob })
+    end
+    if state.no_ignore then
+      table.insert(cmd, '--no-ignore')
+    end
+    local job = vim.system(cmd, { text = true }, function(result)
+      -- パス収集のみ行い、アイコン取得はメインスレッドで実行する
+      local raw = {}
+      if result.code == 0 and result.stdout then
+        for line in result.stdout:gmatch('[^\n]+') do
+          table.insert(raw, line)
         end
-        vim.schedule(function()
-          for _, line in ipairs(raw) do
-            local icon = get_icon(line)
-            local display = icon and (icon .. ' ' .. line) or line
-            table.insert(items, { text = line, display = display })
-          end
-          callback(items)
-        end)
       end
-    )
+      vim.schedule(function()
+        for _, line in ipairs(raw) do
+          local icon = get_icon(line)
+          local display = icon and (icon .. ' ' .. line) or line
+          table.insert(items, { text = line, display = display })
+        end
+        callback(items)
+      end)
+    end)
     return job
   end,
   filter = function(items, query)
     if query == '' then
       return items
     end
-    return vim.fn.matchfuzzy(items, query, { key = 'text' })
+    local r = vim.fn.matchfuzzypos(items, query, { key = 'text' })
+    local matched, positions = r[1], r[2]
+    for i = 1, #matched do
+      matched[i]._match_pos = positions[i]
+    end
+    return matched
   end,
 }
 
@@ -166,7 +213,12 @@ sources.buffers = {
     if query == '' then
       return items
     end
-    return vim.fn.matchfuzzy(items, query, { key = 'text' })
+    local r = vim.fn.matchfuzzypos(items, query, { key = 'text' })
+    local matched, positions = r[1], r[2]
+    for i = 1, #matched do
+      matched[i]._match_pos = positions[i]
+    end
+    return matched
   end,
 }
 
@@ -205,12 +257,17 @@ sources.buf_lines = {
     if query == '' then
       return items
     end
-    return vim.fn.matchfuzzy(items, query, { key = 'text' })
+    local r = vim.fn.matchfuzzypos(items, query, { key = 'text' })
+    local matched, positions = r[1], r[2]
+    for i = 1, #matched do
+      matched[i]._match_pos = positions[i]
+    end
+    return matched
   end,
 }
 
 -- SECTION 4: Window management -------------------------------------------
-local function _create_windows(layout, title, use_preview)
+local function _create_windows(layout, title, use_preview, footer)
   -- prompt window（1行）
   local prompt_buf = vim.api.nvim_create_buf(false, true)
   vim.bo[prompt_buf].buftype = 'prompt'
@@ -269,6 +326,8 @@ local function _create_windows(layout, title, use_preview)
     height = content_h,
     style = 'minimal',
     border = 'rounded',
+    footer = footer and (' ' .. footer .. ' ') or nil,
+    footer_pos = footer and 'right' or nil,
   })
   vim.wo[list_win].wrap = false
   vim.wo[list_win].cursorline = true
@@ -325,6 +384,7 @@ function M.close()
   state.filtered = {}
   state.cursor_idx = 1
   state.use_preview = false
+  state.no_ignore = false
 
   if origin and vim.api.nvim_win_is_valid(origin) then
     vim.api.nvim_set_current_win(origin)
@@ -332,6 +392,27 @@ function M.close()
 end
 
 -- SECTION 5: List rendering ----------------------------------------------
+local function _apply_match_highlights()
+  if not state.list_buf or not vim.api.nvim_buf_is_valid(state.list_buf) then
+    return
+  end
+  vim.api.nvim_buf_clear_namespace(state.list_buf, match_ns, 0, -1)
+  for i, item in ipairs(state.filtered) do
+    if item._match_pos then
+      local display = item.display or item.text
+      -- display = icon + " " + text のとき offset = #icon + 1
+      local offset = #display - #item.text
+      for _, pos in ipairs(item._match_pos) do
+        local col = offset + pos
+        pcall(vim.api.nvim_buf_set_extmark, state.list_buf, match_ns, i - 1, col, {
+          end_col = col + 1,
+          hl_group = 'Search',
+        })
+      end
+    end
+  end
+end
+
 local function _render_list()
   if not state.list_buf or not vim.api.nvim_buf_is_valid(state.list_buf) then
     return
@@ -345,6 +426,7 @@ local function _render_list()
   vim.bo[state.list_buf].modifiable = true
   vim.api.nvim_buf_set_lines(state.list_buf, 0, -1, false, lines)
   vim.bo[state.list_buf].modifiable = false
+  _apply_match_highlights()
 end
 
 local function _update_cursor()
@@ -466,6 +548,42 @@ end
 
 local grep_debounced = nil
 
+local function _reload_files()
+  if state.source_name ~= 'files' then
+    return
+  end
+  if state.async_job then
+    pcall(function()
+      state.async_job:kill(9)
+    end)
+    state.async_job = nil
+  end
+  state.all_items = {}
+  state.filtered = {}
+  state.cursor_idx = 1
+  _render_list()
+  local title = state.no_ignore and 'files [no-ignore]' or 'files'
+  pcall(vim.api.nvim_win_set_config, state.prompt_win, {
+    title = ' ' .. title .. ' ',
+    title_pos = 'center',
+  })
+  local job = sources.files.load(function(items)
+    if state.source_name ~= 'files' then
+      return
+    end
+    state.all_items = items
+    local q = _get_query()
+    state.filtered = sources.files.filter(items, q)
+    state.cursor_idx = 1
+    _render_list()
+    _update_cursor()
+    if state.use_preview and #state.filtered > 0 then
+      M._update_preview(state.filtered[1])
+    end
+  end)
+  state.async_job = job
+end
+
 local function _run_grep(query)
   if state.source_name ~= 'grep' then
     return
@@ -532,9 +650,16 @@ local function _on_query_change()
   elseif src == 'buf_lines' then
     source_def = sources.buf_lines
   elseif src == 'select' then
-    -- select は matchfuzzy を使う
-    state.filtered = (query == '') and state.all_items
-      or vim.fn.matchfuzzy(state.all_items, query, { key = 'text' })
+    if query == '' then
+      state.filtered = state.all_items
+    else
+      local r = vim.fn.matchfuzzypos(state.all_items, query, { key = 'text' })
+      local matched, positions = r[1], r[2]
+      for i = 1, #matched do
+        matched[i]._match_pos = positions[i]
+      end
+      state.filtered = matched
+    end
     state.cursor_idx = 1
     _render_list()
     _update_cursor()
@@ -623,6 +748,14 @@ local function set_prompt_keymaps()
   end, opts)
   vim.keymap.set('n', '<C-c>', function()
     M.close()
+  end, opts)
+
+  -- gitignore トグル（files ソースのみ）
+  vim.keymap.set('i', '<C-i>', function()
+    if state.source_name == 'files' then
+      state.no_ignore = not state.no_ignore
+      _reload_files()
+    end
   end, opts)
 
   -- テキスト移動（mappings.lua と同じ挙動）
@@ -769,9 +902,10 @@ function M.open(source_name, opts)
 
   local layout = calc_layout()
   local title = opts.title or source_name
+  local footer = (source_name == 'files') and '<C-i>: toggle ignore' or nil
 
   local prompt_buf, prompt_win, list_buf, list_win, preview_buf, preview_win =
-    _create_windows(layout, title, use_preview)
+    _create_windows(layout, title, use_preview, footer)
 
   state.prompt_buf = prompt_buf
   state.prompt_win = prompt_win
