@@ -1,3 +1,5 @@
+-- NOTE: 現在は pyright を使用している。ty の採用が広がったタイミングで再移行する。
+-- 有効化する場合は lsp.lua の languages.python.lsp を { 'ty', 'ruff' } に変更する。
 local function has_uv_project(root_dir)
   if not root_dir or root_dir == '' then
     return false
