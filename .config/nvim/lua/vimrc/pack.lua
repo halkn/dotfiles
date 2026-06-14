@@ -88,35 +88,45 @@ local plugs = {
       vim.keymap.set({ 'n', 'x' }, 'g<C-x>', 'g<Plug>(dial-decrement)')
     end,
   },
+  -- Git: gitsigns (mini.diff の代替)
   {
-    src = 'nvim-mini/mini.nvim',
+    src = 'lewis6991/gitsigns.nvim',
     config = function()
-      -- Git diff
-      local md = require('mini.diff')
-      md.setup({
-        view = {
-          style = 'sign',
+      local gs = require('gitsigns')
+      gs.setup({
+        signs = {
+          add = { text = '│' },
+          change = { text = '│' },
+          delete = { text = '_' },
+          topdelete = { text = '‾' },
+          changedelete = { text = '~' },
+          untracked = { text = '┆' },
         },
+        signs_staged_enable = true,
+        signcolumn = true,
+        numhl = false,
+        linehl = false,
+        word_diff = false,
+        watch_gitdir = { follow_files = true },
+        attach_to_untracked = true,
+        current_line_blame = false,
+        update_debounce = 100,
       })
       vim.keymap.set('n', ']c', function()
-        md.goto_hunk('next')
+        gs.nav_hunk('next')
       end, { desc = 'Next hunk' })
       vim.keymap.set('n', '[c', function()
-        md.goto_hunk('prev')
+        gs.nav_hunk('prev')
       end, { desc = 'Prev hunk' })
       vim.keymap.set('n', ']C', function()
-        md.goto_hunk('last')
+        gs.nav_hunk('last')
       end, { desc = 'Last hunk' })
       vim.keymap.set('n', '[C', function()
-        md.goto_hunk('first')
+        gs.nav_hunk('first')
       end, { desc = 'First hunk' })
-      vim.keymap.set('n', '<Leader>hs', function()
-        md.do_hunks(0, 'apply', { scope = 'cursor' })
-      end, { desc = 'Stage hunk' })
-      vim.keymap.set('n', '<Leader>hr', function()
-        md.do_hunks(0, 'reset', { scope = 'cursor' })
-      end, { desc = 'Reset hunk' })
-      vim.keymap.set('n', '<Leader>hp', md.toggle_overlay, { desc = 'Preview hunk' })
+      vim.keymap.set('n', '<Leader>hs', gs.stage_hunk, { desc = 'Stage hunk' })
+      vim.keymap.set('n', '<Leader>hr', gs.reset_hunk, { desc = 'Reset hunk' })
+      vim.keymap.set('n', '<Leader>hp', gs.preview_hunk, { desc = 'Preview hunk' })
     end,
   },
 }
