@@ -141,62 +141,14 @@ if command -v nvim >/dev/null 2>&1; then
   alias vimdiff='nvim -d'
 fi
 
-# ── fzf ──────────────────────────────────────────────
+# ── fzf (modules under lib/) ─────────────────────────
+# Built-in widgets (Ctrl-R history, Alt-C cd, Ctrl-T paste) come from fzf-core.zsh.
 if command -v fzf >/dev/null 2>&1 && [[ -t 0 ]]; then
-  export FZF_DEFAULT_OPTS="
-    --height 60%
-    --layout=reverse
-    --border
-    --info=inline
-    --preview-window=right:60%:wrap
-    --bind ctrl-u:preview-page-up,ctrl-d:preview-page-down
-    --bind ctrl-/:toggle-preview
-  "
-
-  source <(fzf --zsh)
+  for _fzf_mod in "$ZDOTDIR"/lib/fzf-*.zsh(N); do
+    source "$_fzf_mod"
+  done
+  unset _fzf_mod
 fi
-
-# Shell-state wrappers stay as functions; action-only commands can be aliases.
-_fzx_available() {
-  command -v fzx >/dev/null 2>&1 || {
-    print 'zsh: fzx is not installed or not in PATH' >&2
-    return 1
-  }
-}
-
-# fh - repeat history
-fh() {
-  local command
-
-  _fzx_available || return
-  command=$(fc -l 1 | fzx history) || return
-  [[ -n "$command" ]] && print -z -- "$command"
-}
-
-# fcd - interactive change directory
-fcd() {
-  local dir
-
-  _fzx_available || return
-  dir=$(fzx cd "$@") || return
-  [[ -n "$dir" ]] && cd -- "$dir"
-}
-
-if command -v fzx >/dev/null 2>&1; then
-  alias frm='fzx rm'
-  alias fgb='fzx git branch'
-  alias fga='fzx git stage'
-  alias fgl='fzx git log'
-fi
-
-# fgw - interactive worktree change directory
-fgw() {
-  local worktree
-
-  _fzx_available || return
-  worktree=$(fzx git worktree "$@") || return
-  [[ -n "$worktree" ]] && cd -- "$worktree"
-}
 
 # ── repo ─────────────────────────────────────────────
 # repo            : pick a ghq-managed repository with fzf and cd into it
