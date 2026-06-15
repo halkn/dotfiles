@@ -32,6 +32,12 @@ local plugs = {
     end,
   },
   {
+    src = 'nvim-tree/nvim-web-devicons',
+    config = function()
+      require('nvim-web-devicons').setup()
+    end,
+  },
+  {
     src = 'nvim-treesitter/nvim-treesitter',
     config = function()
       vim.api.nvim_create_autocmd('FileType', {
