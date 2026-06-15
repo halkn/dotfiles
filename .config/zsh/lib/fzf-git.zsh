@@ -10,7 +10,12 @@ fgb() {
       | grep -v '^origin/HEAD$' \
       | fzf --preview 'git log --oneline --graph --color=always {} -- 2>/dev/null | head -200'
   ) || return
-  [[ -n $branch ]] && git switch "${branch#origin/}"
+  [[ -n $branch ]] || return
+  if [[ $branch == */* ]]; then
+    git switch --track "$branch"
+  else
+    git switch "$branch"
+  fi
 }
 
 # fga - stage one or more changed files (multi-select).
@@ -20,7 +25,7 @@ fga() {
   local files
   files=$(
     git status --short \
-      | fzf --multi --preview 'git diff --color=always -- "$(cut -c4- <<< {})"' \
+      | fzf --multi --preview 'git diff --color=always -- "$(printf "%s" "{}" | cut -c4-)"' \
       | cut -c4-
   ) || return
   [[ -z $files ]] && return

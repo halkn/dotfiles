@@ -1,5 +1,6 @@
 # Shared fzf setup and helpers for the lib/fzf-*.zsh modules.
-# Sourced first by the loader in .zshrc (glob order: core < file < git).
+# Sourced explicitly before the glob loop in .zshrc so other modules can depend on it.
+[[ -t 0 ]] || return
 
 export FZF_DEFAULT_OPTS="
   --height 60%
@@ -20,4 +21,19 @@ _fzf_in_git_repo() {
     print 'fzf: not inside a git repository' >&2
     return 1
   }
+}
+
+# fh - select a history entry and place it on the command-line buffer for editing.
+fh() {
+  local cmd
+  cmd=$(fc -l 1 | fzf --tac --no-sort | sed 's/^ *[0-9]* *//') || return
+  [[ -n $cmd ]] && print -z -- "$cmd"
+}
+
+# fcd - interactively cd into a directory under the given root (default: .).
+fcd() {
+  command -v fd >/dev/null 2>&1 || { print 'fcd: fd is not installed' >&2; return 1; }
+  local dir
+  dir=$(fd --type d --hidden --exclude .git . "${1:-.}" | fzf --preview 'ls -la {}') || return
+  [[ -n $dir ]] && cd -- "$dir"
 }
