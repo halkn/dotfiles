@@ -7,7 +7,7 @@ local hl_ns = vim.api.nvim_create_namespace('vimrc_explorer_hl')
 
 M.config = {
   width = 32,
-  show_hidden = false,
+  show_hidden = true,
 }
 
 -- SECTION 1: State -------------------------------------------------------
