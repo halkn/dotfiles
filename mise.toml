@@ -92,7 +92,7 @@ run = [
 
 [tasks.lint-zsh]
 hide = true
-run = "zsh -n .zshenv .config/zsh/.zshenv .config/zsh/.zshrc"
+run = "zsh -n .zshenv .config/zsh/.zshenv .config/zsh/.zshrc .config/zsh/lib/*.zsh"
 
 [tasks.lint-md]
 hide = true
