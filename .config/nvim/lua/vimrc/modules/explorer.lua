@@ -26,12 +26,6 @@ local state = {
 -- 必ずメインスレッドから呼ぶこと
 local _icon_fn = nil
 local function get_icon(path, is_dir)
-  if is_dir then
-    return _icon_fn and _icon_fn('dir', path) or ''
-  end
-  if _icon_fn == false then
-    return ''
-  end
   if _icon_fn == nil then
     local ok, icons = pcall(require, 'mini.icons')
     if ok and icons.get then
@@ -58,11 +52,13 @@ local function get_icon(path, is_dir)
         end
       else
         _icon_fn = false
-        return ''
       end
     end
   end
-  return _icon_fn('file', path)
+  if not _icon_fn then
+    return ''
+  end
+  return _icon_fn(is_dir and 'dir' or 'file', path)
 end
 
 -- SECTION 3: Tree model --------------------------------------------------
@@ -241,6 +237,13 @@ local function collapse_or_parent()
       return
     end
   end
+  -- depth-0: parent は state.root（nodes に存在しない）→ 上の階層へ移動
+  local root_parent = vim.fn.fnamemodify(state.root, ':h')
+  if root_parent ~= state.root then
+    state.open_dirs[state.root] = true
+    state.root = root_parent
+    render()
+  end
 end
 
 local function go_up()
@@ -250,10 +253,6 @@ local function go_up()
   end
   state.open_dirs[state.root] = true
   state.root = parent
-  render()
-end
-
-local function refresh()
   render()
 end
 
@@ -276,7 +275,7 @@ local function setup_keymaps()
   end, opts)
   vim.keymap.set('n', '-', go_up, opts)
   vim.keymap.set('n', 'u', go_up, opts)
-  vim.keymap.set('n', 'R', refresh, opts)
+  vim.keymap.set('n', 'R', render, opts)
   vim.keymap.set('n', 'H', toggle_hidden, opts)
   vim.keymap.set('n', 'q', M.close, opts)
   vim.keymap.set('n', '<Esc>', M.close, opts)
@@ -296,7 +295,6 @@ end
 local function open_win()
   state.origin_win = vim.api.nvim_get_current_win()
   state.root = state.root or vim.uv.cwd()
-  state.show_hidden = M.config.show_hidden
 
   -- 左端・全高の縦分割
   vim.cmd('topleft vsplit')
@@ -320,7 +318,7 @@ local function open_win()
 
   -- window が閉じられたら state を片付ける
   vim.api.nvim_create_autocmd('WinClosed', {
-    buffer = state.buf,
+    pattern = tostring(state.win),
     once = true,
     callback = function()
       state.win = nil
@@ -342,6 +340,7 @@ end
 
 function M.setup(opts)
   M.config = vim.tbl_deep_extend('force', M.config, opts or {})
+  state.show_hidden = M.config.show_hidden
   vim.keymap.set('n', '<Leader>e', M.toggle, { desc = 'explorer: toggle' })
 end
 
