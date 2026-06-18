@@ -5,6 +5,8 @@ local original_ui_select = vim.ui.select
 local preview_ns = vim.api.nvim_create_namespace('vimrc_picker_preview')
 local match_ns = vim.api.nvim_create_namespace('vimrc_picker_match')
 
+vim.api.nvim_set_hl(0, 'PickerMatch', { link = 'Special' })
+
 M.config = {
   debounce_ms = 150,
   height_ratio = 0.8,
@@ -225,6 +227,7 @@ end
 local function tree_build_filtered(matched_items)
   local root = { children = {} }
   local node_map = { [''] = root }
+  local match_pos_map = {}
 
   for _, item in ipairs(matched_items) do
     local parts = vim.split(item.text, '/')
@@ -243,6 +246,9 @@ local function tree_build_filtered(matched_items)
         table.insert(parent.children, node)
       end
       parent = node_map[current_path]
+    end
+    if item._match_pos then
+      match_pos_map[item.text] = item._match_pos
     end
   end
 
@@ -272,11 +278,26 @@ local function tree_build_filtered(matched_items)
         local icon = get_icon(child.name) or ''
         display = indent .. (icon ~= '' and (icon .. ' ') or '  ') .. child.name
       end
-      table.insert(items, {
+      local flat_item = {
         text = child.path,
         display = display,
         _tree_node = child,
-      })
+      }
+      local positions = match_pos_map[child.path]
+      if positions and not child.is_dir then
+        local name_start = #child.path - #child.name
+        local prefix_len = #display - #child.name
+        local mapped = {}
+        for _, pos in ipairs(positions) do
+          if pos >= name_start then
+            table.insert(mapped, prefix_len + (pos - name_start))
+          end
+        end
+        if #mapped > 0 then
+          flat_item._match_pos = mapped
+        end
+      end
+      table.insert(items, flat_item)
       if child.is_dir then
         walk(child, depth + 1)
       end
@@ -590,16 +611,16 @@ local function _apply_match_highlights()
     return
   end
   vim.api.nvim_buf_clear_namespace(state.list_buf, match_ns, 0, -1)
+  local is_tree = state.source_name == 'tree'
   for i, item in ipairs(state.filtered) do
     if item._match_pos then
       local display = item.display or item.text
-      -- display = icon + " " + text のとき offset = #icon + 1
-      local offset = #display - #item.text
+      local offset = is_tree and 0 or (#display - #item.text)
       for _, pos in ipairs(item._match_pos) do
         local col = offset + pos
         pcall(vim.api.nvim_buf_set_extmark, state.list_buf, match_ns, i - 1, col, {
           end_col = col + 1,
-          hl_group = 'Search',
+          hl_group = 'PickerMatch',
         })
       end
     end
@@ -930,7 +951,11 @@ local function _on_query_change()
       state.cursor_idx = 1
     elseif state.tree_all_files then
       local r = vim.fn.matchfuzzypos(state.tree_all_files, query, { key = 'text' })
-      state.filtered = tree_build_filtered(r[1])
+      local matched, positions = r[1], r[2]
+      for i = 1, #matched do
+        matched[i]._match_pos = positions[i]
+      end
+      state.filtered = tree_build_filtered(matched)
       state.cursor_idx = 1
       for i, item in ipairs(state.filtered) do
         if not (item._tree_node and item._tree_node.is_dir) then
