@@ -12,7 +12,6 @@ end
 -- modules: load local modules.
 for _, name in ipairs({
   'vimrc.modules.input',
-  'vimrc.modules.explorer',
   'vimrc.modules.notify',
   'vimrc.modules.pairs',
   'vimrc.modules.picker',
