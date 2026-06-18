@@ -927,16 +927,23 @@ local function _on_query_change()
   if src == 'tree' then
     if query == '' then
       state.filtered = tree_flatten()
+      state.cursor_idx = 1
     elseif state.tree_all_files then
       local r = vim.fn.matchfuzzypos(state.tree_all_files, query, { key = 'text' })
       state.filtered = tree_build_filtered(r[1])
+      state.cursor_idx = 1
+      for i, item in ipairs(state.filtered) do
+        if not (item._tree_node and item._tree_node.is_dir) then
+          state.cursor_idx = i
+          break
+        end
+      end
     end
     state.all_items = state.filtered
-    state.cursor_idx = 1
     _render_list()
     _update_cursor()
-    if state.use_preview and #state.filtered > 0 then
-      M._update_preview(state.filtered[1])
+    if state.use_preview and state.filtered[state.cursor_idx] then
+      M._update_preview(state.filtered[state.cursor_idx])
     end
     return
   end
