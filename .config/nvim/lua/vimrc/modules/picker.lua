@@ -68,6 +68,11 @@ local state = {
   on_select = nil,
   _augroup = nil,
   no_ignore = false,
+  tree_root = nil,
+  tree_open_dirs = {},
+  tree_all_files = nil,
+  tree_nav_mode = false,
+  _saved_guicursor = nil,
 }
 
 -- SECTION 2: Utilities ---------------------------------------------------
@@ -108,20 +113,19 @@ end
 -- アイコン取得（mini.icons → nvim-web-devicons → nil の順に試みる）
 -- 必ずメインスレッド（vim.schedule内）から呼ぶこと
 local _icon_fn = nil
-local function get_icon(filepath)
+local function get_icon(filepath, is_dir)
   if _icon_fn == false then
     return nil
   end
   if _icon_fn == nil then
     local ok, icons = pcall(require, 'mini.icons')
     if ok and icons.get then
-      -- setup() 未呼び出しの場合に備えて初期化を試みる
       if not icons.config then
         pcall(icons.setup, {})
       end
-      _icon_fn = function(p)
-        local ok2, icon = pcall(icons.get, 'file', p)
-        -- 成功かつ空文字でなければ返す
+      _icon_fn = function(p, dir)
+        local cat = dir and 'directory' or 'file'
+        local ok2, icon = pcall(icons.get, cat, p)
         if ok2 and icon and icon ~= '' then
           return icon
         end
@@ -130,7 +134,10 @@ local function get_icon(filepath)
     else
       local ok2, devicons = pcall(require, 'nvim-web-devicons')
       if ok2 then
-        _icon_fn = function(p)
+        _icon_fn = function(p, dir)
+          if dir then
+            return '\xef\x81\xbb'
+          end
           local ext = vim.fn.fnamemodify(p, ':e')
           return devicons.get_icon(p, ext)
         end
@@ -140,7 +147,164 @@ local function get_icon(filepath)
       end
     end
   end
-  return _icon_fn(filepath)
+  return _icon_fn(filepath, is_dir)
+end
+
+-- SECTION 2.5: Tree helpers -----------------------------------------------
+local function tree_ensure_children(node)
+  if node.children ~= nil then
+    return
+  end
+  node.children = {}
+  local cwd = vim.uv.cwd()
+  local abs = node.path == '.' and cwd or (cwd .. '/' .. node.path)
+  local handle = vim.uv.fs_scandir(abs)
+  if not handle then
+    return
+  end
+  while true do
+    local name, typ = vim.uv.fs_scandir_next(handle)
+    if not name then
+      break
+    end
+    local rel = node.path == '.' and name or (node.path .. '/' .. name)
+    local is_dir = typ == 'directory'
+    if typ == 'link' then
+      local st = vim.uv.fs_stat(abs .. '/' .. name)
+      is_dir = st and st.type == 'directory' or false
+    end
+    table.insert(node.children, {
+      name = name,
+      path = rel,
+      is_dir = is_dir,
+      children = nil,
+    })
+  end
+  table.sort(node.children, function(a, b)
+    if a.is_dir ~= b.is_dir then
+      return a.is_dir
+    end
+    return a.name < b.name
+  end)
+end
+
+local function tree_flatten()
+  local items = {}
+  local function walk(node, depth)
+    tree_ensure_children(node)
+    if not node.children then
+      return
+    end
+    for _, child in ipairs(node.children) do
+      local indent = string.rep('  ', depth)
+      local display
+      if child.is_dir then
+        local expanded = state.tree_open_dirs[child.path]
+        local dir_icon = expanded and '\xef\x81\xbc' or '\xef\x81\xbb'
+        display = indent .. dir_icon .. ' ' .. child.name
+      else
+        local icon = get_icon(child.name) or ''
+        display = indent .. (icon ~= '' and (icon .. ' ') or '  ') .. child.name
+      end
+      table.insert(items, {
+        text = child.path,
+        display = display,
+        _tree_node = child,
+      })
+      if child.is_dir and state.tree_open_dirs[child.path] then
+        walk(child, depth + 1)
+      end
+    end
+  end
+  if state.tree_root then
+    walk(state.tree_root, 0)
+  end
+  return items
+end
+
+local function tree_build_filtered(matched_items)
+  local root = { children = {} }
+  local node_map = { [''] = root }
+
+  for _, item in ipairs(matched_items) do
+    local parts = vim.split(item.text, '/')
+    local parent = root
+    local current_path = ''
+    for i = 1, #parts do
+      current_path = i == 1 and parts[i] or (current_path .. '/' .. parts[i])
+      if not node_map[current_path] then
+        local node = {
+          name = parts[i],
+          path = current_path,
+          is_dir = (i < #parts),
+          children = {},
+        }
+        node_map[current_path] = node
+        table.insert(parent.children, node)
+      end
+      parent = node_map[current_path]
+    end
+  end
+
+  local function sort_tree(node)
+    if node.children then
+      table.sort(node.children, function(a, b)
+        if a.is_dir ~= b.is_dir then
+          return a.is_dir
+        end
+        return a.name < b.name
+      end)
+      for _, child in ipairs(node.children) do
+        sort_tree(child)
+      end
+    end
+  end
+  sort_tree(root)
+
+  local items = {}
+  local function walk(node, depth)
+    for _, child in ipairs(node.children or {}) do
+      local indent = string.rep('  ', depth)
+      local display
+      if child.is_dir then
+        display = indent .. '\xef\x81\xbc ' .. child.name
+      else
+        local icon = get_icon(child.name) or ''
+        display = indent .. (icon ~= '' and (icon .. ' ') or '  ') .. child.name
+      end
+      table.insert(items, {
+        text = child.path,
+        display = display,
+        _tree_node = child,
+      })
+      if child.is_dir then
+        walk(child, depth + 1)
+      end
+    end
+  end
+  walk(root, 0)
+  return items
+end
+
+local function tree_load_all_files()
+  local cmd = { 'rg', '--files', '--hidden' }
+  for _, glob in ipairs(M.config.exclude_globs) do
+    vim.list_extend(cmd, { '--glob', glob })
+  end
+  local job = vim.system(cmd, { text = true }, function(result)
+    local items = {}
+    if result.code == 0 and result.stdout then
+      for line in result.stdout:gmatch('[^\n]+') do
+        table.insert(items, { text = line })
+      end
+    end
+    vim.schedule(function()
+      if state.source_name == 'tree' then
+        state.tree_all_files = items
+      end
+    end)
+  end)
+  state.async_job = job
 end
 
 local sources = {}
@@ -266,6 +430,11 @@ sources.buf_lines = {
   end,
 }
 
+sources.tree = {
+  name = 'tree',
+  use_preview = true,
+}
+
 -- SECTION 4: Window management -------------------------------------------
 local function _create_windows(layout, title, use_preview, footer)
   -- prompt window（1行）
@@ -331,9 +500,28 @@ local function _create_windows(layout, title, use_preview, footer)
   })
   vim.wo[list_win].wrap = false
   vim.wo[list_win].cursorline = true
+  vim.wo[list_win].cursorcolumn = false
+  vim.wo[list_win].number = false
+  vim.wo[list_win].relativenumber = false
+  vim.wo[list_win].statusline = ' '
   vim.wo[list_win].winhighlight = 'CursorLine:PmenuSel,CursorLineBg:PmenuSel'
 
   return prompt_buf, prompt_win, list_buf, list_win, preview_buf, preview_win
+end
+
+local function hide_cursor()
+  if not state._saved_guicursor then
+    state._saved_guicursor = vim.o.guicursor
+  end
+  vim.api.nvim_set_hl(0, 'PickerHiddenCursor', { blend = 100, nocombine = true })
+  vim.o.guicursor = 'a:PickerHiddenCursor/PickerHiddenCursor'
+end
+
+local function restore_cursor()
+  if state._saved_guicursor then
+    vim.o.guicursor = state._saved_guicursor
+    state._saved_guicursor = nil
+  end
 end
 
 function M.close()
@@ -385,6 +573,11 @@ function M.close()
   state.cursor_idx = 1
   state.use_preview = false
   state.no_ignore = false
+  restore_cursor()
+  state.tree_root = nil
+  state.tree_open_dirs = {}
+  state.tree_all_files = nil
+  state.tree_nav_mode = false
 
   if origin and vim.api.nvim_win_is_valid(origin) then
     vim.api.nvim_set_current_win(origin)
@@ -524,7 +717,17 @@ function M._update_preview(item)
   end
 
   local src = state.source_name
-  if src == 'files' then
+  if src == 'tree' then
+    if item._tree_node and item._tree_node.is_dir then
+      if state.preview_buf and vim.api.nvim_buf_is_valid(state.preview_buf) then
+        vim.bo[state.preview_buf].modifiable = true
+        vim.api.nvim_buf_set_lines(state.preview_buf, 0, -1, false, {})
+        vim.bo[state.preview_buf].modifiable = false
+      end
+      return
+    end
+    M._preview_file(item.text, nil)
+  elseif src == 'files' then
     M._preview_file(item.text, nil)
   elseif src == 'grep' then
     -- grep: "file:lnum:col:text" 形式
@@ -532,6 +735,86 @@ function M._update_preview(item)
     if path then
       M._preview_file(path, tonumber(lnum))
     end
+  end
+end
+
+-- SECTION 6.5: Tree UI ---------------------------------------------------
+local function tree_expand()
+  local item = state.filtered[state.cursor_idx]
+  if not item or not item._tree_node then
+    return
+  end
+  local node = item._tree_node
+  if node.is_dir then
+    state.tree_open_dirs[node.path] = true
+    tree_ensure_children(node)
+    state.filtered = tree_flatten()
+    state.all_items = state.filtered
+    _render_list()
+    _update_cursor()
+    if state.use_preview and state.filtered[state.cursor_idx] then
+      M._update_preview(state.filtered[state.cursor_idx])
+    end
+  else
+    M._accept()
+  end
+end
+
+local function tree_collapse()
+  local item = state.filtered[state.cursor_idx]
+  if not item or not item._tree_node then
+    return
+  end
+  local node = item._tree_node
+  if node.is_dir and state.tree_open_dirs[node.path] then
+    state.tree_open_dirs[node.path] = nil
+    state.filtered = tree_flatten()
+    state.all_items = state.filtered
+    state.cursor_idx = math.min(state.cursor_idx, math.max(1, #state.filtered))
+    _render_list()
+    _update_cursor()
+    if state.use_preview and state.filtered[state.cursor_idx] then
+      M._update_preview(state.filtered[state.cursor_idx])
+    end
+  else
+    local parent_path = vim.fn.fnamemodify(node.path, ':h')
+    if parent_path == '.' or parent_path == '' then
+      return
+    end
+    for i, it in ipairs(state.filtered) do
+      if it.text == parent_path then
+        state.cursor_idx = i
+        _update_cursor()
+        if state.use_preview then
+          M._update_preview(state.filtered[i])
+        end
+        break
+      end
+    end
+  end
+end
+
+local function tree_enter_nav_mode()
+  if state.source_name ~= 'tree' then
+    return
+  end
+  state.tree_nav_mode = true
+  if state.list_win and vim.api.nvim_win_is_valid(state.list_win) then
+    vim.api.nvim_set_current_win(state.list_win)
+    vim.cmd('stopinsert')
+  end
+  hide_cursor()
+end
+
+local function tree_enter_search_mode()
+  if state.source_name ~= 'tree' then
+    return
+  end
+  state.tree_nav_mode = false
+  restore_cursor()
+  if state.prompt_win and vim.api.nvim_win_is_valid(state.prompt_win) then
+    vim.api.nvim_set_current_win(state.prompt_win)
+    vim.cmd('startinsert!')
   end
 end
 
@@ -641,6 +924,23 @@ local function _on_query_change()
     return
   end
 
+  if src == 'tree' then
+    if query == '' then
+      state.filtered = tree_flatten()
+    elseif state.tree_all_files then
+      local r = vim.fn.matchfuzzypos(state.tree_all_files, query, { key = 'text' })
+      state.filtered = tree_build_filtered(r[1])
+    end
+    state.all_items = state.filtered
+    state.cursor_idx = 1
+    _render_list()
+    _update_cursor()
+    if state.use_preview and #state.filtered > 0 then
+      M._update_preview(state.filtered[1])
+    end
+    return
+  end
+
   -- files / buffers / buf_lines: matchfuzzy でフィルタ
   local source_def
   if src == 'files' then
@@ -694,13 +994,30 @@ local function _setup_autocmds()
   vim.api.nvim_create_autocmd('WinLeave', {
     group = aug,
     callback = function()
-      local current = vim.api.nvim_get_current_win()
-      if
-        current ~= state.prompt_win
-        and current ~= state.list_win
-        and current ~= state.preview_win
-      then
-        M.close()
+      vim.schedule(function()
+        local cur = vim.api.nvim_get_current_win()
+        if
+          cur ~= state.prompt_win
+          and cur ~= state.list_win
+          and cur ~= (state.preview_win or -1)
+        then
+          M.close()
+        end
+      end)
+    end,
+  })
+
+  -- tree nav: カーソル移動でプレビュー更新
+  vim.api.nvim_create_autocmd('CursorMoved', {
+    group = aug,
+    buffer = state.list_buf,
+    callback = function()
+      if state.tree_nav_mode and state.list_win and vim.api.nvim_win_is_valid(state.list_win) then
+        local cursor = vim.api.nvim_win_get_cursor(state.list_win)
+        state.cursor_idx = cursor[1]
+        if state.use_preview and state.filtered[state.cursor_idx] then
+          M._update_preview(state.filtered[state.cursor_idx])
+        end
       end
     end,
   })
@@ -738,7 +1055,11 @@ local function set_prompt_keymaps()
 
   -- 閉じる
   vim.keymap.set('i', '<Esc>', function()
-    M.close()
+    if state.source_name == 'tree' then
+      tree_enter_nav_mode()
+    else
+      M.close()
+    end
   end, opts)
   vim.keymap.set('i', '<C-c>', function()
     M.close()
@@ -766,6 +1087,54 @@ local function set_prompt_keymaps()
   vim.keymap.set('i', '<C-h>', '<BS>', opts)
 end
 
+local function set_tree_nav_keymaps()
+  local buf = state.list_buf
+  local opts = { noremap = true, silent = true, buffer = buf }
+
+  vim.keymap.set('n', 'j', function()
+    _move_cursor(1)
+  end, opts)
+  vim.keymap.set('n', 'k', function()
+    _move_cursor(-1)
+  end, opts)
+  vim.keymap.set('n', 'l', function()
+    tree_expand()
+  end, opts)
+  vim.keymap.set('n', 'h', function()
+    tree_collapse()
+  end, opts)
+  vim.keymap.set('n', '<CR>', function()
+    local item = state.filtered[state.cursor_idx]
+    if item and item._tree_node and item._tree_node.is_dir then
+      if state.tree_open_dirs[item._tree_node.path] then
+        tree_collapse()
+      else
+        tree_expand()
+      end
+    else
+      M._accept()
+    end
+  end, opts)
+  vim.keymap.set('n', '/', function()
+    tree_enter_search_mode()
+  end, opts)
+  vim.keymap.set('n', 'i', function()
+    tree_enter_search_mode()
+  end, opts)
+  vim.keymap.set('n', '<Esc>', function()
+    M.close()
+  end, opts)
+  vim.keymap.set('n', 'q', function()
+    M.close()
+  end, opts)
+  vim.keymap.set('n', '<C-v>', function()
+    M._accept_with_split('vsplit')
+  end, opts)
+  vim.keymap.set('n', '<C-x>', function()
+    M._accept_with_split('split')
+  end, opts)
+end
+
 -- SECTION 9: Core --------------------------------------------------------
 function M._accept_with_split(split_cmd)
   local item = state.filtered[state.cursor_idx]
@@ -781,6 +1150,14 @@ function M._accept_with_split(split_cmd)
   -- vim.ui.select はスプリット非対応（通常の選択として扱う）
   if on_select then
     on_select(item)
+    return
+  end
+
+  if src == 'tree' then
+    if item._tree_node and item._tree_node.is_dir then
+      return
+    end
+    vim.cmd(split_cmd .. ' ' .. vim.fn.fnameescape(item.text))
     return
   end
 
@@ -836,6 +1213,15 @@ function M._accept()
   -- vim.ui.select
   if on_select then
     on_select(item)
+    return
+  end
+
+  -- tree
+  if src == 'tree' then
+    if item._tree_node and item._tree_node.is_dir then
+      return
+    end
+    vim.cmd.edit(item.text)
     return
   end
 
@@ -923,7 +1309,24 @@ function M.open(source_name, opts)
   _setup_autocmds()
 
   -- アイテム読み込み
-  if opts.items then
+  if source_name == 'tree' then
+    state.tree_root = { name = '.', path = '.', is_dir = true, children = nil }
+    state.tree_open_dirs = {}
+    state.tree_all_files = nil
+    state.tree_nav_mode = false
+    tree_ensure_children(state.tree_root)
+    local items = tree_flatten()
+    state.all_items = items
+    state.filtered = items
+    _render_list()
+    _update_cursor()
+    if use_preview and #items > 0 then
+      M._update_preview(items[1])
+    end
+    set_tree_nav_keymaps()
+    tree_load_all_files()
+    tree_enter_nav_mode()
+  elseif opts.items then
     -- vim.ui.select 用: 直接アイテムを渡す
     state.all_items = opts.items
     state.filtered = opts.items
@@ -973,6 +1376,9 @@ function M.setup(opts)
   vim.keymap.set('n', '<Leader>l', function()
     M.buf_lines()
   end, { desc = 'picker: buf_lines' })
+  vim.keymap.set('n', '<Leader>e', function()
+    M.tree()
+  end, { desc = 'picker: tree' })
 end
 
 function M.files()
@@ -989,6 +1395,10 @@ end
 
 function M.buf_lines()
   M.open('buf_lines', { title = 'buf_lines' })
+end
+
+function M.tree()
+  M.open('tree', { title = 'tree' })
 end
 
 function M.ui_select(items, opts, on_choice)
