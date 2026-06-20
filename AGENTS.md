@@ -46,32 +46,13 @@ system package 更新が必要な場合は、mise タスクではなくユーザ
 ## Coding Style & Naming Conventions
 
 - **Shell**: `set -euo pipefail`、小文字の関数名、意味のある環境変数名を使う
-- **Lua**: `lua/vimrc/` 配下で役割ごとに分け、プラグイン定義は `lua/plugins/` に機能単位で分割する
+- **Lua**: `lua/vimrc/` 配下で役割ごとに分け、プラグイン定義は `lua/vimrc/pack.lua` にまとめる
 - **Markdown**: 短く実務的に書き、`rumdl` 準拠で整える
 - **整形**: Shell・Lua ファイルは `mise run fmt` で整形する（`shfmt`・`stylua` は mise 管理）
 
 ## Neovim Design Principles
 
 方針: 「標準機能を軸に、足りない部分だけを小さく補う」
-
-**初期化順序** (`lua/vimrc/` 内): `options` → `diagnostics` → `keymaps` → `autocmds` → `lsp` → `modules` → `pack`
-
-**ファイル配置ルール:**
-
-| パス | 役割 |
-|------|------|
-| `lua/vimrc/options.lua` | 起動時 option と provider 設定 |
-| `lua/vimrc/diagnostics.lua` | `vim.diagnostic.config()` |
-| `lua/vimrc/keymaps.lua` | LSP 非依存の global keymap |
-| `lua/vimrc/autocmds.lua` | LSP 非依存の autocmd |
-| `lua/vimrc/lsp/lang/registry.lua` | LSP server・efm backend・formatter の言語別静的定義 |
-| `lua/vimrc/lsp/lang/schema.lua` | LuaLS 用の型境界 |
-| `lua/vimrc/lsp/lang/init.lua` | registry から派生値を返す query API |
-| `lua/vimrc/lsp/` | LSP attach・keymap・format-on-save などの共通実行時処理 |
-| `lsp/*.lua` | Neovim 公式形式の server config（0.11+ 形式） |
-| `lua/vimrc/modules/` | 自作 UI・操作改善 |
-| `lua/vimrc/pack.lua` | `lua/plugins/` を読み込み `vim.pack.add` で登録するローダー |
-| `lua/plugins/` | 外部依存の機能別プラグイン定義（`{ src, config }` 形式） |
 
 **Plugin 制約:**
 
