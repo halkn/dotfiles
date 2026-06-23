@@ -1,6 +1,7 @@
 [tools]
 # terminal
 starship = "latest"
+herdr = "latest"
 
 # cli
 ripgrep = "latest"
