@@ -10,3 +10,8 @@
 
 # machine-local git identity
 .config/git/config.local
+
+# herdr runtime files
+.config/herdr/*.log
+.config/herdr/*.sock
+.config/herdr/session.json
