@@ -47,10 +47,31 @@ resume_agents_on_restore = true
 prefix = "ctrl+space"
 split_vertical = "alt+\\"
 split_horizontal = "alt+-"
-focus_pane_left = "alt+left"
-focus_pane_down = "alt+down"
-focus_pane_up = "alt+up"
-focus_pane_right = "alt+right"
+focus_pane_left = "alt+h"
+focus_pane_down = "alt+j"
+focus_pane_up = "alt+k"
+focus_pane_right = "alt+l"
+
+[[keys.command]]
+key = "alt+left"
+type = "shell"
+command = "herdr pane focus --direction left"
+
+[[keys.command]]
+key = "alt+down"
+type = "shell"
+command = "herdr pane focus --direction down"
+
+[[keys.command]]
+key = "alt+up"
+type = "shell"
+command = "herdr pane focus --direction up"
+
+[[keys.command]]
+key = "alt+right"
+type = "shell"
+command = "herdr pane focus --direction right"
+
 [[keys.command]]
 key = "alt+s"
 type = "pane"
