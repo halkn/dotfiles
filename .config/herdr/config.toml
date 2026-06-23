@@ -1,3 +1,4 @@
+onboarding = false
 # herdr config — tmux からの移行設定
 # 全フィールドの既定値は `herdr --default-config` で確認できる。
 # 変更を反映するには `herdr server reload-config`（再起動不要）。
@@ -14,7 +15,7 @@ new_cwd = "follow"
 # 利用可能なテーマ名は `herdr --default-config` のコメントで確認し、
 # iceberg 系が無ければ近い暗色テーマに置き換える。
 [theme]
-name = "iceberg"
+name = "kanagawa"
 
 # ── UI ───────────────────────────────────────────────
 [ui]
@@ -44,3 +45,13 @@ resume_agents_on_restore = true
 [keys]
 # 旧 tmux: set -g prefix C-Space
 prefix = "ctrl+space"
+split_vertical = "alt+\\"
+split_horizontal = "alt+-"
+focus_pane_left = "alt+left"
+focus_pane_down = "alt+down"
+focus_pane_up = "alt+up"
+focus_pane_right = "alt+right"
+[[keys.command]]
+key = "alt+s"
+type = "pane"
+command = "~/.config/herdr/workspace-picker.sh"

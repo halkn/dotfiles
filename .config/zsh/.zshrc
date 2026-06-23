@@ -157,12 +157,10 @@ HERDR_AUTO_START=${HERDR_AUTO_START:-1}
 
 if command -v herdr >/dev/null 2>&1 \
   && [[ -o interactive ]] \
-  && [[ -z $HERDR ]] \
+  && [[ -z $HERDR_ENV ]] \
   && [[ -t 0 ]] \
   && [[ -t 1 ]] \
   && [[ $HERDR_AUTO_START == 1 ]]; then
-  # Replace the login shell only when this is a real interactive terminal.
-  # `herdr` alone starts or attaches to the default background server.
   exec herdr
 fi
 
