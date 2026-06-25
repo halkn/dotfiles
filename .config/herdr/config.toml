@@ -1,49 +1,28 @@
 onboarding = false
-# herdr config — tmux からの移行設定
-# 全フィールドの既定値は `herdr --default-config` で確認できる。
-# 変更を反映するには `herdr server reload-config`（再起動不要）。
+# 既定値: `herdr --default-config` / 反映: `herdr server reload-config`
 
 # ── Terminal ─────────────────────────────────────────
 [terminal]
-# 旧 tmux: set -g default-shell /bin/zsh
 default_shell = "/bin/zsh"
-# 新規 pane を現在の作業ディレクトリで開く（旧 tmux の -c "#{pane_current_path}" 相当）
 new_cwd = "follow"
 
 # ── Theme ────────────────────────────────────────────
-# 旧 tmux は iceberg-dark 配色。herdr は 20+ テーマ内蔵（既定 catppuccin）。
-# 利用可能なテーマ名は `herdr --default-config` のコメントで確認し、
-# iceberg 系が無ければ近い暗色テーマに置き換える。
 [theme]
 name = "kanagawa"
 
 # ── UI ───────────────────────────────────────────────
 [ui]
-# 旧 tmux: set -g mouse on
 mouse_capture = true
 mouse_scroll_lines = 3
-# workspace/pane を閉じる前に確認（旧運用の誤爆防止）
 confirm_close = true
 prompt_new_tab_name = true
 
 # ── Session ──────────────────────────────────────────
 [session]
-# detach→reattach 時にエージェントを復元（旧 detach-on-destroy off の運用意図に近い）
 resume_agents_on_restore = true
 
 # ── Keybindings ──────────────────────────────────────
-# prefix のみ旧 tmux（C-Space）に合わせて変更。
-# herdr の既定 [keys] は tmux 互換で、旧設定の操作感とほぼ一致する:
-#   focus_pane_left/down/up/right = prefix+h / prefix+j / prefix+k / prefix+l
-#   split_horizontal = prefix+minus（旧 tmux の `-`: 上下分割）
-#   split_vertical   = prefix+v    （旧 tmux の `|`: 左右分割）
-#   fullscreen       = prefix+z    （旧 tmux の zoom）
-#   next_tab / previous_tab = prefix+n / prefix+p
-#   copy mode        = prefix+[
-# 上記の個別リバインド（左右分割を `|` にする、Alt 直接移動を足す等）は、
-# `herdr --default-config` で正式なフィールド名とキー表記を確認してから追記する。
 [keys]
-# 旧 tmux: set -g prefix C-Space
 prefix = "ctrl+space"
 split_vertical = "alt+\\"
 split_horizontal = "alt+-"

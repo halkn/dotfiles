@@ -7,5 +7,6 @@ selected=$(
     | fzf --style=full --border-label=" Workspaces " --prompt="  " --ansi
 ) || exit 0
 
-workspace_id=$(echo "$selected" | awk '{print $NF}')
+workspace_id=$(printf '%s' "$selected" | awk -F'\t' '{print $2}')
+[[ -n $workspace_id ]] || exit 0
 herdr workspace focus "$workspace_id"
