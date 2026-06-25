@@ -1,6 +1,7 @@
 [tools]
 # terminal
 starship = "latest"
+"github:ogulcancelik/herdr" = "latest"
 
 # cli
 ripgrep = "latest"

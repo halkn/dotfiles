@@ -39,10 +39,6 @@ test -d "$plugins_dir/zsh-autosuggestions/.git" \
 test -d "$plugins_dir/fast-syntax-highlighting/.git" \
   || (rm -rf "$plugins_dir/fast-syntax-highlighting" && git clone --depth=1 https://github.com/zdharma-continuum/fast-syntax-highlighting "$plugins_dir/fast-syntax-highlighting")
 command -v claude >/dev/null || curl -fsSL https://claude.ai/install.sh | bash
-tmux_plugins_dir="${XDG_DATA_HOME:-$HOME/.local/share}/tmux/plugins"
-mkdir -p "$tmux_plugins_dir"
-test -d "$tmux_plugins_dir/tmux-agent-sidebar/.git" \
-  || (rm -rf "$tmux_plugins_dir/tmux-agent-sidebar" && git clone --depth=1 https://github.com/hiroppy/tmux-agent-sidebar "$tmux_plugins_dir/tmux-agent-sidebar")
 """
 
 [tasks.update]
@@ -60,7 +56,6 @@ update_git_plugins() {
   done
 }
 update_git_plugins "${XDG_DATA_HOME:-$HOME/.local/share}/zsh/plugins"
-update_git_plugins "${XDG_DATA_HOME:-$HOME/.local/share}/tmux/plugins"
 command -v claude >/dev/null && claude update || true
 """
 

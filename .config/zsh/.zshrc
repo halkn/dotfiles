@@ -152,18 +152,16 @@ if command -v fzf >/dev/null 2>&1 && [[ -t 0 ]]; then
   unset _fzf_mod
 fi
 
-# ── tmux ─────────────────────────────────────────────
-ZSH_TMUX_AUTO_START=${ZSH_TMUX_AUTO_START:-1}
-ZSH_TMUX_SESSION_NAME=${ZSH_TMUX_SESSION_NAME:-main}
+# ── herdr ────────────────────────────────────────────
+HERDR_AUTO_START=${HERDR_AUTO_START:-1}
 
-if command -v tmux >/dev/null 2>&1 \
+if command -v herdr >/dev/null 2>&1 \
   && [[ -o interactive ]] \
-  && [[ -z $TMUX ]] \
+  && [[ -z $HERDR_ENV ]] \
   && [[ -t 0 ]] \
   && [[ -t 1 ]] \
-  && [[ $ZSH_TMUX_AUTO_START == 1 ]]; then
-  # Replace the login shell only when this is a real interactive terminal.
-  exec tmux new-session -A -s "$ZSH_TMUX_SESSION_NAME"
+  && [[ $HERDR_AUTO_START == 1 ]]; then
+  exec herdr
 fi
 
 # ── starship ─────────────────────────────────────────

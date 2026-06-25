@@ -1,0 +1,57 @@
+onboarding = false
+# 既定値: `herdr --default-config` / 反映: `herdr server reload-config`
+
+# ── Terminal ─────────────────────────────────────────
+[terminal]
+default_shell = "/bin/zsh"
+new_cwd = "follow"
+
+# ── Theme ────────────────────────────────────────────
+[theme]
+name = "kanagawa"
+
+# ── UI ───────────────────────────────────────────────
+[ui]
+mouse_capture = true
+mouse_scroll_lines = 3
+confirm_close = true
+prompt_new_tab_name = true
+
+# ── Session ──────────────────────────────────────────
+[session]
+resume_agents_on_restore = true
+
+# ── Keybindings ──────────────────────────────────────
+[keys]
+prefix = "ctrl+space"
+split_vertical = "alt+\\"
+split_horizontal = "alt+-"
+focus_pane_left = "alt+h"
+focus_pane_down = "alt+j"
+focus_pane_up = "alt+k"
+focus_pane_right = "alt+l"
+
+[[keys.command]]
+key = "alt+left"
+type = "shell"
+command = "herdr pane focus --direction left"
+
+[[keys.command]]
+key = "alt+down"
+type = "shell"
+command = "herdr pane focus --direction down"
+
+[[keys.command]]
+key = "alt+up"
+type = "shell"
+command = "herdr pane focus --direction up"
+
+[[keys.command]]
+key = "alt+right"
+type = "shell"
+command = "herdr pane focus --direction right"
+
+[[keys.command]]
+key = "alt+s"
+type = "pane"
+command = "~/.config/herdr/workspace-picker.sh"

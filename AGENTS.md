@@ -8,7 +8,7 @@
 |------------------------|------|
 | `.config/nvim/` | Neovim 設定 |
 | `.config/zsh/` | シェル起動設定 |
-| `.config/tmux/` | ターミナル多重化設定 |
+| `.config/herdr/` | ターミナル多重化設定（エージェント対応マルチプレクサ） |
 | `.config/<tool>/` | その他ツール設定（gh, git, starship 等） |
 | `codex/` | OpenAI Codex 設定（`AGENTS.md` + `config.toml`） |
 | `claude/` | Claude Code 設定（`CLAUDE.md` + `settings.json` + `statusline-command.sh`） |
