@@ -6,6 +6,7 @@ input=$(cat)
 # Colors
 GREEN='\033[38;2;98;198;99m'
 YELLOW='\033[38;2;229;192;123m'
+ORANGE='\033[38;2;210;130;50m'
 RED='\033[38;2;224;108;117m'
 DIM='\033[2m'
 R='\033[0m'
@@ -25,7 +26,7 @@ color_for_pct() {
 # BRAILLE: ' ⣀⣄⣤⣦⣶⣷⣿' (indices 0-7)
 braille_bar() {
   pct=$1
-  width=8
+  width=4
   # Clamp 0-100
   [ "$pct" -lt 0 ] && pct=0
   [ "$pct" -gt 100 ] && pct=100
@@ -101,6 +102,24 @@ if [ -n "$git_branch" ]; then
 fi
 
 parts="$model"
+
+effort=$(echo "$input" | jq -r '.effort.level // empty')
+if [ -n "$effort" ]; then
+  case "$effort" in
+    low)    effort_col="$DIM" ;;
+    medium) effort_col="$GREEN" ;;
+    high)   effort_col="$YELLOW" ;;
+    xhigh)  effort_col="$ORANGE" ;;
+    max)    effort_col="$RED" ;;
+    *)      effort_col="$GREEN" ;;
+  esac
+  parts="${parts} ${effort_col}${effort}${R}"
+fi
+
+thinking=$(echo "$input" | jq -r '.thinking.enabled // empty')
+if [ "$thinking" = "true" ]; then
+  parts="${parts} ${DIM}~${R}"
+fi
 
 ctx=$(echo "$input" | jq -r '.context_window.used_percentage // empty')
 if [ -n "$ctx" ]; then
