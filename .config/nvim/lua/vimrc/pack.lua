@@ -14,21 +14,10 @@ vim.api.nvim_create_autocmd('PackChanged', { callback = M.hooks })
 
 -- plugins ------------------------------------------------------------------
 local plugs = {
-  -- {
-  --   src = 'rebelot/kanagawa.nvim',
-  --   config = function()
-  --     vim.cmd.colorscheme('kanagawa')
-  --   end,
-  -- },
   {
-    src = 'EdenEast/nightfox.nvim',
+    src = 'rebelot/kanagawa.nvim',
     config = function()
-      require('nightfox').setup({
-        options = {
-          transparent = true,
-        },
-      })
-      vim.cmd('colorscheme nordfox')
+      vim.cmd.colorscheme('kanagawa')
     end,
   },
   {
