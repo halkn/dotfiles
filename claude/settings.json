@@ -104,6 +104,7 @@
       "Bash(uv sync*)",
       "Bash(uv publish*)",
       "Bash(uv remove*)",
+      "Bash(mise run update)",
       "Bash(az devops invoke *--http-method post*)",
       "Bash(az devops invoke *--http-method POST*)",
       "Bash(az devops invoke *--http-method patch*)",
