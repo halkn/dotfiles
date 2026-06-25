@@ -59,6 +59,11 @@ type = "shell"
 command = "herdr pane focus --direction right"
 
 [[keys.command]]
+key = "alt+|"
+type = "shell"
+command = "herdr pane split --direction right --ratio 0.3 --focus"
+
+[[keys.command]]
 key = "alt+s"
 type = "pane"
 command = "~/.config/herdr/workspace-picker.sh"
