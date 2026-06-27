@@ -29,9 +29,6 @@ export UV_COMPILE_BYTECODE=true
 export LESS='-g -i -M -R -S -W -z-4 -x4'
 export LESSHISTFILE=-
 
-# ripgrep
-export RIPGREP_CONFIG_PATH=$XDG_CONFIG_HOME/ripgrep/config
-
 # ---------------------------------------------------------------------------
 # path
 # ---------------------------------------------------------------------------

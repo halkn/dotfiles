@@ -109,10 +109,6 @@ zsh_plugins_dir=$zsh_data_dir/plugins
 [[ -f "$zsh_plugins_dir/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh" ]] \
   && source "$zsh_plugins_dir/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
 
-if command -v mise >/dev/null 2>&1; then
-  eval "$(~/.local/bin/mise activate zsh)"
-fi
-
 # ── uv ───────────────────────────────────────────────
 if command -v uv >/dev/null 2>&1; then
   _uv_comp="$zsh_cache_dir/uv_completion.zsh"
@@ -123,33 +119,12 @@ if command -v uv >/dev/null 2>&1; then
   unset _uv_comp
 fi
 
-# ── eza ──────────────────────────────────────────────
-if command -v eza >/dev/null 2>&1; then
-  alias ls='eza --icons --group-directories-first'
-  alias ll='eza -l --icons --git --no-user --time-style=iso --group-directories-first'
-  alias la='eza -la --icons --git --no-user --time-style=iso --group-directories-first'
-  alias ltr='eza -l --icons --git --no-user --time-style=iso --sort=modified --group-directories-first'
-  alias lst='eza -l --icons --git --no-user --time-style=iso --sort=modified --reverse --group-directories-first'
-  alias tree='eza --tree --icons -I ".git" --group-directories-first'
-fi
-
 # ── nvim ─────────────────────────────────────────────
 if command -v nvim >/dev/null 2>&1; then
   export MANPAGER='nvim +Man!'
   alias v='nvim'
   alias vim=nvim
   alias vimdiff='nvim -d'
-fi
-
-# ── fzf (modules under lib/) ─────────────────────────
-# Built-in widgets (Ctrl-R history, Alt-C cd, Ctrl-T paste) come from fzf-core.zsh.
-if command -v fzf >/dev/null 2>&1 && [[ -t 0 ]]; then
-  source "$ZDOTDIR/lib/fzf-core.zsh"
-  for _fzf_mod in "$ZDOTDIR"/lib/fzf-*.zsh(N); do
-    [[ ${_fzf_mod:t} == fzf-core.zsh ]] && continue
-    source "$_fzf_mod"
-  done
-  unset _fzf_mod
 fi
 
 # ── herdr ────────────────────────────────────────────
@@ -162,13 +137,6 @@ if command -v herdr >/dev/null 2>&1 \
   && [[ -t 1 ]] \
   && [[ $HERDR_AUTO_START == 1 ]]; then
   exec herdr
-fi
-
-# ── starship ─────────────────────────────────────────
-if command -v starship >/dev/null 2>&1; then
-  export STARSHIP_CONFIG=$XDG_CONFIG_HOME/starship/starship.toml
-  export STARSHIP_CACHE=$XDG_CACHE_HOME/starship/cache
-  eval "$(starship init zsh)"
 fi
 
 # ── machine-local overrides (not tracked in git) ─────
