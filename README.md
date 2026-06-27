@@ -43,13 +43,17 @@ Run these on any platform after the prerequisites above.
    cd "$HOME/.dotfiles"
    ```
 
-2. Install packages and link dotfiles. `just setup` installs all Nix
-   packages, creates symlinks, and installs uv.
+2. Bootstrap `just` and run the full setup. `just setup` creates
+   symlinks (`link`), installs Nix packages (`packages`), and installs
+   uv (`uv`) in that order.
 
    ```sh
    nix profile install nixpkgs#just
    just setup
    ```
+
+   `just` itself is also included in the Nix flake, so after this step
+   the bootstrap copy is superseded by the Nix-managed one.
 
 3. Set Nix-managed zsh as the default shell.
 
@@ -87,6 +91,8 @@ git config user.name && git config user.email
 
 CLI tools, LSP servers, formatters, and zsh plugins are managed by
 [Nix flake](https://nixos.org/) via `nix/packages.nix`.
+[uv](https://docs.astral.sh/uv/) is installed standalone via
+`scripts/install-uv.sh`.
 Task automation uses [just](https://github.com/casey/just).
 
 Useful recipes:

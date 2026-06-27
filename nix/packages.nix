@@ -26,7 +26,6 @@ with pkgs;
   diffnav
 
   # dev
-  uv
   nodejs
 
   # editor
