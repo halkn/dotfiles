@@ -10,29 +10,26 @@ Do the platform-specific prerequisites first, then run the common bootstrap.
 
 #### WSL Ubuntu
 
-Install the required apt packages. `zsh` is the login shell, and
-`bubblewrap` and `socat` are sandbox prerequisites for Claude Code.
+Install the required apt packages. `bubblewrap` and `socat` are sandbox
+prerequisites for Claude Code.
 
 ```sh
 sudo apt update
-sudo apt install -y git curl zsh bubblewrap socat unzip
+sudo apt install -y git curl bubblewrap socat unzip
 curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
 az extension add --name azure-devops
 ```
 
-Make zsh the default shell. apt registers it in `/etc/shells`, so `chsh`
-accepts it directly. This only rewrites the login shell entry (it does
-not read `.zshrc`), so order relative to the bootstrap does not matter;
-it takes effect on the next login.
+Install Nix (multi-user):
 
 ```sh
-chsh -s "$(command -v zsh)"
+sh <(curl -L https://nixos.org/nix/install) --daemon
 ```
 
 #### macOS
 
-_To be documented._ macOS already ships `zsh` as the default shell, so
-only the apt-specific step above differs.
+_To be documented._ Install Nix the same way as above. macOS already
+ships `zsh` as the default shell.
 
 ### Bootstrap
 
@@ -46,13 +43,19 @@ Run these on any platform after the prerequisites above.
    cd "$HOME/.dotfiles"
    ```
 
-2. Run the setup task. `mise run setup` links every dotfile, installs all
-   tools, and clones the zsh plugins.
+2. Install packages and link dotfiles. `just setup` installs all Nix
+   packages, creates symlinks, and installs uv.
 
    ```sh
-   curl https://mise.run | sh
-   export PATH="$HOME/.local/bin:$HOME/.local/share/mise/shims:$PATH"
-   mise run setup
+   nix profile install nixpkgs#just
+   just setup
+   ```
+
+3. Set Nix-managed zsh as the default shell.
+
+   ```sh
+   echo "$HOME/.nix-profile/bin/zsh" | sudo tee -a /etc/shells
+   chsh -s "$HOME/.nix-profile/bin/zsh"
    ```
 
 When the bootstrap finishes, reopen the terminal (or start a new login
@@ -82,18 +85,17 @@ git config user.name && git config user.email
 
 ## Tool Manager
 
-Most CLI tools are managed by [mise](https://mise.jdx.dev) via
-`.config/mise/config.toml`, and `mise run setup` / `mise run update` keep them in sync.
-zsh plugins (`zsh-autosuggestions`, `fast-syntax-highlighting`) are managed as
-shallow git clones under `$XDG_DATA_HOME/zsh/plugins`.
+CLI tools, LSP servers, formatters, and zsh plugins are managed by
+[Nix flake](https://nixos.org/) via `nix/packages.nix`.
+Task automation uses [just](https://github.com/casey/just).
 
-Useful tasks:
+Useful recipes:
 
 ```sh
-mise tasks         # List tasks
-mise run setup     # Link dotfiles, install mise tools, and clone zsh plugins
-mise run update    # Update mise tools and zsh plugins
-mise run fmt       # Format Markdown, zsh files, and Neovim Lua files
-mise run fmt-check # Check formatting without writing files
-mise run lint      # Run repository checks
+just --list       # List recipes
+just setup        # Link dotfiles, install Nix packages, and install uv
+just update       # Update Nix packages and Claude Code
+just fmt          # Format Markdown, zsh files, and Neovim Lua files
+just fmt-check    # Check formatting without writing files
+just lint         # Run repository checks
 ```

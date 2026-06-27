@@ -14,10 +14,11 @@
 | `claude/` | Claude Code の dotfiles 実体（git 追跡対象、symlink で `~/.claude/` に繋がる） |
 | `.claude/` | Claude Code のプロジェクト設定（git 追跡対象、`claude/` とは別物） |
 | `.claude/rules/` | path-scoped ルール（例: `neovim.md` は `.config/nvim/**` 編集時のみロード） |
-| `.config/mise/config.toml` | mise 管理ツールのバージョン定義（LSP server・formatter 等） |
-| `mise.toml` | 開発タスク定義 |
+| `nix/` | Nix flake によるパッケージ管理（CLI・LSP・formatter 等） |
+| `justfile` | 開発タスク定義 |
+| `scripts/` | セットアップ用ヘルパースクリプト |
 
-`mise run link` が作成する symlink:
+`just link` が作成する symlink:
 
 | symlink | → 実体 |
 |---------|--------|
@@ -34,25 +35,25 @@ Neovim 設計指針・変更手順は `.claude/rules/neovim.md`（`.config/nvim/
 
 ## Build, Test, and Development Commands
 
-- `mise run link`: dotfiles の symlink を `$HOME` に作成します（初回セットアップの第一歩）。
-- `mise run setup`: `mise run link` + mise インストール + ツールインストール + zsh plugin clone + Claude Code インストールを実行します。
-- `mise tasks`: 利用できる task を一覧します。
-- `mise run lint`: 通常の検証として diff 空白確認、`zsh` 構文確認、
+- `just link`: dotfiles の symlink を `$HOME` に作成します（初回セットアップの第一歩）。
+- `just setup`: `just link` + Nix パッケージインストール + uv インストールを実行します。
+- `just --list`: 利用できるレシピを一覧します。
+- `just lint`: 通常の検証として diff 空白確認、`zsh` 構文確認、
   Markdown、formatter check、Neovim Lua diagnostics、起動確認を実行します。
-- `mise run fmt`: Markdown、zsh、Neovim Lua を既定 formatter で整形します。
-- `mise run fmt-check`: ファイルを書き換えずに Markdown、zsh、Neovim Lua の整形を確認します。
+- `just fmt`: Markdown、zsh、Neovim Lua を既定 formatter で整形します。
+- `just fmt-check`: ファイルを書き換えずに Markdown、zsh、Neovim Lua の整形を確認します。
 
 更新系（エージェントは実行不可、ユーザーが手動実行）:
 
-- `mise run update`: mise tools 更新・zsh plugin 更新・Claude Code 更新
-- system package 更新: mise タスクではなくユーザーが個別に実行
+- `just update`: Nix パッケージ更新・Claude Code 更新
+- system package 更新: just タスクではなくユーザーが個別に実行
 
 ## Coding Style & Naming Conventions
 
 - **Shell**: `set -euo pipefail`、小文字の関数名、意味のある環境変数名を使う
 - **Lua**: `lua/vimrc/` 配下で役割ごとに分け、プラグイン定義は `lua/vimrc/pack.lua` にまとめる
 - **Markdown**: 短く実務的に書き、`rumdl` 準拠で整える
-- **整形**: Shell・Lua ファイルは `mise run fmt` で整形する（`shfmt`・`stylua` は mise 管理）
+- **整形**: Shell・Lua ファイルは `just fmt` で整形する（`shfmt`・`stylua` は Nix 管理）
 
 ## Testing Guidelines
 
@@ -60,9 +61,9 @@ Neovim 設計指針・変更手順は `.claude/rules/neovim.md`（`.config/nvim/
 
 | 変更対象 | 確認コマンド |
 |----------|-------------|
-| デフォルト（迷ったらこれ） | `mise run lint` |
-| Neovim Lua | `mise run fmt && mise run lint` |
-| Shell (zsh) | `mise run lint-zsh`（`lint` のサブタスクとして単独実行も可） |
+| デフォルト（迷ったらこれ） | `just lint` |
+| Neovim Lua | `just fmt && just lint` |
+| Shell (zsh) | `zsh -n .zshenv .config/zsh/.zshenv .config/zsh/.zshrc` |
 | Markdown | `rumdl check <file>` |
 | Shell 整形 | `shfmt -d <file>` |
 
