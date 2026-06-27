@@ -174,7 +174,8 @@
   xdg.configFile = {
     "nvim".source = ./.config/nvim;
     "zsh".source = ./.config/zsh;
-    "herdr".source = ./.config/herdr;
+    "herdr/config.toml".source = ./.config/herdr/config.toml;
+    "herdr/workspace-picker.sh".source = ./.config/herdr/workspace-picker.sh;
     "nix/nix.conf" = { source = ./.config/nix/nix.conf; force = true; };
     "yamllint".source = ./.config/yamllint;
     "yamlfmt".source = ./.config/yamlfmt;
