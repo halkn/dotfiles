@@ -174,7 +174,7 @@
     "nvim".source = ./.config/nvim;
     "zsh".source = ./.config/zsh;
     "herdr".source = ./.config/herdr;
-    "nix".source = ./.config/nix;
+    "nix" = { source = ./.config/nix; force = true; };
     "yamllint".source = ./.config/yamllint;
     "yamlfmt".source = ./.config/yamlfmt;
   } // lib.optionalAttrs pkgs.stdenv.isLinux {
