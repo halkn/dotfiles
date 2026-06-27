@@ -166,7 +166,7 @@
       init.defaultBranch = "main";
       safe.bareRepository = "explicit";
       ghq.root = "~/repos";
-      "url.\"git@github.com:\"".pushInsteadOf = "https://github.com/";
+      "url \"git@github.com:\"".pushInsteadOf = "https://github.com/";
     };
   };
 
