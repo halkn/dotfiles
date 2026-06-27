@@ -9,7 +9,6 @@
     yq
     hyperfine
     ghq
-    delta
     diffnav
     uv
     nodejs
@@ -25,10 +24,28 @@
   programs.neovim = {
     enable = true;
     defaultEditor = true;
+    withRuby = false;
+    withPython3 = false;
     extraPackages = with pkgs; [
       efm-langserver
       tree-sitter
     ];
+  };
+
+  programs.delta = {
+    enable = true;
+    enableGitIntegration = true;
+    options = {
+      hunk-header-decoration-style = "omit";
+      navigate = true;
+      line-numbers = true;
+      side-by-side = true;
+      word-diff-regex = "\\S+";
+      file-style = "bold yellow ul";
+      file-decoration-style = "none";
+      blame-code-style = "syntax";
+      hyperlinks = true;
+    };
   };
 
   programs.starship = {
@@ -103,33 +120,19 @@
 
   programs.git = {
     enable = true;
-    aliases = {
-      st = "status";
-      br = "branch";
-      ba = "branch -av";
-      sw = "switch";
-      sm = "!git switch main && git pull && git pm";
-      df = "difftool";
-      diff-narrow = "-c delta.side-by-side=false diff";
-      pm = "!f() { base=\"\${1:-origin/main}\"; current=$(git branch --show-current); git for-each-ref --format='%(refname:short)' --merged=\"$base\" refs/heads | while IFS= read -r branch; do [ -n \"$branch\" ] || continue; [ \"$branch\" = \"$current\" ] && continue; [ \"$branch\" = \"main\" ] && continue; git branch -d \"$branch\"; done; }; f";
-    };
     ignores = [ ".scratch/" "**/.claude/settings.local.json" "mise.local.toml" ];
-    delta = {
-      enable = true;
-      options = {
-        hunk-header-decoration-style = "omit";
-        navigate = true;
-        line-numbers = true;
-        side-by-side = true;
-        word-diff-regex = "\\S+";
-        file-style = "bold yellow ul";
-        file-decoration-style = "none";
-        blame-code-style = "syntax";
-        hyperlinks = true;
-      };
-    };
     includes = [{ path = "config.local"; }];
-    extraConfig = {
+    settings = {
+      alias = {
+        st = "status";
+        br = "branch";
+        ba = "branch -av";
+        sw = "switch";
+        sm = "!git switch main && git pull && git pm";
+        df = "difftool";
+        diff-narrow = "-c delta.side-by-side=false diff";
+        pm = "!f() { base=\"\${1:-origin/main}\"; current=$(git branch --show-current); git for-each-ref --format='%(refname:short)' --merged=\"$base\" refs/heads | while IFS= read -r branch; do [ -n \"$branch\" ] || continue; [ \"$branch\" = \"$current\" ] && continue; [ \"$branch\" = \"main\" ] && continue; git branch -d \"$branch\"; done; }; f";
+      };
       status.showUntrackedFiles = "all";
       diff = {
         algorithm = "histogram";
@@ -151,7 +154,6 @@
         default = "simple";
         autoSetupRemote = true;
       };
-      interactive.diffFilter = "delta --color-only";
       rerere = {
         enabled = true;
         autoupdate = true;
