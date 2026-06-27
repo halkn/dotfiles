@@ -3,7 +3,6 @@ onboarding = false
 
 # ── Terminal ─────────────────────────────────────────
 [terminal]
-default_shell = "/bin/zsh"
 new_cwd = "follow"
 
 # ── Theme ────────────────────────────────────────────
