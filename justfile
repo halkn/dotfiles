@@ -6,11 +6,8 @@ packages:
     #!/usr/bin/env bash
     set -euo pipefail
     name="$(nix profile list | sed -n 's/^Name:[[:space:]]*//p' | head -1)"
-    if [[ -n "$name" ]]; then
-      nix profile upgrade "$name"
-    else
-      cd nix && nix profile add .#default
-    fi
+    [[ -n "$name" ]] && nix profile remove "$name"
+    cd nix && nix profile add .#default
 
 # dotfiles のシンボリンク配置
 link:
@@ -40,8 +37,7 @@ setup: link packages uv
 update:
     #!/usr/bin/env bash
     set -euo pipefail
-    name="$(nix profile list | sed -n 's/^Name:[[:space:]]*//p' | head -1)"
-    nix profile upgrade "${name:?no profile found}"
+    just packages
     command -v claude >/dev/null && claude update || true
 
 # リポジトリ検証
