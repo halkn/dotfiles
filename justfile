@@ -39,7 +39,7 @@ setup: link packages uv
 update:
     #!/usr/bin/env bash
     set -euo pipefail
-    nix profile upgrade '.*'
+    cd nix && nix profile upgrade .#default
     command -v claude >/dev/null && claude update || true
 
 # リポジトリ検証
