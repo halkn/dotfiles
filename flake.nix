@@ -22,6 +22,8 @@
             herdr
 
             # cli
+            git
+            curl
             ripgrep
             fd
             fzf
