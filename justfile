@@ -3,7 +3,7 @@ default:
 
 # Nix パッケージのインストール
 packages:
-    cd nix && nix profile install .#default
+    cd nix && nix profile add .#default
 
 # dotfiles のシンボリンク配置
 link:

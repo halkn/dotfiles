@@ -19,13 +19,18 @@ sudo apt install -y git curl bubblewrap socat unzip
 ```
 
 Install Nix by following the official instructions at
-<https://nixos.org/download/>.
+<https://nixos.org/download/>, then enable flakes:
+
+```sh
+mkdir -p ~/.config/nix
+echo 'experimental-features = nix-command flakes' >> ~/.config/nix/nix.conf
+```
 
 #### macOS
 
 Install Nix by following the official instructions at
-<https://nixos.org/download/>. macOS already ships `zsh` as the default
-shell.
+<https://nixos.org/download/>, then enable flakes the same way as above.
+macOS already ships `zsh` as the default shell.
 
 ### Bootstrap
 
@@ -45,7 +50,7 @@ Run these on any platform after the prerequisites above.
    uv (`uv`) in that order.
 
    ```sh
-   nix profile install nixpkgs#just
+   nix profile add nixpkgs#just
    just setup
    ```
 
