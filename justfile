@@ -36,7 +36,7 @@ link:
 [doc("Nix パッケージと Claude Code を更新")]
 update:
     nix flake update
-    nix profile upgrade .#default
+    nix profile upgrade --all
     command -v claude && claude update || true
 
 # ── Quality ──────────────────────────────────────────
