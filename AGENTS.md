@@ -24,11 +24,7 @@
 |---------|--------|
 | `~/.config` | `<dotfiles>/.config` |
 | `~/.zshenv` | `<dotfiles>/.zshenv` |
-| `~/.claude/CLAUDE.md` | `<dotfiles>/claude/CLAUDE.md` |
-| `~/.claude/settings.json` | `<dotfiles>/claude/settings.json` |
-| `~/.claude/statusline-command.sh` | `<dotfiles>/claude/statusline-command.sh` |
-| `~/.claude/hooks/block-python.sh` | `<dotfiles>/claude/hooks/block-python.sh` |
-| `~/.claude/hooks/block-secret-read.sh` | `<dotfiles>/claude/hooks/block-secret-read.sh` |
+| `~/.claude/<path>` | `<dotfiles>/claude/<path>`（`claude/` 配下を再帰的にリンク） |
 
 `<dotfiles>` は justfile があるディレクトリ（`justfile_directory()`）に解決されます。
 
@@ -38,7 +34,7 @@ Neovim 設計指針・変更手順は `.claude/rules/neovim.md`（`.config/nvim/
 ## Build, Test, and Development Commands
 
 - `just link`: dotfiles の symlink を `$HOME` に作成します（初回セットアップの第一歩）。
-- `just setup`: `just link` + Nix パッケージインストール + uv インストールを実行します。
+- `just setup`: `just link` + Nix パッケージインストール + uv / uv tools インストールを実行します。
 - `just --list`: 利用できるレシピを一覧します。
 - `just lint`: 通常の検証として diff 空白確認、`zsh` 構文確認、
   Markdown、formatter check、Neovim Lua diagnostics、起動確認を実行します。

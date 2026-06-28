@@ -8,10 +8,11 @@ list:
 # ── Setup ────────────────────────────────────────────
 
 [group("setup")]
-[doc("フルセットアップ（link → Nix packages → uv → Claude Code）")]
+[doc("フルセットアップ（link → Nix packages → uv tools → Claude Code）")]
 setup: link
     nix profile add .#default
     curl -LsSf https://astral.sh/uv/install.sh | UV_NO_MODIFY_PATH=1 sh
+    uv tool install ryl
     curl -fsSL https://claude.ai/install.sh | bash
 
 [group("setup")]
@@ -21,12 +22,11 @@ link:
       mv "$HOME/.config" "$HOME/.config.bak.$(date +%s)" || true
     ln -snf "{{dotfiles}}/.config" "$HOME/.config"
     ln -snf "{{dotfiles}}/.zshenv" "$HOME/.zshenv"
-    mkdir -p "$HOME/.claude" "$HOME/.claude/hooks"
-    ln -snf "{{dotfiles}}/claude/settings.json"              "$HOME/.claude/settings.json"
-    ln -snf "{{dotfiles}}/claude/CLAUDE.md"                   "$HOME/.claude/CLAUDE.md"
-    ln -snf "{{dotfiles}}/claude/statusline-command.sh"       "$HOME/.claude/statusline-command.sh"
-    ln -snf "{{dotfiles}}/claude/hooks/block-python.sh"       "$HOME/.claude/hooks/block-python.sh"
-    ln -snf "{{dotfiles}}/claude/hooks/block-secret-read.sh"  "$HOME/.claude/hooks/block-secret-read.sh"
+    find "{{dotfiles}}/claude" -type f | while read -r src; do \
+      rel="${src#{{dotfiles}}/claude/}"; \
+      mkdir -p "$HOME/.claude/$(dirname "$rel")"; \
+      ln -snf "$src" "$HOME/.claude/$rel"; \
+    done
 
 # ── Maintenance ──────────────────────────────────────
 
