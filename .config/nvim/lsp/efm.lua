@@ -5,20 +5,6 @@ local languages = {
       formatStdin = true,
     },
   },
-  yaml = {
-    {
-      formatCommand = 'yamlfmt -in',
-      formatStdin = true,
-    },
-    {
-      lintCommand = 'yamllint -f parsable -',
-      lintStdin = true,
-      lintFormats = {
-        '%f:%l:%c: [%trror] %m',
-        '%f:%l:%c: [%tarning] %m',
-      },
-    },
-  },
   zsh = {
     {
       formatCommand = 'shfmt -filename ${INPUT}',

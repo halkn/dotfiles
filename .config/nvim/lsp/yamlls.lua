@@ -1,4 +1,4 @@
--- NOTE: yaml は efm (yamlfmt + yamllint) に統一済み。
+-- NOTE: yaml は ryl (lint + format) に統一済み。
 -- 再有効化する場合は lsp.lua の languages.yaml.lsp に 'yamlls' を追加する。
 ---@type vim.lsp.Config
 local config = {

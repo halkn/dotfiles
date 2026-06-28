@@ -67,8 +67,6 @@
             lua-language-server
             stylua
             shfmt
-            yamllint
-            yamlfmt
             rumdl
           ];
         };
