@@ -3,11 +3,7 @@ default:
 
 # Nix パッケージのインストール（追加・削除後の再適用にも使用）
 packages:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    store="$(nix profile list | sed -n 's/^Store paths:[[:space:]]*//p' | head -1)"
-    [[ -n "$store" ]] && nix profile remove "$store"
-    cd nix && nix profile add .#default
+    cd nix && nix build .#default && nix-env --set ./result
 
 # dotfiles のシンボリンク配置
 link:
@@ -37,6 +33,7 @@ setup: link packages uv
 update:
     #!/usr/bin/env bash
     set -euo pipefail
+    cd nix && nix flake update
     just packages
     command -v claude >/dev/null && claude update || true
 
