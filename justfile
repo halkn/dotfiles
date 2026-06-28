@@ -1,9 +1,15 @@
 default:
     @just --list
 
-# Nix パッケージのインストール
+# Nix パッケージのインストール（追加・削除後の再適用にも使用）
 packages:
-    cd nix && nix profile add .#default
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if nix profile list | grep -q 'dotfiles'; then
+      cd nix && nix profile upgrade .#default
+    else
+      cd nix && nix profile add .#default
+    fi
 
 # dotfiles のシンボリンク配置
 link:
