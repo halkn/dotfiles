@@ -7,31 +7,31 @@ list:
 
 # ── Setup ────────────────────────────────────────────
 
-[group("setup")]
 [doc("フルセットアップ（link → Nix packages → uv tools → Claude Code）")]
+[group("setup")]
 setup: link
     nix profile add .#default
     curl -LsSf https://astral.sh/uv/install.sh | UV_NO_MODIFY_PATH=1 sh
     uv tool install ryl
     curl -fsSL https://claude.ai/install.sh | bash
 
-[group("setup")]
 [doc("dotfiles の symlink を配置")]
+[group("setup")]
 link:
     [ -d "$HOME/.config" ] && [ ! -L "$HOME/.config" ] && \
       mv "$HOME/.config" "$HOME/.config.bak.$(date +%s)" || true
-    ln -snf "{{dotfiles}}/.config" "$HOME/.config"
-    ln -snf "{{dotfiles}}/.zshenv" "$HOME/.zshenv"
-    find "{{dotfiles}}/claude" -type f | while read -r src; do \
-      rel="${src#{{dotfiles}}/claude/}"; \
+    ln -snf "{{ dotfiles }}/.config" "$HOME/.config"
+    ln -snf "{{ dotfiles }}/.zshenv" "$HOME/.zshenv"
+    find "{{ dotfiles }}/claude" -type f | while read -r src; do \
+      rel="${src#{{ dotfiles }}/claude/}"; \
       mkdir -p "$HOME/.claude/$(dirname "$rel")"; \
       ln -snf "$src" "$HOME/.claude/$rel"; \
     done
 
 # ── Maintenance ──────────────────────────────────────
 
-[group("maintenance")]
 [doc("Nix パッケージと Claude Code を更新")]
+[group("maintenance")]
 update:
     nix flake update
     nix profile upgrade dotfiles
@@ -39,20 +39,20 @@ update:
 
 # ── Quality ──────────────────────────────────────────
 
-[group("quality")]
 [doc("リポジトリ検証")]
+[group("quality")]
 lint: _lint-zsh _lint-md _lint-shfmt _lint-stylua _lint-luals _lint-nvim
     git diff --check
 
-[group("quality")]
 [doc("ファイル整形")]
+[group("quality")]
 fmt:
     rumdl fmt .
     shfmt -w .zshenv .config/zsh/.zshenv .config/zsh/.zshrc
     stylua .config/nvim
 
-[group("quality")]
 [doc("整形チェック（書き換えなし）")]
+[group("quality")]
 fmt-check: _lint-md _lint-shfmt _lint-stylua
 
 [private]
