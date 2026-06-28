@@ -22,8 +22,8 @@
             herdr
 
             # cli
-            git
             curl
+            just
             ripgrep
             fd
             fzf
@@ -33,6 +33,7 @@
             hyperfine
 
             # vcs
+            git
             gh
             ghq
             delta
@@ -53,7 +54,6 @@
             yamllint
             yamlfmt
             rumdl
-            just
           ];
         };
       }
