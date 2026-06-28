@@ -690,9 +690,14 @@ function M.setup(opts)
     end,
   })
 
-  local redraw_events = { 'ModeChanged', 'WinEnter', 'BufModifiedSet' }
-  vim.api.nvim_create_autocmd(redraw_events, {
+  vim.api.nvim_create_autocmd({ 'ModeChanged', 'WinEnter' }, {
     group = group,
+    callback = redraw_statusline,
+  })
+
+  vim.api.nvim_create_autocmd('OptionSet', {
+    group = group,
+    pattern = 'modified',
     callback = redraw_statusline,
   })
 

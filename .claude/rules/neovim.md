@@ -19,7 +19,8 @@ paths:
 
 - formatter: `stylua` が正。`luals` の built-in formatter を主担当に戻さないこと
 - diagnostics: `lua-language-server --check` と editor 内の `luals` が正
-- LSP server・efm backend tool は Nix（`flake.nix`）で管理し PATH 経由で参照する
+- nvim 専用ツール（`efm-langserver`・`tree-sitter`）は nvim にバンドルし、グローバル PATH には通さない
+- CLI でも使うツール（`lua-language-server`・`stylua`・`shfmt`）はグローバル PATH に置く
 
 **変更時の手順:**
 
