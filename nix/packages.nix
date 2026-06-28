@@ -8,7 +8,6 @@ with pkgs;
 
   # terminal
   starship
-  herdr
 
   # cli
   ripgrep
