@@ -90,7 +90,7 @@ remap('v', '<Leader>c', 'gc')
 
 -- diagnostic
 map('n', '<C-e>', vim.diagnostic.open_float)
-map('n', '<Leader>d', vim.diagnostic.setqflist)
+map('n', '<LocalLeader>d', vim.diagnostic.setqflist)
 
 -- Replace operator (Riw, Rip, ...)
 _G._vimrc_replace_op = require('vimrc.modules.replace').op

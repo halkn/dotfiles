@@ -55,7 +55,6 @@
             gh
             ghq
             delta
-            diffnav
 
             # dev
             nodejs
