@@ -10,8 +10,10 @@ list:
 # ── Setup ────────────────────────────────────────────
 
 [group("setup")]
-[doc("フルセットアップ（link → packages → uv）")]
-setup: link packages uv
+[doc("フルセットアップ（link → Nix packages → uv）")]
+setup: link
+    nix profile add .#default
+    curl -LsSf https://astral.sh/uv/install.sh | sh
 
 [group("setup")]
 [doc("dotfiles の symlink を配置")]
@@ -28,35 +30,13 @@ link:
     ln -snf "{{dotfiles}}/claude/hooks/block-python.sh"       "$HOME/.claude/hooks/block-python.sh"
     ln -snf "{{dotfiles}}/claude/hooks/block-secret-read.sh"  "$HOME/.claude/hooks/block-secret-read.sh"
 
-[group("setup")]
-[doc("Nix パッケージのインストール・更新")]
-packages:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    if nix profile list 2>/dev/null | grep -q '^Name:'; then
-      nix profile upgrade .#default
-    else
-      nix profile add .#default
-    fi
-
-[group("setup")]
-[doc("uv をインストール")]
-uv:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    if command -v uv >/dev/null 2>&1; then
-      echo "uv is already installed: $(uv --version)"
-      exit 0
-    fi
-    curl -LsSf https://astral.sh/uv/install.sh | sh
-
 # ── Maintenance ──────────────────────────────────────
 
 [group("maintenance")]
 [doc("Nix パッケージと Claude Code を更新")]
 update:
     nix flake update
-    just packages
+    nix profile upgrade .#default
     command -v claude && claude update || true
 
 # ── Quality ──────────────────────────────────────────
