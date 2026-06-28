@@ -9,7 +9,7 @@ packages:
 link:
     #!/usr/bin/env bash
     set -euo pipefail
-    dotfiles="$HOME/.dotfiles"
+    dotfiles="{{justfile_directory()}}"
     if [[ -d "$HOME/.config" && ! -L "$HOME/.config" ]]; then
       mv "$HOME/.config" "$HOME/.config.bak.$(date +%s)"
     fi

@@ -32,13 +32,12 @@ shell.
 Run these on any platform after the prerequisites above.
 
 1. Clone the dotfiles. All repositories are managed under `~/repos`
-   via ghq, so place it at the ghq-compatible path and symlink to
-   `~/.dotfiles` (ghq itself is installed later by Nix).
+   via ghq, so place it at the ghq-compatible path (ghq itself is
+   installed later by Nix).
 
    ```sh
    git clone https://github.com/halkn/dotfiles.git "$HOME/repos/github.com/halkn/dotfiles"
-   ln -snf "$HOME/repos/github.com/halkn/dotfiles" "$HOME/.dotfiles"
-   cd "$HOME/.dotfiles"
+   cd "$HOME/repos/github.com/halkn/dotfiles"
    ```
 
 2. Bootstrap `just` and run the full setup. `just setup` creates

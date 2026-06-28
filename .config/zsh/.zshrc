@@ -94,11 +94,9 @@ alias ..='cd ..'
 alias zs='exec zsh'
 alias :q='exit'
 dot() {
-  local target="${XDG_CONFIG_HOME:-$HOME/.config}"
-
-  [[ -d "$HOME/.dotfiles" ]] && target="$HOME/.dotfiles"
-
-  cd "$target"
+  local target
+  target="$(ghq list -p halkn/dotfiles 2>/dev/null | head -1)"
+  cd "${target:-.}"
 }
 
 # ── plugins (nix) ─────────────────────────────────────

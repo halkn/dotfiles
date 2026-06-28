@@ -22,13 +22,15 @@
 
 | symlink | → 実体 |
 |---------|--------|
-| `~/.config` | `~/.dotfiles/.config` |
-| `~/.zshenv` | `~/.dotfiles/.zshenv` |
-| `~/.claude/CLAUDE.md` | `~/.dotfiles/claude/CLAUDE.md` |
-| `~/.claude/settings.json` | `~/.dotfiles/claude/settings.json` |
-| `~/.claude/statusline-command.sh` | `~/.dotfiles/claude/statusline-command.sh` |
-| `~/.claude/hooks/block-python.sh` | `~/.dotfiles/claude/hooks/block-python.sh` |
-| `~/.claude/hooks/block-secret-read.sh` | `~/.dotfiles/claude/hooks/block-secret-read.sh` |
+| `~/.config` | `<dotfiles>/.config` |
+| `~/.zshenv` | `<dotfiles>/.zshenv` |
+| `~/.claude/CLAUDE.md` | `<dotfiles>/claude/CLAUDE.md` |
+| `~/.claude/settings.json` | `<dotfiles>/claude/settings.json` |
+| `~/.claude/statusline-command.sh` | `<dotfiles>/claude/statusline-command.sh` |
+| `~/.claude/hooks/block-python.sh` | `<dotfiles>/claude/hooks/block-python.sh` |
+| `~/.claude/hooks/block-secret-read.sh` | `<dotfiles>/claude/hooks/block-secret-read.sh` |
+
+`<dotfiles>` は justfile があるディレクトリ（`justfile_directory()`）に解決されます。
 
 新規ファイルは対象ツールの近くに配置し、既存のディレクトリ命名に合わせてください。
 Neovim 設計指針・変更手順は `.claude/rules/neovim.md`（`.config/nvim/**` 編集時に自動ロード）を参照。
