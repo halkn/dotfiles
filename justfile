@@ -8,10 +8,11 @@ list:
 # ── Setup ────────────────────────────────────────────
 
 [group("setup")]
-[doc("フルセットアップ（link → Nix packages → uv）")]
+[doc("フルセットアップ（link → Nix packages → uv → Claude Code）")]
 setup: link
     nix profile add .#default
     curl -LsSf https://astral.sh/uv/install.sh | sh
+    curl -fsSL https://claude.ai/install.sh | bash
 
 [group("setup")]
 [doc("dotfiles の symlink を配置")]

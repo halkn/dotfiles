@@ -45,9 +45,9 @@ Run these on any platform after the prerequisites above.
    ```
 
 2. Run the full setup. `just setup` creates symlinks (`link`),
-   installs Nix packages (`packages`), and installs uv (`uv`) in
-   that order. `nix shell` provides a temporary `just` for bootstrap
-   without polluting the profile.
+   installs Nix packages, uv, and Claude Code in that order.
+   `nix shell` provides a temporary `just` for bootstrap without
+   polluting the profile.
 
    ```sh
    nix shell nixpkgs#just --command just setup
@@ -89,15 +89,15 @@ git config user.name && git config user.email
 
 CLI tools, LSP servers, formatters, and zsh plugins are managed by
 [Nix flake](https://nixos.org/) via `flake.nix`.
-[uv](https://docs.astral.sh/uv/) is installed standalone via
-`scripts/install-uv.sh`.
+[uv](https://docs.astral.sh/uv/) and
+[Claude Code](https://code.claude.com/) are installed standalone.
 Task automation uses [just](https://github.com/casey/just).
 
 Useful recipes:
 
 ```sh
 just --list       # List recipes
-just setup        # Link dotfiles, install Nix packages, and install uv
+just setup        # Link dotfiles, install Nix packages, uv, and Claude Code
 just update       # Update Nix packages and Claude Code
 just fmt          # Format Markdown, zsh files, and Neovim Lua files
 just fmt-check    # Check formatting without writing files
