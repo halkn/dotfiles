@@ -5,8 +5,11 @@
   colorMoved = default
   mnemonicPrefix = true
   renames = true
+  tool = codediff
 [difftool]
   prompt = false
+[difftool "codediff"]
+  cmd = nvim \"$LOCAL\" \"$REMOTE\" +\"CodeDiff file $LOCAL $REMOTE\"
 [merge]
   conflictstyle = zdiff3
 [mergetool]

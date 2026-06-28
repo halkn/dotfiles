@@ -134,6 +134,7 @@ if command -v nvim >/dev/null 2>&1; then
   alias v='nvim'
   alias vim=nvim
   alias vimdiff='nvim -d'
+  alias gd='nvim +CodeDiff'
 fi
 
 # ── fzf (modules under lib/) ─────────────────────────
