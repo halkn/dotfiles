@@ -11,6 +11,9 @@
 # machine-local git identity
 .config/git/config.local
 
+# uv installer receipt
+.config/uv/uv-receipt.json
+
 # herdr runtime files
 .config/herdr/*.log
 .config/herdr/*.sock
