@@ -73,10 +73,11 @@ _lint-stylua:
 
 [private]
 _lint-luals:
-    rm -rf /tmp/luals-check
+    rm -rf "${TMPDIR:-/tmp}"/luals-check
     VIMRUNTIME="$(nvim --clean --headless -c 'lua io.write(vim.env.VIMRUNTIME)' +q 2>/dev/null)" \
-      lua-language-server --check=.config/nvim --checklevel=Warning --logpath=/tmp/luals-check/log --metapath=/tmp/luals-check/meta
-    rm -rf /tmp/luals-check
+      lua-language-server --check=.config/nvim --checklevel=Warning \
+      --logpath="${TMPDIR:-/tmp}"/luals-check/log --metapath="${TMPDIR:-/tmp}"/luals-check/meta
+    rm -rf "${TMPDIR:-/tmp}"/luals-check
 
 [private]
 _lint-nvim:
