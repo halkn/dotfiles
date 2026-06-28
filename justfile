@@ -75,13 +75,10 @@ _lint-stylua:
 
 [private]
 _lint-luals:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    luals_tmp="$(mktemp -d)"
-    trap 'rm -rf "$luals_tmp"' EXIT
-    VIMRUNTIME="$(nvim --clean --headless -c 'lua io.write(vim.env.VIMRUNTIME)' +q 2>/dev/null)"
-    export VIMRUNTIME
-    lua-language-server --check=.config/nvim --checklevel=Warning --logpath="$luals_tmp/log" --metapath="$luals_tmp/meta"
+    rm -rf /tmp/luals-check
+    VIMRUNTIME="$(nvim --clean --headless -c 'lua io.write(vim.env.VIMRUNTIME)' +q 2>/dev/null)" \
+      lua-language-server --check=.config/nvim --checklevel=Warning --logpath=/tmp/luals-check/log --metapath=/tmp/luals-check/meta
+    rm -rf /tmp/luals-check
 
 [private]
 _lint-nvim:
