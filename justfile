@@ -5,8 +5,9 @@ default:
 packages:
     #!/usr/bin/env bash
     set -euo pipefail
-    if nix profile list | grep -q 'dotfiles'; then
-      cd nix && nix profile upgrade .#default
+    name="$(nix profile list | sed -n 's/^Name:[[:space:]]*//p' | head -1)"
+    if [[ -n "$name" ]]; then
+      nix profile upgrade "$name"
     else
       cd nix && nix profile add .#default
     fi
@@ -39,7 +40,8 @@ setup: link packages uv
 update:
     #!/usr/bin/env bash
     set -euo pipefail
-    cd nix && nix profile upgrade .#default
+    name="$(nix profile list | sed -n 's/^Name:[[:space:]]*//p' | head -1)"
+    nix profile upgrade "${name:?no profile found}"
     command -v claude >/dev/null && claude update || true
 
 # リポジトリ検証
