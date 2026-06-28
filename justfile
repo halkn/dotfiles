@@ -5,8 +5,11 @@ default:
 packages:
     #!/usr/bin/env bash
     set -euo pipefail
-    nix profile remove --all 2>/dev/null || true
-    cd nix && nix profile add .#default
+    if nix profile list 2>/dev/null | grep -q '^Name:'; then
+      cd nix && nix profile upgrade .#default
+    else
+      cd nix && nix profile add .#default
+    fi
 
 # dotfiles のシンボリンク配置
 link:
