@@ -5,7 +5,6 @@
 export LANG=C.UTF-8
 export EDITOR=nvim
 export PAGER=less
-export SHELL="$HOME/.nix-profile/bin/zsh"
 
 # XDG Base Directory
 export XDG_CONFIG_HOME=~/.config
