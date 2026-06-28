@@ -104,7 +104,7 @@
       "Bash(uv sync*)",
       "Bash(uv publish*)",
       "Bash(uv remove*)",
-      "Bash(mise run update)",
+      "Bash(just update)",
       "Bash(az devops invoke *--http-method post*)",
       "Bash(az devops invoke *--http-method POST*)",
       "Bash(az devops invoke *--http-method patch*)",
@@ -167,9 +167,7 @@
         "~/.azure",
         "~/.cache/uv",
         "~/.local/share/uv",
-        "~/.cache/mise",
-        "~/.local/share/mise",
-        "~/.local/state/mise"
+        "~/.nix-profile"
       ],
       "denyWrite": [
         "~/.ssh",
@@ -187,8 +185,7 @@
         "~/.config/ripgrep",
         "~/.config/uv",
         "~/.local/share/uv",
-        "~/.local/share/mise",
-        "~/.config/mise",
+        "~/.nix-profile",
         "~/.local/bin"
       ]
     }

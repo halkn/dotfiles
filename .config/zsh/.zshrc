@@ -94,24 +94,19 @@ alias ..='cd ..'
 alias zs='exec zsh'
 alias :q='exit'
 dot() {
-  local target="${XDG_CONFIG_HOME:-$HOME/.config}"
-
-  [[ -d "$HOME/.dotfiles" ]] && target="$HOME/.dotfiles"
-
-  cd "$target"
+  local target
+  target="$(ghq list -p halkn/dotfiles 2>/dev/null | head -1)"
+  cd "${target:-.}"
 }
 
-# ── plugins (git clone) ───────────────────────────────
-zsh_plugins_dir=$zsh_data_dir/plugins
-[[ -f "$zsh_plugins_dir/zsh-autosuggestions/zsh-autosuggestions.zsh" ]] \
-  && source "$zsh_plugins_dir/zsh-autosuggestions/zsh-autosuggestions.zsh"
+# ── plugins (nix) ─────────────────────────────────────
+nix_share="$HOME/.nix-profile/share"
+[[ -f "$nix_share/zsh-autosuggestions/zsh-autosuggestions.zsh" ]] \
+  && source "$nix_share/zsh-autosuggestions/zsh-autosuggestions.zsh"
 
-[[ -f "$zsh_plugins_dir/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh" ]] \
-  && source "$zsh_plugins_dir/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
-
-if command -v mise >/dev/null 2>&1; then
-  eval "$(~/.local/bin/mise activate zsh)"
-fi
+[[ -f "$nix_share/zsh-fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh" ]] \
+  && source "$nix_share/zsh-fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
+unset nix_share
 
 # ── uv ───────────────────────────────────────────────
 if command -v uv >/dev/null 2>&1; then

@@ -32,3 +32,6 @@ end
 
 -- pack: load external plugins.
 require('vimrc.pack')
+
+-- machine-local overrides (not tracked in git)
+pcall(require, 'local')

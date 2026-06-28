@@ -10,49 +10,54 @@ Do the platform-specific prerequisites first, then run the common bootstrap.
 
 #### WSL Ubuntu
 
-Install the required apt packages. `zsh` is the login shell, and
-`bubblewrap` and `socat` are sandbox prerequisites for Claude Code.
+Install the sandbox prerequisites for Claude Code.
 
 ```sh
 sudo apt update
-sudo apt install -y git curl zsh bubblewrap socat unzip
-curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
-az extension add --name azure-devops
+sudo apt install -y bubblewrap socat
 ```
 
-Make zsh the default shell. apt registers it in `/etc/shells`, so `chsh`
-accepts it directly. This only rewrites the login shell entry (it does
-not read `.zshrc`), so order relative to the bootstrap does not matter;
-it takes effect on the next login.
+Install Nix by following the official instructions at
+<https://nixos.org/download/>, then enable flakes:
 
 ```sh
-chsh -s "$(command -v zsh)"
+mkdir -p ~/.config/nix
+echo 'experimental-features = nix-command flakes' >> ~/.config/nix/nix.conf
 ```
 
 #### macOS
 
-_To be documented._ macOS already ships `zsh` as the default shell, so
-only the apt-specific step above differs.
+Install Nix by following the official instructions at
+<https://nixos.org/download/>, then enable flakes the same way as above.
+macOS already ships `zsh` as the default shell.
 
 ### Bootstrap
 
 Run these on any platform after the prerequisites above.
 
-1. Clone the dotfiles. The setup tasks and symlinks assume the repository
-   lives at `~/.dotfiles`.
+1. Clone the dotfiles. All repositories are managed under `~/repos`
+   via ghq, so place it at the ghq-compatible path (ghq itself is
+   installed later by Nix).
 
    ```sh
-   git clone https://github.com/halkn/dotfiles.git "$HOME/.dotfiles"
-   cd "$HOME/.dotfiles"
+   git clone https://github.com/halkn/dotfiles.git "$HOME/repos/github.com/halkn/dotfiles"
+   cd "$HOME/repos/github.com/halkn/dotfiles"
    ```
 
-2. Run the setup task. `mise run setup` links every dotfile, installs all
-   tools, and clones the zsh plugins.
+2. Run the full setup. `just setup` creates symlinks (`link`),
+   installs Nix packages, uv, and Claude Code in that order.
+   `nix shell` provides a temporary `just` for bootstrap without
+   polluting the profile.
 
    ```sh
-   curl https://mise.run | sh
-   export PATH="$HOME/.local/bin:$HOME/.local/share/mise/shims:$PATH"
-   mise run setup
+   nix shell nixpkgs#just --command just setup
+   ```
+
+3. Set Nix-managed zsh as the default shell.
+
+   ```sh
+   echo "$HOME/.nix-profile/bin/zsh" | sudo tee -a /etc/shells
+   chsh -s "$HOME/.nix-profile/bin/zsh"
    ```
 
 When the bootstrap finishes, reopen the terminal (or start a new login
@@ -82,18 +87,19 @@ git config user.name && git config user.email
 
 ## Tool Manager
 
-Most CLI tools are managed by [mise](https://mise.jdx.dev) via
-`.config/mise/config.toml`, and `mise run setup` / `mise run update` keep them in sync.
-zsh plugins (`zsh-autosuggestions`, `fast-syntax-highlighting`) are managed as
-shallow git clones under `$XDG_DATA_HOME/zsh/plugins`.
+CLI tools, LSP servers, formatters, and zsh plugins are managed by
+[Nix flake](https://nixos.org/) via `flake.nix`.
+[uv](https://docs.astral.sh/uv/) and
+[Claude Code](https://code.claude.com/) are installed standalone.
+Task automation uses [just](https://github.com/casey/just).
 
-Useful tasks:
+Useful recipes:
 
 ```sh
-mise tasks         # List tasks
-mise run setup     # Link dotfiles, install mise tools, and clone zsh plugins
-mise run update    # Update mise tools and zsh plugins
-mise run fmt       # Format Markdown, zsh files, and Neovim Lua files
-mise run fmt-check # Check formatting without writing files
-mise run lint      # Run repository checks
+just --list       # List recipes
+just setup        # Link dotfiles, install Nix packages, uv, and Claude Code
+just update       # Update Nix packages and Claude Code
+just fmt          # Format Markdown, zsh files, and Neovim Lua files
+just fmt-check    # Check formatting without writing files
+just lint         # Run repository checks
 ```
