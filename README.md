@@ -31,12 +31,12 @@ shell.
 
 Run these on any platform after the prerequisites above.
 
-1. Clone the dotfiles with `ghq` and symlink to `~/.dotfiles`.
-   All repositories are managed under `~/repos` via ghq. The setup
-   tasks and symlinks assume the repository lives at `~/.dotfiles`.
+1. Clone the dotfiles. All repositories are managed under `~/repos`
+   via ghq, so place it at the ghq-compatible path and symlink to
+   `~/.dotfiles` (ghq itself is installed later by Nix).
 
    ```sh
-   ghq get https://github.com/halkn/dotfiles.git
+   git clone https://github.com/halkn/dotfiles.git "$HOME/repos/github.com/halkn/dotfiles"
    ln -snf "$HOME/repos/github.com/halkn/dotfiles" "$HOME/.dotfiles"
    cd "$HOME/.dotfiles"
    ```
