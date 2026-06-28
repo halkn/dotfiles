@@ -1,5 +1,3 @@
-set shell := ["bash", "-euo", "pipefail", "-c"]
-
 dotfiles := justfile_directory()
 
 [default]
@@ -18,9 +16,8 @@ setup: link
 [group("setup")]
 [doc("dotfiles の symlink を配置")]
 link:
-    if [[ -d "$HOME/.config" && ! -L "$HOME/.config" ]]; then \
-      mv "$HOME/.config" "$HOME/.config.bak.$(date +%s)"; \
-    fi
+    [ -d "$HOME/.config" ] && [ ! -L "$HOME/.config" ] && \
+      mv "$HOME/.config" "$HOME/.config.bak.$(date +%s)" || true
     ln -snf "{{dotfiles}}/.config" "$HOME/.config"
     ln -snf "{{dotfiles}}/.zshenv" "$HOME/.zshenv"
     mkdir -p "$HOME/.claude" "$HOME/.claude/hooks"
