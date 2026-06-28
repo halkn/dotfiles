@@ -16,20 +16,16 @@ prerequisites for Claude Code.
 ```sh
 sudo apt update
 sudo apt install -y git curl bubblewrap socat unzip
-curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
-az extension add --name azure-devops
 ```
 
-Install Nix (multi-user):
-
-```sh
-sh <(curl -L https://nixos.org/nix/install) --daemon
-```
+Install Nix by following the official instructions at
+<https://nixos.org/download/>.
 
 #### macOS
 
-_To be documented._ Install Nix the same way as above. macOS already
-ships `zsh` as the default shell.
+Install Nix by following the official instructions at
+<https://nixos.org/download/>. macOS already ships `zsh` as the default
+shell.
 
 ### Bootstrap
 
