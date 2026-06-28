@@ -3,7 +3,10 @@ default:
 
 # Nix パッケージのインストール（追加・削除後の再適用にも使用）
 packages:
-    cd nix && nix build .#default && nix-env --set ./result
+    #!/usr/bin/env bash
+    set -euo pipefail
+    nix profile remove --all 2>/dev/null || true
+    cd nix && nix profile add .#default
 
 # dotfiles のシンボリンク配置
 link:
