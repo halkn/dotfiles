@@ -11,7 +11,7 @@ list:
 [doc("フルセットアップ（link → Nix packages → uv → Claude Code）")]
 setup: link
     nix profile add .#default
-    curl -LsSf https://astral.sh/uv/install.sh | sh
+    curl -LsSf https://astral.sh/uv/install.sh | UV_NO_MODIFY_PATH=1 sh
     curl -fsSL https://claude.ai/install.sh | bash
 
 [group("setup")]
