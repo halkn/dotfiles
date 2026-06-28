@@ -1,7 +1,35 @@
-default:
+set shell := ["bash", "-euo", "pipefail", "-c"]
+
+dotfiles := justfile_directory()
+
+[default]
+[private]
+list:
     @just --list
 
-# Nix パッケージのインストール（追加・削除後の再適用にも使用）
+# ── Setup ────────────────────────────────────────────
+
+[group("setup")]
+[doc("フルセットアップ（link → packages → uv）")]
+setup: link packages uv
+
+[group("setup")]
+[doc("dotfiles の symlink を配置")]
+link:
+    if [[ -d "$HOME/.config" && ! -L "$HOME/.config" ]]; then \
+      mv "$HOME/.config" "$HOME/.config.bak.$(date +%s)"; \
+    fi
+    ln -snf "{{dotfiles}}/.config" "$HOME/.config"
+    ln -snf "{{dotfiles}}/.zshenv" "$HOME/.zshenv"
+    mkdir -p "$HOME/.claude" "$HOME/.claude/hooks"
+    ln -snf "{{dotfiles}}/claude/settings.json"              "$HOME/.claude/settings.json"
+    ln -snf "{{dotfiles}}/claude/CLAUDE.md"                   "$HOME/.claude/CLAUDE.md"
+    ln -snf "{{dotfiles}}/claude/statusline-command.sh"       "$HOME/.claude/statusline-command.sh"
+    ln -snf "{{dotfiles}}/claude/hooks/block-python.sh"       "$HOME/.claude/hooks/block-python.sh"
+    ln -snf "{{dotfiles}}/claude/hooks/block-secret-read.sh"  "$HOME/.claude/hooks/block-secret-read.sh"
+
+[group("setup")]
+[doc("Nix パッケージのインストール・更新")]
 packages:
     #!/usr/bin/env bash
     set -euo pipefail
@@ -11,24 +39,8 @@ packages:
       nix profile add .#default
     fi
 
-# dotfiles のシンボリンク配置
-link:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    dotfiles="{{justfile_directory()}}"
-    if [[ -d "$HOME/.config" && ! -L "$HOME/.config" ]]; then
-      mv "$HOME/.config" "$HOME/.config.bak.$(date +%s)"
-    fi
-    ln -snf "$dotfiles/.config" "$HOME/.config"
-    ln -snf "$dotfiles/.zshenv" "$HOME/.zshenv"
-    mkdir -p "$HOME/.claude" "$HOME/.claude/hooks"
-    ln -snf "$dotfiles/claude/settings.json"              "$HOME/.claude/settings.json"
-    ln -snf "$dotfiles/claude/CLAUDE.md"                   "$HOME/.claude/CLAUDE.md"
-    ln -snf "$dotfiles/claude/statusline-command.sh"       "$HOME/.claude/statusline-command.sh"
-    ln -snf "$dotfiles/claude/hooks/block-python.sh"       "$HOME/.claude/hooks/block-python.sh"
-    ln -snf "$dotfiles/claude/hooks/block-secret-read.sh"  "$HOME/.claude/hooks/block-secret-read.sh"
-
-# uv インストール
+[group("setup")]
+[doc("uv をインストール")]
 uv:
     #!/usr/bin/env bash
     set -euo pipefail
@@ -38,28 +50,31 @@ uv:
     fi
     curl -LsSf https://astral.sh/uv/install.sh | sh
 
-# フルセットアップ
-setup: link packages uv
+# ── Maintenance ──────────────────────────────────────
 
-# ツール更新
+[group("maintenance")]
+[doc("Nix パッケージと Claude Code を更新")]
 update:
-    #!/usr/bin/env bash
-    set -euo pipefail
     nix flake update
     just packages
-    command -v claude >/dev/null && claude update || true
+    command -v claude && claude update || true
 
-# リポジトリ検証
+# ── Quality ──────────────────────────────────────────
+
+[group("quality")]
+[doc("リポジトリ検証")]
 lint: _lint-zsh _lint-md _lint-shfmt _lint-stylua _lint-luals _lint-nvim
     git diff --check
 
-# ファイル整形
+[group("quality")]
+[doc("ファイル整形")]
 fmt:
     rumdl fmt .
     shfmt -w .zshenv .config/zsh/.zshenv .config/zsh/.zshrc
     stylua .config/nvim
 
-# 整形チェック（書き換えなし）
+[group("quality")]
+[doc("整形チェック（書き換えなし）")]
 fmt-check: _lint-md _lint-shfmt _lint-stylua
 
 [private]
