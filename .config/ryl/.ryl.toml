@@ -1,0 +1,48 @@
+[rules]
+anchors = "enable"
+colons = "enable"
+commas = "enable"
+document-end = "disable"
+document-start = "disable"
+empty-values = "disable"
+float-values = "disable"
+hyphens = "enable"
+key-duplicates = "enable"
+key-ordering = "disable"
+line-length = "disable"
+new-line-at-end-of-file = "enable"
+octal-values = "disable"
+trailing-spaces = "enable"
+
+[rules.indentation]
+spaces = 2
+indent-sequences = true
+
+[rules.truthy]
+allowed-values = ["true", "false"]
+check-keys = false
+
+[rules.comments]
+min-spaces-from-content = 1
+
+[rules.comments-indentation]
+level = "warning"
+
+[rules.braces]
+min-spaces-inside = 1
+max-spaces-inside = 1
+min-spaces-inside-empty = 0
+max-spaces-inside-empty = 0
+
+[rules.brackets]
+min-spaces-inside = 0
+max-spaces-inside = 0
+
+[rules.new-lines]
+type = "unix"
+
+[rules.empty-lines]
+max = 2
+
+[rules.quoted-strings]
+required = "only-when-needed"

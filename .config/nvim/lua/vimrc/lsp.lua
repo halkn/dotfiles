@@ -51,8 +51,8 @@ local languages = {
   yaml = {
     enabled = true,
     filetypes = { 'yaml' },
-    lsp = { 'efm' },
-    format = { client = 'efm' },
+    lsp = { 'ryl' },
+    format = { client = 'ryl' },
   },
 }
 
