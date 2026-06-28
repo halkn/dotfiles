@@ -3,6 +3,7 @@ onboarding = false
 
 # ── Terminal ─────────────────────────────────────────
 [terminal]
+default_shell = "~/.nix-profile/bin/zsh"
 new_cwd = "follow"
 
 # ── Theme ────────────────────────────────────────────
