@@ -19,7 +19,7 @@ paths:
 
 - formatter: `stylua` が正。`luals` の built-in formatter を主担当に戻さないこと
 - diagnostics: `lua-language-server --check` と editor 内の `luals` が正
-- LSP server・efm backend tool は Nix（`nix/packages.nix`）で管理し PATH 経由で参照する
+- LSP server・efm backend tool は Nix（`flake.nix`）で管理し PATH 経由で参照する
 
 **変更時の手順:**
 

@@ -89,7 +89,7 @@ git config user.name && git config user.email
 ## Tool Manager
 
 CLI tools, LSP servers, formatters, and zsh plugins are managed by
-[Nix flake](https://nixos.org/) via `nix/packages.nix`.
+[Nix flake](https://nixos.org/) via `flake.nix`.
 [uv](https://docs.astral.sh/uv/) is installed standalone via
 `scripts/install-uv.sh`.
 Task automation uses [just](https://github.com/casey/just).
