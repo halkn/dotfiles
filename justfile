@@ -5,8 +5,8 @@ default:
 packages:
     #!/usr/bin/env bash
     set -euo pipefail
-    name="$(nix profile list | sed -n 's/^Name:[[:space:]]*//p' | head -1)"
-    [[ -n "$name" ]] && nix profile remove "$name"
+    store="$(nix profile list | sed -n 's/^Store paths:[[:space:]]*//p' | head -1)"
+    [[ -n "$store" ]] && nix profile remove "$store"
     cd nix && nix profile add .#default
 
 # dotfiles のシンボリンク配置
