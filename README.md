@@ -45,17 +45,14 @@ Run these on any platform after the prerequisites above.
    cd "$HOME/repos/github.com/halkn/dotfiles"
    ```
 
-2. Bootstrap `just` and run the full setup. `just setup` creates
-   symlinks (`link`), installs Nix packages (`packages`), and installs
-   uv (`uv`) in that order.
+2. Run the full setup. `just setup` creates symlinks (`link`),
+   installs Nix packages (`packages`), and installs uv (`uv`) in
+   that order. `nix shell` provides a temporary `just` for bootstrap
+   without polluting the profile.
 
    ```sh
-   nix profile add nixpkgs#just
-   just setup
+   nix shell nixpkgs#just --command just setup
    ```
-
-   `just` itself is also included in the Nix flake, so after this step
-   the bootstrap copy is superseded by the Nix-managed one.
 
 3. Set Nix-managed zsh as the default shell.
 

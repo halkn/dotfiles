@@ -3,9 +3,6 @@ default:
 
 # Nix パッケージのインストール
 packages:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    nix profile remove just 2>/dev/null || true
     cd nix && nix profile add .#default
 
 # dotfiles のシンボリンク配置
