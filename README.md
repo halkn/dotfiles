@@ -10,12 +10,11 @@ Do the platform-specific prerequisites first, then run the common bootstrap.
 
 #### WSL Ubuntu
 
-Install the required apt packages. `bubblewrap` and `socat` are sandbox
-prerequisites for Claude Code.
+Install the sandbox prerequisites for Claude Code.
 
 ```sh
 sudo apt update
-sudo apt install -y git curl bubblewrap socat unzip
+sudo apt install -y bubblewrap socat
 ```
 
 Install Nix by following the official instructions at
