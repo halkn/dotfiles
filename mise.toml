@@ -1,0 +1,5 @@
+[tools]
+# Neovim LSP / Formatter（dotfiles 固有ファイルタイプのみ）
+lua-language-server = "latest"
+stylua = "latest"
+shfmt = "latest"

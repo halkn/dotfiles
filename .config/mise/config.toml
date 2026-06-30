@@ -1,0 +1,32 @@
+[tools]
+# terminal
+starship = "latest"
+"github:ogulcancelik/herdr" = "latest"
+
+# cli
+just = "latest"
+ripgrep = "latest"
+fd = "latest"
+fzf = "latest"
+eza = "latest"
+jq = "latest"
+yq = "latest"
+hyperfine = "latest"
+
+# vcs
+gh = "latest"
+ghq = "latest"
+delta = "latest"
+
+# dev
+node = "latest"
+
+# editor
+neovim = "nightly"
+tree-sitter = "latest"
+
+# LSP / Linter / Formatter
+"github:mattn/efm-langserver" = "latest"
+rumdl = "latest"
+# NOTE: yaml は ryl (lint + format) に統一済み。ryl は mise 管理外のため別途導入する。
+#       diffnav は codediff.nvim へ移行したため削除。
