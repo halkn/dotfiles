@@ -38,7 +38,7 @@ export RIPGREP_CONFIG_PATH=$XDG_CONFIG_HOME/ripgrep/config
 typeset -U path
 path=(
   $XDG_BIN_HOME(N-/)
-  $HOME/.nix-profile/bin(N-/)
+  # $XDG_DATA_HOME/mise/shims(N-/)
   $path
 )
 
