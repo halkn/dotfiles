@@ -19,6 +19,7 @@ ghq = "latest"
 delta = "latest"
 
 # dev
+uv = "latest"
 node = "latest"
 
 # editor
@@ -27,6 +28,6 @@ tree-sitter = "latest"
 
 # LSP / Linter / Formatter
 "github:mattn/efm-langserver" = "latest"
+"pipx:ryl" = "latest"
 rumdl = "latest"
-# NOTE: yaml は ryl (lint + format) に統一済み。ryl は mise 管理外のため別途導入する。
-#       diffnav は codediff.nvim へ移行したため削除。
+# NOTE: yaml は ryl (lint + format) に統一。diffnav は codediff.nvim へ移行したため削除。
