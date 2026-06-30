@@ -167,7 +167,7 @@
         "~/.azure",
         "~/.cache/uv",
         "~/.local/share/uv",
-        "~/.nix-profile"
+        "~/.local/share/mise"
       ],
       "denyWrite": [
         "~/.ssh",
@@ -185,7 +185,7 @@
         "~/.config/ripgrep",
         "~/.config/uv",
         "~/.local/share/uv",
-        "~/.nix-profile",
+        "~/.local/share/mise",
         "~/.local/bin"
       ]
     }
