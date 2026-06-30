@@ -38,15 +38,16 @@ Run these on any platform after the prerequisites above.
    cd "$HOME/repos/github.com/halkn/dotfiles"
    ```
 
-2. Install mise and run the full setup. `just setup` creates symlinks
+2. Install mise and run the full setup. `mise run setup` creates symlinks
    (`link`), installs mise tools, clones zsh plugins, and installs Claude
-   Code in that order. `mise exec` provides a temporary `just` for the
-   bootstrap without installing it globally first.
+   Code in that order. `mise trust` whitelists this repo's `mise.toml` so the
+   tasks are allowed to run.
 
    ```sh
    curl https://mise.run | sh
    export PATH="$HOME/.local/bin:$HOME/.local/share/mise/shims:$PATH"
-   mise exec just -- just setup
+   mise trust
+   mise run setup
    ```
 
 3. Make zsh the default login shell. macOS already defaults to zsh; on WSL,
@@ -89,15 +90,16 @@ and dotfiles-specific Neovim tools in `mise.toml`. zsh plugins
 (`zsh-autosuggestions`, `fast-syntax-highlighting`) are shallow git clones
 under `$XDG_DATA_HOME/zsh/plugins`.
 [Claude Code](https://code.claude.com/) is installed standalone.
-Task automation uses [just](https://github.com/casey/just) (itself a mise tool).
+Task automation uses [mise tasks](https://mise.jdx.dev/tasks/), defined in the
+repo's `mise.toml` and run with `mise run`.
 
-Useful recipes:
+Useful tasks:
 
 ```sh
-just --list       # List recipes
-just setup        # Link dotfiles, install mise tools and zsh plugins, install Claude Code
-just update       # Update mise tools, zsh plugins, and Claude Code
-just fmt          # Format Markdown, zsh files, and Neovim Lua files
-just fmt-check    # Check formatting without writing files
-just lint         # Run repository checks
+mise tasks         # List tasks
+mise run setup     # Link dotfiles, install mise tools and zsh plugins, install Claude Code
+mise run update    # Update mise tools, zsh plugins, and Claude Code
+mise run fmt       # Format Markdown, zsh files, and Neovim Lua files
+mise run fmt-check # Check formatting without writing files
+mise run lint      # Run repository checks
 ```

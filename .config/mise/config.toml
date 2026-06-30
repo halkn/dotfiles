@@ -4,7 +4,6 @@ starship = "latest"
 "github:ogulcancelik/herdr" = "latest"
 
 # cli
-just = "latest"
 ripgrep = "latest"
 fd = "latest"
 fzf = "latest"
