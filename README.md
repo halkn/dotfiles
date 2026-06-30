@@ -10,12 +10,14 @@ Do the platform-specific prerequisites first, then run the common bootstrap.
 
 #### WSL Ubuntu
 
-Install `zsh` (the login shell) and the sandbox prerequisites for Claude
-Code.
+Install the base packages. `git` / `curl` bootstrap the clone and
+installers, `zsh` is the login shell, `unzip` lets mise extract tool
+archives, `xclip` backs Neovim's system clipboard, and `bubblewrap` /
+`socat` are the Claude Code sandbox prerequisites.
 
 ```sh
 sudo apt update
-sudo apt install -y zsh bubblewrap socat
+sudo apt install -y git curl zsh unzip xclip bubblewrap socat
 ```
 
 #### macOS
