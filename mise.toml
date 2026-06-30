@@ -3,3 +3,4 @@
 lua-language-server = "latest"
 stylua = "latest"
 shfmt = "latest"
+"github:mattn/efm-langserver" = "latest"

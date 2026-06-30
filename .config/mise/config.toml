@@ -27,7 +27,6 @@ neovim = "nightly"
 tree-sitter = "latest"
 
 # LSP / Linter / Formatter
-"github:mattn/efm-langserver" = "latest"
 "pipx:ryl" = "latest"
 rumdl = "latest"
 # NOTE: yaml は ryl (lint + format) に統一。diffnav は codediff.nvim へ移行したため削除。
