@@ -99,14 +99,17 @@ dot() {
   cd "${target:-.}"
 }
 
-# ── plugins (nix) ─────────────────────────────────────
-nix_share="$HOME/.nix-profile/share"
-[[ -f "$nix_share/zsh-autosuggestions/zsh-autosuggestions.zsh" ]] \
-  && source "$nix_share/zsh-autosuggestions/zsh-autosuggestions.zsh"
+# ── plugins (git clone) ───────────────────────────────
+zsh_plugins_dir=$zsh_data_dir/plugins
+[[ -f "$zsh_plugins_dir/zsh-autosuggestions/zsh-autosuggestions.zsh" ]] \
+  && source "$zsh_plugins_dir/zsh-autosuggestions/zsh-autosuggestions.zsh"
 
-[[ -f "$nix_share/zsh-fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh" ]] \
-  && source "$nix_share/zsh-fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
-unset nix_share
+[[ -f "$zsh_plugins_dir/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh" ]] \
+  && source "$zsh_plugins_dir/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
+
+if command -v mise >/dev/null 2>&1; then
+  eval "$(~/.local/bin/mise activate zsh)"
+fi
 
 # ── uv ───────────────────────────────────────────────
 if command -v uv >/dev/null 2>&1; then
