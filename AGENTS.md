@@ -14,7 +14,8 @@
 | `claude/` | Claude Code の dotfiles 実体（git 追跡対象、symlink で `~/.claude/` に繋がる） |
 | `.claude/` | Claude Code のプロジェクト設定（git 追跡対象、`claude/` とは別物） |
 | `.claude/rules/` | path-scoped ルール（例: `neovim.md` は `.config/nvim/**` 編集時のみロード） |
-| `nix/` | Nix flake によるパッケージ管理（CLI・LSP・formatter 等） |
+| `.config/mise/` | mise によるツール管理（CLI・LSP・formatter 等の共有設定） |
+| `mise.toml` | dotfiles 固有の Neovim ツール（project-local mise 設定） |
 | `justfile` | 開発タスク定義 |
 | `scripts/` | セットアップ用ヘルパースクリプト |
 
@@ -38,7 +39,7 @@ Neovim 設計指針・変更手順は `.claude/rules/neovim.md`（`.config/nvim/
 ## Build, Test, and Development Commands
 
 - `just link`: dotfiles の symlink を `$HOME` に作成します（初回セットアップの第一歩）。
-- `just setup`: `just link` + Nix パッケージインストール + uv インストールを実行します。
+- `just setup`: `just link` + mise ツールインストール + zsh プラグイン clone + Claude Code インストールを実行します。
 - `just --list`: 利用できるレシピを一覧します。
 - `just lint`: 通常の検証として diff 空白確認、`zsh` 構文確認、
   Markdown、formatter check、Neovim Lua diagnostics、起動確認を実行します。
@@ -47,7 +48,7 @@ Neovim 設計指針・変更手順は `.claude/rules/neovim.md`（`.config/nvim/
 
 更新系（エージェントは実行不可、ユーザーが手動実行）:
 
-- `just update`: Nix パッケージ更新・Claude Code 更新
+- `just update`: mise ツール更新・zsh プラグイン更新・Claude Code 更新
 - system package 更新: just タスクではなくユーザーが個別に実行
 
 ## Coding Style & Naming Conventions
@@ -55,7 +56,7 @@ Neovim 設計指針・変更手順は `.claude/rules/neovim.md`（`.config/nvim/
 - **Shell**: `set -euo pipefail`、小文字の関数名、意味のある環境変数名を使う
 - **Lua**: `lua/vimrc/` 配下で役割ごとに分け、プラグイン定義は `lua/vimrc/pack.lua` にまとめる
 - **Markdown**: 短く実務的に書き、`rumdl` 準拠で整える
-- **整形**: Shell・Lua ファイルは `just fmt` で整形する（`shfmt`・`stylua` は Nix 管理）
+- **整形**: Shell・Lua ファイルは `just fmt` で整形する（`shfmt`・`stylua` は mise 管理）
 
 ## Testing Guidelines
 

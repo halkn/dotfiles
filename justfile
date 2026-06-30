@@ -8,10 +8,10 @@ list:
 # ── Setup ────────────────────────────────────────────
 
 [group("setup")]
-[doc("フルセットアップ（link → Nix packages → uv → Claude Code）")]
+[doc("フルセットアップ（link → mise tools → zsh plugins → Claude Code）")]
 setup: link
-    nix profile add .#default
-    curl -LsSf https://astral.sh/uv/install.sh | UV_NO_MODIFY_PATH=1 sh
+    mise install
+    just _plugins
     curl -fsSL https://claude.ai/install.sh | bash
 
 [group("setup")]
@@ -28,13 +28,33 @@ link:
     ln -snf "{{dotfiles}}/claude/hooks/block-python.sh"       "$HOME/.claude/hooks/block-python.sh"
     ln -snf "{{dotfiles}}/claude/hooks/block-secret-read.sh"  "$HOME/.claude/hooks/block-secret-read.sh"
 
+[private]
+_plugins:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    plugins_dir="${XDG_DATA_HOME:-$HOME/.local/share}/zsh/plugins"
+    mkdir -p "$plugins_dir"
+    clone() { [ -d "$1/.git" ] || git clone --depth=1 "$2" "$1"; }
+    clone "$plugins_dir/zsh-autosuggestions" https://github.com/zsh-users/zsh-autosuggestions
+    clone "$plugins_dir/fast-syntax-highlighting" https://github.com/zdharma-continuum/fast-syntax-highlighting
+
+[private]
+_plugins-update:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    plugins_dir="${XDG_DATA_HOME:-$HOME/.local/share}/zsh/plugins"
+    for dir in "$plugins_dir"/*/; do
+        [ -d "${dir}.git" ] || continue
+        git -C "$dir" pull --ff-only
+    done
+
 # ── Maintenance ──────────────────────────────────────
 
 [group("maintenance")]
-[doc("Nix パッケージと Claude Code を更新")]
+[doc("mise ツール・zsh プラグイン・Claude Code を更新")]
 update:
-    nix flake update
-    nix profile upgrade dotfiles
+    mise upgrade
+    just _plugins-update
     command -v claude && claude update || true
 
 # ── Quality ──────────────────────────────────────────

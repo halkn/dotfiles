@@ -10,26 +10,18 @@ Do the platform-specific prerequisites first, then run the common bootstrap.
 
 #### WSL Ubuntu
 
-Install the sandbox prerequisites for Claude Code.
+Install `zsh` (the login shell) and the sandbox prerequisites for Claude
+Code.
 
 ```sh
 sudo apt update
-sudo apt install -y bubblewrap socat
-```
-
-Install Nix by following the official instructions at
-<https://nixos.org/download/>, then enable flakes:
-
-```sh
-mkdir -p ~/.config/nix
-echo 'experimental-features = nix-command flakes' >> ~/.config/nix/nix.conf
+sudo apt install -y zsh bubblewrap socat
 ```
 
 #### macOS
 
-Install Nix by following the official instructions at
-<https://nixos.org/download/>, then enable flakes the same way as above.
-macOS already ships `zsh` as the default shell.
+No extra platform packages are required — macOS already ships `zsh` as the
+default shell. mise itself is installed in the bootstrap below.
 
 ### Bootstrap
 
@@ -37,27 +29,29 @@ Run these on any platform after the prerequisites above.
 
 1. Clone the dotfiles. All repositories are managed under `~/repos`
    via ghq, so place it at the ghq-compatible path (ghq itself is
-   installed later by Nix).
+   installed later by mise).
 
    ```sh
    git clone https://github.com/halkn/dotfiles.git "$HOME/repos/github.com/halkn/dotfiles"
    cd "$HOME/repos/github.com/halkn/dotfiles"
    ```
 
-2. Run the full setup. `just setup` creates symlinks (`link`),
-   installs Nix packages, uv, and Claude Code in that order.
-   `nix shell` provides a temporary `just` for bootstrap without
-   polluting the profile.
+2. Install mise and run the full setup. `just setup` creates symlinks
+   (`link`), installs mise tools, clones zsh plugins, and installs Claude
+   Code in that order. `mise exec` provides a temporary `just` for the
+   bootstrap without installing it globally first.
 
    ```sh
-   nix shell nixpkgs#just --command just setup
+   curl https://mise.run | sh
+   export PATH="$HOME/.local/bin:$HOME/.local/share/mise/shims:$PATH"
+   mise exec just -- just setup
    ```
 
-3. Set Nix-managed zsh as the default shell.
+3. Make zsh the default login shell. macOS already defaults to zsh; on WSL,
+   apt registers zsh in `/etc/shells`, so `chsh` accepts it directly.
 
    ```sh
-   echo "$HOME/.nix-profile/bin/zsh" | sudo tee -a /etc/shells
-   chsh -s "$HOME/.nix-profile/bin/zsh"
+   chsh -s "$(command -v zsh)"
    ```
 
 When the bootstrap finishes, reopen the terminal (or start a new login
@@ -87,18 +81,20 @@ git config user.name && git config user.email
 
 ## Tool Manager
 
-CLI tools, LSP servers, formatters, and zsh plugins are managed by
-[Nix flake](https://nixos.org/) via `flake.nix`.
-[uv](https://docs.astral.sh/uv/) and
-[Claude Code](https://code.claude.com/) are installed standalone.
-Task automation uses [just](https://github.com/casey/just).
+CLI tools, LSP servers, and formatters are managed by
+[mise](https://mise.jdx.dev/): shared tools live in `.config/mise/config.toml`
+and dotfiles-specific Neovim tools in `mise.toml`. zsh plugins
+(`zsh-autosuggestions`, `fast-syntax-highlighting`) are shallow git clones
+under `$XDG_DATA_HOME/zsh/plugins`.
+[Claude Code](https://code.claude.com/) is installed standalone.
+Task automation uses [just](https://github.com/casey/just) (itself a mise tool).
 
 Useful recipes:
 
 ```sh
 just --list       # List recipes
-just setup        # Link dotfiles, install Nix packages, uv, and Claude Code
-just update       # Update Nix packages and Claude Code
+just setup        # Link dotfiles, install mise tools and zsh plugins, install Claude Code
+just update       # Update mise tools, zsh plugins, and Claude Code
 just fmt          # Format Markdown, zsh files, and Neovim Lua files
 just fmt-check    # Check formatting without writing files
 just lint         # Run repository checks
