@@ -12,12 +12,12 @@ Do the platform-specific prerequisites first, then run the common bootstrap.
 
 Install the base packages. `git` / `curl` bootstrap the clone and
 installers, `zsh` is the login shell, `unzip` lets mise extract tool
-archives, `xclip` backs Neovim's system clipboard, and `bubblewrap` /
-`socat` are the Claude Code sandbox prerequisites.
+archives, and `bubblewrap` / `socat` are the Claude Code sandbox
+prerequisites.
 
 ```sh
 sudo apt update
-sudo apt install -y git curl zsh unzip xclip bubblewrap socat
+sudo apt install -y git curl zsh unzip bubblewrap socat
 ```
 
 #### macOS
