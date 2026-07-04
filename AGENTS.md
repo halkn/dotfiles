@@ -13,7 +13,7 @@
 | `codex/` | OpenAI Codex 設定（`AGENTS.md` + `config.toml`） |
 | `claude/` | Claude Code の dotfiles 実体（git 追跡対象、symlink で `~/.claude/` に繋がる） |
 | `.claude/` | Claude Code のプロジェクト設定（git 追跡対象、`claude/` とは別物） |
-| `.claude/rules/` | path-scoped ルール（例: `neovim.md` は `.config/nvim/**` 編集時のみロード） |
+| `.claude/rules/` | path-scoped ルール（例: `neovim.md` は `.config/nvim/**` 編集時のみロード）。`~/.claude/rules/` への user-level 分割はしない — `paths:`/`globs:` 指定が user-level では読み込まれない既知の不具合があるため（anthropics/claude-code#19377, #21858）。全プロジェクト共通のルールは `claude/CLAUDE.md` に直接書く |
 | `.config/mise/` | mise によるツール管理（CLI・LSP・formatter 等の共有設定） |
 | `mise.toml` | dotfiles 固有の Neovim ツール + 開発タスク定義（project-local mise 設定 / `[tasks]`） |
 | `scripts/` | セットアップ用ヘルパースクリプト |
@@ -27,6 +27,7 @@
 | `~/.claude/CLAUDE.md` | `<dotfiles>/claude/CLAUDE.md` |
 | `~/.claude/settings.json` | `<dotfiles>/claude/settings.json` |
 | `~/.claude/statusline-command.sh` | `<dotfiles>/claude/statusline-command.sh` |
+| `~/.claude/file-suggestion.sh` | `<dotfiles>/claude/file-suggestion.sh`（`@` ファイル補完を fd + fzf 化） |
 | `~/.claude/hooks/block-python.sh` | `<dotfiles>/claude/hooks/block-python.sh` |
 | `~/.claude/hooks/block-secret-read.sh` | `<dotfiles>/claude/hooks/block-secret-read.sh` |
 
@@ -37,7 +38,7 @@ Neovim 設計指針・変更手順は `.claude/rules/neovim.md`（`.config/nvim/
 
 ## Build, Test, and Development Commands
 
-- `mise run link`: dotfiles の symlink を `$HOME` に作成します（初回セットアップの第一歩）。
+- `mise run link`: dotfiles の symlink を `$HOME` に作成します（初回セットアップの第一歩）。初回実行時は `mise trust` が必要です。
 - `mise run setup`: `link` + mise ツールインストール + zsh プラグイン clone + Claude Code インストールを実行します。
 - `mise tasks`: 利用できるタスクを一覧します。
 - `mise run lint`: 通常の検証として diff 空白確認、`zsh` 構文確認、
@@ -90,6 +91,7 @@ Neovim 設計指針・変更手順は `.claude/rules/neovim.md`（`.config/nvim/
 - symlink と path は可能な限りポータブルに保つ
 - ローカル専用の状態ファイルをこのリポジトリに書き込まない
 - `.config/gh/` は secret として gitignore 対象 — 読み取りや変更はしない
+- `claude/settings.json` の `sandbox.credentials.envVars` はワイルドカード非対応の手動列挙リスト。新しいシークレット系 CLI ツールを導入したら対応する環境変数名をここに追加する
 
 ## Machine-local Overrides（gitignore 対象）
 
