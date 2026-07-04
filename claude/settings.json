@@ -2,12 +2,20 @@
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "cleanupPeriodDays": 14,
   "env": {
-    "DISABLE_TELEMETRY": "1",
-    "DISABLE_ERROR_REPORTING": "1",
+    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
     "BASH_DEFAULT_TIMEOUT_MS": "30000",
-    "CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR": "1"
+    "CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR": "1",
+    "CLAUDE_CODE_NEW_INIT": "1",
+    "DISABLE_AUTOUPDATER": "1"
   },
-  "includeCoAuthoredBy": false,
+  "fileSuggestion": {
+    "type": "command",
+    "command": "~/.claude/file-suggestion.sh"
+  },
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
   "permissions": {
     "allow": [
       "Bash(git *)",
@@ -57,18 +65,18 @@
       "WebFetch(domain:community.snowflake.com)"
     ],
     "deny": [
-      "Read(**/.env)",
-      "Read(**/.env.*)",
-      "Read(**/secrets/**)",
-      "Read(**/credentials/**)",
-      "Read(**/*.pem)",
-      "Read(**/*.key)",
-      "Read(**/*.p12)",
-      "Read(**/*.pfx)",
-      "Read(**/id_rsa*)",
-      "Read(**/id_ed25519*)",
-      "Read(**/id_ecdsa*)",
-      "Read(**/.ssh/**)",
+      "Read(//**/.env)",
+      "Read(//**/.env.*)",
+      "Read(//**/secrets/**)",
+      "Read(//**/credentials/**)",
+      "Read(//**/*.pem)",
+      "Read(//**/*.key)",
+      "Read(//**/*.p12)",
+      "Read(//**/*.pfx)",
+      "Read(//**/id_rsa*)",
+      "Read(//**/id_ed25519*)",
+      "Read(//**/id_ecdsa*)",
+      "Read(//**/.ssh/**)",
       "Bash(dd*)",
       "Bash(shred*)",
       "Bash(truncate*)",
@@ -152,6 +160,18 @@
     "enabled": true,
     "failIfUnavailable": true,
     "allowUnsandboxedCommands": false,
+    "credentials": {
+      "envVars": [
+        { "name": "GH_TOKEN", "mode": "deny" },
+        { "name": "GITHUB_TOKEN", "mode": "deny" },
+        { "name": "AZURE_CLIENT_SECRET", "mode": "deny" },
+        { "name": "SNOWFLAKE_PASSWORD", "mode": "deny" },
+        { "name": "SNOWFLAKE_PRIVATE_KEY_PASSPHRASE", "mode": "deny" },
+        { "name": "SNOWSQL_PWD", "mode": "deny" },
+        { "name": "ANTHROPIC_API_KEY", "mode": "deny" },
+        { "name": "ANTHROPIC_AUTH_TOKEN", "mode": "deny" }
+      ]
+    },
     "network": {
       "allowedDomains": [
         "github.com",
@@ -190,7 +210,6 @@
       ]
     }
   },
-  "autoUpdatesChannel": "latest",
   "tui": "fullscreen",
   "theme": "dark",
   "editorMode": "vim"
