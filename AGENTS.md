@@ -14,9 +14,9 @@
 | `claude/` | Claude Code の dotfiles 実体（git 追跡対象、symlink で `~/.claude/` に繋がる） |
 | `.claude/` | Claude Code のプロジェクト設定（git 追跡対象、`claude/` とは別物） |
 | `.claude/rules/` | path-scoped ルール（例: `neovim.md` は `.config/nvim/**` 編集時のみロード）。`~/.claude/rules/` への user-level 分割はしない — `paths:`/`globs:` 指定が user-level では読み込まれない既知の不具合があるため（anthropics/claude-code#19377, #21858）。全プロジェクト共通のルールは `claude/CLAUDE.md` に直接書く |
+| `.codex/` | Codex のプロジェクト設定（git 追跡対象、`codex/` とは別物） |
 | `.config/mise/` | mise によるツール管理（CLI・LSP・formatter 等の共有設定） |
 | `mise.toml` | dotfiles 固有の Neovim ツール + 開発タスク定義（project-local mise 設定 / `[tasks]`） |
-| `scripts/` | セットアップ用ヘルパースクリプト |
 
 `mise run link` が作成する symlink:
 
