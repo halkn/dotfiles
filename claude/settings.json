@@ -160,6 +160,10 @@
     "enabled": true,
     "failIfUnavailable": true,
     "allowUnsandboxedCommands": false,
+    "excludedCommands": [
+      "git *",
+      "gh *"
+    ],
     "network": {
       "allowedDomains": [
         "github.com",
@@ -191,6 +195,8 @@
         "~/.azure",
         "~/.claude/skills",
         "~/.config",
+        "~/.cache/uv",
+        "~/.cache/mise",
         "~/.local/share/uv",
         "~/.local/share/mise",
         "~/.local/state/mise",
