@@ -3,6 +3,7 @@
 
 # claude
 **/.claude/settings.local.json
+**/.claude/.cc-writes/
 
 # mise
 mise.local.toml
