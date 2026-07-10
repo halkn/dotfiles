@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# pre-push hook: main/master への force push・削除を拒否する。
+# Claude Code の permission 文字列マッチ（deny パターン）は
+# git alias や `sh -c` 経由の呼び出しで迂回されうるため、
+# git 自体のレベルでも保護する（core.hooksPath 経由で全リポジトリに適用）。
+set -euo pipefail
+
+protected_ref_pattern='^refs/heads/(main|master)$'
+zero_sha='0000000000000000000000000000000000000000'
+
+if [ "${ALLOW_FORCE_PUSH:-}" = "1" ]; then
+	exit 0
+fi
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+	[[ "$remote_ref" =~ $protected_ref_pattern ]] || continue
+
+	if [ "$local_sha" = "$zero_sha" ]; then
+		echo "pre-push: 保護ブランチ ($remote_ref) の削除は拒否されました。" >&2
+		echo "pre-push: 意図的な操作なら ALLOW_FORCE_PUSH=1 を付けて再実行してください。" >&2
+		exit 1
+	fi
+
+	if [ "$remote_sha" = "$zero_sha" ]; then
+		continue # 新規ブランチの push
+	fi
+
+	if ! git merge-base --is-ancestor "$remote_sha" "$local_sha" 2>/dev/null; then
+		echo "pre-push: 保護ブランチ ($remote_ref) への force push (非 fast-forward) は拒否されました。" >&2
+		echo "pre-push: 意図的な操作なら ALLOW_FORCE_PUSH=1 を付けて再実行してください。" >&2
+		exit 1
+	fi
+done
+
+exit 0
