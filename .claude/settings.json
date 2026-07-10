@@ -1,0 +1,9 @@
+{
+  "sandbox": {
+    "filesystem": {
+      "allowRead": [
+        "./"
+      ]
+    }
+  }
+}

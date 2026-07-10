@@ -1,5 +1,9 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "fileSuggestion": {
+    "type": "command",
+    "command": "~/.claude/file-suggestion.sh"
+  },
   "cleanupPeriodDays": 14,
   "env": {
     "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
@@ -7,10 +11,6 @@
     "CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR": "1",
     "CLAUDE_CODE_NEW_INIT": "1",
     "DISABLE_AUTOUPDATER": "1"
-  },
-  "fileSuggestion": {
-    "type": "command",
-    "command": "~/.claude/file-suggestion.sh"
   },
   "attribution": {
     "commit": "",
@@ -100,6 +100,7 @@
       "Bash(git push * --delete*)",
       "Bash(git push * --force*)",
       "Bash(git push * -f*)",
+      "Bash(git config *alias.*)",
       "Bash(uv pip*)",
       "Bash(uvx*)",
       "Bash(uv tool run*)",
@@ -160,18 +161,10 @@
     "enabled": true,
     "failIfUnavailable": true,
     "allowUnsandboxedCommands": false,
-    "credentials": {
-      "envVars": [
-        { "name": "GH_TOKEN", "mode": "deny" },
-        { "name": "GITHUB_TOKEN", "mode": "deny" },
-        { "name": "AZURE_CLIENT_SECRET", "mode": "deny" },
-        { "name": "SNOWFLAKE_PASSWORD", "mode": "deny" },
-        { "name": "SNOWFLAKE_PRIVATE_KEY_PASSPHRASE", "mode": "deny" },
-        { "name": "SNOWSQL_PWD", "mode": "deny" },
-        { "name": "ANTHROPIC_API_KEY", "mode": "deny" },
-        { "name": "ANTHROPIC_AUTH_TOKEN", "mode": "deny" }
-      ]
-    },
+    "excludedCommands": [
+      "git *",
+      "gh *"
+    ],
     "network": {
       "allowedDomains": [
         "github.com",
@@ -186,8 +179,10 @@
       "allowWrite": [
         "~/.azure",
         "~/.cache/uv",
+        "~/.cache/mise",
         "~/.local/share/uv",
-        "~/.local/share/mise"
+        "~/.local/share/mise",
+        "~/.local/state/mise"
       ],
       "denyWrite": [
         "~/.ssh",
@@ -200,13 +195,49 @@
         ".",
         "~/.azure",
         "~/.claude/skills",
-        "~/.config/git",
-        "~/.config/gh",
-        "~/.config/ripgrep",
-        "~/.config/uv",
+        "~/.config",
+        "~/.cache/uv",
+        "~/.cache/mise",
         "~/.local/share/uv",
         "~/.local/share/mise",
+        "~/.local/state/mise",
         "~/.local/bin"
+      ]
+    },
+    "credentials": {
+      "envVars": [
+        {
+          "name": "GH_TOKEN",
+          "mode": "deny"
+        },
+        {
+          "name": "GITHUB_TOKEN",
+          "mode": "deny"
+        },
+        {
+          "name": "AZURE_CLIENT_SECRET",
+          "mode": "deny"
+        },
+        {
+          "name": "SNOWFLAKE_PASSWORD",
+          "mode": "deny"
+        },
+        {
+          "name": "SNOWFLAKE_PRIVATE_KEY_PASSPHRASE",
+          "mode": "deny"
+        },
+        {
+          "name": "SNOWSQL_PWD",
+          "mode": "deny"
+        },
+        {
+          "name": "ANTHROPIC_API_KEY",
+          "mode": "deny"
+        },
+        {
+          "name": "ANTHROPIC_AUTH_TOKEN",
+          "mode": "deny"
+        }
       ]
     }
   },
