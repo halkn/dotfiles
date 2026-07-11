@@ -30,6 +30,8 @@
 | `~/.claude/file-suggestion.sh` | `<dotfiles>/claude/file-suggestion.sh`（`@` ファイル補完を fd + fzf 化） |
 | `~/.claude/hooks/block-python.sh` | `<dotfiles>/claude/hooks/block-python.sh` |
 | `~/.claude/hooks/block-secret-read.sh` | `<dotfiles>/claude/hooks/block-secret-read.sh` |
+| `~/.claude/hooks/block-main-push.sh` | `<dotfiles>/claude/hooks/block-main-push.sh`（main/master への直接 push を実際の送信先ブランチ解決に基づいて確認・拒否） |
+| `~/.claude/hooks/scope-gh-pr-create.sh` | `<dotfiles>/claude/hooks/scope-gh-pr-create.sh`（`gh pr create` の対象リポジトリ owner が github.com/halkn 配下以外なら確認） |
 
 `<dotfiles>` は `mise.toml` があるディレクトリ（mise の `{{config_root}}`）に解決されます。
 
@@ -92,6 +94,7 @@ Neovim 設計指針・変更手順は `.claude/rules/neovim.md`（`.config/nvim/
 - ローカル専用の状態ファイルをこのリポジトリに書き込まない
 - `.config/gh/` は secret として gitignore 対象 — 読み取りや変更はしない
 - `claude/settings.json` の `sandbox.credentials.envVars` はワイルドカード非対応の手動列挙リスト。新しいシークレット系 CLI ツールを導入したら対応する環境変数名をここに追加する
+- `claude/settings.json` の `autoMode.environment` に社内・仕事用のインフラ情報（組織名・内部ホスト名等）を書かない。仕事用の trusted infrastructure は各リポジトリの `.claude/settings.local.json`（gitignore 対象）に記述する — autoMode はそこからも読まれる
 
 ## Machine-local Overrides（gitignore 対象）
 
