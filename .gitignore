@@ -19,3 +19,6 @@
 .config/herdr/*.sock
 .config/herdr/session.json
 .config/herdr/release-notes.json
+
+# hunk runtime files
+.config/hunk/state.json

@@ -16,6 +16,8 @@ hyperfine = "latest"
 gh = "latest"
 ghq = "latest"
 delta = "latest"
+# NOTE: diff レビューは diffnav -> codediff.nvim -> hunk と移行。
+"npm:hunkdiff" = "latest"
 
 # dev
 uv = "latest"
@@ -28,4 +30,4 @@ tree-sitter = "latest"
 # LSP / Linter / Formatter
 "pipx:ryl" = "latest"
 rumdl = "latest"
-# NOTE: yaml は ryl (lint + format) に統一。diffnav は codediff.nvim へ移行したため削除。
+# NOTE: yaml は ryl (lint + format) に統一。

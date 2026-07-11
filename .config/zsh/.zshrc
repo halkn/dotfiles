@@ -137,7 +137,11 @@ if command -v nvim >/dev/null 2>&1; then
   alias v='nvim'
   alias vim=nvim
   alias vimdiff='nvim -d'
-  alias gd='nvim +CodeDiff'
+fi
+
+# ── hunk ─────────────────────────────────────────────
+if command -v hunk >/dev/null 2>&1; then
+  alias gd='hunk diff'
 fi
 
 # ── fzf (modules under lib/) ─────────────────────────

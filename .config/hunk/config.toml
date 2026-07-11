@@ -1,0 +1,3 @@
+theme = "kanagawa-wave"
+vcs = "git"
+mode = "auto"
