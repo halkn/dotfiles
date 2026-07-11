@@ -3,6 +3,12 @@
 
 input=$(cat)
 
+if command -v jaq >/dev/null 2>&1; then
+  JQ_BIN=jaq
+else
+  JQ_BIN=jq
+fi
+
 # Colors
 GREEN='\033[38;2;98;198;99m'
 YELLOW='\033[38;2;229;192;123m'
@@ -70,8 +76,8 @@ fmt() {
   printf '%b%s%b %b%s%b %d%%' "$DIM" "$label" "$R" "$col" "$bar" "$R" "$pct_int"
 }
 
-cwd=$(echo "$input" | jq -r '.workspace.current_dir // .cwd // empty')
-model=$(echo "$input" | jq -r '.model.display_name // "Claude"')
+cwd=$(echo "$input" | "$JQ_BIN" -r '.workspace.current_dir // .cwd // empty')
+model=$(echo "$input" | "$JQ_BIN" -r '.model.display_name // "Claude"')
 
 # Git branch
 git_branch=""
@@ -103,7 +109,7 @@ fi
 
 parts="$model"
 
-effort=$(echo "$input" | jq -r '.effort.level // empty')
+effort=$(echo "$input" | "$JQ_BIN" -r '.effort.level // empty')
 if [ -n "$effort" ]; then
   case "$effort" in
     low)    effort_col="$DIM" ;;
@@ -116,28 +122,28 @@ if [ -n "$effort" ]; then
   parts="${parts} ${effort_col}${effort}${R}"
 fi
 
-thinking=$(echo "$input" | jq -r '.thinking.enabled // empty')
+thinking=$(echo "$input" | "$JQ_BIN" -r '.thinking.enabled // empty')
 if [ "$thinking" = "true" ]; then
   parts="${parts} ${DIM}~${R}"
 fi
 
-ctx=$(echo "$input" | jq -r '.context_window.used_percentage // empty')
+ctx=$(echo "$input" | "$JQ_BIN" -r '.context_window.used_percentage // empty')
 if [ -n "$ctx" ]; then
   parts="${parts} ${DIM}│${R} $(fmt 'ctx' "$ctx")"
 fi
 
-five=$(echo "$input" | jq -r '.rate_limits.five_hour.used_percentage // empty')
+five=$(echo "$input" | "$JQ_BIN" -r '.rate_limits.five_hour.used_percentage // empty')
 if [ -n "$five" ]; then
   parts="${parts} ${DIM}│${R} $(fmt '5h' "$five")"
 fi
 
-week=$(echo "$input" | jq -r '.rate_limits.seven_day.used_percentage // empty')
+week=$(echo "$input" | "$JQ_BIN" -r '.rate_limits.seven_day.used_percentage // empty')
 if [ -n "$week" ]; then
   parts="${parts} ${DIM}│${R} $(fmt '7d' "$week")"
 fi
 
-lines_added=$(echo "$input" | jq -r '.cost.total_lines_added // empty')
-lines_removed=$(echo "$input" | jq -r '.cost.total_lines_removed // empty')
+lines_added=$(echo "$input" | "$JQ_BIN" -r '.cost.total_lines_added // empty')
+lines_removed=$(echo "$input" | "$JQ_BIN" -r '.cost.total_lines_removed // empty')
 
 if [ -n "$git_branch" ]; then
   parts="${parts} ${DIM}│${R}\033[90m${git_branch}${git_status_str}\033[0m"

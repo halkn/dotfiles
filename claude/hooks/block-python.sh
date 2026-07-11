@@ -9,7 +9,13 @@
 # pytest / pyright / ipython 等の別コマンド、`uv run pytest` は許可する。
 set -euo pipefail
 
-command="$(jq -r '.tool_input.command // ""')"
+if command -v jaq >/dev/null 2>&1; then
+	JQ_BIN=jaq
+else
+	JQ_BIN=jq
+fi
+
+command="$("$JQ_BIN" -r '.tool_input.command // ""')"
 
 # コマンド置換とサブシェルを開く記号を改行に変換してから、
 # パイプ・順次・論理演算子などの区切りを改行へ畳み込みセグメント化する。
@@ -43,7 +49,7 @@ while IFS= read -r seg; do
 	base="${prog##*/}"
 	base="$(printf '%s' "$base" | tr '[:upper:]' '[:lower:]')"
 	if is_python "$base"; then
-		echo "Python の実行は禁止です（任意コード実行のため）。型/構文確認は専用 LSP・linter、値の確認は jq（JSON）・yq（YAML, Go 版 mikefarah/yq）、Python が必要な場合は uv の専用サブコマンドを使ってください。" >&2
+		echo "Python の実行は禁止です（任意コード実行のため）。型/構文確認は専用 LSP・linter、値の確認は jaq（JSON/YAML、未導入時は jq）、Python が必要な場合は uv の専用サブコマンドを使ってください。" >&2
 		exit 2
 	fi
 done <<EOF

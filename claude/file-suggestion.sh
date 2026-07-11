@@ -4,7 +4,13 @@
 # fd / fzf は mise 管理（.config/mise/config.toml）。無い環境では rg / grep に落とす。
 set -euo pipefail
 
-query="$(jq -r '.query // ""' 2>/dev/null)" || query=""
+if command -v jaq >/dev/null 2>&1; then
+	JQ_BIN=jaq
+else
+	JQ_BIN=jq
+fi
+
+query="$("$JQ_BIN" -r '.query // ""' 2>/dev/null)" || query=""
 cd "${CLAUDE_PROJECT_DIR:-.}"
 
 list_files() {

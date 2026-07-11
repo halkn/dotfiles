@@ -8,8 +8,8 @@ ripgrep = "latest"
 fd = "latest"
 fzf = "latest"
 eza = "latest"
-jq = "latest"
-yq = "latest"
+# NOTE: JSON/YAML の値確認は jq/yq から jaq (Rust) に統一。未導入時は各スクリプトが jq にフォールバックする。
+jaq = "latest"
 hyperfine = "latest"
 
 # vcs
