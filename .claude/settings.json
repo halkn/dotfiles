@@ -2,7 +2,11 @@
   "sandbox": {
     "filesystem": {
       "allowRead": [
-        "./"
+        "./",
+        "~/.local/share/nvim"
+      ],
+      "allowWrite": [
+        "~/.local/share/nvim"
       ]
     }
   }
