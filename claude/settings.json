@@ -154,6 +154,14 @@
           {
             "type": "command",
             "command": "~/.claude/hooks/block-secret-read.sh"
+          },
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/block-main-push.sh"
+          },
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/scope-gh-pr-create.sh"
           }
         ]
       }

@@ -32,6 +32,8 @@ ln -snf "{{config_root}}/claude/statusline-command.sh"       "$HOME/.claude/stat
 ln -snf "{{config_root}}/claude/file-suggestion.sh"          "$HOME/.claude/file-suggestion.sh"
 ln -snf "{{config_root}}/claude/hooks/block-python.sh"       "$HOME/.claude/hooks/block-python.sh"
 ln -snf "{{config_root}}/claude/hooks/block-secret-read.sh"  "$HOME/.claude/hooks/block-secret-read.sh"
+ln -snf "{{config_root}}/claude/hooks/block-main-push.sh"    "$HOME/.claude/hooks/block-main-push.sh"
+ln -snf "{{config_root}}/claude/hooks/scope-gh-pr-create.sh" "$HOME/.claude/hooks/scope-gh-pr-create.sh"
 """
 
 [tasks._plugins]

@@ -30,6 +30,8 @@
 | `~/.claude/file-suggestion.sh` | `<dotfiles>/claude/file-suggestion.sh`（`@` ファイル補完を fd + fzf 化） |
 | `~/.claude/hooks/block-python.sh` | `<dotfiles>/claude/hooks/block-python.sh` |
 | `~/.claude/hooks/block-secret-read.sh` | `<dotfiles>/claude/hooks/block-secret-read.sh` |
+| `~/.claude/hooks/block-main-push.sh` | `<dotfiles>/claude/hooks/block-main-push.sh`（main/master への直接 push を実際の送信先ブランチ解決に基づいて確認・拒否） |
+| `~/.claude/hooks/scope-gh-pr-create.sh` | `<dotfiles>/claude/hooks/scope-gh-pr-create.sh`（`gh pr create` の対象リポジトリ owner が github.com/halkn 配下以外なら確認） |
 
 `<dotfiles>` は `mise.toml` があるディレクトリ（mise の `{{config_root}}`）に解決されます。
 
