@@ -1,0 +1,23 @@
+# ── macOS ────────────────────────────────────────────
+macos-option-as-alt = true
+macos-titlebar-style = hidden
+
+# ── Font ─────────────────────────────────────────────
+font-family = "UDEV Gothic NF"
+font-size = 14
+
+# ── Theme ────────────────────────────────────────────
+theme = "Kanagawa Wave"
+
+# ── Window ───────────────────────────────────────────
+window-padding-balance = true
+
+# ── Keybind ──────────────────────────────────────────
+# JIS配列の¥キーがOSC的に円記号として送られるのをバックスラッシュに矯正
+keybind = ¥=text:\\
+
+# ── Behavior ─────────────────────────────────────────
+mouse-hide-while-typing = true
+quit-after-last-window-closed = true
+# Homebrew cask管理のため、Sparkle経由の自動更新は無効化
+auto-update = off
