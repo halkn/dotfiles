@@ -58,6 +58,7 @@
       "Bash(az devops project show *)",
       "Bash(az devops configure --list*)",
       "Bash(az devops invoke *)",
+      "Bash(gh pr create*)",
       "WebFetch(domain:learn.microsoft.com)",
       "WebFetch(domain:docs.microsoft.com)",
       "WebFetch(domain:azure.microsoft.com)",
@@ -124,11 +125,22 @@
       "Bash(az devops invoke *--http-method DELETE*)"
     ],
     "ask": [
-      "Bash(git commit*)",
-      "Bash(git push*)",
+      "Bash(git push)",
+      "Bash(git push * main*)",
+      "Bash(git push * master*)",
+      "Bash(git remote add*)",
+      "Bash(git remote set-url*)",
       "Bash(uv version*)"
     ],
-    "defaultMode": "acceptEdits"
+    "defaultMode": "acceptEdits",
+    "disableBypassPermissionsMode": "disable"
+  },
+  "autoMode": {
+    "environment": [
+      "$defaults",
+      "Source control: github.com/halkn and repositories under it (personal projects and dotfiles)"
+    ],
+    "classifyAllShell": true
   },
   "hooks": {
     "PreToolUse": [
