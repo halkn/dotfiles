@@ -18,9 +18,11 @@ surface_dim = "#54546d"
 mouse_capture = true
 mouse_scroll_lines = 3
 confirm_close = true
-prompt_new_tab_name = true
+prompt_new_tab_name = false
 pane_borders = true
 pane_gaps = false
+show_agent_labels_on_pane_borders = true
+agent_panel_sort = "spaces"
 
 # ── Session ──────────────────────────────────────────
 [session]
@@ -30,8 +32,8 @@ resume_agents_on_restore = true
 [keys]
 prefix = "ctrl+space"
 new_workspace = "alt+w"
-split_vertical = "alt+\\"
-split_horizontal = "alt+-"
+split_vertical = "alt+;"
+split_horizontal = "alt+minus"
 focus_pane_left = "alt+h"
 focus_pane_down = "alt+j"
 focus_pane_up = "alt+k"
@@ -58,7 +60,7 @@ type = "shell"
 command = "herdr pane focus --direction right"
 
 [[keys.command]]
-key = "alt+|"
+key = "alt+plus"
 type = "shell"
 command = "herdr pane split --direction right --ratio 0.3 --focus"
 
