@@ -14,7 +14,13 @@
 #      含むコマンドを拒否する。echo / printf などでの値の展開（transcript への漏洩）を防ぐ。
 set -euo pipefail
 
-command="$(jq -r '.tool_input.command // ""')"
+if command -v jaq >/dev/null 2>&1; then
+	JQ_BIN=jaq
+else
+	JQ_BIN=jq
+fi
+
+command="$("$JQ_BIN" -r '.tool_input.command // ""')"
 
 deny() {
 	echo "$1" >&2
@@ -33,7 +39,7 @@ segments="$(printf '%s' "$command" | sed -E 's/\$\(/\n/g; s/`/\n/g' | tr '|;&()'
 is_reader() {
 	# 与えられたプログラム名（basename 済み・小文字化済み）が中身を吐く読取系か。
 	case "$1" in
-	cat | tac | nl | less | more | head | tail | xxd | od | hexdump | strings | base64 | cut | grep | egrep | fgrep | rg | sed | awk | sort | uniq | jq | yq | dd) return 0 ;;
+	cat | tac | nl | less | more | head | tail | xxd | od | hexdump | strings | base64 | cut | grep | egrep | fgrep | rg | sed | awk | sort | uniq | jq | jaq | yq | dd) return 0 ;;
 	*) return 1 ;;
 	esac
 }

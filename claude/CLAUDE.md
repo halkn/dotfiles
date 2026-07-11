@@ -26,7 +26,7 @@
 
 - ツール・依存を追加する前に、既存構成で代替できるか確認する
 - GitHub: PR/issue/CI は `gh` を使う
-- YAML: 値の確認は `yq`（Go 版 mikefarah/yq）、構文は `mise run lint`（`python -c "import yaml"` は使わない）
+- JSON/YAML: 値の確認は `jaq`（Rust 製 jq 互換、未導入時は `jq` にフォールバック、YAML は `--from yaml` を付与）。YAML構文は `mise run lint`（`python -c "import yaml"` は使わない）
 
 ## Git
 
