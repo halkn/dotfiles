@@ -68,3 +68,8 @@ command = "herdr pane split --direction right --ratio 0.3 --focus"
 key = "alt+s"
 type = "pane"
 command = "~/.config/herdr/herdr-picker.sh"
+
+[[keys.command]]
+key = "alt+d"
+type = "pane"
+command = "hunk diff"

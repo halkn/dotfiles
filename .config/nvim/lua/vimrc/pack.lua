@@ -124,27 +124,6 @@ local plugs = {
       vim.keymap.set('n', '<Leader>hp', gs.preview_hunk, { desc = 'Preview hunk' })
     end,
   },
-  {
-    src = 'esmuellert/codediff.nvim',
-    config = function()
-      require('codediff').setup({
-        explorer = {
-          view_mode = 'tree',
-        },
-        keymaps = {
-          view = {
-            toggle_explorer = '<localleader>e',
-            next_file = '<c-n>',
-            prev_file = '<c-p>',
-            open_in_prev_tab = '<CR>',
-            close_on_open_in_prev_tab = true,
-          },
-        },
-      })
-
-      vim.keymap.set('n', '<Leader>d', '<cmd>CodeDiff<CR>', { desc = 'CodeDiff' })
-    end,
-  },
 }
 
 -- vim.pack.add
