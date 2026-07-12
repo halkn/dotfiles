@@ -15,42 +15,32 @@
 | `.claude/` | Claude Code のプロジェクト設定（git 追跡対象、`claude/` とは別物） |
 | `.claude/rules/` | path-scoped ルール（例: `neovim.md` は `.config/nvim/**` 編集時のみロード）。`~/.claude/rules/` への user-level 分割はしない — `paths:`/`globs:` 指定が user-level では読み込まれない既知の不具合があるため（anthropics/claude-code#19377, #21858）。全プロジェクト共通のルールは `claude/CLAUDE.md` に直接書く |
 | `.codex/` | Codex のプロジェクト設定（git 追跡対象、`codex/` とは別物） |
-| `.config/mise/` | mise によるツール管理（CLI・LSP・formatter 等の共有設定） |
-| `mise.toml` | dotfiles 固有の Neovim ツール + 開発タスク定義（project-local mise 設定 / `[tasks]`） |
+| `.config/mise/` | mise によるツール管理（CLI・LSP・formatter 等の共有設定 + `mise.lock`）。`config.toml` は symlink により `~/.config/mise/config.toml` としても読まれるため、このリポジトリ外の全プロジェクトに影響するグローバル mise 設定を兼ねる |
+| `mise.toml` | dotfiles 固有の Neovim ツール + セットアップ宣言（`[dotfiles]` / `[bootstrap.repos]`）+ 開発タスク定義 |
+| `mise-tasks/` | 複数行スクリプトの file task（`#MISE` コメントでメタデータ宣言、例: `lint/luals` → `lint:luals`） |
+| `mise.lock` | `mise.toml` の tools のバージョン・checksum 固定（`mise run update` で更新） |
 
-`mise run link` が作成する symlink:
+symlink 配置は `mise bootstrap` が `mise.toml` の `[dotfiles]` セクション（single source of truth）から宣言的に適用します。対象は `~/.config`・`~/.zshenv`・`~/.claude/` 配下（settings.json, CLAUDE.md, statusline-command.sh, file-suggestion.sh, hooks/*）です。source は `mise.toml` があるディレクトリ（mise の `{{config_root}}`）基準で解決されます。
 
-| symlink | → 実体 |
-|---------|--------|
-| `~/.config` | `<dotfiles>/.config` |
-| `~/.zshenv` | `<dotfiles>/.zshenv` |
-| `~/.claude/CLAUDE.md` | `<dotfiles>/claude/CLAUDE.md` |
-| `~/.claude/settings.json` | `<dotfiles>/claude/settings.json` |
-| `~/.claude/statusline-command.sh` | `<dotfiles>/claude/statusline-command.sh` |
-| `~/.claude/file-suggestion.sh` | `<dotfiles>/claude/file-suggestion.sh`（`@` ファイル補完を fd + fzf 化） |
-| `~/.claude/hooks/block-python.sh` | `<dotfiles>/claude/hooks/block-python.sh` |
-| `~/.claude/hooks/block-secret-read.sh` | `<dotfiles>/claude/hooks/block-secret-read.sh` |
-| `~/.claude/hooks/block-main-push.sh` | `<dotfiles>/claude/hooks/block-main-push.sh`（main/master への直接 push を実際の送信先ブランチ解決に基づいて確認・拒否） |
-| `~/.claude/hooks/scope-gh-pr-create.sh` | `<dotfiles>/claude/hooks/scope-gh-pr-create.sh`（`gh pr create` の対象リポジトリ owner が github.com/halkn 配下以外なら確認） |
-
-`<dotfiles>` は `mise.toml` があるディレクトリ（mise の `{{config_root}}`）に解決されます。
+zsh プラグイン（zsh-autosuggestions, fast-syntax-highlighting）は `[bootstrap.repos]` で `~/.local/share/zsh/plugins/` に clone/update されます。
 
 新規ファイルは対象ツールの近くに配置し、既存のディレクトリ命名に合わせてください。
 Neovim 設計指針・変更手順は `.claude/rules/neovim.md`（`.config/nvim/**` 編集時に自動ロード）を参照。
 
 ## Build, Test, and Development Commands
 
-- `mise run link`: dotfiles の symlink を `$HOME` に作成します（初回セットアップの第一歩）。初回実行時は `mise trust` が必要です。
-- `mise run setup`: `link` + mise ツールインストール + zsh プラグイン clone + Claude Code インストールを実行します。
+- `mise run setup`（= `mise bootstrap --yes`）: zsh プラグイン clone + dotfiles symlink 配置 + mise ツールインストール + Claude Code インストールを冪等に実行します。初回実行時は `mise trust` が必要です。
+- `mise bootstrap --dry-run` / `mise bootstrap status`: 適用内容の事前確認・状態確認ができます。
+- 新規マシンで `~/.config` などが実ディレクトリとして既に存在する場合、mise は管理外ファイルを上書きしません。`mise bootstrap --force-dotfiles` は競合ファイルを**バックアップなしでその場に上書き**するため、実行前に手動でバックアップしてください（例: `mv ~/.config ~/.config.bak`）。
 - `mise tasks`: 利用できるタスクを一覧します。
 - `mise run lint`: 通常の検証として diff 空白確認、`zsh` 構文確認、
   Markdown、formatter check、Neovim Lua diagnostics、起動確認を実行します。
-- `mise run fmt`: Markdown、zsh、Neovim Lua を既定 formatter で整形します。
+- `mise run fmt`: Markdown、zsh、Neovim Lua を既定 formatter で整形します（`mise.toml` 自体のキー整形も含む）。
 - `mise run fmt-check`: ファイルを書き換えずに Markdown、zsh、Neovim Lua の整形を確認します。
 
 更新系（エージェントは実行不可、ユーザーが手動実行）:
 
-- `mise run update`: mise ツール更新・zsh プラグイン更新・Claude Code 更新
+- `mise run update`: mise ツール更新（`mise.lock` も更新される）・zsh プラグイン更新・Claude Code 更新。更新後は `mise.lock` / `.config/mise/mise.lock` の差分をコミットする
 - system package 更新: mise タスクではなくユーザーが個別に実行
 
 ## Coding Style & Naming Conventions

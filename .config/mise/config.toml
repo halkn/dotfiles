@@ -1,3 +1,9 @@
+[settings]
+# tools のバージョン・checksum・URL を mise.lock に固定（更新は mise upgrade 経由）。
+# このファイルは [dotfiles] で ~/.config/mise/config.toml に symlink されるため、
+# mise のグローバル設定として全プロジェクトに適用される（このリポジトリ内に閉じない）。
+lockfile = true
+
 [tools]
 # terminal
 starship = "latest"
