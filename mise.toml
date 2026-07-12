@@ -1,3 +1,8 @@
+[settings.task]
+# ツールインストールは mise bootstrap（packages → tools の順）に一本化する。
+# task 実行前の自動インストールは新規マシンで unzip 導入前に zip 展開が走るため無効化
+run_auto_install = false
+
 [tools]
 # Neovim LSP / Formatter（dotfiles 固有ファイルタイプのみ）
 lua-language-server = "latest"
@@ -17,12 +22,32 @@ shfmt = "latest"
 "~/.claude/file-suggestion.sh" = { source = "claude/file-suggestion.sh" }
 "~/.claude/hooks/*" = { source = "claude/hooks/*" }
 
+# OS パッケージ。apt は Linux、brew は macOS でのみ適用され、それ以外の
+# OS では自動スキップされる。git/curl は clone 用に README の事前手順でも
+# 入れるが、宣言として（冪等なので）ここにも置く。zsh/unzip/bubblewrap/
+# socat は macOS では不要（zsh 標準搭載、Claude Code サンドボックスは
+# Seatbelt を使用するため bubblewrap/socat 相当は不要）
+[bootstrap.packages]
+"apt:git" = "latest"
+"apt:curl" = "latest"
+"apt:zsh" = "latest"
+"apt:unzip" = "latest"
+"apt:bubblewrap" = "latest"
+"apt:socat" = "latest"
+"brew:git" = "latest"
+"brew:curl" = "latest"
+
+# ログインシェル（/etc/shells 登録 + chsh を冪等に適用）
+# /bin/zsh は Ubuntu（usrmerge）と macOS の両方に存在する
+[bootstrap.user]
+login_shell = "/bin/zsh"
+
 [bootstrap.repos]
 "~/.local/share/zsh/plugins/zsh-autosuggestions" = { url = "https://github.com/zsh-users/zsh-autosuggestions" }
 "~/.local/share/zsh/plugins/fast-syntax-highlighting" = { url = "https://github.com/zdharma-continuum/fast-syntax-highlighting" }
 
 [tasks.setup]
-description = "フルセットアップ（mise bootstrap: repos → dotfiles → tools → Claude Code）"
+description = "フルセットアップ（mise bootstrap: packages → repos → dotfiles → login shell → tools → Claude Code）"
 dir = "{{config_root}}"
 run = "mise bootstrap --yes"
 
