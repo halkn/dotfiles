@@ -88,7 +88,9 @@ CLI tools, LSP servers, and formatters are managed by
 and dotfiles-specific Neovim tools in `mise.toml`. Both pin exact tool
 versions in a `mise.lock` (`mise run update` refreshes it; commit the diff
 afterwards). `mise.toml` also declares the OS packages
-(`[bootstrap.packages]`: apt entries, skipped on macOS), the login shell
+(`[bootstrap.packages]`: apt entries; other manager prefixes like `brew:`
+are supported too, and entries for an unavailable manager are skipped
+automatically), the login shell
 (`[bootstrap.user]`), the dotfiles symlink targets (`[dotfiles]`), and the
 zsh plugin repos to clone (`[bootstrap.repos]`: `zsh-autosuggestions`,
 `fast-syntax-highlighting`, full git clones under
