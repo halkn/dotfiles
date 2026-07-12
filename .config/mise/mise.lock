@@ -225,6 +225,40 @@ checksum = "sha256:9b5f35d283b0877eeda0cf66ba1ef1d95ae40f32e858a04da0041f3a20df0
 url = "https://github.com/ogulcancelik/herdr/releases/download/v0.7.3/herdr-macos-x86_64"
 url_api = "https://api.github.com/repos/ogulcancelik/herdr/releases/assets/469642057"
 
+[[tools.herdr]]
+version = "0.7.3"
+backend = "aqua:ogulcancelik/herdr"
+
+[tools.herdr."platforms.linux-arm64"]
+checksum = "sha256:ea490094f2c7c39099870857d00c64c628ef7b5eba1967df4258033455ee2cb1"
+url = "https://github.com/ogulcancelik/herdr/releases/download/v0.7.3/herdr-linux-aarch64"
+url_api = "https://api.github.com/repos/ogulcancelik/herdr/releases/assets/469642055"
+
+[tools.herdr."platforms.linux-arm64-musl"]
+checksum = "sha256:ea490094f2c7c39099870857d00c64c628ef7b5eba1967df4258033455ee2cb1"
+url = "https://github.com/ogulcancelik/herdr/releases/download/v0.7.3/herdr-linux-aarch64"
+url_api = "https://api.github.com/repos/ogulcancelik/herdr/releases/assets/469642055"
+
+[tools.herdr."platforms.linux-x64"]
+checksum = "sha256:043ef43ecbabda28465dcff1eec3184518150d567b8b8f20cda9c6c88770641d"
+url = "https://github.com/ogulcancelik/herdr/releases/download/v0.7.3/herdr-linux-x86_64"
+url_api = "https://api.github.com/repos/ogulcancelik/herdr/releases/assets/469642054"
+
+[tools.herdr."platforms.linux-x64-musl"]
+checksum = "sha256:043ef43ecbabda28465dcff1eec3184518150d567b8b8f20cda9c6c88770641d"
+url = "https://github.com/ogulcancelik/herdr/releases/download/v0.7.3/herdr-linux-x86_64"
+url_api = "https://api.github.com/repos/ogulcancelik/herdr/releases/assets/469642054"
+
+[tools.herdr."platforms.macos-arm64"]
+checksum = "sha256:b31345392d004ec1f1b2c821e1ad601019fa8385fe1e4c6931321eb58a920773"
+url = "https://github.com/ogulcancelik/herdr/releases/download/v0.7.3/herdr-macos-aarch64"
+url_api = "https://api.github.com/repos/ogulcancelik/herdr/releases/assets/469642056"
+
+[tools.herdr."platforms.macos-x64"]
+checksum = "sha256:9b5f35d283b0877eeda0cf66ba1ef1d95ae40f32e858a04da0041f3a20df027c"
+url = "https://github.com/ogulcancelik/herdr/releases/download/v0.7.3/herdr-macos-x86_64"
+url_api = "https://api.github.com/repos/ogulcancelik/herdr/releases/assets/469642057"
+
 [[tools.hyperfine]]
 version = "1.20.0"
 backend = "aqua:sharkdp/hyperfine"

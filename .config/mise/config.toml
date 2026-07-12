@@ -5,9 +5,13 @@
 lockfile = true
 
 [tools]
+# dev
+uv = "latest"
+node = "latest"
+
 # terminal
 starship = "latest"
-"github:ogulcancelik/herdr" = "latest"
+herdr = "latest"
 
 # cli
 ripgrep = "latest"
@@ -24,10 +28,6 @@ ghq = "latest"
 delta = "latest"
 # NOTE: diff レビューは diffnav -> codediff.nvim -> hunk と移行。
 "npm:hunkdiff" = "latest"
-
-# dev
-uv = "latest"
-node = "latest"
 
 # editor
 neovim = "nightly"
