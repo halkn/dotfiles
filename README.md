@@ -8,9 +8,11 @@ Do the platform-specific prerequisites first, then run the common bootstrap.
 
 ### Platform prerequisites
 
-On a fresh WSL Ubuntu, install the two tools needed to fetch this repo and
-mise — every other OS package (`zsh`, `unzip`, `bubblewrap`, `socat`) and
-the login shell are applied declaratively by the bootstrap below:
+On a fresh WSL Ubuntu, `git` and `curl` are needed to fetch this repo and
+mise, and are usually preinstalled — check with `git --version && curl
+--version`. If either is missing, install them first (every other OS
+package — `zsh`, `unzip`, `bubblewrap`, `socat` — and the login shell are
+applied declaratively by the bootstrap below):
 
 ```sh
 sudo apt-get update && sudo apt-get install -y git curl
