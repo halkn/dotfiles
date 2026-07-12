@@ -5,76 +5,62 @@ stylua = "latest"
 shfmt = "latest"
 "github:mattn/efm-langserver" = "latest"
 
-# ── Setup ────────────────────────────────────────────
+# ── Setup（mise bootstrap） ──────────────────────────
+
+# source は mise.toml のあるディレクトリ基準。mode = "symlink" が既定
+[dotfiles]
+"~/.config" = { source = ".config" }
+"~/.zshenv" = { source = ".zshenv" }
+"~/.claude/CLAUDE.md" = { source = "claude/CLAUDE.md" }
+"~/.claude/settings.json" = { source = "claude/settings.json" }
+"~/.claude/statusline-command.sh" = { source = "claude/statusline-command.sh" }
+"~/.claude/file-suggestion.sh" = { source = "claude/file-suggestion.sh" }
+"~/.claude/hooks/*" = { source = "claude/hooks/*" }
+
+[bootstrap.repos]
+"~/.local/share/zsh/plugins/zsh-autosuggestions" = { url = "https://github.com/zsh-users/zsh-autosuggestions" }
+"~/.local/share/zsh/plugins/fast-syntax-highlighting" = { url = "https://github.com/zdharma-continuum/fast-syntax-highlighting" }
 
 [tasks.setup]
-description = "フルセットアップ（link → mise tools → zsh plugins → Claude Code）"
-depends = ["link"]
+description = "フルセットアップ（mise bootstrap: repos → dotfiles → tools → Claude Code）"
 dir = "{{config_root}}"
-run = [
-  "mise install",
-  "mise run _plugins",
-  "curl -fsSL https://claude.ai/install.sh | bash",
-]
+run = "mise bootstrap --yes"
 
-[tasks.link]
-description = "dotfiles の symlink を配置"
-dir = "{{config_root}}"
-run = """
-[ -d "$HOME/.config" ] && [ ! -L "$HOME/.config" ] && \
-  mv "$HOME/.config" "$HOME/.config.bak.$(date +%s)" || true
-ln -snf "{{config_root}}/.config" "$HOME/.config"
-ln -snf "{{config_root}}/.zshenv" "$HOME/.zshenv"
-mkdir -p "$HOME/.claude" "$HOME/.claude/hooks"
-ln -snf "{{config_root}}/claude/settings.json"              "$HOME/.claude/settings.json"
-ln -snf "{{config_root}}/claude/CLAUDE.md"                   "$HOME/.claude/CLAUDE.md"
-ln -snf "{{config_root}}/claude/statusline-command.sh"       "$HOME/.claude/statusline-command.sh"
-ln -snf "{{config_root}}/claude/file-suggestion.sh"          "$HOME/.claude/file-suggestion.sh"
-ln -snf "{{config_root}}/claude/hooks/block-python.sh"       "$HOME/.claude/hooks/block-python.sh"
-ln -snf "{{config_root}}/claude/hooks/block-secret-read.sh"  "$HOME/.claude/hooks/block-secret-read.sh"
-ln -snf "{{config_root}}/claude/hooks/block-main-push.sh"    "$HOME/.claude/hooks/block-main-push.sh"
-ln -snf "{{config_root}}/claude/hooks/scope-gh-pr-create.sh" "$HOME/.claude/hooks/scope-gh-pr-create.sh"
-"""
-
-[tasks._plugins]
-hide = true
-run = """
-#!/usr/bin/env bash
-set -euo pipefail
-plugins_dir="${XDG_DATA_HOME:-$HOME/.local/share}/zsh/plugins"
-mkdir -p "$plugins_dir"
-clone() { [ -d "$1/.git" ] || git clone --depth=1 "$2" "$1"; }
-clone "$plugins_dir/zsh-autosuggestions" https://github.com/zsh-users/zsh-autosuggestions
-clone "$plugins_dir/fast-syntax-highlighting" https://github.com/zdharma-continuum/fast-syntax-highlighting
-"""
-
-[tasks._plugins-update]
-hide = true
-run = """
-#!/usr/bin/env bash
-set -euo pipefail
-plugins_dir="${XDG_DATA_HOME:-$HOME/.local/share}/zsh/plugins"
-for dir in "$plugins_dir"/*/; do
-    [ -d "${dir}.git" ] || continue
-    git -C "$dir" pull --ff-only
-done
-"""
+# mise bootstrap の最終ステップで自動実行される（冪等に保つ）
+[tasks.bootstrap]
+description = "Claude Code をインストール（未導入時のみ）"
+run = "command -v claude >/dev/null || curl -fsSL https://claude.ai/install.sh | bash"
 
 # ── Maintenance ──────────────────────────────────────
 
 [tasks.update]
 description = "mise ツール・zsh プラグイン・Claude Code を更新"
-run = [
-  "mise upgrade",
-  "mise run _plugins-update",
-  "command -v claude && claude update || true",
-]
+dir = "{{config_root}}"
+run = """
+#!/usr/bin/env bash
+set -euo pipefail
+mise upgrade & pid1=$!
+mise bootstrap repos apply --yes & pid2=$!
+(command -v claude && claude update || true) & pid3=$!
+status=0
+wait "$pid1" || status=1
+wait "$pid2" || status=1
+wait "$pid3" || status=1
+exit "$status"
+"""
 
 # ── Quality ──────────────────────────────────────────
 
 [tasks.lint]
 description = "リポジトリ検証"
-depends = ["lint:zsh", "lint:md", "lint:shfmt", "lint:stylua", "lint:luals", "lint:nvim"]
+depends = [
+  "lint:zsh",
+  "lint:md",
+  "lint:shfmt",
+  "lint:stylua",
+  "lint:luals",
+  "lint:nvim",
+]
 dir = "{{config_root}}"
 run = "git diff --check"
 
@@ -82,6 +68,7 @@ run = "git diff --check"
 description = "ファイル整形"
 dir = "{{config_root}}"
 run = [
+  "mise fmt",
   "rumdl fmt .",
   "shfmt -w .zshenv .config/zsh/.zshenv .config/zsh/.zshrc",
   "stylua .config/nvim",
@@ -110,17 +97,6 @@ run = "shfmt -d .zshenv .config/zsh/.zshenv .config/zsh/.zshrc"
 hide = true
 dir = "{{config_root}}"
 run = "stylua --check .config/nvim"
-
-[tasks."lint:luals"]
-hide = true
-dir = "{{config_root}}"
-run = """
-rm -rf "${TMPDIR:-/tmp}"/luals-check
-VIMRUNTIME="$(nvim --clean --headless -c 'lua io.write(vim.env.VIMRUNTIME)' +q 2>/dev/null)" \
-  lua-language-server --check=.config/nvim --checklevel=Warning \
-  --logpath="${TMPDIR:-/tmp}"/luals-check/log --metapath="${TMPDIR:-/tmp}"/luals-check/meta
-rm -rf "${TMPDIR:-/tmp}"/luals-check
-"""
 
 [tasks."lint:nvim"]
 hide = true
