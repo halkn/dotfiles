@@ -36,8 +36,9 @@ Run these on any platform after the prerequisites above.
 
 2. Install mise and run the full setup. `mise run setup` (= `mise bootstrap
    --yes`) idempotently installs the OS packages declared in `mise.toml`'s
-   `[bootstrap.packages]` section (via apt on Linux, skipped on macOS; sudo
-   runs only when something is missing), clones the zsh plugin repos in
+   `[bootstrap.packages]` section (via apt on Linux, via brew on macOS;
+   entries for an unavailable manager are skipped; sudo runs only when
+   something is missing), clones the zsh plugin repos in
    `[bootstrap.repos]`, links the dotfiles declared in `[dotfiles]`, sets
    the login shell from `[bootstrap.user]` (registers `/bin/zsh` in
    `/etc/shells` and runs `chsh`, which may prompt for your password),
