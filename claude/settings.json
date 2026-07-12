@@ -9,8 +9,9 @@
     "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
     "BASH_DEFAULT_TIMEOUT_MS": "30000",
     "CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR": "1",
-    "CLAUDE_CODE_NEW_INIT": "1",
-    "DISABLE_AUTOUPDATER": "1"
+    "DISABLE_AUTOUPDATER": "1",
+    "CLAUDE_CODE_DISABLE_MOUSE_CLICKS": "1",
+    "CLAUDE_CODE_SUBPROCESS_ENV_SCRUB": "1"
   },
   "attribution": {
     "commit": "",
@@ -225,6 +226,12 @@
       ]
     },
     "credentials": {
+      "files": [
+        {
+          "path": "~/.config/gh",
+          "mode": "deny"
+        }
+      ],
       "envVars": [
         {
           "name": "GH_TOKEN",
