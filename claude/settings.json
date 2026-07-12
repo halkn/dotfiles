@@ -226,12 +226,6 @@
       ]
     },
     "credentials": {
-      "files": [
-        {
-          "path": "~/.config/gh",
-          "mode": "deny"
-        }
-      ],
       "envVars": [
         {
           "name": "GH_TOKEN",
