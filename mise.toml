@@ -22,11 +22,14 @@ shfmt = "latest"
 "~/.claude/file-suggestion.sh" = { source = "claude/file-suggestion.sh" }
 "~/.claude/hooks/*" = { source = "claude/hooks/*" }
 
-# OS パッケージ。apt は Linux、brew は macOS でのみ適用され、それ以外の
-# OS では自動スキップされる。git/curl は clone 用に README の事前手順でも
-# 入れるが、宣言として（冪等なので）ここにも置く。zsh/unzip/bubblewrap/
-# socat は macOS では不要（zsh 標準搭載、Claude Code サンドボックスは
-# Seatbelt を使用するため bubblewrap/socat 相当は不要）
+# OS パッケージ。エントリは「そのマネージャがこのマシンで available か」で
+# フィルタされる: apt は Debian/Ubuntu のみで macOS では自動スキップ。
+# 注意: brew: は mise 内蔵の Homebrew installer（Homebrew 本体不要）で
+# macOS と Linux の両方で動くため、ここに書くと Linux で apt と二重になる。
+# macOS の git/curl は system 提供（Xcode CLT / 標準 curl）で足りるので
+# 宣言しない。zsh/unzip/bubblewrap/socat も macOS では不要（zsh 標準搭載、
+# Claude Code サンドボックスは Seatbelt を使用するため bubblewrap/socat
+# 相当は不要）
 [bootstrap.packages]
 "apt:git" = "latest"
 "apt:curl" = "latest"
@@ -34,8 +37,6 @@ shfmt = "latest"
 "apt:unzip" = "latest"
 "apt:bubblewrap" = "latest"
 "apt:socat" = "latest"
-"brew:git" = "latest"
-"brew:curl" = "latest"
 
 # ログインシェル（/etc/shells 登録 + chsh を冪等に適用）
 # /bin/zsh は Ubuntu（usrmerge）と macOS の両方に存在する

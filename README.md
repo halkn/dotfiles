@@ -18,8 +18,9 @@ applied declaratively by the bootstrap below):
 sudo apt-get update && sudo apt-get install -y git curl
 ```
 
-macOS needs nothing here — `zsh` is already the default shell, and mise
-itself is installed in the bootstrap below.
+macOS needs nothing here — `git` comes with the Xcode Command Line Tools
+(installed on demand), `curl` and `zsh` ship with the OS, and mise itself
+is installed in the bootstrap below.
 
 ### Bootstrap
 
@@ -36,8 +37,8 @@ Run these on any platform after the prerequisites above.
 
 2. Install mise and run the full setup. `mise run setup` (= `mise bootstrap
    --yes`) idempotently installs the OS packages declared in `mise.toml`'s
-   `[bootstrap.packages]` section (via apt on Linux, via brew on macOS;
-   entries for an unavailable manager are skipped; sudo runs only when
+   `[bootstrap.packages]` section (apt entries, applied on Debian/Ubuntu
+   only and skipped on macOS; sudo runs only when
    something is missing), clones the zsh plugin repos in
    `[bootstrap.repos]`, links the dotfiles declared in `[dotfiles]`, sets
    the login shell from `[bootstrap.user]` (registers `/bin/zsh` in
@@ -91,9 +92,10 @@ CLI tools, LSP servers, and formatters are managed by
 and dotfiles-specific Neovim tools in `mise.toml`. Both pin exact tool
 versions in a `mise.lock` (`mise run update` refreshes it; commit the diff
 afterwards). `mise.toml` also declares the OS packages
-(`[bootstrap.packages]`: apt entries; other manager prefixes like `brew:`
-are supported too, and entries for an unavailable manager are skipped
-automatically), the login shell
+(`[bootstrap.packages]`: apt entries; entries for a manager that isn't
+available on the machine are skipped automatically — note that `brew:` uses
+mise's built-in Homebrew installer, needs no Homebrew, and applies on both
+macOS and Linux, so it is not used here to avoid duplicating apt), the login shell
 (`[bootstrap.user]`), the dotfiles symlink targets (`[dotfiles]`), and the
 zsh plugin repos to clone (`[bootstrap.repos]`: `zsh-autosuggestions`,
 `fast-syntax-highlighting`, full git clones under

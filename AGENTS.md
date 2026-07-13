@@ -24,7 +24,7 @@ symlink 配置は `mise bootstrap` が `mise.toml` の `[dotfiles]` セクショ
 
 zsh プラグイン（zsh-autosuggestions, fast-syntax-highlighting）は `[bootstrap.repos]` で `~/.local/share/zsh/plugins/` に clone/update されます。
 
-OS パッケージは `[bootstrap.packages]` に `"apt:<pkg>"` / `"brew:<pkg>"` 形式で宣言され、`apt:` は Linux、`brew:` は macOS でのみ不足分がインストールされます（それ以外の OS では自動スキップ）。`apt:` 以外に `brew-cask:` / `dnf:` / `pacman:` / `apk:` / `mas:` の prefix にも対応しています。git/curl は macOS でも `brew:` エントリとして宣言されていますが、zsh/unzip/bubblewrap/socat は macOS では不要（zsh 標準搭載、Claude Code サンドボックスが macOS では Seatbelt を使うため）で `apt:` のみです。ログインシェルは `[bootstrap.user]` の `login_shell = "/bin/zsh"` から冪等に適用されます（`/etc/shells` 登録 + `chsh`）。
+OS パッケージは `[bootstrap.packages]` に `"apt:<pkg>"` 形式で宣言され、エントリは「そのマネージャがマシンで available か」でフィルタされます（`apt:` は Debian/Ubuntu のみ、macOS では自動スキップ）。`apt:` 以外に `brew:` / `brew-cask:` / `dnf:` / `pacman:` / `apk:` / `mas:` の prefix にも対応していますが、`brew:` は mise 内蔵の Homebrew installer（Homebrew 本体不要）で **macOS と Linux の両方で適用される**ため、apt と重複しないようこのリポジトリでは使っていません。macOS で必要な git/curl は system 提供（Xcode CLT / 標準 curl）で足り、zsh/unzip/bubblewrap/socat も macOS では不要（zsh 標準搭載、Claude Code サンドボックスが macOS では Seatbelt を使うため）です。ログインシェルは `[bootstrap.user]` の `login_shell = "/bin/zsh"` から冪等に適用されます（`/etc/shells` 登録 + `chsh`）。
 
 新規ファイルは対象ツールの近くに配置し、既存のディレクトリ命名に合わせてください。
 Neovim 設計指針・変更手順は `.claude/rules/neovim.md`（`.config/nvim/**` 編集時に自動ロード）を参照。
