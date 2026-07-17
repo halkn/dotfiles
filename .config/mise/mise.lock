@@ -226,38 +226,38 @@ url = "https://github.com/ogulcancelik/herdr/releases/download/v0.7.3/herdr-maco
 url_api = "https://api.github.com/repos/ogulcancelik/herdr/releases/assets/469642057"
 
 [[tools.herdr]]
-version = "0.7.3"
+version = "0.7.4"
 backend = "aqua:ogulcancelik/herdr"
 
 [tools.herdr."platforms.linux-arm64"]
-checksum = "sha256:ea490094f2c7c39099870857d00c64c628ef7b5eba1967df4258033455ee2cb1"
-url = "https://github.com/ogulcancelik/herdr/releases/download/v0.7.3/herdr-linux-aarch64"
-url_api = "https://api.github.com/repos/ogulcancelik/herdr/releases/assets/469642055"
+checksum = "sha256:544e0002de42806d1ab64ccdef3a7e7414f24717b0b6b022bc9e57d2eefd26a2"
+url = "https://github.com/ogulcancelik/herdr/releases/download/v0.7.4/herdr-linux-aarch64"
+url_api = "https://api.github.com/repos/ogulcancelik/herdr/releases/assets/478145774"
 
 [tools.herdr."platforms.linux-arm64-musl"]
-checksum = "sha256:ea490094f2c7c39099870857d00c64c628ef7b5eba1967df4258033455ee2cb1"
-url = "https://github.com/ogulcancelik/herdr/releases/download/v0.7.3/herdr-linux-aarch64"
-url_api = "https://api.github.com/repos/ogulcancelik/herdr/releases/assets/469642055"
+checksum = "sha256:544e0002de42806d1ab64ccdef3a7e7414f24717b0b6b022bc9e57d2eefd26a2"
+url = "https://github.com/ogulcancelik/herdr/releases/download/v0.7.4/herdr-linux-aarch64"
+url_api = "https://api.github.com/repos/ogulcancelik/herdr/releases/assets/478145774"
 
 [tools.herdr."platforms.linux-x64"]
-checksum = "sha256:043ef43ecbabda28465dcff1eec3184518150d567b8b8f20cda9c6c88770641d"
-url = "https://github.com/ogulcancelik/herdr/releases/download/v0.7.3/herdr-linux-x86_64"
-url_api = "https://api.github.com/repos/ogulcancelik/herdr/releases/assets/469642054"
+checksum = "sha256:bc0fc02d4ba500f9cac2353a43e67fe036785ecca6eb55378e050fac3c103059"
+url = "https://github.com/ogulcancelik/herdr/releases/download/v0.7.4/herdr-linux-x86_64"
+url_api = "https://api.github.com/repos/ogulcancelik/herdr/releases/assets/478145777"
 
 [tools.herdr."platforms.linux-x64-musl"]
-checksum = "sha256:043ef43ecbabda28465dcff1eec3184518150d567b8b8f20cda9c6c88770641d"
-url = "https://github.com/ogulcancelik/herdr/releases/download/v0.7.3/herdr-linux-x86_64"
-url_api = "https://api.github.com/repos/ogulcancelik/herdr/releases/assets/469642054"
+checksum = "sha256:bc0fc02d4ba500f9cac2353a43e67fe036785ecca6eb55378e050fac3c103059"
+url = "https://github.com/ogulcancelik/herdr/releases/download/v0.7.4/herdr-linux-x86_64"
+url_api = "https://api.github.com/repos/ogulcancelik/herdr/releases/assets/478145777"
 
 [tools.herdr."platforms.macos-arm64"]
-checksum = "sha256:b31345392d004ec1f1b2c821e1ad601019fa8385fe1e4c6931321eb58a920773"
-url = "https://github.com/ogulcancelik/herdr/releases/download/v0.7.3/herdr-macos-aarch64"
-url_api = "https://api.github.com/repos/ogulcancelik/herdr/releases/assets/469642056"
+checksum = "sha256:24992e1625dbdcb18354a59e299e4b263c312400b31396cdc07cd46ed57f24a7"
+url = "https://github.com/ogulcancelik/herdr/releases/download/v0.7.4/herdr-macos-aarch64"
+url_api = "https://api.github.com/repos/ogulcancelik/herdr/releases/assets/478145773"
 
 [tools.herdr."platforms.macos-x64"]
-checksum = "sha256:9b5f35d283b0877eeda0cf66ba1ef1d95ae40f32e858a04da0041f3a20df027c"
-url = "https://github.com/ogulcancelik/herdr/releases/download/v0.7.3/herdr-macos-x86_64"
-url_api = "https://api.github.com/repos/ogulcancelik/herdr/releases/assets/469642057"
+checksum = "sha256:ddf430133352e1712413d5d865b34a485546f4658893fc89986257d65a7585a8"
+url = "https://github.com/ogulcancelik/herdr/releases/download/v0.7.4/herdr-macos-x86_64"
+url_api = "https://api.github.com/repos/ogulcancelik/herdr/releases/assets/478145775"
 
 [[tools.hyperfine]]
 version = "1.20.0"
@@ -385,7 +385,7 @@ checksum = "sha256:d3b2277dbcccfdf24ef6302928f64f484cff1d77a6d3caa3a28f4d20ce915
 url = "https://nodejs.org/dist/v26.5.0/node-v26.5.0-win-x64.zip"
 
 [[tools."npm:hunkdiff"]]
-version = "0.17.0"
+version = "0.17.1"
 backend = "npm:hunkdiff"
 
 [[tools."pipx:ryl"]]
@@ -393,83 +393,88 @@ version = "0.21.0"
 backend = "pipx:ryl"
 
 [[tools.ripgrep]]
-version = "15.1.0"
+version = "15.2.0"
 backend = "aqua:BurntSushi/ripgrep"
 
 [tools.ripgrep."platforms.linux-arm64"]
-checksum = "sha256:2b661c6ef508e902f388e9098d9c4c5aca72c87b55922d94abdba830b4dc885e"
-url = "https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-aarch64-unknown-linux-gnu.tar.gz"
-url_api = "https://api.github.com/repos/BurntSushi/ripgrep/releases/assets/307306472"
+checksum = "sha256:a740b91c82eaf9914cfedd353572f2791cbe0162c84101ee0951058f4dcbc90d"
+url = "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15.2.0-aarch64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/BurntSushi/ripgrep/releases/assets/478119579"
+
+[tools.ripgrep."platforms.linux-arm64-musl"]
+checksum = "sha256:800b1e7206afe799dfb5a6901f23147cfaabe0e52210538100f61e86e1740915"
+url = "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15.2.0-aarch64-unknown-linux-musl.tar.gz"
+url_api = "https://api.github.com/repos/BurntSushi/ripgrep/releases/assets/478120060"
 
 [tools.ripgrep."platforms.linux-x64"]
-checksum = "sha256:1c9297be4a084eea7ecaedf93eb03d058d6faae29bbc57ecdaf5063921491599"
-url = "https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-x86_64-unknown-linux-musl.tar.gz"
-url_api = "https://api.github.com/repos/BurntSushi/ripgrep/releases/assets/307306614"
+checksum = "sha256:33e15bcf1624b25cdd2a55813a47a2f95dbe126268203e76aa6a585d1e7b149c"
+url = "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15.2.0-x86_64-unknown-linux-musl.tar.gz"
+url_api = "https://api.github.com/repos/BurntSushi/ripgrep/releases/assets/478120097"
 
 [tools.ripgrep."platforms.linux-x64-musl"]
-checksum = "sha256:1c9297be4a084eea7ecaedf93eb03d058d6faae29bbc57ecdaf5063921491599"
-url = "https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-x86_64-unknown-linux-musl.tar.gz"
-url_api = "https://api.github.com/repos/BurntSushi/ripgrep/releases/assets/307306614"
+checksum = "sha256:33e15bcf1624b25cdd2a55813a47a2f95dbe126268203e76aa6a585d1e7b149c"
+url = "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15.2.0-x86_64-unknown-linux-musl.tar.gz"
+url_api = "https://api.github.com/repos/BurntSushi/ripgrep/releases/assets/478120097"
 
 [tools.ripgrep."platforms.macos-arm64"]
-checksum = "sha256:378e973289176ca0c6054054ee7f631a065874a352bf43f0fa60ef079b6ba715"
-url = "https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-aarch64-apple-darwin.tar.gz"
-url_api = "https://api.github.com/repos/BurntSushi/ripgrep/releases/assets/307305438"
+checksum = "sha256:3750b2e93f37e0c692657da574d7019a101c0084da05a790c83fd335bad973e4"
+url = "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15.2.0-aarch64-apple-darwin.tar.gz"
+url_api = "https://api.github.com/repos/BurntSushi/ripgrep/releases/assets/478118851"
 
 [tools.ripgrep."platforms.macos-x64"]
-checksum = "sha256:64811cb24e77cac3057d6c40b63ac9becf9082eedd54ca411b475b755d334882"
-url = "https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-x86_64-apple-darwin.tar.gz"
-url_api = "https://api.github.com/repos/BurntSushi/ripgrep/releases/assets/307305422"
+checksum = "sha256:af7825fcc69a2afc7a7aea55fc9af90e26421d8f20fe59df32e233c0b8a231c1"
+url = "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15.2.0-x86_64-apple-darwin.tar.gz"
+url_api = "https://api.github.com/repos/BurntSushi/ripgrep/releases/assets/478119585"
 
 [tools.ripgrep."platforms.windows-x64"]
-checksum = "sha256:124510b94b6baa3380d051fdf4650eaa80a302c876d611e9dba0b2e18d87493a"
-url = "https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep-15.1.0-x86_64-pc-windows-msvc.zip"
-url_api = "https://api.github.com/repos/BurntSushi/ripgrep/releases/assets/307305871"
+checksum = "sha256:71b2fef860abe467217a538ff31de02f5258807c0129f771846f87bd029aafc5"
+url = "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15.2.0-x86_64-pc-windows-msvc.zip"
+url_api = "https://api.github.com/repos/BurntSushi/ripgrep/releases/assets/478119643"
 
 [[tools.rumdl]]
-version = "0.2.30"
+version = "0.2.34"
 backend = "aqua:rvben/rumdl"
 
 [tools.rumdl."platforms.linux-arm64"]
-checksum = "sha256:0d55107e6070e0c0f755102bf3583f209e889511bb82d5abcb9e5547a2a7af1f"
-url = "https://github.com/rvben/rumdl/releases/download/v0.2.30/rumdl-v0.2.30-aarch64-unknown-linux-musl.tar.gz"
-url_api = "https://api.github.com/repos/rvben/rumdl/releases/assets/471593988"
+checksum = "sha256:6bef22314e9bdfcb217b92c88fcfe0e81f8be6b89802882650b3ddbc3fc8a400"
+url = "https://github.com/rvben/rumdl/releases/download/v0.2.34/rumdl-v0.2.34-aarch64-unknown-linux-musl.tar.gz"
+url_api = "https://api.github.com/repos/rvben/rumdl/releases/assets/477130703"
 provenance = "github-attestations"
 
 [tools.rumdl."platforms.linux-arm64-musl"]
-checksum = "sha256:0d55107e6070e0c0f755102bf3583f209e889511bb82d5abcb9e5547a2a7af1f"
-url = "https://github.com/rvben/rumdl/releases/download/v0.2.30/rumdl-v0.2.30-aarch64-unknown-linux-musl.tar.gz"
-url_api = "https://api.github.com/repos/rvben/rumdl/releases/assets/471593988"
+checksum = "sha256:6bef22314e9bdfcb217b92c88fcfe0e81f8be6b89802882650b3ddbc3fc8a400"
+url = "https://github.com/rvben/rumdl/releases/download/v0.2.34/rumdl-v0.2.34-aarch64-unknown-linux-musl.tar.gz"
+url_api = "https://api.github.com/repos/rvben/rumdl/releases/assets/477130703"
 provenance = "github-attestations"
 
 [tools.rumdl."platforms.linux-x64"]
-checksum = "sha256:5d1c80418463aa7ca7edf1854602db717a3aa9be05fe9dc6a337263f5e78ebe0"
-url = "https://github.com/rvben/rumdl/releases/download/v0.2.30/rumdl-v0.2.30-x86_64-unknown-linux-musl.tar.gz"
-url_api = "https://api.github.com/repos/rvben/rumdl/releases/assets/471593986"
+checksum = "sha256:2d410128ecef7b6313137189066fd8340740d2e5e399af93beb6e7fbe310c943"
+url = "https://github.com/rvben/rumdl/releases/download/v0.2.34/rumdl-v0.2.34-x86_64-unknown-linux-musl.tar.gz"
+url_api = "https://api.github.com/repos/rvben/rumdl/releases/assets/477130708"
 provenance = "github-attestations"
 
 [tools.rumdl."platforms.linux-x64-musl"]
-checksum = "sha256:5d1c80418463aa7ca7edf1854602db717a3aa9be05fe9dc6a337263f5e78ebe0"
-url = "https://github.com/rvben/rumdl/releases/download/v0.2.30/rumdl-v0.2.30-x86_64-unknown-linux-musl.tar.gz"
-url_api = "https://api.github.com/repos/rvben/rumdl/releases/assets/471593986"
+checksum = "sha256:2d410128ecef7b6313137189066fd8340740d2e5e399af93beb6e7fbe310c943"
+url = "https://github.com/rvben/rumdl/releases/download/v0.2.34/rumdl-v0.2.34-x86_64-unknown-linux-musl.tar.gz"
+url_api = "https://api.github.com/repos/rvben/rumdl/releases/assets/477130708"
 provenance = "github-attestations"
 
 [tools.rumdl."platforms.macos-arm64"]
-checksum = "sha256:ea40c02fbe1c483959cd4a44226eeddee1433e1298aec0f1351d54f1c08c9f5d"
-url = "https://github.com/rvben/rumdl/releases/download/v0.2.30/rumdl-v0.2.30-aarch64-apple-darwin.tar.gz"
-url_api = "https://api.github.com/repos/rvben/rumdl/releases/assets/471593996"
+checksum = "sha256:140a81909f6b1e67b6da1152f3e64a8420f565bb1900fb27e7393e31a33b7425"
+url = "https://github.com/rvben/rumdl/releases/download/v0.2.34/rumdl-v0.2.34-aarch64-apple-darwin.tar.gz"
+url_api = "https://api.github.com/repos/rvben/rumdl/releases/assets/477130699"
 provenance = "github-attestations"
 
 [tools.rumdl."platforms.macos-x64"]
-checksum = "sha256:75e0d97d9cd304fee4f0f9dd736b2d8be641b6b5f4d5b49460dcb4790172b8ac"
-url = "https://github.com/rvben/rumdl/releases/download/v0.2.30/rumdl-v0.2.30-x86_64-apple-darwin.tar.gz"
-url_api = "https://api.github.com/repos/rvben/rumdl/releases/assets/471593987"
+checksum = "sha256:81054f9d0264e5e4bcc0ced0f295bb8278e8b9d617255018f2c917082dac0477"
+url = "https://github.com/rvben/rumdl/releases/download/v0.2.34/rumdl-v0.2.34-x86_64-apple-darwin.tar.gz"
+url_api = "https://api.github.com/repos/rvben/rumdl/releases/assets/477130697"
 provenance = "github-attestations"
 
 [tools.rumdl."platforms.windows-x64"]
-checksum = "sha256:b280adef30036e5fc0152c1c2e49d48e585c20a4eaa676f30b31f6a2dbb13170"
-url = "https://github.com/rvben/rumdl/releases/download/v0.2.30/rumdl-v0.2.30-x86_64-pc-windows-msvc.zip"
-url_api = "https://api.github.com/repos/rvben/rumdl/releases/assets/471594000"
+checksum = "sha256:059a8bb568b605d8470f52fcba7c5dfefebbbe6deeb32e18fbab26db40f9bdf8"
+url = "https://github.com/rvben/rumdl/releases/download/v0.2.34/rumdl-v0.2.34-x86_64-pc-windows-msvc.zip"
+url_api = "https://api.github.com/repos/rvben/rumdl/releases/assets/477130711"
 provenance = "github-attestations"
 
 [[tools.starship]]
@@ -512,93 +517,93 @@ url = "https://github.com/starship/starship/releases/download/v1.26.0/starship-x
 url_api = "https://api.github.com/repos/starship/starship/releases/assets/460374615"
 
 [[tools.tree-sitter]]
-version = "0.26.10"
+version = "0.26.11"
 backend = "aqua:tree-sitter/tree-sitter"
 
 [tools.tree-sitter."platforms.linux-arm64"]
-checksum = "sha256:abc3c3fc18c8f9ffeee385f5c34a91443774a371e2bfe5b53344d9d5606705ed"
-url = "https://github.com/tree-sitter/tree-sitter/releases/download/v0.26.10/tree-sitter-linux-arm64.gz"
-url_api = "https://api.github.com/repos/tree-sitter/tree-sitter/releases/assets/460338870"
+checksum = "sha256:e47dd59bf2f21ad7c15771546a724464ee3c008a60fbb61c6860bd19a44b3060"
+url = "https://github.com/tree-sitter/tree-sitter/releases/download/v0.26.11/tree-sitter-linux-arm64.gz"
+url_api = "https://api.github.com/repos/tree-sitter/tree-sitter/releases/assets/474306993"
 provenance = "github-attestations"
 
 [tools.tree-sitter."platforms.linux-arm64-musl"]
-checksum = "sha256:abc3c3fc18c8f9ffeee385f5c34a91443774a371e2bfe5b53344d9d5606705ed"
-url = "https://github.com/tree-sitter/tree-sitter/releases/download/v0.26.10/tree-sitter-linux-arm64.gz"
-url_api = "https://api.github.com/repos/tree-sitter/tree-sitter/releases/assets/460338870"
+checksum = "sha256:e47dd59bf2f21ad7c15771546a724464ee3c008a60fbb61c6860bd19a44b3060"
+url = "https://github.com/tree-sitter/tree-sitter/releases/download/v0.26.11/tree-sitter-linux-arm64.gz"
+url_api = "https://api.github.com/repos/tree-sitter/tree-sitter/releases/assets/474306993"
 provenance = "github-attestations"
 
 [tools.tree-sitter."platforms.linux-x64"]
-checksum = "sha256:477ef03e7422f3579187859db7d5407ac345c854f9e2e6c4534d2305dac39a35"
-url = "https://github.com/tree-sitter/tree-sitter/releases/download/v0.26.10/tree-sitter-linux-x64.gz"
-url_api = "https://api.github.com/repos/tree-sitter/tree-sitter/releases/assets/460338869"
+checksum = "sha256:8dac3c89bb632eece700ea7a261ad963b251f2228c4aef3b58458ebea8dbe4eb"
+url = "https://github.com/tree-sitter/tree-sitter/releases/download/v0.26.11/tree-sitter-linux-x64.gz"
+url_api = "https://api.github.com/repos/tree-sitter/tree-sitter/releases/assets/474306995"
 provenance = "github-attestations"
 
 [tools.tree-sitter."platforms.linux-x64-musl"]
-checksum = "sha256:477ef03e7422f3579187859db7d5407ac345c854f9e2e6c4534d2305dac39a35"
-url = "https://github.com/tree-sitter/tree-sitter/releases/download/v0.26.10/tree-sitter-linux-x64.gz"
-url_api = "https://api.github.com/repos/tree-sitter/tree-sitter/releases/assets/460338869"
+checksum = "sha256:8dac3c89bb632eece700ea7a261ad963b251f2228c4aef3b58458ebea8dbe4eb"
+url = "https://github.com/tree-sitter/tree-sitter/releases/download/v0.26.11/tree-sitter-linux-x64.gz"
+url_api = "https://api.github.com/repos/tree-sitter/tree-sitter/releases/assets/474306995"
 provenance = "github-attestations"
 
 [tools.tree-sitter."platforms.macos-arm64"]
-checksum = "sha256:821a387182db59a1942a90a1fbd8f9756d9926e2c265f5c7b9a23c523114134a"
-url = "https://github.com/tree-sitter/tree-sitter/releases/download/v0.26.10/tree-sitter-macos-arm64.gz"
-url_api = "https://api.github.com/repos/tree-sitter/tree-sitter/releases/assets/460338877"
+checksum = "sha256:0bb646b2a29007233bd44855f00d0b8e238084d5b442f097d841b476318c2c90"
+url = "https://github.com/tree-sitter/tree-sitter/releases/download/v0.26.11/tree-sitter-macos-arm64.gz"
+url_api = "https://api.github.com/repos/tree-sitter/tree-sitter/releases/assets/474307011"
 provenance = "github-attestations"
 
 [tools.tree-sitter."platforms.macos-x64"]
-checksum = "sha256:e58c90dc9c14a64b5d824b2bd9df99748fa149705361f51a8e37220be20e9210"
-url = "https://github.com/tree-sitter/tree-sitter/releases/download/v0.26.10/tree-sitter-macos-x64.gz"
-url_api = "https://api.github.com/repos/tree-sitter/tree-sitter/releases/assets/460338879"
+checksum = "sha256:0da547d2622ba1583e4c748bb44db5b79af56462da41acf377b9fdc2eb2cd49f"
+url = "https://github.com/tree-sitter/tree-sitter/releases/download/v0.26.11/tree-sitter-macos-x64.gz"
+url_api = "https://api.github.com/repos/tree-sitter/tree-sitter/releases/assets/474307010"
 provenance = "github-attestations"
 
 [tools.tree-sitter."platforms.windows-x64"]
-checksum = "sha256:6f59606dafabd8ac49c84c36ae4f0178e6aadd9232e5602c6fb0406d1b79129a"
-url = "https://github.com/tree-sitter/tree-sitter/releases/download/v0.26.10/tree-sitter-windows-x64.gz"
-url_api = "https://api.github.com/repos/tree-sitter/tree-sitter/releases/assets/460338881"
+checksum = "sha256:9d836a8c405ed50cea6b3410905576de3bff2b42ca12edc1e825ec86fe918a5f"
+url = "https://github.com/tree-sitter/tree-sitter/releases/download/v0.26.11/tree-sitter-windows-x64.gz"
+url_api = "https://api.github.com/repos/tree-sitter/tree-sitter/releases/assets/474307013"
 provenance = "github-attestations"
 
 [[tools.uv]]
-version = "0.11.28"
+version = "0.11.29"
 backend = "aqua:astral-sh/uv"
 
 [tools.uv."platforms.linux-arm64"]
-checksum = "sha256:da10cdfa7d92212b7acb62021a0fd61bcf8580c58c3632ec915d10c3a1a7906b"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.28/uv-aarch64-unknown-linux-musl.tar.gz"
-url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/469655715"
+checksum = "sha256:593d79a797ece3f1dfaaf3e0a973263422a135d9262c7dbc6cd75d9c11acc0b4"
+url = "https://github.com/astral-sh/uv/releases/download/0.11.29/uv-aarch64-unknown-linux-musl.tar.gz"
+url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/478261262"
 provenance = "github-attestations"
 
 [tools.uv."platforms.linux-arm64-musl"]
-checksum = "sha256:da10cdfa7d92212b7acb62021a0fd61bcf8580c58c3632ec915d10c3a1a7906b"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.28/uv-aarch64-unknown-linux-musl.tar.gz"
-url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/469655715"
+checksum = "sha256:593d79a797ece3f1dfaaf3e0a973263422a135d9262c7dbc6cd75d9c11acc0b4"
+url = "https://github.com/astral-sh/uv/releases/download/0.11.29/uv-aarch64-unknown-linux-musl.tar.gz"
+url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/478261262"
 provenance = "github-attestations"
 
 [tools.uv."platforms.linux-x64"]
-checksum = "sha256:f02146b371c35c287d860f003ece7345c86e358a3fd70a9b63700cd141ee7fb4"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.28/uv-x86_64-unknown-linux-musl.tar.gz"
-url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/469655835"
+checksum = "sha256:46711858adb2a3acaa9cee00f9060688ad1fd5706aecc005b96a6a7f285a00b7"
+url = "https://github.com/astral-sh/uv/releases/download/0.11.29/uv-x86_64-unknown-linux-musl.tar.gz"
+url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/478261352"
 provenance = "github-attestations"
 
 [tools.uv."platforms.linux-x64-musl"]
-checksum = "sha256:f02146b371c35c287d860f003ece7345c86e358a3fd70a9b63700cd141ee7fb4"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.28/uv-x86_64-unknown-linux-musl.tar.gz"
-url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/469655835"
+checksum = "sha256:46711858adb2a3acaa9cee00f9060688ad1fd5706aecc005b96a6a7f285a00b7"
+url = "https://github.com/astral-sh/uv/releases/download/0.11.29/uv-x86_64-unknown-linux-musl.tar.gz"
+url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/478261352"
 provenance = "github-attestations"
 
 [tools.uv."platforms.macos-arm64"]
-checksum = "sha256:33540eb7c883ab857eff79bd5ac2aa31fe27b595abecb4a9c003a2c998447232"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.28/uv-aarch64-apple-darwin.tar.gz"
-url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/469655699"
+checksum = "sha256:61c04acc52a33ef0f331e494bdfbedcdb6c26c6970c022ed3699e5860f8930e3"
+url = "https://github.com/astral-sh/uv/releases/download/0.11.29/uv-aarch64-apple-darwin.tar.gz"
+url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/478261245"
 provenance = "github-attestations"
 
 [tools.uv."platforms.macos-x64"]
-checksum = "sha256:2ad79983127ffca7d77b77ce6a24278d7e4f7b817a1acf72fea5f8124b4aac5e"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.28/uv-x86_64-apple-darwin.tar.gz"
-url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/469655811"
+checksum = "sha256:c4c4de482da9ccdd076dc4fb5cfe7b740609029385c72f58606be3153602387d"
+url = "https://github.com/astral-sh/uv/releases/download/0.11.29/uv-x86_64-apple-darwin.tar.gz"
+url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/478261331"
 provenance = "github-attestations"
 
 [tools.uv."platforms.windows-x64"]
-checksum = "sha256:0a23463216d09c6a72ff80ef5dc5a795f07dc1575cb84d24596c2f124a441b7b"
-url = "https://github.com/astral-sh/uv/releases/download/0.11.28/uv-x86_64-pc-windows-msvc.zip"
-url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/469655815"
+checksum = "sha256:a047d55651bc3e0ca24595b25ec4cfcb10f9dca9fb56514e661269b37d4fae68"
+url = "https://github.com/astral-sh/uv/releases/download/0.11.29/uv-x86_64-pc-windows-msvc.zip"
+url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/478261333"
 provenance = "github-attestations"
