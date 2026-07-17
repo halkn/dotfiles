@@ -34,8 +34,6 @@ shfmt = "latest"
 "apt:unzip" = "latest"
 "apt:bubblewrap" = "latest"
 "apt:socat" = "latest"
-"brew:git" = "latest"
-"brew:curl" = "latest"
 
 # ログインシェル（/etc/shells 登録 + chsh を冪等に適用）
 # /bin/zsh は Ubuntu（usrmerge）と macOS の両方に存在する
