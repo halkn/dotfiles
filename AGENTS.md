@@ -48,6 +48,7 @@ Neovim 設計指針・変更手順は `.claude/rules/neovim.md`（`.config/nvim/
 ## Coding Style & Naming Conventions
 
 - **Shell**: `set -euo pipefail`、小文字の関数名、意味のある環境変数名を使う
+- **Shell (macOS 互換)**: macOS に GNU `timeout` は無い。timeout が必要な script は `timeout` / `gtimeout` / 直接実行の順にフォールバックする（`claude/file-suggestion.sh` の `run_with_timeout` 参照）
 - **Lua**: `lua/vimrc/` 配下で役割ごとに分け、プラグイン定義は `lua/vimrc/pack.lua` にまとめる
 - **Markdown**: 短く実務的に書き、`rumdl` 準拠で整える
 - **整形**: Shell・Lua ファイルは `mise run fmt` で整形する（`shfmt`・`stylua` は mise 管理）
@@ -85,7 +86,10 @@ Neovim 設計指針・変更手順は `.claude/rules/neovim.md`（`.config/nvim/
 - symlink と path は可能な限りポータブルに保つ
 - ローカル専用の状態ファイルをこのリポジトリに書き込まない
 - `.config/gh/` は secret として gitignore 対象 — 読み取りや変更はしない
-- `claude/settings.json` の `sandbox.credentials.envVars` はワイルドカード非対応の手動列挙リスト。新しいシークレット系 CLI ツールを導入したら対応する環境変数名をここに追加する
+- `claude/settings.json` の `sandbox.credentials.envVars` はワイルドカード非対応の手動列挙リスト。新しいシークレット系 CLI ツールを導入したら対応する環境変数名をここに追加する。補完として `env.CLAUDE_CODE_SUBPROCESS_ENV_SCRUB=1` が Anthropic・クラウドプロバイダ系の認証情報を全サブプロセスから strip する
+- `sandbox.credentials.files` / `filesystem.denyRead` による `~/.config/gh` の deny は**採用しない**: read 側は `allowRead` が denied region 内を再許可する仕様のため、`allowRead: ~/.config` の内側では deny が実効しない（v2.1.207 で実測確認済み）。gh token の読取防止は `hooks/block-secret-read.sh` が担う
+- `claude/settings.json` の監査・変更は公式 docs（code.claude.com/docs）と CHANGELOG を根拠にする。`$schema` が指す schemastore 定義は追従が遅く（`sandbox`・`fileSuggestion` 等が未収録）、キーの有効性判断には使わない
+- PreToolUse hook に `if` フィルタ（permission rule 構文）を使わない: prefix マッチのため `git push && gh pr create ...` のような複合コマンドで hook 自体がスキップされ、スクリプト側のセグメント解析による防御が無効化される
 - `claude/settings.json` の `autoMode.environment` に社内・仕事用のインフラ情報（組織名・内部ホスト名等）を書かない。仕事用の trusted infrastructure は各リポジトリの `.claude/settings.local.json`（gitignore 対象）に記述する — autoMode はそこからも読まれる
 
 ## Machine-local Overrides（gitignore 対象）

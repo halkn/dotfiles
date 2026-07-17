@@ -13,11 +13,21 @@ fi
 query="$("$JQ_BIN" -r '.query // ""' 2>/dev/null)" || query=""
 cd "${CLAUDE_PROJECT_DIR:-.}"
 
+run_with_timeout() {
+	if command -v timeout >/dev/null 2>&1; then
+		timeout 2 "$@"
+	elif command -v gtimeout >/dev/null 2>&1; then
+		gtimeout 2 "$@"
+	else
+		"$@"
+	fi
+}
+
 list_files() {
 	if command -v fd >/dev/null 2>&1; then
-		timeout 2 fd --type f --hidden --exclude .git
+		run_with_timeout fd --type f --hidden --exclude .git
 	else
-		timeout 2 rg --files --hidden
+		run_with_timeout rg --files --hidden
 	fi
 }
 
