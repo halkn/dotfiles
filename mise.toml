@@ -16,6 +16,7 @@ shfmt = "latest"
 [dotfiles]
 "~/.config" = { source = ".config" }
 "~/.zshenv" = { source = ".zshenv" }
+"~/.codex/AGENTS.md" = { source = "codex/AGENTS.md" }
 "~/.claude/CLAUDE.md" = { source = "claude/CLAUDE.md" }
 "~/.claude/settings.json" = { source = "claude/settings.json" }
 "~/.claude/statusline-command.sh" = { source = "claude/statusline-command.sh" }
