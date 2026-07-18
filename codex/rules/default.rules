@@ -29,9 +29,17 @@ prefix_rule(
 )
 
 prefix_rule(
-    pattern = ["git", "remote"],
-    decision = "prompt",
-    justification = "リモート設定の変更または確認には承認が必要。",
+    pattern = ["git", "remote", "-v"],
+    decision = "allow",
+    match = ["git remote -v"],
+    not_match = ["git remote set-url origin git@github.com:owner/repo.git"],
+)
+
+prefix_rule(
+    pattern = ["git", "remote", "get-url"],
+    decision = "allow",
+    match = ["git remote get-url origin"],
+    not_match = ["git remote set-url origin git@github.com:owner/repo.git"],
 )
 
 prefix_rule(
@@ -63,6 +71,14 @@ prefix_rule(
 prefix_rule(
     pattern = ["gh", "pr", ["list", "status", "view", "diff", "checks"]],
     decision = "allow",
+)
+
+# PR creation runs outside the sandbox, so gh can use the local keychain token.
+# The Git guidance still requires an explicit user request before creating a PR.
+prefix_rule(
+    pattern = ["gh", "pr", "create"],
+    decision = "allow",
+    match = ["gh pr create --draft --fill"],
 )
 
 prefix_rule(
