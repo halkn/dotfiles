@@ -1,0 +1,81 @@
+# Safe local Git operations can run without a sandbox escalation.
+# Broader or destructive operations remain subject to Codex approval.
+
+prefix_rule(
+    pattern = ["git", ["status", "diff", "log", "show"]],
+    decision = "allow",
+)
+
+prefix_rule(
+    pattern = ["git", "branch", "--show-current"],
+    decision = "allow",
+)
+
+prefix_rule(
+    pattern = ["git", "add"],
+    decision = "allow",
+)
+
+prefix_rule(
+    pattern = ["git", ["commit", "switch"]],
+    decision = "prompt",
+    justification = "Git hook の実行、履歴の書換え、または作業ツリーの破棄を伴う可能性があるため確認する。",
+)
+
+prefix_rule(
+    pattern = ["git", "push"],
+    decision = "prompt",
+    justification = "Push はリモートリポジトリを変更するため確認する。",
+)
+
+prefix_rule(
+    pattern = ["git", "remote"],
+    decision = "prompt",
+    justification = "リモート設定の変更または確認には承認が必要。",
+)
+
+prefix_rule(
+    pattern = ["git", ["restore", "reset", "clean"]],
+    decision = "prompt",
+    justification = "作業ツリーまたは履歴を変更・破棄する可能性があるため確認する。",
+)
+
+prefix_rule(
+    pattern = ["git", "checkout"],
+    decision = "forbidden",
+    justification = "Use `git switch` for branch changes or `git restore` for file restoration.",
+)
+
+# Read-only GitHub CLI operations can run without a sandbox escalation.
+# GitHub writes, authentication changes, and arbitrary API calls use the default
+# approval flow.
+
+prefix_rule(
+    pattern = ["gh", "auth", "status"],
+    decision = "allow",
+)
+
+prefix_rule(
+    pattern = ["gh", "repo", "view"],
+    decision = "allow",
+)
+
+prefix_rule(
+    pattern = ["gh", "pr", ["list", "status", "view", "diff", "checks"]],
+    decision = "allow",
+)
+
+prefix_rule(
+    pattern = ["gh", "issue", ["list", "view"]],
+    decision = "allow",
+)
+
+prefix_rule(
+    pattern = ["gh", "run", ["list", "view"]],
+    decision = "allow",
+)
+
+prefix_rule(
+    pattern = ["gh", "search"],
+    decision = "allow",
+)
