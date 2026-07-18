@@ -17,9 +17,20 @@ prefix_rule(
 )
 
 prefix_rule(
-    pattern = ["git", ["commit", "switch"]],
+    pattern = ["git", "switch"],
+    decision = "allow",
+)
+
+prefix_rule(
+    pattern = ["git", "switch", ["-f", "--force", "--discard-changes"]],
+    decision = "forbidden",
+    justification = "未コミット変更を破棄する可能性があるため禁止する。通常の `git switch` を使用すること。",
+)
+
+prefix_rule(
+    pattern = ["git", "commit"],
     decision = "prompt",
-    justification = "Git hook の実行、履歴の書換え、または作業ツリーの破棄を伴う可能性があるため確認する。",
+    justification = "Git hook の実行とローカル履歴の変更を伴うため確認する。",
 )
 
 prefix_rule(
@@ -43,9 +54,21 @@ prefix_rule(
 )
 
 prefix_rule(
-    pattern = ["git", ["restore", "reset", "clean"]],
+    pattern = ["git", ["restore", "reset"]],
     decision = "prompt",
     justification = "作業ツリーまたは履歴を変更・破棄する可能性があるため確認する。",
+)
+
+prefix_rule(
+    pattern = ["git", "clean"],
+    decision = "forbidden",
+    justification = "追跡されていないファイルを削除するため禁止する。対象を確認して個別に削除すること。",
+)
+
+prefix_rule(
+    pattern = ["git", "reset", "--hard"],
+    decision = "forbidden",
+    justification = "作業ツリーとステージ済みの変更を破棄するため禁止する。`git restore` などを対象を限定して使用すること。",
 )
 
 prefix_rule(
@@ -73,17 +96,28 @@ prefix_rule(
     decision = "allow",
 )
 
-# PR creation runs outside the sandbox, so gh can use the local keychain token.
-# The Git guidance still requires an explicit user request before creating a PR.
 prefix_rule(
     pattern = ["gh", "pr", "create"],
-    decision = "allow",
+    decision = "prompt",
+    justification = "Draft を含め、PR の作成はリモート更新、通知、CI 実行を伴うため確認する。",
     match = ["gh pr create --draft --fill"],
 )
 
 prefix_rule(
     pattern = ["gh", "issue", ["list", "view"]],
     decision = "allow",
+)
+
+prefix_rule(
+    pattern = ["gh", "issue", "create"],
+    decision = "prompt",
+    justification = "Issue の作成はリモート更新と通知を伴うため確認する。",
+)
+
+prefix_rule(
+    pattern = ["gh", "repo", "delete"],
+    decision = "forbidden",
+    justification = "リモートリポジトリを削除するため禁止する。GitHub 上で対象を確認して手動で操作すること。",
 )
 
 prefix_rule(
