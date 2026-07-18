@@ -1,33 +1,29 @@
-model = "gpt-5.4"
-approval_policy = "on-request"
-sandbox_mode = "read-only"
-web_search = "cached"
 personality = "pragmatic"
-
-cli_auth_credentials_store = "file"
 file_opener = "none"
 
 [shell_environment_policy]
 inherit = "core"
 exclude = [
-  "AWS_*",
-  "AZURE_*",
-  "SNOWFLAKE_*",
   "OPENAI_API_KEY",
   "GITHUB_TOKEN",
   "GH_TOKEN",
 ]
 
 [history]
-persistence = "none"
+persistence = "save-all"
+max_bytes = 104857600
 
 [tui]
-notifications = false
+notifications = true
 animations = true
-show_tooltips = true
+show_tooltips = false
 alternate_screen = "auto"
-status_line = ["model-with-reasoning", "context-remaining", "git-branch", "current-dir", "five-hour-limit", "weekly-limit", "fast-mode"]
-
-[plugins."github@openai-curated"]
-enabled = true
-
+status_line = [
+  "model-with-reasoning",
+  "context-remaining",
+  "git-branch",
+  "current-dir",
+  "five-hour-limit",
+  "weekly-limit",
+  "fast-mode",
+]
