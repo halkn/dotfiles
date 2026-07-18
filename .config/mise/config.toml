@@ -8,6 +8,7 @@ lockfile = true
 # dev
 uv = "latest"
 node = "latest"
+codex = "latest"
 
 # terminal
 starship = "latest"
