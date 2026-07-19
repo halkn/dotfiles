@@ -1,5 +1,6 @@
-# Safe local Git operations can run without a sandbox escalation.
-# Broader or destructive operations remain subject to Codex approval.
+# Standard development and GitHub collaboration operations can run without a
+# sandbox escalation. Authentication, connection changes, and destructive
+# operations remain subject to Codex approval.
 
 prefix_rule(
     pattern = ["git", ["status", "diff", "log", "show"]],
@@ -17,26 +18,31 @@ prefix_rule(
 )
 
 prefix_rule(
+    pattern = ["git", "switch", ["-f", "--force", "--discard-changes"]],
+    decision = "prompt",
+    justification = "未コミット変更を破棄する可能性があるため確認する。",
+)
+
+prefix_rule(
     pattern = ["git", "switch"],
     decision = "allow",
 )
 
 prefix_rule(
-    pattern = ["git", "switch", ["-f", "--force", "--discard-changes"]],
-    decision = "forbidden",
-    justification = "未コミット変更を破棄する可能性があるため禁止する。通常の `git switch` を使用すること。",
+    pattern = ["git", "commit"],
+    decision = "allow",
 )
 
 prefix_rule(
-    pattern = ["git", "commit"],
-    decision = "prompt",
-    justification = "Git hook の実行とローカル履歴の変更を伴うため確認する。",
+    pattern = ["git", "push", ["-f", "--force", "--force-with-lease", "--delete", "--mirror"]],
+    decision = "forbidden",
+    justification = "リモートの履歴または ref を破壊・削除するため禁止する。通常の push を使用すること。",
 )
 
 prefix_rule(
     pattern = ["git", "push"],
     decision = "prompt",
-    justification = "Push はリモートリポジトリを変更するため確認する。",
+    justification = "リモートリポジトリを変更するため確認する。",
 )
 
 prefix_rule(
@@ -54,6 +60,12 @@ prefix_rule(
 )
 
 prefix_rule(
+    pattern = ["git", "remote", ["add", "remove", "rename", "set-url"]],
+    decision = "prompt",
+    justification = "リモートの接続先または公開先を変更するため確認する。",
+)
+
+prefix_rule(
     pattern = ["git", ["restore", "reset"]],
     decision = "prompt",
     justification = "作業ツリーまたは履歴を変更・破棄する可能性があるため確認する。",
@@ -61,14 +73,14 @@ prefix_rule(
 
 prefix_rule(
     pattern = ["git", "clean"],
-    decision = "forbidden",
-    justification = "追跡されていないファイルを削除するため禁止する。対象を確認して個別に削除すること。",
+    decision = "prompt",
+    justification = "追跡されていないファイルを削除するため確認する。",
 )
 
 prefix_rule(
     pattern = ["git", "reset", "--hard"],
-    decision = "forbidden",
-    justification = "作業ツリーとステージ済みの変更を破棄するため禁止する。`git restore` などを対象を限定して使用すること。",
+    decision = "prompt",
+    justification = "作業ツリーとステージ済みの変更を破棄するため確認する。",
 )
 
 prefix_rule(
@@ -77,13 +89,19 @@ prefix_rule(
     justification = "Use `git switch` for branch changes or `git restore` for file restoration.",
 )
 
-# Read-only GitHub CLI operations can run without a sandbox escalation.
-# GitHub writes, authentication changes, and arbitrary API calls use the default
+# GitHub collaboration operations can run without a sandbox escalation.
+# Authentication, repository deletion, and arbitrary API calls use the default
 # approval flow.
 
 prefix_rule(
     pattern = ["gh", "auth", "status"],
     decision = "allow",
+)
+
+prefix_rule(
+    pattern = ["gh", "auth"],
+    decision = "prompt",
+    justification = "GitHub の認証情報または認可状態を変更する可能性があるため確認する。",
 )
 
 prefix_rule(
@@ -98,9 +116,7 @@ prefix_rule(
 
 prefix_rule(
     pattern = ["gh", "pr", "create"],
-    decision = "prompt",
-    justification = "Draft を含め、PR の作成はリモート更新、通知、CI 実行を伴うため確認する。",
-    match = ["gh pr create --draft --fill"],
+    decision = "allow",
 )
 
 prefix_rule(
@@ -110,8 +126,17 @@ prefix_rule(
 
 prefix_rule(
     pattern = ["gh", "issue", "create"],
-    decision = "prompt",
-    justification = "Issue の作成はリモート更新と通知を伴うため確認する。",
+    decision = "allow",
+)
+
+prefix_rule(
+    pattern = ["gh", ["pr", "issue"], ["edit", "close", "reopen", "comment"]],
+    decision = "allow",
+)
+
+prefix_rule(
+    pattern = ["gh", "run", "rerun"],
+    decision = "allow",
 )
 
 prefix_rule(

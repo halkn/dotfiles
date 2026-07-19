@@ -38,15 +38,14 @@
 - ブランチ切替は `git switch`、ファイル復元は `git restore` を優先する
 - 変更前後に `git status --short` を確認する
 - ユーザーの未コミット変更を戻さない
-- `git status` / `diff` / `log` / `show` / `add` / `switch` と `gh` の参照系操作は、
-  追加確認なしで実行してよい
-- コミット・push・PR 作成・issue 作成は、ユーザーから明示的に依頼された場合だけ行う
-- `git clean`、`git reset --hard`、強制的なブランチ切替、`gh repo delete` は実行しない
-- 上記以外で作業ツリー、履歴、リモートを変更・破棄する操作は事前に確認する
+- 通常の `git status` / `diff` / `log` / `show` / `add` / `switch` / `commit` と
+  `gh` 操作は、タスクの遂行に必要なら追加確認なしで実行してよい
+- `git push` はリモートを変更するため、実行前に確認する
+- force push、remote ref 削除、ミラー push、`gh repo delete` は実行しない
+- 認証・トークン・権限・remote URL の変更、および不可逆または広範囲な破壊を伴う他の操作は事前に確認する
+  （例: `git clean`、`git reset --hard`、強制的なブランチ切替、`gh auth login` / `logout`）
 - push は自分の作業ブランチ（セッション開始時のブランチ or 自分が作成したブランチ）のみ。
-  main/master へ直接 push しない
-- PR 作成まで依頼された場合は、差分・検証・リモート設定を確認し、異常や追加権限がなければ
-  ブランチ作成 → commit → push → PR 作成を途中確認なしで実施してよい
+  main/master へ直接 push する場合は、保護ルールと対象 ref を確認する
 - 1 つの変更は 1 つの目的に絞り、無関係な整形やリファクタリングを混ぜない
 - リポジトリ規約がなければ、コミット prefix は小文字の conventional 形式
   （`fix:`, `add:`, `feat:`, `refactor:` など）を使う
