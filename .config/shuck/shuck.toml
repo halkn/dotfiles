@@ -1,0 +1,11 @@
+# グローバル shell 方針。shuck は project config とこのファイルをマージしないため、
+# project config 側でもこれらの値を繰り返す。
+
+[lint]
+select = ["google"]
+
+[format]
+indent-style = "space"
+indent-width = 2
+binary-next-line = true
+switch-case-indent = true

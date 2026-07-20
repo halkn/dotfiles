@@ -21,7 +21,7 @@ frm() {
 
   print -r -- "${files[@]}"
   print -n 'remove these files? [y/N] '
-  if read -q; then
+  if read -r -q; then
     print
     rm -- "${files[@]}"
   else

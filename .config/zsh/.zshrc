@@ -101,11 +101,11 @@ dot() {
 
 # ── plugins (git clone) ───────────────────────────────
 zsh_plugins_dir=$zsh_data_dir/plugins
-[[ -f "$zsh_plugins_dir/zsh-autosuggestions/zsh-autosuggestions.zsh" ]] \
-  && source "$zsh_plugins_dir/zsh-autosuggestions/zsh-autosuggestions.zsh"
+[[ -f "$zsh_plugins_dir/zsh-autosuggestions/zsh-autosuggestions.zsh" ]] &&
+  source "$zsh_plugins_dir/zsh-autosuggestions/zsh-autosuggestions.zsh"
 
-[[ -f "$zsh_plugins_dir/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh" ]] \
-  && source "$zsh_plugins_dir/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
+[[ -f "$zsh_plugins_dir/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh" ]] &&
+  source "$zsh_plugins_dir/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
 
 if command -v mise >/dev/null 2>&1; then
   eval "$(~/.local/bin/mise activate zsh)"
@@ -158,12 +158,12 @@ fi
 # ── herdr ────────────────────────────────────────────
 HERDR_AUTO_START=${HERDR_AUTO_START:-1}
 
-if command -v herdr >/dev/null 2>&1 \
-  && [[ -o interactive ]] \
-  && [[ -z $HERDR_ENV ]] \
-  && [[ -t 0 ]] \
-  && [[ -t 1 ]] \
-  && [[ $HERDR_AUTO_START == 1 ]]; then
+if command -v herdr >/dev/null 2>&1 &&
+  [[ -o interactive ]] &&
+  [[ -z $HERDR_ENV ]] &&
+  [[ -t 0 ]] &&
+  [[ -t 1 ]] &&
+  [[ $HERDR_AUTO_START == 1 ]]; then
   exec herdr
 fi
 

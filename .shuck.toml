@@ -1,0 +1,21 @@
+# この project config は ~/.config/shuck/shuck.toml を継承しない。CLI と LSP の
+# 両方で下記の repo 固有ルールを有効にするため、Google Shell Style の基準も繰り返す。
+
+[lint]
+select = ["google"]
+per-file-ignores = { ".config/zsh/.zshenv" = ["S017"] }
+
+# zsh の compinit が起動時に読む予約変数。静的な source グラフでは追跡できない。
+[[lint.contracts.custom]]
+id = "zsh-compinit"
+when = "always"
+files = [".config/zsh/.zshenv"]
+
+[lint.contracts.custom.consumes]
+names = ["skip_global_compinit"]
+
+[format]
+indent-style = "space"
+indent-width = 2
+binary-next-line = true
+switch-case-indent = true
