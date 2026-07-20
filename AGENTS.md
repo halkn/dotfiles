@@ -51,7 +51,7 @@ Neovim 設計指針・変更手順は `.claude/rules/neovim.md`（`.config/nvim/
 - **Shell (macOS 互換)**: macOS に GNU `timeout` は無い。timeout が必要な script は `timeout` / `gtimeout` / 直接実行の順にフォールバックする（`claude/file-suggestion.sh` の `run_with_timeout` 参照）
 - **Lua**: `lua/vimrc/` 配下で役割ごとに分け、プラグイン定義は `lua/vimrc/pack.lua` にまとめる
 - **Markdown**: 短く実務的に書き、`rumdl` 準拠で整える
-- **整形**: Shell・Lua ファイルは `mise run fmt` で整形する（`shfmt`・`stylua` は mise 管理）
+- **整形**: Shell・Lua ファイルは `mise run fmt` で整形する（`shuck`・`stylua` は mise 管理）
 
 ## Testing Guidelines
 
@@ -63,7 +63,7 @@ Neovim 設計指針・変更手順は `.claude/rules/neovim.md`（`.config/nvim/
 | Neovim Lua | `mise run fmt && mise run lint` |
 | Shell (zsh) | `zsh -n .zshenv .config/zsh/.zshenv .config/zsh/.zshrc` |
 | Markdown | `rumdl check <file>` |
-| Shell 整形 | `shfmt -d <file>` |
+| Shell 整形 | `shuck format --check <file>` |
 
 既存警告が残っている場合は対象ファイルに絞って確認してください。
 対話的な変更は PR に手動確認内容を 1 行で添えてください。
