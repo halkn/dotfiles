@@ -33,14 +33,14 @@ local languages = {
   zsh = {
     enabled = true,
     filetypes = { 'zsh' },
-    lsp = { 'efm' },
-    format = { client = 'efm' },
+    lsp = { 'shuck' },
+    format = { client = 'shuck' },
   },
   bash = {
-    enabled = false,
+    enabled = true,
     filetypes = { 'bash', 'sh' },
-    lsp = { 'bashls' },
-    format = { client = 'bashls' },
+    lsp = { 'shuck' },
+    format = { client = 'shuck' },
   },
   markdown = {
     enabled = true,

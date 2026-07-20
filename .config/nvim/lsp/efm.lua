@@ -5,12 +5,6 @@ local languages = {
       formatStdin = true,
     },
   },
-  zsh = {
-    {
-      formatCommand = 'shfmt -filename ${INPUT}',
-      formatStdin = true,
-    },
-  },
 }
 
 ---@type vim.lsp.Config
