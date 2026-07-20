@@ -8,7 +8,6 @@ lockfile = true
 # dev
 uv = "latest"
 node = "latest"
-codex = "latest"
 
 # terminal
 starship = "latest"
@@ -22,6 +21,7 @@ eza = "latest"
 # NOTE: JSON/YAML の値確認は jq/yq から jaq (Rust) に統一。未導入時は各スクリプトが jq にフォールバックする。
 jaq = "latest"
 hyperfine = "latest"
+"github:halkn/docsail" = { version = "latest", minimum_release_age = "0s" }
 
 # vcs
 gh = "latest"
