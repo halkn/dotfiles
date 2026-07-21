@@ -17,7 +17,6 @@
 | `.codex/` | Codex のプロジェクト設定（git 追跡対象、`codex/` とは別物） |
 | `.config/mise/` | mise によるツール管理（CLI・LSP・formatter 等の共有設定 + `mise.lock`）。`config.toml` は symlink により `~/.config/mise/config.toml` としても読まれるため、このリポジトリ外の全プロジェクトに影響するグローバル mise 設定を兼ねる |
 | `mise.toml` | dotfiles 固有の Neovim ツール + セットアップ宣言（`[dotfiles]` / `[bootstrap.repos]` / `[bootstrap.packages]` / `[bootstrap.user]`）+ 開発タスク定義 |
-| `mise-tasks/` | 複数行スクリプトの file task（`#MISE` コメントでメタデータ宣言、例: `lint/luals` → `lint:luals`） |
 | `mise.lock` | `mise.toml` の tools のバージョン・checksum 固定（`mise run update` で更新） |
 
 symlink 配置は `mise bootstrap` が `mise.toml` の `[dotfiles]` セクション（single source of truth）から宣言的に適用します。対象は `~/.config`・`~/.zshenv`・`~/.codex/` 配下（AGENTS.md, rules/default.rules）・`~/.claude/` 配下（settings.json, CLAUDE.md, statusline-command.sh, file-suggestion.sh, hooks/*）です。source は `mise.toml` があるディレクトリ（mise の `{{config_root}}`）基準で解決されます。

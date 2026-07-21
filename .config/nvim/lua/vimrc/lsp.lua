@@ -27,8 +27,8 @@ local languages = {
   lua = {
     enabled = true,
     filetypes = { 'lua' },
-    lsp = { 'luals', 'efm' },
-    format = { client = 'efm' },
+    lsp = { 'emmylua_ls' },
+    format = { client = 'emmylua_ls' },
   },
   zsh = {
     enabled = true,

@@ -1,0 +1,27 @@
+{
+  "$schema": "https://raw.githubusercontent.com/EmmyLuaLs/emmylua-analyzer-rust/refs/heads/main/crates/emmylua_code_analysis/resources/schema.json",
+  "completion": {
+    "callSnippet": false
+  },
+  "diagnostics": {
+    "globals": ["vim"]
+  },
+  "format": {
+    "externalTool": {
+      "program": "stylua",
+      "args": ["-", "--stdin-filepath", "${file}"],
+      "timeout": 5000
+    }
+  },
+  "runtime": {
+    "version": "LuaJIT",
+    "requirePattern": ["?.lua", "?/init.lua"]
+  },
+  "workspace": {
+    "library": [
+      "{env:HOME}/.local/share/nvim/site/pack/core/opt/mini.nvim/lua",
+      "${workspaceFolder}/lua",
+      "{env:VIMRUNTIME}/lua"
+    ]
+  }
+}
