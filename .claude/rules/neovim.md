@@ -17,14 +17,14 @@ paths:
 
 **ツールチェーン:**
 
-- formatter: `stylua` が正。`luals` の built-in formatter を主担当に戻さないこと
-- diagnostics: `lua-language-server --check` と editor 内の `luals` が正
-- nvim 専用ツール（`efm-langserver`・`tree-sitter`）は nvim にバンドルし、グローバル PATH には通さない
-- CLI でも使うツール（`lua-language-server`・`stylua`・`shuck`）はグローバル PATH に置く
+- formatter: `stylua` が正。editor 内では `emmylua_ls` が external formatter として呼び出す
+- diagnostics: `emmylua_check` と editor 内の `emmylua_ls` が正
+- nvim 専用ツール（`tree-sitter`）は nvim にバンドルし、グローバル PATH には通さない
+- CLI でも使うツール（`emmylua_ls`・`emmylua_check`・`stylua`・`shuck`）はグローバル PATH に置く
 
 **変更時の手順:**
 
 1. `mise run fmt` で整形（`stylua` + `shuck`）
-2. `mise run lint` で確認（`stylua --check`・`lua-language-server --check`・起動確認）
+2. `mise run lint` で確認（`stylua --check`・`emmylua_check`・起動確認）
 3. tools がない場合は先に `mise run setup` を実行する
-4. `.config/nvim/.luarc.json` の前提（`statusline`・`vim` global 等）を崩さないこと
+4. `.config/nvim/.emmyrc.json` の前提（`statusline`・`vim` global 等）を崩さないこと

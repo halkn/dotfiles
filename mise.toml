@@ -5,10 +5,22 @@ run_auto_install = false
 
 [tools]
 # Neovim LSP / Formatter（dotfiles 固有ファイルタイプのみ）
-lua-language-server = "latest"
-stylua = "latest"
 "pipx:shuck-cli" = "latest"
-"github:mattn/efm-langserver" = "latest"
+stylua = "latest"
+
+[tool_alias]
+emmylua_ls = "github:EmmyLuaLs/emmylua-analyzer-rust"
+emmylua_check = "github:EmmyLuaLs/emmylua-analyzer-rust"
+
+[tools.emmylua_ls]
+version = "latest"
+matching = "emmylua_ls"
+rename_exe = "emmylua_ls"
+
+[tools.emmylua_check]
+version = "latest"
+matching = "emmylua_check"
+rename_exe = "emmylua_check"
 
 # ── Setup（mise bootstrap） ──────────────────────────
 
@@ -78,31 +90,23 @@ exit "$status"
 
 [tasks.lint]
 description = "リポジトリ検証"
-depends = [
-  "lint:zsh",
-  "lint:shuck",
-  "lint:md",
-  "lint:shuck-format",
-  "lint:stylua",
-  "lint:luals",
-  "lint:nvim",
-]
+depends = ["lint:zsh", "lint:shuck", "lint:md", "lint:shuck-format", "nvim"]
 dir = "{{config_root}}"
 run = "git diff --check"
 
 [tasks.fmt]
 description = "ファイル整形"
+depends = ["nvim:fmt"]
 dir = "{{config_root}}"
 run = [
   "mise fmt",
   "rumdl fmt .",
   "shuck format .zshenv .config/zsh/.zshenv .config/zsh/.zshrc",
-  "stylua .config/nvim",
 ]
 
 [tasks.fmt-check]
 description = "整形チェック（書き換えなし）"
-depends = ["lint:md", "lint:shuck-format", "lint:stylua"]
+depends = ["lint:md", "lint:shuck-format", "nvim:fmt-check"]
 
 [tasks."lint:zsh"]
 hide = true
@@ -124,12 +128,29 @@ hide = true
 dir = "{{config_root}}"
 run = "shuck format --check .zshenv .config/zsh/.zshenv .config/zsh/.zshrc"
 
-[tasks."lint:stylua"]
+[tasks.nvim]
+description = "Neovim 設定の検証"
+depends = ["nvim:fmt-check", "nvim:check", "nvim:startup"]
+
+[tasks."nvim:fmt"]
+hide = true
+dir = "{{config_root}}"
+run = "stylua .config/nvim"
+
+[tasks."nvim:fmt-check"]
 hide = true
 dir = "{{config_root}}"
 run = "stylua --check .config/nvim"
 
-[tasks."lint:nvim"]
+[tasks."nvim:check"]
+hide = true
+dir = "{{config_root}}"
+run = """
+VIMRUNTIME="$(NVIM_LOG_FILE=/dev/null nvim --clean --headless -c 'lua io.write(vim.env.VIMRUNTIME)' +q 2>/dev/null)" \\
+  emmylua_check .config/nvim
+"""
+
+[tasks."nvim:startup"]
 hide = true
 dir = "{{config_root}}"
 run = "NVIM_LOG_FILE=/dev/null nvim --headless -i NONE '+quitall'"
