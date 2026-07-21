@@ -1,139 +1,61 @@
----@class vimrc.lsp.FormatConfig
----@field client string
-
----@class vimrc.lsp.LanguageConfig
----@field enabled boolean
----@field filetypes string[]
----@field lsp? string[]
----@field format? vimrc.lsp.FormatConfig
-
-local language_order = {
-  'python',
-  'lua',
-  'zsh',
-  'bash',
-  'markdown',
-  'yaml',
+local servers = {
+  'pyright',
+  'ruff',
+  'emmylua_ls',
+  'shuck',
+  'rumdl',
+  'ryl',
 }
-
----@type table<string, vimrc.lsp.LanguageConfig>
-local languages = {
-  python = {
-    enabled = true,
-    filetypes = { 'python' },
-    lsp = { 'pyright', 'ruff' },
-    format = { client = 'ruff' },
-  },
-  lua = {
-    enabled = true,
-    filetypes = { 'lua' },
-    lsp = { 'emmylua_ls' },
-    format = { client = 'emmylua_ls' },
-  },
-  zsh = {
-    enabled = true,
-    filetypes = { 'zsh' },
-    lsp = { 'shuck' },
-    format = { client = 'shuck' },
-  },
-  bash = {
-    enabled = true,
-    filetypes = { 'bash', 'sh' },
-    lsp = { 'shuck' },
-    format = { client = 'shuck' },
-  },
-  markdown = {
-    enabled = true,
-    filetypes = { 'markdown' },
-    lsp = { 'rumdl' },
-    format = { client = 'rumdl' },
-  },
-  yaml = {
-    enabled = true,
-    filetypes = { 'yaml' },
-    lsp = { 'ryl' },
-    format = { client = 'ryl' },
-  },
-}
-
-local function enabled_languages()
-  local result = {}
-  for _, name in ipairs(language_order) do
-    local lang = languages[name]
-    if lang and lang.enabled then
-      table.insert(result, lang)
-    end
-  end
-  return result
-end
-
-local function lsp_servers()
-  local servers = {}
-  local seen = {}
-  for _, lang in ipairs(enabled_languages()) do
-    for _, server in ipairs(lang.lsp or {}) do
-      if not seen[server] then
-        table.insert(servers, server)
-        seen[server] = true
-      end
-    end
-  end
-  return servers
-end
-
-local function format_client_name(bufnr)
-  local ft = vim.bo[bufnr].filetype
-  for _, lang in ipairs(enabled_languages()) do
-    if vim.tbl_contains(lang.filetypes, ft) then
-      return lang.format and lang.format.client or nil
-    end
-  end
-  return nil
-end
 
 -- formatting
 
 local format_group = vim.api.nvim_create_augroup('vimrc_lspformat', { clear = true })
 
-local function is_format_client(client, bufnr)
-  local name = format_client_name(bufnr)
-  return name ~= nil and client.name == name
-end
+local function apply_ruff_action(client, bufnr, kind)
+  local params = vim.lsp.util.make_range_params(0, client.offset_encoding)
+  params.context = { diagnostics = {}, only = { kind } }
 
-local function apply_format_actions(client, bufnr)
-  if client.name ~= 'ruff' then
+  local response, err = client:request_sync('textDocument/codeAction', params, 1000, bufnr)
+  if err then
+    vim.notify(('[ruff] %s: %s'):format(kind, err), vim.log.levels.WARN)
     return
   end
-  vim.lsp.buf.code_action({
-    bufnr = bufnr,
-    context = { diagnostics = {}, only = { 'source.organizeImports' } },
-    apply = true,
-  })
-  vim.lsp.buf.code_action({
-    bufnr = bufnr,
-    context = { diagnostics = {}, only = { 'source.fixAll' } },
-    apply = true,
-  })
+
+  local action = response and response.result and response.result[1]
+  if not action then
+    return
+  end
+  if not action.edit and not action.command and client:supports_method('codeAction/resolve') then
+    local resolved = client:request_sync('codeAction/resolve', action, 1000, bufnr)
+    action = resolved and resolved.result or action
+  end
+  if action.edit then
+    vim.lsp.util.apply_workspace_edit(action.edit, client.offset_encoding)
+  end
+  if action.command then
+    local command = type(action.command) == 'table' and action.command or action
+    client:request_sync('workspace/executeCommand', {
+      command = command.command,
+      arguments = command.arguments,
+    }, 1000, bufnr)
+  end
 end
 
 local function format_buffer(bufnr)
-  vim.lsp.buf.format({
+  local ruff = vim.lsp.get_clients({
     bufnr = bufnr,
-    filter = function(client)
-      return is_format_client(client, bufnr)
-    end,
-  })
-  local client_name = format_client_name(bufnr)
-  if client_name == nil then
-    return
+    name = 'ruff',
+    method = 'textDocument/codeAction',
+  })[1]
+  if ruff then
+    apply_ruff_action(ruff, bufnr, 'source.organizeImports.ruff')
+    apply_ruff_action(ruff, bufnr, 'source.fixAll.ruff')
   end
-  for _, client in ipairs(vim.lsp.get_clients({ bufnr = bufnr, name = client_name })) do
-    apply_format_actions(client, bufnr)
-  end
+  vim.lsp.buf.format({ bufnr = bufnr })
 end
 
 local function setup_formatting(client, bufnr)
-  if not is_format_client(client, bufnr) then
+  if not client:supports_method('textDocument/formatting') then
     return
   end
   vim.keymap.set('n', '<LocalLeader>f', function()
@@ -232,4 +154,4 @@ vim.api.nvim_create_autocmd('LspAttach', {
   end,
 })
 
-vim.lsp.enable(lsp_servers())
+vim.lsp.enable(servers)
