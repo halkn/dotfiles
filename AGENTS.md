@@ -41,8 +41,9 @@ Neovim 設計指針・変更手順は `.claude/rules/neovim.md`（`.config/nvim/
 
 更新系（エージェントは実行不可、ユーザーが手動実行）:
 
-- `mise run update`: mise ツール更新（`mise.lock` も更新される）・zsh プラグイン更新・Claude Code 更新。更新後は `mise.lock` / `.config/mise/mise.lock` の差分をコミットする
-- system package 更新: `[bootstrap.packages]` 宣言分は `mise bootstrap packages upgrade`（ユーザー手動実行、sudo あり得る）、それ以外は従来どおりユーザーが個別に実行
+- `mise run sync`: dotfiles を fast-forward で取得し、lockfile 固定の mise ツールを導入する。ツールのバージョンは更新しない
+- `mise run update`: mise 本体・ツール・両方の lockfile・`[bootstrap.packages]` 宣言分の OS パッケージ・zsh プラグイン・Claude Code を更新する（sudo あり得る）。更新後は `mise.lock` / `.config/mise/mise.lock` の差分をコミットする
+- それ以外の system package は従来どおりユーザーが個別に更新する
 
 ## Coding Style & Naming Conventions
 

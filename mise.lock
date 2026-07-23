@@ -17,6 +17,11 @@ checksum = "sha256:a0984dfb16ee2851ca1d130bceb9525404f7f2a5733eb7306123f3e9907e0
 url = "https://github.com/EmmyLuaLs/emmylua-analyzer-rust/releases/download/0.24.0/emmylua_check-linux-aarch64-glibc.2.17.tar.gz"
 url_api = "https://api.github.com/repos/EmmyLuaLs/emmylua-analyzer-rust/releases/assets/472470135"
 
+[tools.emmylua_check."platforms.linux-x64"]
+checksum = "sha256:6e9f8a5b43e4f2de0695a99c7c894364748960c92a19f969abf0807f5a6b3403"
+url = "https://github.com/EmmyLuaLs/emmylua-analyzer-rust/releases/download/0.24.0/emmylua_check-linux-x64-glibc.2.17.tar.gz"
+url_api = "https://api.github.com/repos/EmmyLuaLs/emmylua-analyzer-rust/releases/assets/472470138"
+
 [tools.emmylua_check."platforms.linux-x64-musl"]
 checksum = "sha256:f75c69814a580aa09682001aeace361d914de1d11d99b12a8075b98c9a117564"
 url = "https://github.com/EmmyLuaLs/emmylua-analyzer-rust/releases/download/0.24.0/emmylua_check-linux-x64.tar.gz"
@@ -31,6 +36,11 @@ url_api = "https://api.github.com/repos/EmmyLuaLs/emmylua-analyzer-rust/releases
 checksum = "sha256:bd0d7a6d7be314ec11e35e6cdc430537ff1bd1356d9bf524aa276588badb3011"
 url = "https://github.com/EmmyLuaLs/emmylua-analyzer-rust/releases/download/0.24.0/emmylua_check-darwin-x64.tar.gz"
 url_api = "https://api.github.com/repos/EmmyLuaLs/emmylua-analyzer-rust/releases/assets/472470113"
+
+[tools.emmylua_check."platforms.windows-x64"]
+checksum = "sha256:ae7f23de085b958de6f08d4f6b700722d1733dc27c9b11d95f909ef5c29a2abd"
+url = "https://github.com/EmmyLuaLs/emmylua-analyzer-rust/releases/download/0.24.0/emmylua_check-win32-x64.zip"
+url_api = "https://api.github.com/repos/EmmyLuaLs/emmylua-analyzer-rust/releases/assets/472470125"
 
 [[tools.emmylua_ls]]
 version = "0.24.0"

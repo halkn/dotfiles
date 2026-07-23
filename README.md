@@ -8,11 +8,11 @@ Do the platform-specific prerequisites first, then run the common bootstrap.
 
 ### Platform prerequisites
 
-On a fresh WSL Ubuntu, `git` and `curl` are needed to fetch this repo and
-mise, and are usually preinstalled — check with `git --version && curl
---version`. If either is missing, install them first (every other OS
-package — `zsh`, `unzip`, `bubblewrap`, `socat` — and the login shell are
-applied declaratively by the bootstrap below):
+On a fresh WSL Ubuntu, only `git` and `curl` are needed before cloning this
+repo and installing mise. They are usually preinstalled — check with `git
+--version && curl --version`. If either is missing, install it first. Every
+other declared OS package (`zsh`, `unzip`, `bubblewrap`, and `socat`) and the
+login shell are applied by the bootstrap below:
 
 ```sh
 sudo apt-get update && sudo apt-get install -y git curl
@@ -35,10 +35,12 @@ Run these on any platform after the prerequisites above.
    ```
 
 2. Install mise and run the full setup. `mise run setup` (= `mise bootstrap
-   --yes`) idempotently installs the OS packages declared in `mise.toml`'s
-   `[bootstrap.packages]` section (via apt on Linux, via brew on macOS;
-   entries for an unavailable manager are skipped; sudo runs only when
-   something is missing), clones the zsh plugin repos in
+   --yes --update`) refreshes the package-manager metadata first, then
+   idempotently installs the OS packages declared in `mise.toml`'s
+   `[bootstrap.packages]` section. The current declarations use apt on
+   Debian-family Linux; unavailable package managers are skipped. It may ask
+   for sudo to refresh apt metadata or install missing packages. The setup
+   also clones the zsh plugin repos in
    `[bootstrap.repos]`, links the dotfiles declared in `[dotfiles]`, sets
    the login shell from `[bootstrap.user]` (registers `/bin/zsh` in
    `/etc/shells` and runs `chsh`, which may prompt for your password),
@@ -88,9 +90,10 @@ git config user.name && git config user.email
 
 CLI tools, LSP servers, and formatters are managed by
 [mise](https://mise.jdx.dev/): shared tools live in `.config/mise/config.toml`
-and dotfiles-specific Neovim tools in `mise.toml`. Both pin exact tool
-versions in a `mise.lock` (`mise run update` refreshes it; commit the diff
-afterwards). `mise.toml` also declares the OS packages
+and dotfiles-specific Neovim tools in `mise.toml`. Each configuration root
+has its own lockfile: `.config/mise/mise.lock` for the shared global tools
+and `mise.lock` for dotfiles-specific tools. `mise run update` refreshes both;
+commit their diffs afterwards. `mise.toml` also declares the OS packages
 (`[bootstrap.packages]`: apt entries; other manager prefixes like `brew:`
 are supported too, and entries for an unavailable manager are skipped
 automatically), the login shell
@@ -106,10 +109,11 @@ Useful tasks:
 
 ```sh
 mise tasks         # List tasks
-mise run setup     # Bootstrap: OS packages, dotfiles, zsh plugins, login shell, mise tools, Claude Code
-mise run update    # Update mise tools, zsh plugins, and Claude Code
+mise run setup     # Refresh package metadata, then bootstrap OS packages, dotfiles, zsh plugins, login shell, mise tools, and Claude Code
+mise run sync      # Fast-forward dotfiles and install the lockfile-pinned mise tools
+mise run update    # Update mise itself, tools, both lockfiles, declared OS packages, zsh plugins, and Claude Code
 mise bootstrap status    # Show what `mise bootstrap` would change
-mise bootstrap packages upgrade  # Upgrade the declared OS packages (run manually)
+mise bootstrap packages upgrade  # Upgrade only the declared OS packages
 mise run fmt       # Format Markdown, zsh files, and Neovim Lua files
 mise run fmt-check # Check formatting without writing files
 mise run lint      # Run repository checks
