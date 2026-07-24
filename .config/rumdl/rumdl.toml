@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/rvben/rumdl/main/rumdl.schema.json
+
+[global]
+disable = ["MD013"]
+respect-gitignore = true
+
+[MD003]
+style = "atx"
+
+[MD004]
+style = "dash"
+
+[MD029]
+style = "one"
+
+[MD033]
+allowed-elements = ["br", "details", "summary", "kbd", "sub", "sup"]
+table-allowed-elements = ["br"]
+
+[MD046]
+style = "fenced"
+
+[MD048]
+style = "backtick"
+
+[MD049]
+style = "asterisk"
+
+[MD050]
+style = "asterisk"

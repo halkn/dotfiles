@@ -25,6 +25,6 @@ paths:
 **変更時の手順:**
 
 1. `mise run fmt` で整形（`stylua` + `shuck`）
-2. `mise run lint` で確認（`stylua --check`・`emmylua_check`・起動確認）
-3. tools がない場合は先に `mise run setup` を実行する
-4. `.config/nvim/.emmyrc.json` の前提（`statusline`・`vim` global 等）を崩さないこと
+1. `mise run lint` で確認（`stylua --check`・`emmylua_check`・起動確認）
+1. tools がない場合は先に `mise run setup` を実行する
+1. `.config/nvim/.emmyrc.json` の前提（`statusline`・`vim` global 等）を崩さないこと

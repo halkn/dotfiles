@@ -34,7 +34,7 @@ Run these on any platform after the prerequisites above.
    cd "$HOME/repos/github.com/halkn/dotfiles"
    ```
 
-2. Install mise and run the full setup. `mise run setup` (= `mise bootstrap
+1. Install mise and run the full setup. `mise run setup` (= `mise bootstrap
    --yes --update`) refreshes the package-manager metadata first, then
    idempotently installs the OS packages declared in `mise.toml`'s
    `[bootstrap.packages]` section. The current declarations use apt on
