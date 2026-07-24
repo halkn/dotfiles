@@ -25,6 +25,8 @@ mise.*.local.toml
 .config/herdr/*.sock
 .config/herdr/session.json
 .config/herdr/release-notes.json
+.config/herdr/.plugins.lock
+.config/herdr/plugins.json
 
 # hunk runtime files
 .config/hunk/state.json
