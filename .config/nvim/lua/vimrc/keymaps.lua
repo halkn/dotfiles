@@ -91,18 +91,3 @@ remap('v', '<Leader>c', 'gc')
 -- diagnostic
 map('n', '<C-e>', vim.diagnostic.open_float)
 map('n', '<LocalLeader>d', vim.diagnostic.setqflist)
-
--- Replace operator (Riw, Rip, ...)
-_G._vimrc_replace_op = require('vimrc.modules.replace').op
-vim.keymap.set('n', 'R', function()
-  vim.o.operatorfunc = 'v:lua._vimrc_replace_op'
-  return 'g@'
-end, { expr = true, noremap = true })
-vim.keymap.set('n', 'RR', 'R', { remap = true, desc = 'Replace mode' })
-vim.keymap.set('x', 'R', function()
-  local reg = vim.v.register ~= '' and vim.v.register or '"'
-  local saved, saved_type = vim.fn.getreg(reg, 1, true), vim.fn.getregtype(reg)
-  vim.cmd('normal! "_d')
-  vim.fn.setreg(reg, saved, saved_type)
-  vim.cmd('normal! P')
-end, { noremap = true })

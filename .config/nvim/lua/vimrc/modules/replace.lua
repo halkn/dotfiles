@@ -21,4 +21,20 @@ function M.op(type)
   end
 end
 
+function M.setup()
+  _G._vimrc_replace_op = M.op
+  vim.keymap.set('n', 'R', function()
+    vim.o.operatorfunc = 'v:lua._vimrc_replace_op'
+    return 'g@'
+  end, { expr = true, noremap = true })
+  vim.keymap.set('n', 'RR', 'R', { desc = 'Replace mode', remap = true })
+  vim.keymap.set('x', 'R', function()
+    local reg = vim.v.register ~= '' and vim.v.register or '"'
+    local saved, saved_type = vim.fn.getreg(reg, 1, true), vim.fn.getregtype(reg)
+    vim.cmd('normal! "_d')
+    vim.fn.setreg(reg, saved, saved_type)
+    vim.cmd('normal! P')
+  end, { noremap = true })
+end
+
 return M
