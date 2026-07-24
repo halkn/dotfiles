@@ -1,8 +1,9 @@
 local M = {}
+local picker_state = require('vimrc.modules.picker.state')
+local ui = require('vimrc.modules.picker.ui')
+local preview = require('vimrc.modules.picker.preview')
+local select = require('vimrc.modules.picker.select')
 local win = require('vimrc.modules.picker.window')
-local original_ui_select = vim.ui.select
-local preview_ns = vim.api.nvim_create_namespace('vimrc_picker_preview')
-local match_ns = vim.api.nvim_create_namespace('vimrc_picker_match')
 
 vim.api.nvim_set_hl(0, 'PickerMatch', { link = 'Special' })
 
@@ -49,30 +50,7 @@ M.config = {
   },
 }
 
-local state = {
-  prompt_buf = nil,
-  prompt_win = nil,
-  list_buf = nil,
-  list_win = nil,
-  preview_buf = nil,
-  preview_win = nil,
-  source_name = nil,
-  source_def = nil,
-  all_items = {},
-  filtered = {},
-  cursor_idx = 1,
-  use_preview = false,
-  async_job = nil,
-  debounce_timer = nil,
-  origin_win = nil,
-  origin_buf = nil,
-  on_select = nil,
-  _augroup = nil,
-  no_ignore = false,
-  _on_esc = nil,
-  _on_cursor_moved = nil,
-}
-
+local state = picker_state.new()
 local sources = {
   files = require('vimrc.modules.picker.sources.files'),
   buffers = require('vimrc.modules.picker.sources.buffers'),
@@ -82,306 +60,79 @@ local sources = {
   select = require('vimrc.modules.picker.sources.select'),
 }
 
--- Utilities ------------------------------------------------------------------
-
-local function debounce(fn, ms)
-  return function(...)
-    local args = { ... }
-    if state.debounce_timer then
-      state.debounce_timer:stop()
-    end
-    state.debounce_timer = vim.uv.new_timer()
-    state.debounce_timer:start(
-      ms,
-      0,
-      vim.schedule_wrap(function()
-        if state.debounce_timer then
-          state.debounce_timer:stop()
-          state.debounce_timer:close()
-          state.debounce_timer = nil
-        end
-        fn(unpack(args))
-      end)
-    )
-  end
+local function is_active(generation, source_name)
+  return state.generation == generation and state.source_name == source_name
 end
 
-local function default_filter(items, query)
-  if query == '' then
-    return items
-  end
-  local r = vim.fn.matchfuzzypos(items, query, { key = 'text' })
-  local matched, positions = r[1], r[2]
-  for i = 1, #matched do
-    matched[i]._match_pos = positions[i]
-  end
-  return matched
+local function update_preview()
+  preview.update_current(state)
 end
 
--- List rendering -------------------------------------------------------------
-
-local function _apply_match_highlights()
-  if not state.list_buf or not vim.api.nvim_buf_is_valid(state.list_buf) then
-    return
-  end
-  vim.api.nvim_buf_clear_namespace(state.list_buf, match_ns, 0, -1)
-  local source_def = state.source_def
-  local use_source_offset = source_def and source_def.match_highlight_offset
-  for i, item in ipairs(state.filtered) do
-    if item._match_pos then
-      local display = item.display or item.text
-      local offset = (use_source_offset and source_def) and source_def.match_highlight_offset()
-        or (#display - #item.text)
-      for _, pos in ipairs(item._match_pos) do
-        local col = offset + pos
-        pcall(vim.api.nvim_buf_set_extmark, state.list_buf, match_ns, i - 1, col, {
-          end_col = col + 1,
-          hl_group = 'PickerMatch',
-        })
-      end
-    end
+local function close_source(source)
+  if source and source.on_close then
+    source.on_close()
   end
 end
-
-local function _render_list()
-  if not state.list_buf or not vim.api.nvim_buf_is_valid(state.list_buf) then
-    return
-  end
-  local lines = {}
-  for _, item in ipairs(state.filtered) do
-    table.insert(lines, item.display or item.text)
-  end
-  vim.bo[state.list_buf].modifiable = true
-  vim.api.nvim_buf_set_lines(state.list_buf, 0, -1, false, lines)
-  vim.bo[state.list_buf].modifiable = false
-  _apply_match_highlights()
-end
-
-local function _update_cursor()
-  if not state.list_win or not vim.api.nvim_win_is_valid(state.list_win) then
-    return
-  end
-  local count = #state.filtered
-  if count == 0 then
-    return
-  end
-  local idx = math.max(1, math.min(state.cursor_idx, count))
-  state.cursor_idx = idx
-  vim.api.nvim_win_set_cursor(state.list_win, { idx, 0 })
-end
-
--- Preview --------------------------------------------------------------------
-
-local function _preview_file(path, lnum)
-  if not state.preview_buf or not vim.api.nvim_buf_is_valid(state.preview_buf) then
-    return
-  end
-
-  local ok_b, raw = pcall(vim.fn.readfile, path, 'b', 1)
-  if ok_b and raw[1] and raw[1]:find('\0') then
-    vim.bo[state.preview_buf].modifiable = true
-    vim.api.nvim_buf_set_lines(state.preview_buf, 0, -1, false, { '[バイナリファイル]' })
-    vim.bo[state.preview_buf].modifiable = false
-    return
-  end
-
-  local ok, lines = pcall(vim.fn.readfile, path, '', 200)
-  if not ok then
-    vim.bo[state.preview_buf].modifiable = true
-    vim.api.nvim_buf_set_lines(state.preview_buf, 0, -1, false, { '[読み込みエラー]' })
-    vim.bo[state.preview_buf].modifiable = false
-    return
-  end
-
-  for i, line in ipairs(lines) do
-    lines[i] = line:gsub('[\n\r]', '')
-  end
-
-  vim.bo[state.preview_buf].modifiable = true
-  vim.api.nvim_buf_set_lines(state.preview_buf, 0, -1, false, lines)
-  vim.bo[state.preview_buf].modifiable = false
-
-  local ft = vim.filetype.match({ filename = path })
-  if ft then
-    vim.bo[state.preview_buf].filetype = ft
-    pcall(vim.treesitter.start, state.preview_buf, ft)
-  end
-
-  if lnum and state.preview_win and vim.api.nvim_win_is_valid(state.preview_win) then
-    local safe_lnum = math.max(1, math.min(lnum, #lines))
-    vim.api.nvim_win_set_cursor(state.preview_win, { safe_lnum, 0 })
-    vim.api.nvim_buf_clear_namespace(state.preview_buf, preview_ns, 0, -1)
-    vim.api.nvim_buf_set_extmark(state.preview_buf, preview_ns, safe_lnum - 1, 0, {
-      end_line = safe_lnum - 1,
-      end_col = #lines[safe_lnum],
-      hl_group = 'CursorLine',
-    })
-  end
-end
-
-local function _clear_preview()
-  if state.preview_buf and vim.api.nvim_buf_is_valid(state.preview_buf) then
-    vim.bo[state.preview_buf].modifiable = true
-    vim.api.nvim_buf_set_lines(state.preview_buf, 0, -1, false, {})
-    vim.bo[state.preview_buf].modifiable = false
-  end
-end
-
-local function _update_preview_current()
-  if not state.use_preview then
-    return
-  end
-  local item = state.filtered[state.cursor_idx]
-  if not item then
-    return
-  end
-  local source_def = state.source_def
-  if source_def and source_def.update_preview then
-    local result = source_def.update_preview(item, _preview_file)
-    if result == 'clear' then
-      _clear_preview()
-    end
-  elseif source_def and source_def.preview_file then
-    local path, lnum = source_def.preview_file(item)
-    if path then
-      _preview_file(path, lnum)
-    end
-  else
-    _preview_file(item.text, nil)
-  end
-end
-
--- Cursor movement ------------------------------------------------------------
-
-local function _move_cursor(delta)
-  local count = #state.filtered
-  if count == 0 then
-    return
-  end
-  state.cursor_idx = state.cursor_idx + delta
-  if state.cursor_idx < 1 then
-    state.cursor_idx = count
-  end
-  if state.cursor_idx > count then
-    state.cursor_idx = 1
-  end
-  _update_cursor()
-  _update_preview_current()
-end
-
--- Close ----------------------------------------------------------------------
 
 function M.close()
-  if state._augroup then
-    pcall(vim.api.nvim_del_augroup_by_id, state._augroup)
-    state._augroup = nil
-  end
-
-  if state.debounce_timer then
-    state.debounce_timer:stop()
-    state.debounce_timer:close()
-    state.debounce_timer = nil
-  end
-
-  if state.async_job then
-    pcall(function()
-      state.async_job:kill(9)
-    end)
-    state.async_job = nil
-  end
-
-  local source_def = state.source_def
-  if source_def and source_def.on_close then
-    source_def.on_close()
-  end
-
-  for _, win_key in ipairs({ 'prompt_win', 'list_win', 'preview_win' }) do
-    local w = state[win_key]
-    if type(w) == 'number' and vim.api.nvim_win_is_valid(w) then
-      vim.api.nvim_win_close(w, true)
-    end
-    state[win_key] = nil
-  end
-  for _, buf_key in ipairs({ 'prompt_buf', 'list_buf', 'preview_buf' }) do
-    local buf = state[buf_key]
-    if type(buf) == 'number' and vim.api.nvim_buf_is_valid(buf) then
-      vim.api.nvim_buf_delete(buf, { force = true })
-    end
-    state[buf_key] = nil
-  end
-
   local origin = state.origin_win
-  state.origin_win = nil
-  state.origin_buf = nil
-  state.on_select = nil
-  state.source_name = nil
-  state.source_def = nil
-  state.all_items = {}
-  state.filtered = {}
-  state.cursor_idx = 1
-  state.use_preview = false
-  state.no_ignore = false
-  state._on_esc = nil
-  state._on_cursor_moved = nil
+  picker_state.cleanup(state, close_source)
   win.restore_cursor()
-
   if origin and vim.api.nvim_win_is_valid(origin) then
     vim.api.nvim_set_current_win(origin)
   end
 end
 
--- Accept ---------------------------------------------------------------------
-
-function M._accept()
+local function accept()
   local item = state.filtered[state.cursor_idx]
-  local source_def = state.source_def
+  local source = state.source_def
   local on_select = state.on_select
   M.close()
-
   if not item then
     return
   end
-
   if on_select then
     on_select(item)
-    return
-  end
-
-  if source_def and source_def.on_accept then
-    source_def.on_accept(item)
+  elseif source and source.on_accept then
+    source.on_accept(item)
   end
 end
 
-function M._accept_with_split(split_cmd)
+local function accept_with_split(split_cmd)
   local item = state.filtered[state.cursor_idx]
-  local source_def = state.source_def
+  local source = state.source_def
   local on_select = state.on_select
   local origin_buf = state.origin_buf
   M.close()
-
   if not item then
     return
   end
-
   if on_select then
     on_select(item)
-    return
-  end
-
-  if source_def and source_def.on_accept_split then
-    source_def.on_accept_split(item, split_cmd, origin_buf)
+  elseif source and source.on_accept_split then
+    source.on_accept_split(item, split_cmd, origin_buf)
   end
 end
 
--- Source context (passed to sources) -----------------------------------------
-
-local function _build_source_ctx()
+-- Source contract:
+--   required: name, load(config, options, callback)
+--   optional: filter, on_open, on_close, on_query_change, on_accept,
+--   on_accept_split, preview_file, update_preview, match_highlight_offset.
+local function build_source_context()
   return {
     list_buf = state.list_buf,
-    async_job = state.async_job,
     set_items = function(all, filtered)
       state.all_items = all
       state.filtered = filtered
+    end,
+    set_job = function(job)
+      picker_state.set_job(state, job)
+    end,
+    cancel_job = function()
+      picker_state.cancel_job(state)
+    end,
+    is_current_job = function(job)
+      return state.async_job == job
     end,
     set_cursor_idx = function(idx)
       state.cursor_idx = idx
@@ -392,174 +143,151 @@ local function _build_source_ctx()
     get_current_item = function()
       return state.filtered[state.cursor_idx]
     end,
-    render = _render_list,
-    update_cursor = _update_cursor,
-    update_preview = _update_preview_current,
-    move_cursor = _move_cursor,
-    accept = function()
-      M._accept()
+    render = function()
+      ui.render_list(state)
     end,
-    accept_split = function(split_cmd)
-      M._accept_with_split(split_cmd)
+    update_cursor = function()
+      ui.update_cursor(state)
     end,
-    close = function()
-      M.close()
+    update_preview = update_preview,
+    move_cursor = function(delta)
+      ui.move_cursor(state, delta, update_preview)
     end,
+    accept = accept,
+    accept_split = accept_with_split,
+    close = M.close,
     jump_to_text = function(text)
-      for i, it in ipairs(state.filtered) do
-        if it.text == text then
+      for i, item in ipairs(state.filtered) do
+        if item.text == text then
           state.cursor_idx = i
-          _update_cursor()
-          _update_preview_current()
+          ui.update_cursor(state)
+          update_preview()
           break
         end
       end
     end,
     focus_list = function()
-      if state.list_win and vim.api.nvim_win_is_valid(state.list_win) then
-        vim.api.nvim_set_current_win(state.list_win)
-        vim.cmd('stopinsert')
-      end
+      ui.focus_list(state)
     end,
     focus_prompt = function()
-      if state.prompt_win and vim.api.nvim_win_is_valid(state.prompt_win) then
-        vim.api.nvim_set_current_win(state.prompt_win)
-        vim.cmd('startinsert!')
-      end
+      ui.focus_prompt(state)
     end,
     switch_source = function(name)
       M._switch_source(name)
     end,
-    set_on_esc = function(fn)
-      state._on_esc = fn
+    set_on_esc = function(callback)
+      state.on_esc = callback
     end,
-    set_on_cursor_moved = function(fn)
-      state._on_cursor_moved = fn
+    set_on_cursor_moved = function(callback)
+      state.on_cursor_moved = callback
     end,
   }
 end
 
--- Input handling -------------------------------------------------------------
-
-local function _get_query()
-  if not state.prompt_buf or not vim.api.nvim_buf_is_valid(state.prompt_buf) then
-    return ''
+local function debounce(callback)
+  return function(query)
+    local timer = vim.uv.new_timer()
+    picker_state.set_timer(state, timer)
+    timer:start(
+      M.config.debounce_ms,
+      0,
+      vim.schedule_wrap(function()
+        if state.debounce_timer == timer then
+          picker_state.cancel_timer(state)
+          callback(query)
+        end
+      end)
+    )
   end
-  local lines = vim.api.nvim_buf_get_lines(state.prompt_buf, 0, 1, false)
-  local line = lines[1] or ''
-  return line:gsub('^> ', '')
 end
 
-local grep_debounced = nil
+local grep_debounced
 
-local function _reload_files()
+local function reload_files()
   if state.source_name ~= 'files' then
     return
   end
-  if state.async_job then
-    pcall(function()
-      state.async_job:kill(9)
-    end)
-    state.async_job = nil
-  end
+  local generation = picker_state.begin(state)
+  picker_state.cancel_job(state)
   state.all_items = {}
   state.filtered = {}
   state.cursor_idx = 1
-  _render_list()
+  ui.render_list(state)
   local title = state.no_ignore and 'files [no-ignore]' or 'files'
   pcall(vim.api.nvim_win_set_config, state.prompt_win, {
     title = ' ' .. title .. ' ',
     title_pos = 'center',
   })
-  local source_def = state.source_def
-  if not source_def then
+  local source = state.source_def
+  if not source then
     return
   end
-  local job = source_def.load(M.config, { no_ignore = state.no_ignore }, function(items)
-    if state.source_name ~= 'files' then
+  local job = source.load(M.config, { no_ignore = state.no_ignore }, function(items)
+    if not is_active(generation, 'files') then
       return
     end
     state.all_items = items
-    local q = _get_query()
-    state.filtered = default_filter(items, q)
+    state.filtered = ui.default_filter(items, ui.get_query(state))
     state.cursor_idx = 1
-    _render_list()
-    _update_cursor()
-    _update_preview_current()
+    ui.render_list(state)
+    ui.update_cursor(state)
+    update_preview()
   end)
-  state.async_job = job
+  picker_state.set_job(state, job)
 end
 
-local function _on_query_change()
-  local query = _get_query()
-  local source_def = state.source_def
-
-  if source_def and source_def.on_query_change then
-    local ctx = _build_source_ctx()
+local function on_query_change()
+  local source = state.source_def
+  local query = ui.get_query(state)
+  if source and source.on_query_change then
     if state.source_name == 'grep' then
-      if grep_debounced == nil then
-        grep_debounced = debounce(function(q)
-          local fresh_ctx = _build_source_ctx()
-          source_def.on_query_change(q, fresh_ctx)
-        end, M.config.debounce_ms)
+      if not grep_debounced then
+        grep_debounced = debounce(function(debounced_query)
+          source.on_query_change(debounced_query, build_source_context())
+        end)
       end
       grep_debounced(query)
     else
-      source_def.on_query_change(query, ctx)
+      source.on_query_change(query, build_source_context())
     end
     return
   end
 
-  local filter_fn = (source_def and source_def.filter) or default_filter
-  state.filtered = filter_fn(state.all_items, query)
+  local filter = source and source.filter or ui.default_filter
+  state.filtered = filter(state.all_items, query)
   state.cursor_idx = 1
-  _render_list()
-  _update_cursor()
-  _update_preview_current()
+  ui.render_list(state)
+  ui.update_cursor(state)
+  update_preview()
 end
 
--- Source switching ------------------------------------------------------------
-
 function M._switch_source(target_name)
-  local target_def = sources[target_name]
-  if not target_def then
+  local target = sources[target_name]
+  if not target then
     return
   end
+  picker_state.cancel_job(state)
+  close_source(state.source_def)
+  local generation = picker_state.begin(state)
 
-  if state.async_job then
-    pcall(function()
-      state.async_job:kill(9)
-    end)
-    state.async_job = nil
-  end
-
-  local current_def = state.source_def
-  if current_def and current_def.on_close then
-    current_def.on_close()
-  end
-
-  -- clear prompt
   if state.prompt_buf and vim.api.nvim_buf_is_valid(state.prompt_buf) then
     vim.api.nvim_buf_set_lines(state.prompt_buf, 0, -1, false, { '> ' })
   end
-
   state.source_name = target_name
-  state.source_def = target_def
+  state.source_def = target
   state.all_items = {}
   state.filtered = {}
   state.cursor_idx = 1
   state.no_ignore = false
-  state._on_esc = nil
-  state._on_cursor_moved = nil
+  state.on_esc = nil
+  state.on_cursor_moved = nil
   grep_debounced = nil
 
-  local title = target_name
-  local footer = (target_name == 'files') and '<C-i>: toggle ignore | <C-t>: tree' or nil
-  if target_name == 'tree' then
-    footer = '<C-t>: files'
-  end
+  local footer = target_name == 'files' and '<C-i>: toggle ignore | <C-t>: tree'
+    or target_name == 'tree' and '<C-t>: files'
+    or nil
   pcall(vim.api.nvim_win_set_config, state.prompt_win, {
-    title = ' ' .. title .. ' ',
+    title = ' ' .. target_name .. ' ',
     title_pos = 'center',
   })
   pcall(vim.api.nvim_win_set_config, state.list_win, {
@@ -567,131 +295,99 @@ function M._switch_source(target_name)
     footer_pos = footer and 'right' or nil,
   })
 
-  if target_def.on_open then
-    local ctx = _build_source_ctx()
-    target_def.on_open(ctx)
-    local job = target_def.load(M.config, {}, function() end)
-    state.async_job = job
-  else
-    local load_opts = { origin_buf = state.origin_buf, no_ignore = state.no_ignore }
-    local job = target_def.load(M.config, load_opts, function(items)
-      if state.source_name ~= target_name then
-        return
-      end
-      state.all_items = items
-      state.filtered = items
-      state.cursor_idx = 1
-      _render_list()
-      _update_cursor()
-      _update_preview_current()
-    end)
-    state.async_job = job
-
-    win.restore_cursor()
-    if state.prompt_win and vim.api.nvim_win_is_valid(state.prompt_win) then
-      vim.api.nvim_set_current_win(state.prompt_win)
-      vim.cmd('startinsert!')
+  local ctx = build_source_context()
+  if target.on_open then
+    target.on_open(ctx)
+  end
+  local job = target.load(M.config, { origin_buf = state.origin_buf }, function(items)
+    if not is_active(generation, target_name) then
+      return
     end
+    state.all_items = items
+    state.filtered = items
+    state.cursor_idx = 1
+    ui.render_list(state)
+    ui.update_cursor(state)
+    update_preview()
+  end)
+  picker_state.set_job(state, job)
+
+  if not target.on_open then
+    win.restore_cursor()
+    ui.focus_prompt(state)
   end
 end
 
--- Autocmds -------------------------------------------------------------------
-
-local function _setup_autocmds()
-  local aug = vim.api.nvim_create_augroup('picker_autocmds', { clear = true })
-  state._augroup = aug
-
+local function setup_autocmds()
+  state.augroup = vim.api.nvim_create_augroup('picker_autocmds', { clear = true })
   vim.api.nvim_create_autocmd({ 'TextChangedI', 'TextChanged' }, {
-    group = aug,
+    group = state.augroup,
     buffer = state.prompt_buf,
-    callback = _on_query_change,
+    callback = on_query_change,
   })
-
   vim.api.nvim_create_autocmd('WinLeave', {
-    group = aug,
+    group = state.augroup,
     callback = function()
       vim.schedule(function()
-        local cur = vim.api.nvim_get_current_win()
+        local current = vim.api.nvim_get_current_win()
         if
-          cur ~= state.prompt_win
-          and cur ~= state.list_win
-          and cur ~= (state.preview_win or -1)
+          current ~= state.prompt_win
+          and current ~= state.list_win
+          and current ~= (state.preview_win or -1)
         then
           M.close()
         end
       end)
     end,
   })
-
   vim.api.nvim_create_autocmd('CursorMoved', {
-    group = aug,
+    group = state.augroup,
     buffer = state.list_buf,
     callback = function()
-      if
-        state._on_cursor_moved
-        and state.list_win
-        and vim.api.nvim_win_is_valid(state.list_win)
-      then
-        local cursor = vim.api.nvim_win_get_cursor(state.list_win)
-        state._on_cursor_moved(cursor[1])
+      if state.on_cursor_moved and state.list_win and vim.api.nvim_win_is_valid(state.list_win) then
+        state.on_cursor_moved(vim.api.nvim_win_get_cursor(state.list_win)[1])
       end
     end,
   })
 end
 
--- Keymaps --------------------------------------------------------------------
-
-local function _set_prompt_keymaps()
-  local buf = state.prompt_buf
-  local opts = { noremap = true, silent = true, buffer = buf }
-
+local function set_prompt_keymaps()
+  local opts = { noremap = true, silent = true, buffer = state.prompt_buf }
   vim.keymap.set('i', '<C-n>', function()
-    _move_cursor(1)
+    ui.move_cursor(state, 1, update_preview)
   end, opts)
   vim.keymap.set('i', '<Down>', function()
-    _move_cursor(1)
+    ui.move_cursor(state, 1, update_preview)
   end, opts)
   vim.keymap.set('i', '<C-p>', function()
-    _move_cursor(-1)
+    ui.move_cursor(state, -1, update_preview)
   end, opts)
   vim.keymap.set('i', '<Up>', function()
-    _move_cursor(-1)
+    ui.move_cursor(state, -1, update_preview)
   end, opts)
-
-  vim.keymap.set('i', '<CR>', function()
-    M._accept()
-  end, opts)
+  vim.keymap.set('i', '<CR>', accept, opts)
   vim.keymap.set('i', '<C-v>', function()
-    M._accept_with_split('vsplit')
+    accept_with_split('vsplit')
   end, opts)
   vim.keymap.set('i', '<C-x>', function()
-    M._accept_with_split('split')
+    accept_with_split('split')
   end, opts)
-
   vim.keymap.set('i', '<Esc>', function()
-    if state._on_esc then
-      state._on_esc()
+    if state.on_esc then
+      state.on_esc()
     else
       M.close()
     end
   end, opts)
-  vim.keymap.set('i', '<C-c>', function()
-    M.close()
-  end, opts)
-  vim.keymap.set('n', '<Esc>', function()
-    M.close()
-  end, opts)
-  vim.keymap.set('n', '<C-c>', function()
-    M.close()
-  end, opts)
-
+  vim.keymap.set('i', '<C-c>', M.close, opts)
+  vim.keymap.set('n', '<Esc>', M.close, opts)
+  vim.keymap.set('n', '<C-c>', M.close, opts)
   vim.keymap.set('i', '<C-i>', function()
     if state.source_name == 'files' then
       state.no_ignore = not state.no_ignore
-      _reload_files()
+      reload_files()
     end
   end, opts)
-
   vim.keymap.set('i', '<C-t>', function()
     if state.source_name == 'files' then
       M._switch_source('tree')
@@ -699,7 +395,6 @@ local function _set_prompt_keymaps()
       M._switch_source('files')
     end
   end, opts)
-
   vim.keymap.set('i', '<C-b>', '<Left>', opts)
   vim.keymap.set('i', '<C-f>', '<Right>', opts)
   vim.keymap.set('i', '<C-a>', '<Home>', opts)
@@ -707,112 +402,85 @@ local function _set_prompt_keymaps()
   vim.keymap.set('i', '<C-h>', '<BS>', opts)
 end
 
--- Open -----------------------------------------------------------------------
-
 function M.open(source_name, opts)
   opts = opts or {}
-
+  local source = sources[source_name]
+  if not source then
+    return
+  end
   if state.prompt_win and vim.api.nvim_win_is_valid(state.prompt_win) then
     M.close()
   end
 
-  local source_def = sources[source_name]
+  local generation = picker_state.begin(state)
   state.origin_win = vim.api.nvim_get_current_win()
   state.origin_buf = vim.api.nvim_get_current_buf()
   state.source_name = source_name
-  state.source_def = source_def
+  state.source_def = source
   state.all_items = {}
   state.filtered = {}
   state.cursor_idx = 1
-  state.on_select = opts.on_select or nil
+  state.on_select = opts.on_select
+  state.use_preview = source.use_preview or false
   grep_debounced = nil
 
-  local use_preview = source_def and source_def.use_preview or false
-  state.use_preview = use_preview
-
-  local layout = win.calc_layout(M.config)
-  local title = opts.title or source_name
-  local footer = nil
-  if source_name == 'files' then
-    footer = '<C-i>: toggle ignore | <C-t>: tree'
-  elseif source_name == 'tree' then
-    footer = '<C-t>: files'
-  end
-
-  local prompt_buf, prompt_win, list_buf, list_win, preview_buf, preview_win =
-    win.create_windows(layout, title, use_preview, footer)
-
-  state.prompt_buf = prompt_buf
-  state.prompt_win = prompt_win
-  state.list_buf = list_buf
-  state.list_win = list_win
-  state.preview_buf = preview_buf
-  state.preview_win = preview_win
+  local footer = source_name == 'files' and '<C-i>: toggle ignore | <C-t>: tree'
+    or source_name == 'tree' and '<C-t>: files'
+    or nil
+  local prompt_buf, prompt_win, list_buf, list_win, preview_buf, preview_win = win.create_windows(
+    win.calc_layout(M.config),
+    opts.title or source_name,
+    state.use_preview,
+    footer
+  )
+  state.prompt_buf, state.prompt_win = prompt_buf, prompt_win
+  state.list_buf, state.list_win = list_buf, list_win
+  state.preview_buf, state.preview_win = preview_buf, preview_win
 
   vim.fn.prompt_setprompt(prompt_buf, '> ')
   vim.api.nvim_set_current_win(prompt_win)
   vim.cmd('startinsert!')
+  set_prompt_keymaps()
+  setup_autocmds()
 
-  _set_prompt_keymaps()
-  _setup_autocmds()
-
-  if source_def and source_def.on_open then
-    local ctx = _build_source_ctx()
-    source_def.on_open(ctx)
-    local job = source_def.load(M.config, {}, function() end)
-    state.async_job = job
-  elseif opts.items then
+  if source.on_open then
+    source.on_open(build_source_context())
+  end
+  if opts.items then
     state.all_items = opts.items
     state.filtered = opts.items
-    _render_list()
-    _update_cursor()
-  elseif source_def then
-    local load_opts = { origin_buf = state.origin_buf, no_ignore = state.no_ignore }
-    local job = source_def.load(M.config, load_opts, function(items)
-      if state.source_name ~= source_name then
+    ui.render_list(state)
+    ui.update_cursor(state)
+    return
+  end
+
+  local job = source.load(
+    M.config,
+    { origin_buf = state.origin_buf, no_ignore = state.no_ignore },
+    function(items)
+      if not is_active(generation, source_name) then
         return
       end
       state.all_items = items
-      local q = _get_query()
-      if q ~= '' then
-        local filter_fn = source_def.filter or default_filter
-        state.filtered = filter_fn(items, q)
-      else
-        state.filtered = items
-      end
+      local query = ui.get_query(state)
+      state.filtered = query == '' and items or (source.filter or ui.default_filter)(items, query)
       state.cursor_idx = 1
-      _render_list()
-      _update_cursor()
-      _update_preview_current()
-    end)
-    state.async_job = job
-  end
+      ui.render_list(state)
+      ui.update_cursor(state)
+      update_preview()
+    end
+  )
+  picker_state.set_job(state, job)
 end
-
--- Public API -----------------------------------------------------------------
 
 function M.setup(opts)
   M.config = vim.tbl_deep_extend('force', M.config, opts or {})
-
-  ---@diagnostic disable-next-line: duplicate-set-field
-  vim.ui.select = function(items, select_opts, on_choice)
-    M.ui_select(items, select_opts, on_choice)
-  end
-  vim.keymap.set('n', '<Leader>f', function()
-    M.files()
-  end, { desc = 'picker: files' })
-  vim.keymap.set('n', '<Leader>b', function()
-    M.buffers()
-  end, { desc = 'picker: buffers' })
-  vim.keymap.set('n', '<Leader>G', function()
-    M.grep()
-  end, { desc = 'picker: grep' })
-  vim.keymap.set('n', '<Leader>l', function()
-    M.buf_lines()
-  end, { desc = 'picker: buf_lines' })
-  vim.keymap.set('n', '<Leader>e', function()
-    M.tree()
-  end, { desc = 'picker: tree' })
+  select.install(M.open)
+  vim.keymap.set('n', '<Leader>f', M.files, { desc = 'picker: files' })
+  vim.keymap.set('n', '<Leader>b', M.buffers, { desc = 'picker: buffers' })
+  vim.keymap.set('n', '<Leader>G', M.grep, { desc = 'picker: grep' })
+  vim.keymap.set('n', '<Leader>l', M.buf_lines, { desc = 'picker: buf_lines' })
+  vim.keymap.set('n', '<Leader>e', M.tree, { desc = 'picker: tree' })
 end
 
 function M.files()
@@ -836,30 +504,7 @@ function M.tree()
 end
 
 function M.ui_select(items, opts, on_choice)
-  if type(opts) == 'function' and on_choice == nil then
-    on_choice = opts
-    opts = nil
-  end
-  opts = opts or {}
-  on_choice = on_choice or function() end
-
-  if type(items) ~= 'table' then
-    if original_ui_select then
-      return original_ui_select(items, opts, on_choice)
-    end
-    return on_choice(nil)
-  end
-
-  local picker_items = vim.tbl_map(function(i)
-    return { text = (opts.format_item or tostring)(i), value = i }
-  end, items)
-  M.open('select', {
-    title = opts.prompt or 'select',
-    items = picker_items,
-    on_select = function(picked)
-      on_choice(picked and picked.value or nil)
-    end,
-  })
+  return select.open(M.open, items, opts, on_choice)
 end
 
 return M
