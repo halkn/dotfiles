@@ -15,19 +15,18 @@ function source.filter(_items, _query)
 end
 
 function source.on_query_change(query, ctx)
-  if ctx.async_job then
-    pcall(function()
-      ctx.async_job:kill(9)
-    end)
-    ctx.async_job = nil
-  end
+  ctx.cancel_job()
 
   if query == '' then
     ctx.set_items({}, {})
+    ctx.render()
+    ctx.update_cursor()
+    ctx.update_preview()
     return
   end
 
-  local job = vim.system({ 'rg', '--vimgrep', '--', query }, { text = true }, function(result)
+  local job
+  job = vim.system({ 'rg', '--vimgrep', '--', query }, { text = true }, function(result)
     local items = {}
     if result.stdout then
       for line in result.stdout:gmatch('[^\n]+') do
@@ -35,13 +34,16 @@ function source.on_query_change(query, ctx)
       end
     end
     vim.schedule(function()
+      if not ctx.is_current_job(job) then
+        return
+      end
       ctx.set_items(items, items)
       ctx.render()
       ctx.update_cursor()
       ctx.update_preview()
     end)
   end)
-  ctx.async_job = job
+  ctx.set_job(job)
 end
 
 function source.on_accept(item)
