@@ -103,7 +103,7 @@ dir = "{{config_root}}"
 run = [
   "mise fmt",
   "rumdl fmt .",
-  "shuck format .zshenv .config/zsh/.zshenv .config/zsh/.zshrc",
+  "shuck format .zshenv .config/zsh/.zshenv .config/zsh/.zshrc .config/zsh/fzf.zsh",
 ]
 
 [tasks.fmt-check]
@@ -113,7 +113,7 @@ depends = ["lint:md", "lint:shuck-format", "nvim:fmt-check"]
 [tasks."lint:zsh"]
 hide = true
 dir = "{{config_root}}"
-run = "zsh -n .zshenv .config/zsh/.zshenv .config/zsh/.zshrc .config/zsh/lib/*.zsh"
+run = "zsh -n .zshenv .config/zsh/.zshenv .config/zsh/.zshrc .config/zsh/fzf.zsh"
 
 [tasks."lint:shuck"]
 hide = true
@@ -128,7 +128,7 @@ run = "rumdl check ."
 [tasks."lint:shuck-format"]
 hide = true
 dir = "{{config_root}}"
-run = "shuck format --check .zshenv .config/zsh/.zshenv .config/zsh/.zshrc"
+run = "shuck format --check .zshenv .config/zsh/.zshenv .config/zsh/.zshrc .config/zsh/fzf.zsh"
 
 [tasks.nvim]
 description = "Neovim 設定の検証"

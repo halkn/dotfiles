@@ -15,7 +15,7 @@
 | `.claude/` | Claude Code のプロジェクト設定（git 追跡対象、`claude/` とは別物） |
 | `.claude/rules/` | path-scoped ルール（例: `neovim.md` は `.config/nvim/**` 編集時のみロード）。`~/.claude/rules/` への user-level 分割はしない — `paths:`/`globs:` 指定が user-level では読み込まれない既知の不具合があるため（anthropics/claude-code#19377, #21858）。全プロジェクト共通のルールは `claude/CLAUDE.md` に直接書く |
 | `.codex/` | Codex のプロジェクト設定（git 追跡対象、`codex/` とは別物） |
-| `.config/mise/` | mise によるツール管理（CLI・LSP・formatter 等の共有設定 + `mise.lock`）。`config.toml` は symlink により `~/.config/mise/config.toml` としても読まれるため、このリポジトリ外の全プロジェクトに影響するグローバル mise 設定を兼ねる |
+| `.config/mise/` | mise によるツール管理（CLI・LSP・formatter 等の共有設定 + `mise.lock`）。`config.toml` は symlink により `~/.config/mise/config.toml` としても読まれるため、このリポジトリ外の全プロジェクトに影響するグローバル mise 設定を兼ねる。端末固有の override は追跡しない `config.local.toml` に置く |
 | `mise.toml` | dotfiles 固有の Neovim ツール + セットアップ宣言（`[dotfiles]` / `[bootstrap.repos]` / `[bootstrap.packages]` / `[bootstrap.user]`）+ 開発タスク定義 |
 | `mise.lock` | `mise.toml` の tools のバージョン・checksum 固定（`mise run update` で更新） |
 
@@ -36,8 +36,8 @@ Neovim 設計指針・変更手順は `.claude/rules/neovim.md`（`.config/nvim/
 - `mise tasks`: 利用できるタスクを一覧します。
 - `mise run lint`: 通常の検証として diff 空白確認、`zsh` 構文確認、
   Markdown、formatter check、Neovim Lua diagnostics、起動確認を実行します。
-- `mise run fmt`: Markdown、zsh、Neovim Lua を既定 formatter で整形します（`mise.toml` 自体のキー整形も含む）。
-- `mise run fmt-check`: ファイルを書き換えずに Markdown、zsh、Neovim Lua の整形を確認します。
+- `mise run fmt`: Markdown、zsh（`fzf.zsh` を含む）、Neovim Lua を既定 formatter で整形します（`mise.toml` 自体のキー整形も含む）。
+- `mise run fmt-check`: ファイルを書き換えずに Markdown、zsh（`fzf.zsh` を含む）、Neovim Lua の整形を確認します。
 
 更新系（エージェントは実行不可、ユーザーが手動実行）:
 
@@ -61,7 +61,7 @@ Neovim 設計指針・変更手順は `.claude/rules/neovim.md`（`.config/nvim/
 |----------|-------------|
 | デフォルト（迷ったらこれ） | `mise run lint` |
 | Neovim Lua | `mise run fmt && mise run lint` |
-| Shell (zsh) | `zsh -n .zshenv .config/zsh/.zshenv .config/zsh/.zshrc` |
+| Shell (zsh) | `zsh -n .zshenv .config/zsh/.zshenv .config/zsh/.zshrc .config/zsh/fzf.zsh` |
 | Markdown | `rumdl check <file>` |
 | Shell 整形 | `shuck format --check <file>` |
 
@@ -100,4 +100,6 @@ Neovim 設計指針・変更手順は `.claude/rules/neovim.md`（`.config/nvim/
 |----------|------|
 | `.config/zsh/.zshenv.local` | 端末固有の環境変数 |
 | `.config/zsh/.zshrc.local` | 端末固有のインタラクティブ設定 |
+| `.config/mise/config.local.toml` | 端末固有の global mise `[env]` / tool / setting override |
+| `mise.local.toml` | このリポジトリ固有の mise override（他リポジトリでは各リポジトリの gitignore で管理） |
 | `.config/git/config.local` | `user.name` / `user.email` など |

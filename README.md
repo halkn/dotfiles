@@ -49,7 +49,7 @@ Run these on any platform after the prerequisites above.
 
    ```sh
    curl https://mise.run | sh
-   export PATH="$HOME/.local/bin:$HOME/.local/share/mise/shims:$PATH"
+   export PATH="$HOME/.local/bin:$PATH"
    mise trust
    mise run setup
    ```
@@ -65,9 +65,14 @@ When the bootstrap finishes, reopen the terminal (or start a new login
 shell) to enter zsh with the linked config.
 
 zsh keeps its config under `.config/zsh` (XDG); the only file in `$HOME` is
-a small `.zshenv` stub that sets `ZDOTDIR` and hands off to it. Put
-machine-local settings in `.config/zsh/.zshenv.local` (environment) or
-`.config/zsh/.zshrc.local` (interactive); both are gitignored.
+a small `.zshenv` stub that sets `ZDOTDIR` and hands off to it. `.zshenv`
+defines only the shared environment and PATH; interactive configuration,
+including `mise activate zsh`, is in `.zshrc`. zsh history is stored under
+`$XDG_STATE_HOME/zsh`, while completion and generated shell-completion files
+are cached under `$XDG_CACHE_HOME/zsh`.
+
+Put machine-local shell settings in `.config/zsh/.zshenv.local` (environment)
+or `.config/zsh/.zshrc.local` (interactive); both are gitignored.
 
 ### Git identity
 
@@ -104,6 +109,13 @@ zsh plugin repos to clone (`[bootstrap.repos]`: `zsh-autosuggestions`,
 [Claude Code](https://code.claude.com/) is installed standalone.
 Task automation uses [mise tasks](https://mise.jdx.dev/tasks/), defined in the
 repo's `mise.toml` and run with `mise run`.
+
+mise shell activation uses PATH mode rather than shims. Keep shell aliases and
+functions in zsh; use mise's `[env]` only for project-specific environments.
+For machine-local global mise overrides, create the gitignored
+`.config/mise/config.local.toml`. For a repository-local override, use that
+repository's gitignored `mise.local.toml`. These files may override `[env]`,
+`[tools]`, and settings without changing the shared configuration.
 
 Useful tasks:
 
