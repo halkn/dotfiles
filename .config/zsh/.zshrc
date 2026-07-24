@@ -1,15 +1,22 @@
 # WSLg auto-sets WAYLAND_DISPLAY, but the socket is inaccessible in terminal sessions.
 [[ -n $WSL_DISTRO_NAME ]] && unset WAYLAND_DISPLAY
 
-# Keep zsh-owned runtime files under XDG directories.
+# Keep zsh-owned state and cache under XDG directories.
 zsh_data_dir=$XDG_DATA_HOME/zsh
+zsh_state_dir=$XDG_STATE_HOME/zsh
 zsh_cache_dir=$XDG_CACHE_HOME/zsh
-mkdir -p "$zsh_data_dir"
+mkdir -p "$zsh_state_dir"
 mkdir -p "$zsh_cache_dir"
 mkdir -p "$zsh_cache_dir/zcompcache"
 
 # ── History ──────────────────────────────────────────
-HISTFILE=$zsh_data_dir/history
+HISTFILE=$zsh_state_dir/history
+_legacy_histfile=$zsh_data_dir/history
+if [[ ! -e $HISTFILE && -f $_legacy_histfile ]]; then
+  mv "$_legacy_histfile" "$HISTFILE" ||
+    print 'zsh: failed to migrate history to XDG_STATE_HOME' >&2
+fi
+unset _legacy_histfile
 HISTSIZE=100000
 SAVEHIST=10000
 setopt hist_expire_dups_first
@@ -108,7 +115,7 @@ zsh_plugins_dir=$zsh_data_dir/plugins
   source "$zsh_plugins_dir/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
 
 if command -v mise >/dev/null 2>&1; then
-  eval "$(~/.local/bin/mise activate zsh)"
+  eval "$(mise activate zsh)"
 fi
 
 # ── uv ───────────────────────────────────────────────
@@ -144,15 +151,9 @@ if command -v hunk >/dev/null 2>&1; then
   alias gd='hunk diff'
 fi
 
-# ── fzf (modules under lib/) ─────────────────────────
-# Built-in widgets (Ctrl-R history, Alt-C cd, Ctrl-T paste) come from fzf-core.zsh.
+# ── fzf ───────────────────────────────────────────────
 if command -v fzf >/dev/null 2>&1 && [[ -t 0 ]]; then
-  source "$ZDOTDIR/lib/fzf-core.zsh"
-  for _fzf_mod in "$ZDOTDIR"/lib/fzf-*.zsh(N); do
-    [[ ${_fzf_mod:t} == fzf-core.zsh ]] && continue
-    source "$_fzf_mod"
-  done
-  unset _fzf_mod
+  source "$ZDOTDIR/fzf.zsh"
 fi
 
 # ── herdr ────────────────────────────────────────────

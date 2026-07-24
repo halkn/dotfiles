@@ -8,6 +8,12 @@
 .config/zsh/.zshenv.local
 .config/zsh/.zshrc.local
 
+# machine-local mise overrides
+.config/mise/config.local.toml
+.config/mise/config.*.local.toml
+mise.local.toml
+mise.*.local.toml
+
 # machine-local git identity
 .config/git/config.local
 
