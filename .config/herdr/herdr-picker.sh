@@ -47,7 +47,7 @@ next_mode() {
 }
 
 self=${0:A}
-default_mode=agent
+default_mode=workspace
 
 # reload() で自分自身を呼び出して各モードの一覧を出力するための内部エントリポイント
 if [[ ${1:-} == --list ]]; then
