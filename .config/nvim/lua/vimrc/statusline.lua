@@ -1,7 +1,7 @@
 local M = {}
 
 M.config = {
-  statusline = "%!v:lua.require'vimrc.modules.statusline'.render()",
+  statusline = "%!v:lua.require'vimrc.statusline'.render()",
 }
 
 local mode_style_names = {
