@@ -136,13 +136,6 @@
     "defaultMode": "acceptEdits",
     "disableBypassPermissionsMode": "disable"
   },
-  "autoMode": {
-    "environment": [
-      "$defaults",
-      "Source control: github.com/halkn and repositories under it (personal projects and dotfiles)"
-    ],
-    "classifyAllShell": true
-  },
   "hooks": {
     "PreToolUse": [
       {
@@ -182,10 +175,6 @@
     "enabled": true,
     "failIfUnavailable": true,
     "allowUnsandboxedCommands": false,
-    "excludedCommands": [
-      "git *",
-      "gh *"
-    ],
     "network": {
       "allowedDomains": [
         "github.com",
@@ -260,9 +249,21 @@
           "mode": "deny"
         }
       ]
-    }
+    },
+    "excludedCommands": [
+      "git *",
+      "gh *"
+    ]
   },
   "tui": "fullscreen",
   "theme": "dark",
-  "editorMode": "vim"
+  "editorMode": "vim",
+  "autoMode": {
+    "environment": [
+      "$defaults",
+      "Source control: github.com/halkn and repositories under it (personal projects and dotfiles)"
+    ],
+    "classifyAllShell": true
+  },
+  "model": "opusplan"
 }
