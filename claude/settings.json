@@ -10,8 +10,7 @@
     "BASH_DEFAULT_TIMEOUT_MS": "30000",
     "CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR": "1",
     "DISABLE_AUTOUPDATER": "1",
-    "CLAUDE_CODE_DISABLE_MOUSE_CLICKS": "1",
-    "CLAUDE_CODE_SUBPROCESS_ENV_SCRUB": "1"
+    "CLAUDE_CODE_DISABLE_MOUSE_CLICKS": "1"
   },
   "attribution": {
     "commit": "",
@@ -133,9 +132,10 @@
       "Bash(git remote set-url*)",
       "Bash(uv version*)"
     ],
-    "defaultMode": "acceptEdits",
+    "defaultMode": "auto",
     "disableBypassPermissionsMode": "disable"
   },
+  "model": "opusplan",
   "hooks": {
     "PreToolUse": [
       {
@@ -190,6 +190,8 @@
         "~/.azure",
         "~/.cache/uv",
         "~/.cache/mise",
+        "~/.cache/rumdl",
+        "~/.cache/shuck",
         "~/.local/share/uv",
         "~/.local/share/mise",
         "~/.local/state/mise"
@@ -208,6 +210,8 @@
         "~/.config",
         "~/.cache/uv",
         "~/.cache/mise",
+        "~/.cache/rumdl",
+        "~/.cache/shuck",
         "~/.local/share/uv",
         "~/.local/share/mise",
         "~/.local/state/mise",
@@ -229,7 +233,15 @@
           "mode": "deny"
         },
         {
+          "name": "AZURE_DEVOPS_EXT_PAT",
+          "mode": "deny"
+        },
+        {
           "name": "SNOWFLAKE_PASSWORD",
+          "mode": "deny"
+        },
+        {
+          "name": "SNOWFLAKE_PRIVATE_KEY",
           "mode": "deny"
         },
         {
@@ -247,6 +259,10 @@
         {
           "name": "ANTHROPIC_AUTH_TOKEN",
           "mode": "deny"
+        },
+        {
+          "name": "CLAUDE_CODE_OAUTH_TOKEN",
+          "mode": "deny"
         }
       ]
     },
@@ -261,9 +277,15 @@
   "autoMode": {
     "environment": [
       "$defaults",
-      "Source control: github.com/halkn and repositories under it (personal projects and dotfiles)"
+      "Organization: personal individual developer. No corporate infrastructure is configured in this file.",
+      "Primary use of Claude Code: personal dotfiles and CLI/editor configuration management, plus data engineering (Snowflake/SQL) and Python tooling with uv.",
+      "Source control: github.com/halkn and repositories under it (personal projects and dotfiles)",
+      "Repository visibility: github.com/halkn/dotfiles is a public repository whose own subject matter is personal shell, editor, and CLI configuration. Other repositories default to private unless stated otherwise in the conversation.",
+      "Internal sharing / snippet hosting: none configured. Do not send content to public paste or gist services.",
+      "Secrets management: credentials live in the macOS Keychain and in the gh / az CLI token caches. Machine-local secrets live in untracked *.local files. None of these belong in a commit, PR, or issue.",
+      "Sensitive data locations & audiences: ~/.ssh, ~/.gnupg, ~/.aws, ~/.azure, ~/.config/gh, ~/.snowflake, ~/.snowsql, ~/.claude/projects (Claude Code session transcripts), and any .env or *.local file. Contents of these locations must not be copied into commits, pull requests, issues, or any outbound request.",
+      "Network posture: developer laptop on an untrusted network."
     ],
     "classifyAllShell": true
-  },
-  "model": "opusplan"
+  }
 }
