@@ -130,3 +130,19 @@ mise run fmt       # Format Markdown, zsh files, and Neovim Lua files
 mise run fmt-check # Check formatting without writing files
 mise run lint      # Run repository checks
 ```
+
+## Neovim plugins
+
+Neovim plugins are managed by the built-in `vim.pack`; their lockfile is
+`.config/nvim/nvim-pack-lock.json` and must be committed with plugin updates.
+Do not edit the lockfile manually.
+
+- Update plugins with `:packupdate`, review the resulting buffer, then use
+  `:write` to confirm or `:quit` to discard. Restart Neovim when the updated
+  code must be loaded immediately.
+- Inspect available updates without downloading with `:packupdate ++offline`.
+- On another machine, pull the lockfile, restart Neovim, and run
+  `:packupdate ++lockfile` to synchronize installed plugins.
+- To remove a plugin, delete its specification, restart Neovim, then run
+  `:packdel {name}`. Use `:packdel ++all` to remove all inactive plugins.
+- To reinstall a plugin, run `:packdel! {name}` and restart Neovim.
