@@ -1,8 +1,6 @@
-local M = {}
 -- hooks --------------------------------------------------------------------
-M.hooks = function(ev)
+local on_pack_changed = function(ev)
   local name, kind = ev.data.spec.name, ev.data.kind
-  -- nvim-treesitter
   if name == 'nvim-treesitter' and (kind == 'install' or kind == 'update') then
     if not ev.data.active then
       vim.cmd.packadd('nvim-treesitter')
@@ -10,7 +8,6 @@ M.hooks = function(ev)
     vim.cmd('TSUpdate')
   end
 end
-vim.api.nvim_create_autocmd('PackChanged', { callback = M.hooks })
 
 -- plugins ------------------------------------------------------------------
 local plugs = {
@@ -126,64 +123,23 @@ local plugs = {
   },
 }
 
--- vim.pack.add
-vim.pack.add(vim.tbl_map(function(s)
-  return { src = 'https://github.com/' .. s.src, version = s.version }
-end, plugs))
+local add_plugins = function()
+  vim.pack.add(vim.tbl_map(function(spec)
+    return { src = 'https://github.com/' .. spec.src, version = spec.version }
+  end, plugs))
+end
 
--- config load
-for _, s in ipairs(plugs) do
-  if s.config then
-    local ok, err = pcall(s.config)
-    if not ok then
-      vim.notify('[plugins] ' .. s.src .. ': ' .. err, vim.log.levels.WARN)
+local configure_plugins = function()
+  for _, spec in ipairs(plugs) do
+    if spec.config then
+      local ok, err = pcall(spec.config)
+      if not ok then
+        vim.notify('[plugins] ' .. spec.src .. ': ' .. err, vim.log.levels.WARN)
+      end
     end
   end
 end
 
--- commands -----------------------------------------------------------------
-vim.api.nvim_create_user_command('PackUpdate', function()
-  vim.pack.update()
-end, { desc = 'Update all plugins' })
-
-vim.api.nvim_create_user_command('PackClean', function()
-  local inactive = vim
-    .iter(vim.pack.get())
-    :filter(function(x)
-      return not x.active
-    end)
-    :map(function(x)
-      return x.spec.name
-    end)
-    :totable()
-
-  if #inactive == 0 then
-    vim.notify('Nothing to clean', vim.log.levels.INFO)
-    return
-  end
-
-  vim.notify('Removing: ' .. table.concat(inactive, ', '), vim.log.levels.INFO)
-  vim.pack.del(inactive)
-end, { desc = 'Remove plugins not in vim.pack.add()' })
-
-vim.api.nvim_create_user_command('PackReinstall', function(opts)
-  local names = vim.split(opts.args, '%s+')
-  local specs = vim.tbl_map(function(x)
-    return x.spec
-  end, vim.pack.get(names))
-
-  vim.pack.del(names, { force = true })
-  vim.pack.add(specs)
-
-  vim.notify('Reinstalled: ' .. table.concat(names, ', '), vim.log.levels.INFO)
-end, {
-  nargs = '+',
-  desc = 'Reinstall specified plugins',
-  complete = function()
-    return vim.tbl_map(function(x)
-      return x.spec.name
-    end, vim.pack.get())
-  end,
-})
-
-return M
+vim.api.nvim_create_autocmd('PackChanged', { callback = on_pack_changed })
+add_plugins()
+configure_plugins()
