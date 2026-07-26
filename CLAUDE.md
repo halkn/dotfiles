@@ -17,7 +17,7 @@
 | `mise.toml` | dotfiles 固有の Neovim ツール + セットアップ宣言（`[dotfiles]` / `[bootstrap.repos]` / `[bootstrap.packages]` / `[bootstrap.user]`）+ 開発タスク定義 |
 | `mise.lock` | `mise.toml` の tools のバージョン・checksum 固定（`mise run update` で更新） |
 
-symlink 配置は `mise bootstrap` が `mise.toml` の `[dotfiles]` セクション（single source of truth）から宣言的に適用します。対象は `~/.config`・`~/.zshenv`・`~/.claude/` 配下（settings.json, CLAUDE.md, statusline-command.sh, file-suggestion.sh, hooks/*）です。source は `mise.toml` があるディレクトリ（mise の `{{config_root}}`）基準で解決されます。
+symlink 配置は `mise bootstrap` が `mise.toml` の `[dotfiles]` セクション（single source of truth）から宣言的に適用します。対象は `~/.config`・`~/.zshenv`・`~/.claude/` 配下（settings.json, CLAUDE.md, statusline-command.sh, file-suggestion.sh, hooks/*, skills/*）です。source は `mise.toml` があるディレクトリ（mise の `{{config_root}}`）基準で解決されます。
 
 zsh プラグイン（zsh-autosuggestions, fast-syntax-highlighting）は `[bootstrap.repos]` で `~/.local/share/zsh/plugins/` に clone/update されます。
 

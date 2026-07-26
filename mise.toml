@@ -33,6 +33,7 @@ rename_exe = "emmylua_check"
 "~/.claude/statusline-command.sh" = { source = "claude/statusline-command.sh" }
 "~/.claude/file-suggestion.sh" = { source = "claude/file-suggestion.sh" }
 "~/.claude/hooks/*" = { source = "claude/hooks/*" }
+"~/.claude/skills/*" = { source = "claude/skills/*" }
 
 # OS パッケージ。apt は Linux、brew は macOS でのみ適用され、それ以外の
 # OS では自動スキップされる。git/curl は clone 用に README の事前手順でも
