@@ -1,118 +1,29 @@
 # Repository Guidelines
 
-## Project Structure & Module Organization
+個人用 dotfiles。symlink 配置・mise ツール・OS パッケージ・ログインシェルは全て `mise.toml` の宣言を single source of truth として `mise bootstrap` が適用する。セットアップの全体像は `README.md` を参照。
 
-このリポジトリは個人用 dotfiles と周辺ツール設定を管理します。
+## Non-obvious layout
 
-| ディレクトリ / ファイル | 用途 |
-|------------------------|------|
-| `.config/nvim/` | Neovim 設定 |
-| `.config/zsh/` | シェル起動設定 |
-| `.config/herdr/` | ターミナル多重化設定（エージェント対応マルチプレクサ） |
-| `.config/<tool>/` | その他ツール設定（gh, git, starship 等） |
-| `claude/` | Claude Code の dotfiles 実体（git 追跡対象、symlink で `~/.claude/` に繋がる） |
-| `.claude/` | Claude Code のプロジェクト設定（git 追跡対象、`claude/` とは別物） |
-| `.claude/rules/` | path-scoped ルール（例: `neovim.md` は `.config/nvim/**` 編集時のみロード）。`~/.claude/rules/` への user-level 分割はしない — `paths:`/`globs:` 指定が user-level では読み込まれない既知の不具合があるため（anthropics/claude-code#19377, #21858）。全プロジェクト共通のルールは `claude/CLAUDE.md` に直接書く |
-| `.config/mise/` | mise によるツール管理（CLI・LSP・formatter 等の共有設定 + `mise.lock`）。`config.toml` は symlink により `~/.config/mise/config.toml` としても読まれるため、このリポジトリ外の全プロジェクトに影響するグローバル mise 設定を兼ねる。端末固有の override は追跡しない `config.local.toml` に置く |
-| `mise.toml` | dotfiles 固有の Neovim ツール + セットアップ宣言（`[dotfiles]` / `[bootstrap.repos]` / `[bootstrap.packages]` / `[bootstrap.user]`）+ 開発タスク定義 |
-| `mise.lock` | `mise.toml` の tools のバージョン・checksum 固定（`mise run update` で更新） |
+- `claude/` が Claude Code 設定の実体（`~/.claude/` へ symlink される）。`.claude/` はこのリポジトリ自身のプロジェクト設定で別物
+- `.config/mise/config.toml` は `~/.config/mise/config.toml` としても読まれる。ここへの変更はリポジトリ外の全プロジェクトに影響する
+- `.claude/rules/` の path-scoped ルールを `~/.claude/rules/` へ移さない。`paths:`/`globs:` 指定が user-level では読み込まれない（anthropics/claude-code#19377, #21858）。全プロジェクト共通のルールは `claude/CLAUDE.md` に直接書く
+- 新規 skill ディレクトリは `mise bootstrap` を実行するまで `~/.claude/skills/` に現れない。エージェントは `~/.claude/skills/` へ書き込めないので、実行はユーザーに依頼する
 
-symlink 配置は `mise bootstrap` が `mise.toml` の `[dotfiles]` セクション（single source of truth）から宣言的に適用します。対象は `~/.config`・`~/.zshenv`・`~/.claude/` 配下（settings.json, CLAUDE.md, statusline-command.sh, file-suggestion.sh, hooks/*, skills/*）です。source は `mise.toml` があるディレクトリ（mise の `{{config_root}}`）基準で解決されます。
+## Verification
 
-`~/.claude/skills/` の実体は `claude/skills/` です。既存 skill の編集は symlink 経由で即座に反映されますが、**新規 skill ディレクトリは `mise bootstrap` を実行するまで `~/.claude/skills/` に現れません**（`skills/*` の glob は bootstrap 実行時に展開されるため）。エージェントは `~/.claude/skills/` へ書き込めない（サンドボックスの deny 対象）ので、この反映はユーザーが実行します。
+- 変更後は `mise run lint`。Neovim Lua を触った場合は先に `mise run fmt`
+- 既存警告が多い場合は対象ファイルに絞る（`rumdl check <file>`、`shuck format --check <file>`）
+- 更新系（`mise run setup` / `sync` / `update`）はユーザーが手動実行する
+- `mise bootstrap --force-dotfiles` は競合ファイルをバックアップなしで上書きする。提案する前に `mise bootstrap --dry-run` で差分を示す
+- 対話操作でしか確認できない変更は、PR に手動確認の内容を 1 行添える
 
-zsh プラグイン（zsh-autosuggestions, fast-syntax-highlighting）は `[bootstrap.repos]` で `~/.local/share/zsh/plugins/` に clone/update されます。
+## Conventions
 
-OS パッケージは `[bootstrap.packages]` に `"apt:<pkg>"` / `"brew:<pkg>"` 形式で宣言され、`apt:` は Linux、`brew:` は macOS でのみ不足分がインストールされます（それ以外の OS では自動スキップ）。`apt:` 以外に `brew-cask:` / `dnf:` / `pacman:` / `apk:` / `mas:` の prefix にも対応しています。git/curl は macOS でも `brew:` エントリとして宣言されていますが、zsh/unzip/bubblewrap/socat は macOS では不要（zsh 標準搭載、Claude Code サンドボックスが macOS では Seatbelt を使うため）で `apt:` のみです。ログインシェルは `[bootstrap.user]` の `login_shell = "/bin/zsh"` から冪等に適用されます（`/etc/shells` 登録 + `chsh`）。
+- macOS に GNU `timeout` は無い。timeout が要る script は `timeout` / `gtimeout` / 直接実行の順にフォールバックする（`claude/file-suggestion.sh` の `run_with_timeout` を踏襲する）
+- 整形は `mise run fmt` に任せる（`shuck`・`stylua`・`rumdl`）
+- commit: 小文字 conventional prefix（`fix:` `add:` `feat:` `refactor:`）+ 短い英語要約。1 コミット 1 ツール・1 テーマ（例: `fix: python lsp settings.`）
+- PR: 変更理由・影響範囲（`nvim`・`zsh`・`claude` 等）・確認手順を書く
 
-新規ファイルは対象ツールの近くに配置し、既存のディレクトリ命名に合わせてください。
-Neovim 設計指針・変更手順は `.claude/rules/neovim.md`（`.config/nvim/**` 編集時に自動ロード）を参照。
+## Machine-local overrides（gitignore 対象）
 
-## Build, Test, and Development Commands
-
-- `mise run setup`（= `mise bootstrap --yes`）: OS パッケージ導入（Linux は apt、macOS は自動スキップ、sudo は不足時のみ）+ zsh プラグイン clone + dotfiles symlink 配置 + ログインシェル設定 + mise ツールインストール + Claude Code インストールを冪等に実行します。初回実行時は `mise trust` が必要です。
-- `mise bootstrap --dry-run` / `mise bootstrap status`: 適用内容の事前確認・状態確認ができます。
-- 新規マシンで `~/.config` などが実ディレクトリとして既に存在する場合、mise は管理外ファイルを上書きしません。`mise bootstrap --force-dotfiles` は競合ファイルを**バックアップなしでその場に上書き**するため、実行前に手動でバックアップしてください（例: `mv ~/.config ~/.config.bak`）。
-- `mise tasks`: 利用できるタスクを一覧します。
-- `mise run lint`: 通常の検証として diff 空白確認、`zsh` 構文確認、
-  Markdown、formatter check、Neovim Lua diagnostics、起動確認を実行します。
-- `mise run fmt`: Markdown、zsh（`fzf.zsh` を含む）、Neovim Lua を既定 formatter で整形します（`mise.toml` 自体のキー整形も含む）。
-- `mise run fmt-check`: ファイルを書き換えずに Markdown、zsh（`fzf.zsh` を含む）、Neovim Lua の整形を確認します。
-
-更新系（エージェントは実行不可、ユーザーが手動実行）:
-
-- `mise run sync`: dotfiles を fast-forward で取得し、lockfile 固定の mise ツールを導入する。ツールのバージョンは更新しない
-- `mise run update`: mise 本体・ツール・両方の lockfile・`[bootstrap.packages]` 宣言分の OS パッケージ・zsh プラグイン・Claude Code を更新する（sudo あり得る）。更新後は `mise.lock` / `.config/mise/mise.lock` の差分をコミットする
-- それ以外の system package は従来どおりユーザーが個別に更新する
-
-## Coding Style & Naming Conventions
-
-- **Shell**: `set -euo pipefail`、小文字の関数名、意味のある環境変数名を使う
-- **Shell (macOS 互換)**: macOS に GNU `timeout` は無い。timeout が必要な script は `timeout` / `gtimeout` / 直接実行の順にフォールバックする（`claude/file-suggestion.sh` の `run_with_timeout` 参照）
-- **Lua**: `lua/vimrc/` 配下で役割ごとに分け、プラグイン定義は `lua/vimrc/pack.lua` にまとめる
-- **Markdown**: 短く実務的に書き、`rumdl` 準拠で整える
-- **整形**: Shell・Lua ファイルは `mise run fmt` で整形する（`shuck`・`stylua` は mise 管理）
-
-## Testing Guidelines
-
-統一的な test harness はなく、変更対象ごとに最小の検証を実行してください。
-
-| 変更対象 | 確認コマンド |
-|----------|-------------|
-| デフォルト（迷ったらこれ） | `mise run lint` |
-| Neovim Lua | `mise run fmt && mise run lint` |
-| Shell (zsh) | `zsh -n .zshenv .config/zsh/.zshenv .config/zsh/.zshrc .config/zsh/fzf.zsh` |
-| Markdown | `rumdl check <file>` |
-| Shell 整形 | `shuck format --check <file>` |
-
-既存警告が残っている場合は対象ファイルに絞って確認してください。
-対話的な変更は PR に手動確認内容を 1 行で添えてください。
-
-## Commit & Pull Request Guidelines
-
-**コミット:**
-
-- prefix は小文字 conventional 形式: `fix:`, `add:`, `feat:`, `refactor:` など
-- 短い英語要約を続け、1 つのツール・1 テーマに絞る（例: `fix: python lsp settings.`）
-
-**PR:**
-
-- 変更理由・影響範囲（`nvim`, `zsh`, `claude` 等）・確認手順を記載する
-- 見た目が変わる場合のみスクリーンショットを付ける
-
-## Security & Configuration Tips
-
-- シークレット・トークン・端末固有の認証情報はコミットしない
-- symlink と path は可能な限りポータブルに保つ
-- ローカル専用の状態ファイルをこのリポジトリに書き込まない
-- `.config/gh/` は secret として gitignore 対象 — 読み取りや変更はしない
-- `claude/settings.json` の `sandbox.credentials.envVars` はワイルドカード非対応の手動列挙リスト。新しいシークレット系 CLI ツールを導入したら対応する環境変数名をここに追加する
-- `env.CLAUDE_CODE_SUBPROCESS_ENV_SCRUB` は**設定しない**: Anthropic・クラウドプロバイダ系の認証情報を全サブプロセスから strip する機能だが、この環境では有効化すると Bash tool が広範に機能不全を起こし、`permissions.defaultMode: "auto"` も正しく反映されなかった（2026-07 実機確認・v2.1.220）。再度有効化を検討する場合は、まず狭いスコープで再現するか確認すること
-- `sandbox.credentials.files` / `filesystem.denyRead` による `~/.config/gh` の deny は**採用しない**: read 側は `allowRead` が denied region 内を再許可する仕様のため、`allowRead: ~/.config` の内側では deny が実効しない（v2.1.207 で実測確認済み）。gh token の読取防止は `hooks/block-secret-read.sh` が担う
-- `claude/settings.json` の監査・変更は公式 docs（code.claude.com/docs）と CHANGELOG を根拠にする。`$schema` が指す schemastore 定義は追従が遅く（`sandbox`・`fileSuggestion` 等が未収録）、キーの有効性判断には使わない
-- PreToolUse hook に `if` フィルタ（permission rule 構文）を使わない: prefix マッチのため `git push && gh pr create ...` のような複合コマンドで hook 自体がスキップされ、スクリプト側のセグメント解析による防御が無効化される
-- `claude/settings.json` は public repo にコミットされるため `autoMode.environment` に社内・仕事用のインフラ情報（組織名・内部ホスト名等）を書かない。`autoMode`（および `permissions.defaultMode: "auto"`）は user settings（`~/.claude/settings.json`）・managed settings・`--settings` フラグからのみ読まれる仕様で、`.claude/settings.json` / `.claude/settings.local.json` からは読まれない（v2.1.207 以降。repo や build step が自分に auto モードや trusted infrastructure を付与できないようにするため）。仕事用の trusted infrastructure は `/Library/Application Support/ClaudeCode/managed-settings.json`（repo 外・追跡外）に記述する
-
-## Claude Code Auto モード運用
-
-`claude/settings.json` の `permissions.defaultMode` は `auto`。permission prompt の代わりに classifier
-（分類モデル）が各アクションを評価する。運用時は以下を使う。
-
-- `claude auto-mode config`: `$defaults` 展開後に実際に使われる `environment` / `allow` / `soft_deny` / `hard_deny` を確認する
-- `claude auto-mode critique`: `autoMode` に追加した自作ルールをレビューし、曖昧・冗長な記述を指摘させる
-- `claude auto-mode reset`: user settings（`~/.claude/settings.json`）の `autoMode` を削除し既定に戻す
-- `/permissions` の **Recently denied** タブ: classifier がブロックしたアクションの履歴。`r` キーで再試行できる
-- `autoMode.classifyAllShell: true` により、auto モード中は `permissions.allow` の Bash ルール（`Bash(git *)` 等）が全て停止し、全シェルコマンドが classifier 経由になる。allow リストは `acceptEdits` 等の他モードへ切り替えたときの fallback として残している
-- main/master への直接 push は auto モードの既定では許可される（v2.1.211 以降、作業中リポジトリへの push は原則無確認）。このリポジトリでは `claude/hooks/block-main-push.sh` が refspec を解釈して `ask` する形で担保する（`permissions.ask` の `Bash(git push*)` パターンは他モードへ切り替えたときの fallback として併存）。`autoMode` 側には重複ルールを置いていない
-
-## Machine-local Overrides（gitignore 対象）
-
-端末固有の設定は以下のファイルへ記述する（追跡外）:
-
-| ファイル | 用途 |
-|----------|------|
-| `.config/zsh/.zshenv.local` | 端末固有の環境変数 |
-| `.config/zsh/.zshrc.local` | 端末固有のインタラクティブ設定 |
-| `.config/mise/config.local.toml` | 端末固有の global mise `[env]` / tool / setting override |
-| `mise.local.toml` | このリポジトリ固有の mise override（他リポジトリでは各リポジトリの gitignore で管理） |
-| `.config/git/config.local` | `user.name` / `user.email` など |
+端末固有の設定は追跡外の `*.local` ファイルに置く: `.config/zsh/.zshenv.local`（環境変数）、`.config/zsh/.zshrc.local`（インタラクティブ）、`.config/mise/config.local.toml`（global mise の `[env]` / tool / setting override）、`mise.local.toml`（このリポジトリの mise override）、`.config/git/config.local`（`user.name` / `user.email`）。
