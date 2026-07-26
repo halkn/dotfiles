@@ -11,6 +11,13 @@ switch_ascii_input_source_in_prefix = true
 [terminal]
 new_cwd = "follow"
 
+# ── Worktrees ────────────────────────────────────────
+# 既定の ~/.herdr/worktrees は log / sock / session.json と同居するため、
+# 成果物である worktree は別の root に分ける。git-wt の $WT_ROOT
+# (.config/zsh/.zshenv) と同じ場所を指すこと
+[worktrees]
+directory = "~/worktrees"
+
 # ── Theme ────────────────────────────────────────────
 [theme]
 name = "kanagawa"

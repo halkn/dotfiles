@@ -33,6 +33,10 @@ export LESSHISTFILE=-
 # ripgrep
 export RIPGREP_CONFIG_PATH=$XDG_CONFIG_HOME/ripgrep/config
 
+# git-wt: worktree の置き場。herdr の worktrees.directory
+# (.config/herdr/config.toml) と同じ場所を指すこと
+export WT_ROOT=$HOME/worktrees
+
 # ---------------------------------------------------------------------------
 # path
 # ---------------------------------------------------------------------------

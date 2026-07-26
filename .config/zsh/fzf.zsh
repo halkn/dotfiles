@@ -119,17 +119,27 @@ fgl() {
       --bind 'enter:execute(git show --color=always {1} | less -R)'
 }
 
-# fgw - cd into a git worktree.
-fgw() {
-  _fzf_in_git_repo || return
+# wt - git worktree のライフサイクル（git-wt）を呼び、返った worktree へ移動する。
+#      cd はシェル内でしか出来ないため、path だけ受け取ってここで移動する。
+#      git-wt には端末を渡したままにしたいので $(...) ではなく WT_PATH_FILE 経由で受け取る。
+#      サブコマンドは `wt --help` を参照。
+wt() {
+  command -v git-wt >/dev/null 2>&1 || {
+    print 'wt: git-wt is not installed or not in PATH (run: mise run setup)' >&2
+    return 1
+  }
 
-  local dir
-  dir=$(
-    git worktree list \
-      | fzf --preview 'eza --tree --level=1 --icons {1} 2>/dev/null || ls -la {1}' \
-      | awk '{print $1}'
-  ) || return
-  [[ -n $dir ]] && cd -- "$dir"
+  local out dir ret
+  out=$(mktemp "${TMPDIR:-/tmp}/wt-path.XXXXXX") || return 1
+  WT_PATH_FILE=$out git-wt "$@"
+  ret=$?
+  dir=$(<"$out")
+  rm -f -- "$out"
+  ((ret == 0)) || return $ret
+  # rm / clean は path を返さないので、移動しないことは失敗ではない
+  if [[ -n $dir && -d $dir ]]; then
+    cd -- "$dir"
+  fi
 }
 
 # repo            : pick a ghq-managed repository with fzf and cd into it

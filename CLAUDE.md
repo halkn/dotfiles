@@ -16,8 +16,9 @@
 | `.config/mise/` | mise によるツール管理（CLI・LSP・formatter 等の共有設定 + `mise.lock`）。`config.toml` は symlink により `~/.config/mise/config.toml` としても読まれるため、このリポジトリ外の全プロジェクトに影響するグローバル mise 設定を兼ねる。端末固有の override は追跡しない `config.local.toml` に置く |
 | `mise.toml` | dotfiles 固有の Neovim ツール + セットアップ宣言（`[dotfiles]` / `[bootstrap.repos]` / `[bootstrap.packages]` / `[bootstrap.user]`）+ 開発タスク定義 |
 | `mise.lock` | `mise.toml` の tools のバージョン・checksum 固定（`mise run update` で更新） |
+| `bin/` | PATH に置く実行可能スクリプト（`git-wt`）。`~/.local/bin/` へ symlink される |
 
-symlink 配置は `mise bootstrap` が `mise.toml` の `[dotfiles]` セクション（single source of truth）から宣言的に適用します。対象は `~/.config`・`~/.zshenv`・`~/.claude/` 配下（settings.json, CLAUDE.md, statusline-command.sh, file-suggestion.sh, hooks/*）です。source は `mise.toml` があるディレクトリ（mise の `{{config_root}}`）基準で解決されます。
+symlink 配置は `mise bootstrap` が `mise.toml` の `[dotfiles]` セクション（single source of truth）から宣言的に適用します。対象は `~/.config`・`~/.zshenv`・`~/.claude/` 配下（settings.json, CLAUDE.md, statusline-command.sh, file-suggestion.sh, hooks/*）・`~/.local/bin/git-wt` です。source は `mise.toml` があるディレクトリ（mise の `{{config_root}}`）基準で解決されます。`~/.config` はディレクトリごと symlink されるため `.config/**` の新規ファイルに宣言追加は不要ですが、`bin/` 配下は 1 ファイルずつ宣言が要ります。
 
 zsh プラグイン（zsh-autosuggestions, fast-syntax-highlighting）は `[bootstrap.repos]` で `~/.local/share/zsh/plugins/` に clone/update されます。
 
@@ -42,6 +43,37 @@ Neovim 設計指針・変更手順は `.claude/rules/neovim.md`（`.config/nvim/
 - `mise run sync`: dotfiles を fast-forward で取得し、lockfile 固定の mise ツールを導入する。ツールのバージョンは更新しない
 - `mise run update`: mise 本体・ツール・両方の lockfile・`[bootstrap.packages]` 宣言分の OS パッケージ・zsh プラグイン・Claude Code を更新する（sudo あり得る）。更新後は `mise.lock` / `.config/mise/mise.lock` の差分をコミットする
 - それ以外の system package は従来どおりユーザーが個別に更新する
+
+## Worktree 開発フロー（git-wt / herdr / fzf）
+
+「1 タスク = 1 worktree = 1 herdr workspace = 1 Claude Code エージェント」で回します。
+実体は `bin/git-wt`（zsh）です。`git wt ...` として、または
+`wt`（移動まで行う `.config/zsh/fzf.zsh` のシェル関数）として呼びます。
+
+| コマンド | 用途 |
+|----------|------|
+| `wt` | 既存 worktree を fzf で選んで移動する |
+| `wt new <branch> [-c]` | `origin/HEAD` から worktree を切る。`-c` で Claude Code を起動 |
+| `wt pr [<number>] [-c]` | PR を fzf で選び `pr-<番号>-<head>` のレビュー用 worktree を作る。`-c` で `claude "/review <url>"` |
+| `wt rm [-f]` | fzf 複数選択で削除。未コミット・未 push があれば `-f` 無しでは飛ばす |
+| `wt clean` | merge / close 済み（PR は state で判定）をまとめて削除する |
+
+- worktree は `$WT_ROOT`（既定 `~/worktrees/<repo>/<branch-slug>`）に置きます。
+  herdr の `worktrees.directory`（`.config/herdr/config.toml`）と
+  **同じ場所を指す必要があり**、値は両方に literal で書かれています。
+  片方を変えたら必ずもう片方も変えてください
+- 新しい worktree には `$WT_COPY`（既定 `.env` / `.env.local` /
+  `mise.local.toml` / `.claude/settings.local.json`）を本体から複製します。
+  git 管理外で worktree には引き継がれず、無いと Claude Code や mise が
+  その場で動き出せないためです
+- リポジトリ内の setup スクリプトを自動実行する仕組みは
+  **意図的に持たせていません**（他人のリポジトリの PR をレビューするため）
+- herdr 内では `alt+s` の picker が Tab で
+  workspaces / worktrees / prs / agents を切り替えます。prs で Enter を押すと
+  レビュー用 worktree を払い出して workspace として開き、worktrees で
+  `ctrl-x` を押すと削除します（判定は `git wt rm --path` に委譲）
+- `git-wt` は結果の path を stdout（または `$WT_PATH_FILE`）に出し、
+  進捗とエラーは全て stderr に出します。この分離を壊さないでください
 
 ## Coding Style & Naming Conventions
 
