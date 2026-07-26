@@ -135,7 +135,6 @@
     "defaultMode": "auto",
     "disableBypassPermissionsMode": "disable"
   },
-  "model": "opusplan",
   "hooks": {
     "PreToolUse": [
       {
