@@ -19,6 +19,8 @@
 
 symlink 配置は `mise bootstrap` が `mise.toml` の `[dotfiles]` セクション（single source of truth）から宣言的に適用します。対象は `~/.config`・`~/.zshenv`・`~/.claude/` 配下（settings.json, CLAUDE.md, statusline-command.sh, file-suggestion.sh, hooks/*, skills/*）です。source は `mise.toml` があるディレクトリ（mise の `{{config_root}}`）基準で解決されます。
 
+`~/.claude/skills/` の実体は `claude/skills/` です。既存 skill の編集は symlink 経由で即座に反映されますが、**新規 skill ディレクトリは `mise bootstrap` を実行するまで `~/.claude/skills/` に現れません**（`skills/*` の glob は bootstrap 実行時に展開されるため）。エージェントは `~/.claude/skills/` へ書き込めない（サンドボックスの deny 対象）ので、この反映はユーザーが実行します。
+
 zsh プラグイン（zsh-autosuggestions, fast-syntax-highlighting）は `[bootstrap.repos]` で `~/.local/share/zsh/plugins/` に clone/update されます。
 
 OS パッケージは `[bootstrap.packages]` に `"apt:<pkg>"` / `"brew:<pkg>"` 形式で宣言され、`apt:` は Linux、`brew:` は macOS でのみ不足分がインストールされます（それ以外の OS では自動スキップ）。`apt:` 以外に `brew-cask:` / `dnf:` / `pacman:` / `apk:` / `mas:` の prefix にも対応しています。git/curl は macOS でも `brew:` エントリとして宣言されていますが、zsh/unzip/bubblewrap/socat は macOS では不要（zsh 標準搭載、Claude Code サンドボックスが macOS では Seatbelt を使うため）で `apt:` のみです。ログインシェルは `[bootstrap.user]` の `login_shell = "/bin/zsh"` から冪等に適用されます（`/etc/shells` 登録 + `chsh`）。
