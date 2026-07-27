@@ -7,7 +7,6 @@
 - `claude/` が Claude Code 設定の実体（`~/.claude/` へ symlink される）。`.claude/` はこのリポジトリ自身のプロジェクト設定で別物
 - `.config/mise/config.toml` は `~/.config/mise/config.toml` としても読まれる。ここへの変更はリポジトリ外の全プロジェクトに影響する
 - `.claude/rules/` の path-scoped ルールを `~/.claude/rules/` へ移さない。`paths:`/`globs:` 指定が user-level では読み込まれない（anthropics/claude-code#19377, #21858）。全プロジェクト共通のルールは `claude/CLAUDE.md` に直接書く
-- 新規 skill ディレクトリは `mise bootstrap` を実行するまで `~/.claude/skills/` に現れない。エージェントは `~/.claude/skills/` へ書き込めないので、実行はユーザーに依頼する
 
 ## Verification
 
