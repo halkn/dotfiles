@@ -22,6 +22,8 @@ eza = "latest"
 # NOTE: JSON/YAML の値確認は jq/yq から jaq (Rust) に統一。未導入時は各スクリプトが jq にフォールバックする。
 jaq = "latest"
 "github:halkn/docsail" = { version = "latest", minimum_release_age = "0s" }
+"github:halkn/mdiv" = { version = "latest", minimum_release_age = "0s" }
+"github:halkn/mdvu" = { version = "latest", minimum_release_age = "0s" }
 
 # vcs
 gh = "latest"
