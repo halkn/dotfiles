@@ -107,49 +107,49 @@ url = "https://github.com/junegunn/fzf/releases/download/v0.74.1/fzf-0.74.1-wind
 url_api = "https://api.github.com/repos/junegunn/fzf/releases/assets/481468090"
 
 [[tools.gh]]
-version = "2.96.0"
+version = "2.97.0"
 backend = "aqua:cli/cli"
 
 [tools.gh."platforms.linux-arm64"]
-checksum = "sha256:06f86ec7103d41993b76cd78072f43595c34aaa56506d971d9860e67140bf909"
-url = "https://github.com/cli/cli/releases/download/v2.96.0/gh_2.96.0_linux_arm64.tar.gz"
-url_api = "https://api.github.com/repos/cli/cli/releases/assets/464728549"
+checksum = "sha256:73ea440ecad9c9e284429997ee6f93577bc6f7bc6fba357ef62c53ad8fb641a5"
+url = "https://github.com/cli/cli/releases/download/v2.97.0/gh_2.97.0_linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/cli/cli/releases/assets/496108278"
 provenance = "github-attestations"
 
 [tools.gh."platforms.linux-arm64-musl"]
-checksum = "sha256:06f86ec7103d41993b76cd78072f43595c34aaa56506d971d9860e67140bf909"
-url = "https://github.com/cli/cli/releases/download/v2.96.0/gh_2.96.0_linux_arm64.tar.gz"
-url_api = "https://api.github.com/repos/cli/cli/releases/assets/464728549"
+checksum = "sha256:73ea440ecad9c9e284429997ee6f93577bc6f7bc6fba357ef62c53ad8fb641a5"
+url = "https://github.com/cli/cli/releases/download/v2.97.0/gh_2.97.0_linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/cli/cli/releases/assets/496108278"
 provenance = "github-attestations"
 
 [tools.gh."platforms.linux-x64"]
-checksum = "sha256:83d5c2ccad5498f58bf6368acb1ab32588cf43ab3a4b1c301bf36328b1c8bd60"
-url = "https://github.com/cli/cli/releases/download/v2.96.0/gh_2.96.0_linux_amd64.tar.gz"
-url_api = "https://api.github.com/repos/cli/cli/releases/assets/464728543"
+checksum = "sha256:a2c9b8497e1f85b1ad0dfcb78b5a622e098801b8e461e459e88e1ee12f018112"
+url = "https://github.com/cli/cli/releases/download/v2.97.0/gh_2.97.0_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/cli/cli/releases/assets/496108269"
 provenance = "github-attestations"
 
 [tools.gh."platforms.linux-x64-musl"]
-checksum = "sha256:83d5c2ccad5498f58bf6368acb1ab32588cf43ab3a4b1c301bf36328b1c8bd60"
-url = "https://github.com/cli/cli/releases/download/v2.96.0/gh_2.96.0_linux_amd64.tar.gz"
-url_api = "https://api.github.com/repos/cli/cli/releases/assets/464728543"
+checksum = "sha256:a2c9b8497e1f85b1ad0dfcb78b5a622e098801b8e461e459e88e1ee12f018112"
+url = "https://github.com/cli/cli/releases/download/v2.97.0/gh_2.97.0_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/cli/cli/releases/assets/496108269"
 provenance = "github-attestations"
 
 [tools.gh."platforms.macos-arm64"]
-checksum = "sha256:f23a0c37d963aacc3bed703ccbd59b41c5ca22101fab7f00eb2b7cad23aba463"
-url = "https://github.com/cli/cli/releases/download/v2.96.0/gh_2.96.0_macOS_arm64.zip"
-url_api = "https://api.github.com/repos/cli/cli/releases/assets/464728562"
+checksum = "sha256:a58b8fd77b417a38f47a0b54d1370c59b0fcdb324ccc9ca002b0998f7c4c999e"
+url = "https://github.com/cli/cli/releases/download/v2.97.0/gh_2.97.0_macOS_arm64.zip"
+url_api = "https://api.github.com/repos/cli/cli/releases/assets/496108298"
 provenance = "github-attestations"
 
 [tools.gh."platforms.macos-x64"]
-checksum = "sha256:4bd449df9ad639391bc62b8032546f0fe9edcd8526e06682a4f88abd8c5d163c"
-url = "https://github.com/cli/cli/releases/download/v2.96.0/gh_2.96.0_macOS_amd64.zip"
-url_api = "https://api.github.com/repos/cli/cli/releases/assets/464728560"
+checksum = "sha256:63298c998cc2a924c9e254c6af6a1caad6ece281122687a91f079bc0a462700e"
+url = "https://github.com/cli/cli/releases/download/v2.97.0/gh_2.97.0_macOS_amd64.zip"
+url_api = "https://api.github.com/repos/cli/cli/releases/assets/496108300"
 provenance = "github-attestations"
 
 [tools.gh."platforms.windows-x64"]
-checksum = "sha256:c2d6acc935cd2f00e2144d7e036d5cd82e6b6bd5594e8c75aa75ef2a4ed6aac3"
-url = "https://github.com/cli/cli/releases/download/v2.96.0/gh_2.96.0_windows_amd64.zip"
-url_api = "https://api.github.com/repos/cli/cli/releases/assets/464728577"
+checksum = "sha256:35d7fe05c4dd1411ffda1e73dfc7c6f44b75c936ca51fa6595c657fdc0350cec"
+url = "https://github.com/cli/cli/releases/download/v2.97.0/gh_2.97.0_windows_amd64.zip"
+url_api = "https://api.github.com/repos/cli/cli/releases/assets/496108319"
 provenance = "github-attestations"
 
 [[tools.ghq]]
@@ -209,6 +209,79 @@ url_api = "https://api.github.com/repos/halkn/docsail/releases/assets/497382872"
 checksum = "sha256:7281f27bfc4de8d6306d3e6aae78fc42954a6c0835664cfdc90ea1b3a1104d0a"
 url = "https://github.com/halkn/docsail/releases/download/v0.4.0/docsail-0.4.0-aarch64-apple-darwin.tar.gz"
 url_api = "https://api.github.com/repos/halkn/docsail/releases/assets/497382870"
+
+[[tools."github:halkn/mdiv"]]
+version = "0.2.1"
+backend = "github:halkn/mdiv"
+
+[tools."github:halkn/mdiv"."platforms.linux-arm64"]
+checksum = "sha256:66d2ec33d1cb75e045ffc06e089cabe5945a48653a4a0c7c4c10364ac56a766d"
+url = "https://github.com/halkn/mdiv/releases/download/v0.2.1/mdiv-linux-arm64.tar.gz"
+url_api = "https://api.github.com/repos/halkn/mdiv/releases/assets/497765160"
+
+[tools."github:halkn/mdiv"."platforms.linux-arm64-musl"]
+checksum = "sha256:66d2ec33d1cb75e045ffc06e089cabe5945a48653a4a0c7c4c10364ac56a766d"
+url = "https://github.com/halkn/mdiv/releases/download/v0.2.1/mdiv-linux-arm64.tar.gz"
+url_api = "https://api.github.com/repos/halkn/mdiv/releases/assets/497765160"
+
+[tools."github:halkn/mdiv"."platforms.linux-x64"]
+checksum = "sha256:b0f71841a8bca88a42624df612310861cde365531f60dfa0aa759ab879847f24"
+url = "https://github.com/halkn/mdiv/releases/download/v0.2.1/mdiv-linux-x64.tar.gz"
+url_api = "https://api.github.com/repos/halkn/mdiv/releases/assets/497765157"
+
+[tools."github:halkn/mdiv"."platforms.linux-x64-musl"]
+checksum = "sha256:b0f71841a8bca88a42624df612310861cde365531f60dfa0aa759ab879847f24"
+url = "https://github.com/halkn/mdiv/releases/download/v0.2.1/mdiv-linux-x64.tar.gz"
+url_api = "https://api.github.com/repos/halkn/mdiv/releases/assets/497765157"
+
+[tools."github:halkn/mdiv"."platforms.macos-arm64"]
+checksum = "sha256:260c34a116a7371e7e9001b923594af800cb18195238edee81765e5d59ab42c9"
+url = "https://github.com/halkn/mdiv/releases/download/v0.2.1/mdiv-darwin-arm64.tar.gz"
+url_api = "https://api.github.com/repos/halkn/mdiv/releases/assets/497765159"
+
+[tools."github:halkn/mdiv"."platforms.macos-x64"]
+checksum = "sha256:bcb79c28a46d3e345c5696612d7a7742c966af623b70bc3084fcd399ed2f40c3"
+url = "https://github.com/halkn/mdiv/releases/download/v0.2.1/mdiv-darwin-x64.tar.gz"
+url_api = "https://api.github.com/repos/halkn/mdiv/releases/assets/497765161"
+
+[tools."github:halkn/mdiv"."platforms.windows-x64"]
+checksum = "sha256:483e208518e53af68dd8cd205c48218609a23dc1f66ebdf739e2e7df915ae1f3"
+url = "https://github.com/halkn/mdiv/releases/download/v0.2.1/mdiv-windows-x64.zip"
+url_api = "https://api.github.com/repos/halkn/mdiv/releases/assets/497765158"
+
+[[tools."github:halkn/mdvu"]]
+version = "0.1.0"
+backend = "github:halkn/mdvu"
+
+[tools."github:halkn/mdvu"."platforms.linux-arm64"]
+checksum = "sha256:2ac4fb4c89489cafbac4a5f2c0d90aa31d212f6570d7c58d9bc7e049abfcba76"
+url = "https://github.com/halkn/mdvu/releases/download/v0.1.0/mdvu-0.1.0-aarch64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/halkn/mdvu/releases/assets/497946636"
+
+[tools."github:halkn/mdvu"."platforms.linux-arm64-musl"]
+checksum = "sha256:2ac4fb4c89489cafbac4a5f2c0d90aa31d212f6570d7c58d9bc7e049abfcba76"
+url = "https://github.com/halkn/mdvu/releases/download/v0.1.0/mdvu-0.1.0-aarch64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/halkn/mdvu/releases/assets/497946636"
+
+[tools."github:halkn/mdvu"."platforms.linux-x64"]
+checksum = "sha256:7b443985198751f348acaf7536edaa0092bb1744c8d72200176e91215ecb1b4d"
+url = "https://github.com/halkn/mdvu/releases/download/v0.1.0/mdvu-0.1.0-x86_64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/halkn/mdvu/releases/assets/497946633"
+
+[tools."github:halkn/mdvu"."platforms.linux-x64-musl"]
+checksum = "sha256:7b443985198751f348acaf7536edaa0092bb1744c8d72200176e91215ecb1b4d"
+url = "https://github.com/halkn/mdvu/releases/download/v0.1.0/mdvu-0.1.0-x86_64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/halkn/mdvu/releases/assets/497946633"
+
+[tools."github:halkn/mdvu"."platforms.macos-arm64"]
+checksum = "sha256:e05a87389451020b84990917e9ea366b36aea567ba91883a88a4efb04f985a58"
+url = "https://github.com/halkn/mdvu/releases/download/v0.1.0/mdvu-0.1.0-aarch64-apple-darwin.tar.gz"
+url_api = "https://api.github.com/repos/halkn/mdvu/releases/assets/497946634"
+
+[tools."github:halkn/mdvu"."platforms.macos-x64"]
+checksum = "sha256:02951f5f6fa5e7f2ce868b00b300db680421027cd84ba85a0e0ba445b280625e"
+url = "https://github.com/halkn/mdvu/releases/download/v0.1.0/mdvu-0.1.0-x86_64-apple-darwin.tar.gz"
+url_api = "https://api.github.com/repos/halkn/mdvu/releases/assets/497946632"
 
 [[tools.herdr]]
 version = "0.7.5"
