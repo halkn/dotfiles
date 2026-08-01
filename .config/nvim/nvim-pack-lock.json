@@ -18,7 +18,7 @@
       "src": "https://github.com/rebelot/kanagawa.nvim"
     },
     "nvim-treesitter": {
-      "rev": "0153df68b44fa97a3e11696ca55cbdd7a6d42398",
+      "rev": "0f32dff7f19476629c77467f887b95e5e2d33509",
       "src": "https://github.com/nvim-treesitter/nvim-treesitter"
     },
     "nvim-web-devicons": {
