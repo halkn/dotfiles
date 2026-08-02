@@ -68,43 +68,43 @@ url = "https://github.com/sharkdp/fd/releases/download/v10.4.2/fd-v10.4.2-x86_64
 url_api = "https://api.github.com/repos/sharkdp/fd/releases/assets/370661516"
 
 [[tools.fzf]]
-version = "0.74.1"
+version = "0.74.2"
 backend = "aqua:junegunn/fzf"
 
 [tools.fzf."platforms.linux-arm64"]
-checksum = "sha256:f22204dd1a091d43e102268d062fd53b47133c8d8581671ee5eb225b75e31183"
-url = "https://github.com/junegunn/fzf/releases/download/v0.74.1/fzf-0.74.1-linux_arm64.tar.gz"
-url_api = "https://api.github.com/repos/junegunn/fzf/releases/assets/481468085"
+checksum = "sha256:1373e3f5ed3c468179d4529942ddd96c234bcad1bcacaf238916e26a5234b5b2"
+url = "https://github.com/junegunn/fzf/releases/download/v0.74.2/fzf-0.74.2-linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/junegunn/fzf/releases/assets/497342620"
 
 [tools.fzf."platforms.linux-arm64-musl"]
-checksum = "sha256:f22204dd1a091d43e102268d062fd53b47133c8d8581671ee5eb225b75e31183"
-url = "https://github.com/junegunn/fzf/releases/download/v0.74.1/fzf-0.74.1-linux_arm64.tar.gz"
-url_api = "https://api.github.com/repos/junegunn/fzf/releases/assets/481468085"
+checksum = "sha256:1373e3f5ed3c468179d4529942ddd96c234bcad1bcacaf238916e26a5234b5b2"
+url = "https://github.com/junegunn/fzf/releases/download/v0.74.2/fzf-0.74.2-linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/junegunn/fzf/releases/assets/497342620"
 
 [tools.fzf."platforms.linux-x64"]
-checksum = "sha256:df53438be5f51e151bb4044d78fda72bdfe209e3ecd2baecae48e8dea370c81b"
-url = "https://github.com/junegunn/fzf/releases/download/v0.74.1/fzf-0.74.1-linux_amd64.tar.gz"
-url_api = "https://api.github.com/repos/junegunn/fzf/releases/assets/481468039"
+checksum = "sha256:b3648f48675612b69ee35371cf6dc99ca96d767e89b912d079080916ac8ba8bd"
+url = "https://github.com/junegunn/fzf/releases/download/v0.74.2/fzf-0.74.2-linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/junegunn/fzf/releases/assets/497342478"
 
 [tools.fzf."platforms.linux-x64-musl"]
-checksum = "sha256:df53438be5f51e151bb4044d78fda72bdfe209e3ecd2baecae48e8dea370c81b"
-url = "https://github.com/junegunn/fzf/releases/download/v0.74.1/fzf-0.74.1-linux_amd64.tar.gz"
-url_api = "https://api.github.com/repos/junegunn/fzf/releases/assets/481468039"
+checksum = "sha256:b3648f48675612b69ee35371cf6dc99ca96d767e89b912d079080916ac8ba8bd"
+url = "https://github.com/junegunn/fzf/releases/download/v0.74.2/fzf-0.74.2-linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/junegunn/fzf/releases/assets/497342478"
 
 [tools.fzf."platforms.macos-arm64"]
-checksum = "sha256:849d1d33b050f04dd6b765665e417da151b0e4654dbed8f55c60fd8e23f3ba20"
-url = "https://github.com/junegunn/fzf/releases/download/v0.74.1/fzf-0.74.1-darwin_arm64.tar.gz"
-url_api = "https://api.github.com/repos/junegunn/fzf/releases/assets/481468061"
+checksum = "sha256:d60ddb36356566ac69bae7c3504e888916cf747c9ad2132141c09229b1e28dee"
+url = "https://github.com/junegunn/fzf/releases/download/v0.74.2/fzf-0.74.2-darwin_arm64.tar.gz"
+url_api = "https://api.github.com/repos/junegunn/fzf/releases/assets/497342630"
 
 [tools.fzf."platforms.macos-x64"]
-checksum = "sha256:642f29fb2800690385efb176a209b14d9f593795f0f70ee12c919ee15472e439"
-url = "https://github.com/junegunn/fzf/releases/download/v0.74.1/fzf-0.74.1-darwin_amd64.tar.gz"
-url_api = "https://api.github.com/repos/junegunn/fzf/releases/assets/481468093"
+checksum = "sha256:b019ae8bcca33945a2ffbbbf8369705405cd1406fc4d74267e712797010e3676"
+url = "https://github.com/junegunn/fzf/releases/download/v0.74.2/fzf-0.74.2-darwin_amd64.tar.gz"
+url_api = "https://api.github.com/repos/junegunn/fzf/releases/assets/497342631"
 
 [tools.fzf."platforms.windows-x64"]
-checksum = "sha256:d83a94a68a9203f6366754123c0e4d7a61e16be18a5d845f4838664b330c4f5f"
-url = "https://github.com/junegunn/fzf/releases/download/v0.74.1/fzf-0.74.1-windows_amd64.zip"
-url_api = "https://api.github.com/repos/junegunn/fzf/releases/assets/481468090"
+checksum = "sha256:a5a3b27dd203469139d10669721952335b9b46f19346e3d1abc102a67ea60804"
+url = "https://github.com/junegunn/fzf/releases/download/v0.74.2/fzf-0.74.2-windows_amd64.zip"
+url_api = "https://api.github.com/repos/junegunn/fzf/releases/assets/497342617"
 
 [[tools.gh]]
 version = "2.97.0"
@@ -211,77 +211,77 @@ url = "https://github.com/halkn/docsail/releases/download/v0.4.0/docsail-0.4.0-a
 url_api = "https://api.github.com/repos/halkn/docsail/releases/assets/497382870"
 
 [[tools."github:halkn/mdiv"]]
-version = "0.2.1"
+version = "0.2.2"
 backend = "github:halkn/mdiv"
 
 [tools."github:halkn/mdiv"."platforms.linux-arm64"]
-checksum = "sha256:66d2ec33d1cb75e045ffc06e089cabe5945a48653a4a0c7c4c10364ac56a766d"
-url = "https://github.com/halkn/mdiv/releases/download/v0.2.1/mdiv-linux-arm64.tar.gz"
-url_api = "https://api.github.com/repos/halkn/mdiv/releases/assets/497765160"
+checksum = "sha256:1be9be653897fdeb007b80445cc7add3de0bccd2b92c0518d00c77fc6c3ad6de"
+url = "https://github.com/halkn/mdiv/releases/download/v0.2.2/mdiv-linux-arm64.tar.gz"
+url_api = "https://api.github.com/repos/halkn/mdiv/releases/assets/498693722"
 
 [tools."github:halkn/mdiv"."platforms.linux-arm64-musl"]
-checksum = "sha256:66d2ec33d1cb75e045ffc06e089cabe5945a48653a4a0c7c4c10364ac56a766d"
-url = "https://github.com/halkn/mdiv/releases/download/v0.2.1/mdiv-linux-arm64.tar.gz"
-url_api = "https://api.github.com/repos/halkn/mdiv/releases/assets/497765160"
+checksum = "sha256:1be9be653897fdeb007b80445cc7add3de0bccd2b92c0518d00c77fc6c3ad6de"
+url = "https://github.com/halkn/mdiv/releases/download/v0.2.2/mdiv-linux-arm64.tar.gz"
+url_api = "https://api.github.com/repos/halkn/mdiv/releases/assets/498693722"
 
 [tools."github:halkn/mdiv"."platforms.linux-x64"]
-checksum = "sha256:b0f71841a8bca88a42624df612310861cde365531f60dfa0aa759ab879847f24"
-url = "https://github.com/halkn/mdiv/releases/download/v0.2.1/mdiv-linux-x64.tar.gz"
-url_api = "https://api.github.com/repos/halkn/mdiv/releases/assets/497765157"
+checksum = "sha256:1f3333a2861d1137e4b11c01049ff641b51006145c1c1ce2a55d3af7e7f7820c"
+url = "https://github.com/halkn/mdiv/releases/download/v0.2.2/mdiv-linux-x64.tar.gz"
+url_api = "https://api.github.com/repos/halkn/mdiv/releases/assets/498693724"
 
 [tools."github:halkn/mdiv"."platforms.linux-x64-musl"]
-checksum = "sha256:b0f71841a8bca88a42624df612310861cde365531f60dfa0aa759ab879847f24"
-url = "https://github.com/halkn/mdiv/releases/download/v0.2.1/mdiv-linux-x64.tar.gz"
-url_api = "https://api.github.com/repos/halkn/mdiv/releases/assets/497765157"
+checksum = "sha256:1f3333a2861d1137e4b11c01049ff641b51006145c1c1ce2a55d3af7e7f7820c"
+url = "https://github.com/halkn/mdiv/releases/download/v0.2.2/mdiv-linux-x64.tar.gz"
+url_api = "https://api.github.com/repos/halkn/mdiv/releases/assets/498693724"
 
 [tools."github:halkn/mdiv"."platforms.macos-arm64"]
-checksum = "sha256:260c34a116a7371e7e9001b923594af800cb18195238edee81765e5d59ab42c9"
-url = "https://github.com/halkn/mdiv/releases/download/v0.2.1/mdiv-darwin-arm64.tar.gz"
-url_api = "https://api.github.com/repos/halkn/mdiv/releases/assets/497765159"
+checksum = "sha256:a8d859a011adf218add56130938e7bed91349d4d22eefce8e23baaedb9b7cfef"
+url = "https://github.com/halkn/mdiv/releases/download/v0.2.2/mdiv-darwin-arm64.tar.gz"
+url_api = "https://api.github.com/repos/halkn/mdiv/releases/assets/498693725"
 
 [tools."github:halkn/mdiv"."platforms.macos-x64"]
-checksum = "sha256:bcb79c28a46d3e345c5696612d7a7742c966af623b70bc3084fcd399ed2f40c3"
-url = "https://github.com/halkn/mdiv/releases/download/v0.2.1/mdiv-darwin-x64.tar.gz"
-url_api = "https://api.github.com/repos/halkn/mdiv/releases/assets/497765161"
+checksum = "sha256:dbeba8fd7dbe2e40ebf05edf76aa76afc9a265e384b5e9560bb41acaa369047d"
+url = "https://github.com/halkn/mdiv/releases/download/v0.2.2/mdiv-darwin-x64.tar.gz"
+url_api = "https://api.github.com/repos/halkn/mdiv/releases/assets/498693723"
 
 [tools."github:halkn/mdiv"."platforms.windows-x64"]
-checksum = "sha256:483e208518e53af68dd8cd205c48218609a23dc1f66ebdf739e2e7df915ae1f3"
-url = "https://github.com/halkn/mdiv/releases/download/v0.2.1/mdiv-windows-x64.zip"
-url_api = "https://api.github.com/repos/halkn/mdiv/releases/assets/497765158"
+checksum = "sha256:1cca133bb8daf6b90969bbb90149f9af267a8422c0276f72b7804e1b4b3a1918"
+url = "https://github.com/halkn/mdiv/releases/download/v0.2.2/mdiv-windows-x64.zip"
+url_api = "https://api.github.com/repos/halkn/mdiv/releases/assets/498693726"
 
 [[tools."github:halkn/mdvu"]]
-version = "0.1.0"
+version = "0.2.0"
 backend = "github:halkn/mdvu"
 
 [tools."github:halkn/mdvu"."platforms.linux-arm64"]
-checksum = "sha256:2ac4fb4c89489cafbac4a5f2c0d90aa31d212f6570d7c58d9bc7e049abfcba76"
-url = "https://github.com/halkn/mdvu/releases/download/v0.1.0/mdvu-0.1.0-aarch64-unknown-linux-gnu.tar.gz"
-url_api = "https://api.github.com/repos/halkn/mdvu/releases/assets/497946636"
+checksum = "sha256:1cfb236d528759cec17a2691d9d41481fa85294cf754ecc9942ed0fc82efeff7"
+url = "https://github.com/halkn/mdvu/releases/download/v0.2.0/mdvu-0.2.0-aarch64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/halkn/mdvu/releases/assets/498684951"
 
 [tools."github:halkn/mdvu"."platforms.linux-arm64-musl"]
-checksum = "sha256:2ac4fb4c89489cafbac4a5f2c0d90aa31d212f6570d7c58d9bc7e049abfcba76"
-url = "https://github.com/halkn/mdvu/releases/download/v0.1.0/mdvu-0.1.0-aarch64-unknown-linux-gnu.tar.gz"
-url_api = "https://api.github.com/repos/halkn/mdvu/releases/assets/497946636"
+checksum = "sha256:1cfb236d528759cec17a2691d9d41481fa85294cf754ecc9942ed0fc82efeff7"
+url = "https://github.com/halkn/mdvu/releases/download/v0.2.0/mdvu-0.2.0-aarch64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/halkn/mdvu/releases/assets/498684951"
 
 [tools."github:halkn/mdvu"."platforms.linux-x64"]
-checksum = "sha256:7b443985198751f348acaf7536edaa0092bb1744c8d72200176e91215ecb1b4d"
-url = "https://github.com/halkn/mdvu/releases/download/v0.1.0/mdvu-0.1.0-x86_64-unknown-linux-gnu.tar.gz"
-url_api = "https://api.github.com/repos/halkn/mdvu/releases/assets/497946633"
+checksum = "sha256:a6b7a73d50325575e303b2e519fe871fb5b86bdb9a40ce377ef7edb0f065fa5c"
+url = "https://github.com/halkn/mdvu/releases/download/v0.2.0/mdvu-0.2.0-x86_64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/halkn/mdvu/releases/assets/498684952"
 
 [tools."github:halkn/mdvu"."platforms.linux-x64-musl"]
-checksum = "sha256:7b443985198751f348acaf7536edaa0092bb1744c8d72200176e91215ecb1b4d"
-url = "https://github.com/halkn/mdvu/releases/download/v0.1.0/mdvu-0.1.0-x86_64-unknown-linux-gnu.tar.gz"
-url_api = "https://api.github.com/repos/halkn/mdvu/releases/assets/497946633"
+checksum = "sha256:a6b7a73d50325575e303b2e519fe871fb5b86bdb9a40ce377ef7edb0f065fa5c"
+url = "https://github.com/halkn/mdvu/releases/download/v0.2.0/mdvu-0.2.0-x86_64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/halkn/mdvu/releases/assets/498684952"
 
 [tools."github:halkn/mdvu"."platforms.macos-arm64"]
-checksum = "sha256:e05a87389451020b84990917e9ea366b36aea567ba91883a88a4efb04f985a58"
-url = "https://github.com/halkn/mdvu/releases/download/v0.1.0/mdvu-0.1.0-aarch64-apple-darwin.tar.gz"
-url_api = "https://api.github.com/repos/halkn/mdvu/releases/assets/497946634"
+checksum = "sha256:46d72ff43f725064ef4c012909b3747f5b1ec9bbba4c34805daf645cc0a514d1"
+url = "https://github.com/halkn/mdvu/releases/download/v0.2.0/mdvu-0.2.0-aarch64-apple-darwin.tar.gz"
+url_api = "https://api.github.com/repos/halkn/mdvu/releases/assets/498684950"
 
 [tools."github:halkn/mdvu"."platforms.macos-x64"]
-checksum = "sha256:02951f5f6fa5e7f2ce868b00b300db680421027cd84ba85a0e0ba445b280625e"
-url = "https://github.com/halkn/mdvu/releases/download/v0.1.0/mdvu-0.1.0-x86_64-apple-darwin.tar.gz"
-url_api = "https://api.github.com/repos/halkn/mdvu/releases/assets/497946632"
+checksum = "sha256:d248f59e736722a3d82c5b744e9956f46def913e8a5740e02089d40f9e7d8e99"
+url = "https://github.com/halkn/mdvu/releases/download/v0.2.0/mdvu-0.2.0-x86_64-apple-darwin.tar.gz"
+url_api = "https://api.github.com/repos/halkn/mdvu/releases/assets/498684949"
 
 [[tools.herdr]]
 version = "0.7.5"
@@ -490,49 +490,49 @@ url = "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15
 url_api = "https://api.github.com/repos/BurntSushi/ripgrep/releases/assets/478119643"
 
 [[tools.rumdl]]
-version = "0.2.47"
+version = "0.2.48"
 backend = "aqua:rvben/rumdl"
 
 [tools.rumdl."platforms.linux-arm64"]
-checksum = "sha256:b5ab4207b92c0bf0ea6d8946f15545c787e8cf6ecf2176d9e7f26c43aead86a8"
-url = "https://github.com/rvben/rumdl/releases/download/v0.2.47/rumdl-v0.2.47-aarch64-unknown-linux-musl.tar.gz"
-url_api = "https://api.github.com/repos/rvben/rumdl/releases/assets/496024308"
+checksum = "sha256:4812fae9bb625b322a99cbfb489df01320525255dd5c59b262075048c27d53b9"
+url = "https://github.com/rvben/rumdl/releases/download/v0.2.48/rumdl-v0.2.48-aarch64-unknown-linux-musl.tar.gz"
+url_api = "https://api.github.com/repos/rvben/rumdl/releases/assets/497748223"
 provenance = "github-attestations"
 
 [tools.rumdl."platforms.linux-arm64-musl"]
-checksum = "sha256:b5ab4207b92c0bf0ea6d8946f15545c787e8cf6ecf2176d9e7f26c43aead86a8"
-url = "https://github.com/rvben/rumdl/releases/download/v0.2.47/rumdl-v0.2.47-aarch64-unknown-linux-musl.tar.gz"
-url_api = "https://api.github.com/repos/rvben/rumdl/releases/assets/496024308"
+checksum = "sha256:4812fae9bb625b322a99cbfb489df01320525255dd5c59b262075048c27d53b9"
+url = "https://github.com/rvben/rumdl/releases/download/v0.2.48/rumdl-v0.2.48-aarch64-unknown-linux-musl.tar.gz"
+url_api = "https://api.github.com/repos/rvben/rumdl/releases/assets/497748223"
 provenance = "github-attestations"
 
 [tools.rumdl."platforms.linux-x64"]
-checksum = "sha256:bd4049763e93d6c25420ec086dee6690af31efc85af463c3ecf5d686a5fcf762"
-url = "https://github.com/rvben/rumdl/releases/download/v0.2.47/rumdl-v0.2.47-x86_64-unknown-linux-musl.tar.gz"
-url_api = "https://api.github.com/repos/rvben/rumdl/releases/assets/496024316"
+checksum = "sha256:d04ca4db4bbb971dec5218b44e6846c08f4cc0e2f191d38f9c4cf3ae6459602f"
+url = "https://github.com/rvben/rumdl/releases/download/v0.2.48/rumdl-v0.2.48-x86_64-unknown-linux-musl.tar.gz"
+url_api = "https://api.github.com/repos/rvben/rumdl/releases/assets/497748216"
 provenance = "github-attestations"
 
 [tools.rumdl."platforms.linux-x64-musl"]
-checksum = "sha256:bd4049763e93d6c25420ec086dee6690af31efc85af463c3ecf5d686a5fcf762"
-url = "https://github.com/rvben/rumdl/releases/download/v0.2.47/rumdl-v0.2.47-x86_64-unknown-linux-musl.tar.gz"
-url_api = "https://api.github.com/repos/rvben/rumdl/releases/assets/496024316"
+checksum = "sha256:d04ca4db4bbb971dec5218b44e6846c08f4cc0e2f191d38f9c4cf3ae6459602f"
+url = "https://github.com/rvben/rumdl/releases/download/v0.2.48/rumdl-v0.2.48-x86_64-unknown-linux-musl.tar.gz"
+url_api = "https://api.github.com/repos/rvben/rumdl/releases/assets/497748216"
 provenance = "github-attestations"
 
 [tools.rumdl."platforms.macos-arm64"]
-checksum = "sha256:10dc23e994327ecc6e98d285802fcad1174608f203062cb18bac55b51976e0cb"
-url = "https://github.com/rvben/rumdl/releases/download/v0.2.47/rumdl-v0.2.47-aarch64-apple-darwin.tar.gz"
-url_api = "https://api.github.com/repos/rvben/rumdl/releases/assets/496024317"
+checksum = "sha256:d98ef1933909b34413158b09dd7b682962b6376d115bafa5b204a13704e0c0f6"
+url = "https://github.com/rvben/rumdl/releases/download/v0.2.48/rumdl-v0.2.48-aarch64-apple-darwin.tar.gz"
+url_api = "https://api.github.com/repos/rvben/rumdl/releases/assets/497748226"
 provenance = "github-attestations"
 
 [tools.rumdl."platforms.macos-x64"]
-checksum = "sha256:9a2bf0c692310e0469fdc66fa83f74579cf0331cc1f9b306b25849cffd146c0f"
-url = "https://github.com/rvben/rumdl/releases/download/v0.2.47/rumdl-v0.2.47-x86_64-apple-darwin.tar.gz"
-url_api = "https://api.github.com/repos/rvben/rumdl/releases/assets/496024313"
+checksum = "sha256:bae4774baf4a540c0b7755067eed617ecdd81d71320104aadf4ccfc4389ab480"
+url = "https://github.com/rvben/rumdl/releases/download/v0.2.48/rumdl-v0.2.48-x86_64-apple-darwin.tar.gz"
+url_api = "https://api.github.com/repos/rvben/rumdl/releases/assets/497748222"
 provenance = "github-attestations"
 
 [tools.rumdl."platforms.windows-x64"]
-checksum = "sha256:a8811da5a7d1ab12b7d4c9adaeb2daae6a6a8c9a96d8ad44cbb67bc3394eafa1"
-url = "https://github.com/rvben/rumdl/releases/download/v0.2.47/rumdl-v0.2.47-x86_64-pc-windows-msvc.zip"
-url_api = "https://api.github.com/repos/rvben/rumdl/releases/assets/496024315"
+checksum = "sha256:6f2ca1bb0f75abbe9f7513c4758385de2a987f2053361cd32841b46d00d359d1"
+url = "https://github.com/rvben/rumdl/releases/download/v0.2.48/rumdl-v0.2.48-x86_64-pc-windows-msvc.zip"
+url_api = "https://api.github.com/repos/rvben/rumdl/releases/assets/497748225"
 provenance = "github-attestations"
 
 [[tools.starship]]
@@ -621,47 +621,47 @@ url_api = "https://api.github.com/repos/tree-sitter/tree-sitter/releases/assets/
 provenance = "github-attestations"
 
 [[tools.uv]]
-version = "0.12.0"
+version = "0.12.1"
 backend = "aqua:astral-sh/uv"
 
 [tools.uv."platforms.linux-arm64"]
-checksum = "sha256:936fbbf20188a2b1c66bce3dca3f4009a5c9cdf12bb2bbd084e71926f75d6a15"
-url = "https://github.com/astral-sh/uv/releases/download/0.12.0/uv-aarch64-unknown-linux-musl.tar.gz"
-url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/493071360"
+checksum = "sha256:ce218dad9eb48a39dd86160bec6291fac7275f20a9cabcc4bc10dd2c757208f8"
+url = "https://github.com/astral-sh/uv/releases/download/0.12.1/uv-aarch64-unknown-linux-musl.tar.gz"
+url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/497097080"
 provenance = "github-attestations"
 
 [tools.uv."platforms.linux-arm64-musl"]
-checksum = "sha256:936fbbf20188a2b1c66bce3dca3f4009a5c9cdf12bb2bbd084e71926f75d6a15"
-url = "https://github.com/astral-sh/uv/releases/download/0.12.0/uv-aarch64-unknown-linux-musl.tar.gz"
-url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/493071360"
+checksum = "sha256:ce218dad9eb48a39dd86160bec6291fac7275f20a9cabcc4bc10dd2c757208f8"
+url = "https://github.com/astral-sh/uv/releases/download/0.12.1/uv-aarch64-unknown-linux-musl.tar.gz"
+url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/497097080"
 provenance = "github-attestations"
 
 [tools.uv."platforms.linux-x64"]
-checksum = "sha256:3340a9d8cffc4d801bc1a7459ebfaf5790c79400720d9b6963d806f058526684"
-url = "https://github.com/astral-sh/uv/releases/download/0.12.0/uv-x86_64-unknown-linux-musl.tar.gz"
-url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/493071451"
+checksum = "sha256:47823f814693bab8623308341369190de30b5c621eec5b1ee20352eae8c7982c"
+url = "https://github.com/astral-sh/uv/releases/download/0.12.1/uv-x86_64-unknown-linux-musl.tar.gz"
+url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/497097157"
 provenance = "github-attestations"
 
 [tools.uv."platforms.linux-x64-musl"]
-checksum = "sha256:3340a9d8cffc4d801bc1a7459ebfaf5790c79400720d9b6963d806f058526684"
-url = "https://github.com/astral-sh/uv/releases/download/0.12.0/uv-x86_64-unknown-linux-musl.tar.gz"
-url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/493071451"
+checksum = "sha256:47823f814693bab8623308341369190de30b5c621eec5b1ee20352eae8c7982c"
+url = "https://github.com/astral-sh/uv/releases/download/0.12.1/uv-x86_64-unknown-linux-musl.tar.gz"
+url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/497097157"
 provenance = "github-attestations"
 
 [tools.uv."platforms.macos-arm64"]
-checksum = "sha256:2b9e582af54f84fa50c115427451a6c13e80f43b52f8282b8af5791077317bbf"
-url = "https://github.com/astral-sh/uv/releases/download/0.12.0/uv-aarch64-apple-darwin.tar.gz"
-url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/493071342"
+checksum = "sha256:77d2906988e8074fd43f2f329ec452ebbf9b0c257ba1c66451c71de70a6baf42"
+url = "https://github.com/astral-sh/uv/releases/download/0.12.1/uv-aarch64-apple-darwin.tar.gz"
+url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/497097062"
 provenance = "github-attestations"
 
 [tools.uv."platforms.macos-x64"]
-checksum = "sha256:d41593beaefc54bab7d062af0ef6ca093bfb81d001d58ebbef39e44423f9c496"
-url = "https://github.com/astral-sh/uv/releases/download/0.12.0/uv-x86_64-apple-darwin.tar.gz"
-url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/493071438"
+checksum = "sha256:69d9f9a00337f25a50dcb13882052da08b8469bac11091c98c5694c3c6721467"
+url = "https://github.com/astral-sh/uv/releases/download/0.12.1/uv-x86_64-apple-darwin.tar.gz"
+url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/497097144"
 provenance = "github-attestations"
 
 [tools.uv."platforms.windows-x64"]
-checksum = "sha256:68200e25de594df92387186bbfb9d9df606ec1d87efaa0ae0c7f690970e53db6"
-url = "https://github.com/astral-sh/uv/releases/download/0.12.0/uv-x86_64-pc-windows-msvc.zip"
-url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/493071443"
+checksum = "sha256:8fcb0cb46e1229065e344758980924e569bef5882ef45f46fada8fb24e06b74a"
+url = "https://github.com/astral-sh/uv/releases/download/0.12.1/uv-x86_64-pc-windows-msvc.zip"
+url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/497097149"
 provenance = "github-attestations"
