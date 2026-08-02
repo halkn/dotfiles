@@ -55,6 +55,7 @@
 - コミット・push・PR 作成は、作業前に作成したブランチ上で行う
 - push は自分の作業ブランチ（セッション開始時のブランチ or 自分が作成したブランチ）のみ。main/master へ直接 push しない
 - 破壊的操作（`git reset --hard`、強制切替、削除など）は事前に確認する
+- 1 リポジトリに複数の worktree があり得る。他の worktree の作業を壊さないよう、`git worktree remove` / `git worktree prune` / worktree が使用中のブランチの削除は事前に確認する
 - ユーザーの未コミット変更を戻さない
 
 ## 並列化と Subagent

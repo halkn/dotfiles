@@ -40,6 +40,14 @@ rows = [
 delivery = "system"
 delay_seconds = 3
 
+# ── Worktrees ────────────────────────────────────────
+# 既定は ~/.herdr/worktrees。XDG に合わせて $XDG_DATA_HOME 相当へ置く
+# （worktree は未コミットの作業を含みうるので cache/state ではなく data）。
+# zsh 側の `wt` はこの値を読んでフォールバックのパスを決めるため、
+# 配置先の single source of truth はここ。
+[worktrees]
+directory = "~/.local/share/herdr/worktrees"
+
 # ── Session ──────────────────────────────────────────
 [session]
 resume_agents_on_restore = true
@@ -48,6 +56,7 @@ resume_agents_on_restore = true
 [keys]
 prefix = "ctrl+space"
 new_workspace = "alt+w"
+new_worktree = "alt+g"
 split_vertical = "alt+;"
 split_horizontal = "alt+minus"
 focus_pane_left = "alt+h"

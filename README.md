@@ -99,6 +99,39 @@ are cached under `$XDG_CACHE_HOME/zsh`.
 Put machine-local shell settings in `.config/zsh/.zshenv.local` (environment)
 or `.config/zsh/.zshrc.local` (interactive); both are gitignored.
 
+## Git worktree workflow
+
+Parallel work (reviewing several pull requests while developing) uses one
+worktree per branch, and inside [herdr](https://herdr.dev) each worktree is a
+workspace. The `wt` function in `.config/zsh/worktree.zsh` is the entry point:
+
+```sh
+wt                     # pick a worktree and open it (focus its workspace, or cd)
+wt new <branch> [base] # create a branch + worktree and open it
+wt pr [<number>]       # pick a pull request and open its head as a worktree
+wt rm                  # pick worktrees to remove
+wt clean               # remove merged / upstream-gone worktrees
+```
+
+Checkouts are placed under `[worktrees] directory` in
+`.config/herdr/config.toml` (`~/.local/share/herdr/worktrees`, i.e.
+`$XDG_DATA_HOME`), so they stay out of the ghq tree that `repo` browses.
+`herdr` itself can also create one with `alt+g`. The `alt+s` picker lists
+worktrees to jump to, and removes the selected one with `ctrl-x`; creation is
+`wt new` / `wt pr` only.
+
+Outside a herdr session everything degrades to plain `git worktree` plus `cd`.
+
+Removal never discards work: `wt rm` skips the main checkout and the worktree
+you are standing in, asks again when a worktree is dirty, and deletes the local
+branch only with `git branch -d` (merged branches only), the same rule as the
+`git pm` alias.
+
+Pull requests from a fork are fetched read-only as `pr-<number>`; run
+`gh pr checkout <number>` inside that worktree when you need to push back. Fork
+code is not pre-trusted for mise (same-repository branches are), so treat that
+worktree as untrusted: inspect it before running its tasks or an agent in it.
+
 ## Tool Manager
 
 CLI tools, LSP servers, and formatters are managed by
