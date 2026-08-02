@@ -156,6 +156,10 @@ if command -v fzf >/dev/null 2>&1 && [[ -t 0 ]]; then
   source "$ZDOTDIR/fzf.zsh"
 fi
 
+# ── git worktree (wt) ────────────────────────────────
+# fzf/gh は各サブコマンドが実行時に確認するため、ここでは無条件に読み込む。
+[[ -f "$ZDOTDIR/worktree.zsh" ]] && source "$ZDOTDIR/worktree.zsh"
+
 # ── herdr ────────────────────────────────────────────
 HERDR_AUTO_START=${HERDR_AUTO_START:-1}
 

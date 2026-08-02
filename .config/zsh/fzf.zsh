@@ -119,18 +119,7 @@ fgl() {
       --bind 'enter:execute(git show --color=always {1} | less -R)'
 }
 
-# fgw - cd into a git worktree.
-fgw() {
-  _fzf_in_git_repo || return
-
-  local dir
-  dir=$(
-    git worktree list \
-      | fzf --preview 'eza --tree --level=1 --icons {1} 2>/dev/null || ls -la {1}' \
-      | awk '{print $1}'
-  ) || return
-  [[ -n $dir ]] && cd -- "$dir"
-}
+# Worktree navigation lives in worktree.zsh as `wt` (herdr workspace aware).
 
 # repo            : pick a ghq-managed repository with fzf and cd into it
 # repo get <repo> : clone with ghq and cd into it (owner/repo or URL)
