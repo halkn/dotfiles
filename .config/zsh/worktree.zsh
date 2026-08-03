@@ -364,14 +364,29 @@ _wt_new() {
     print 'usage: wt new <branch> [base]' >&2
     return 1
   }
-  if [[ -z $base ]]; then
-    base=$(_wt_base_ref 2>/dev/null)
-  fi
+  # `wt new origin/feature` refers to the same branch as `wt new feature`;
+  # keeping the prefix would name the checkout directory origin-feature.
+  branch=${branch#origin/}
 
   if git show-ref --verify --quiet "refs/heads/$branch"; then
     print "wt: branch $branch already exists; opening it" >&2
     _wt_checkout_branch "$branch"
     return
+  fi
+
+  # Only origin has this branch: create the local tracking branch first.
+  # Without this the checkout below would branch off the base ref and silently
+  # drop the remote work. An explicit base means a new branch was asked for.
+  # Remote refs are read as-is - fetch beforehand to see branches added since.
+  if [[ -z $base ]] && git show-ref --verify --quiet "refs/remotes/origin/$branch"; then
+    git branch --track "$branch" "origin/$branch" >/dev/null || return 1
+    print "wt: tracking origin/$branch" >&2
+    _wt_checkout_branch "$branch"
+    return
+  fi
+
+  if [[ -z $base ]]; then
+    base=$(_wt_base_ref 2>/dev/null)
   fi
 
   if _wt_use_herdr; then
