@@ -416,7 +416,45 @@ _wt_new() {
   return 0
 }
 
+# Which forge hosts `origin`, so `wt pr` can pick between gh and az repos.
+_wt_pr_host() {
+  local url
+  url=$(git remote get-url origin 2>/dev/null) || return 1
+  [[ -n $url ]] || return 1
+  case $url in
+    *dev.azure.com* | *.visualstudio.com*)
+      print -r -- azure
+      ;;
+    *)
+      print -r -- github
+      ;;
+  esac
+}
+
+# Fetch a branch that lives on origin and open it as a worktree.
+_wt_track_and_open() {
+  local branch=$1
+  git fetch origin "$branch" || return 1
+  if ! git show-ref --verify --quiet "refs/heads/$branch"; then
+    git branch --track "$branch" "origin/$branch" || return 1
+  fi
+  _wt_checkout_branch "$branch"
+}
+
 _wt_pr() {
+  local host
+  host=$(_wt_pr_host) || {
+    print 'wt: no origin remote' >&2
+    return 1
+  }
+  if [[ $host == azure ]]; then
+    _wt_pr_az "${1:-}"
+  else
+    _wt_pr_gh "${1:-}"
+  fi
+}
+
+_wt_pr_gh() {
   local number=$1 info head cross
   command -v gh >/dev/null 2>&1 || {
     print 'wt: gh is not installed' >&2
@@ -451,11 +489,50 @@ _wt_pr() {
     return 0
   fi
 
-  git fetch origin "$head" || return 1
-  if ! git show-ref --verify --quiet "refs/heads/$head"; then
-    git branch --track "$head" "origin/$head" || return 1
+  _wt_track_and_open "$head"
+}
+
+# Azure Repos equivalent. `az repos` picks up organization / project /
+# repository from the origin remote, so no ids have to be passed here.
+_wt_pr_az() {
+  local number=$1 prs info head fork
+  command -v az >/dev/null 2>&1 || {
+    print 'wt: az is not installed' >&2
+    return 1
+  }
+
+  if [[ -z $number ]]; then
+    _wt_fzf_available || return 1
+    # Not silenced: az reports sign-in and detection failures on stderr, and
+    # they are the usual reason for an empty list.
+    prs=$(az repos pr list --status active --top 50 --only-show-errors -o json) || return 1
+    number=$(
+      print -r -- "$prs" \
+        | "$(_wt_jq_bin)" -r '.[] | [(.pullRequestId | tostring), (if .isDraft then "[draft] " else "" end) + .title + " (" + (.createdBy.displayName // "?") + ") — " + (.sourceRefName | ltrimstr("refs/heads/"))] | @tsv' \
+        | fzf --delimiter '\t' --with-nth 2 \
+          --prompt 'pr> ' \
+          --preview 'az repos pr show --id {1} --only-show-errors -o yaml' \
+        | awk -F'\t' '{print $1}'
+    ) || return 1
   fi
-  _wt_checkout_branch "$head"
+  [[ -n $number ]] || return 1
+
+  info=$(az repos pr show --id "$number" --only-show-errors -o json) || return 1
+  head=$(print -r -- "$info" | "$(_wt_jq_bin)" -r '.sourceRefName // "" | ltrimstr("refs/heads/")')
+  fork=$(print -r -- "$info" | "$(_wt_jq_bin)" -r 'if .forkSource then "true" else "false" end')
+
+  if [[ $fork == true ]]; then
+    # Azure Repos only publishes refs/pull/<id>/merge on the target repository,
+    # so a fork head cannot be fetched from origin the way it can on GitHub.
+    print "wt: PR $number comes from a fork; add that repository as a remote and use 'wt new'" >&2
+    return 1
+  fi
+  [[ -n $head ]] || {
+    print "wt: could not read the source branch of PR $number" >&2
+    return 1
+  }
+
+  _wt_track_and_open "$head"
 }
 
 # Interactive removal. $1 = "clean" restricts the list to reclaimable worktrees
@@ -517,8 +594,11 @@ _wt_rm() {
 }
 
 # wt              : pick a worktree and open it (herdr workspace, or cd)
-# wt new <branch> [base] : create a branch + worktree and open it
-# wt pr [<number>]       : pick a pull request and open its head as a worktree
+# wt new <branch> [base] : create a branch + worktree and open it. Without a
+#                          base, an existing origin/<branch> is tracked instead
+#                          of branching off the default integration branch.
+# wt pr [<number>]       : pick a pull request and open its head as a worktree.
+#                          Uses gh, or az repos when origin is on Azure DevOps.
 # wt rm                  : pick worktrees to remove
 # wt clean               : remove merged / upstream-gone worktrees
 wt() {
