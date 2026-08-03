@@ -441,6 +441,16 @@ _wt_track_and_open() {
   _wt_checkout_branch "$branch"
 }
 
+# Head of a PR description for the preview window; the rest is folded into a
+# line count. GitHub stores descriptions with CRLF, which shows up as ^M here.
+_wt_pr_body_head() {
+  awk '
+    { sub(/\r$/, "") }
+    NR <= 20 { print }
+    END { if (NR > 20) printf "\n… %d more lines\n", NR - 20 }
+  '
+}
+
 _wt_pr() {
   local host
   host=$(_wt_pr_host) || {
@@ -452,6 +462,23 @@ _wt_pr() {
   else
     _wt_pr_gh "${1:-}"
   fi
+}
+
+# Preview body for the PR picker. `gh pr view` also prints labels, assignees,
+# reviewers, projects and the URL, which pushes the description out of view.
+_wt_pr_preview_gh() {
+  local number=$1 info
+  info=$(gh pr view "$number" \
+    --json title,state,isDraft,author,headRefName,baseRefName,body 2>/dev/null) || return 0
+  print -r -- "$info" | "$(_wt_jq_bin)" -r '
+    [
+      .title, "",
+      "state   " + (if .isDraft then "DRAFT" else .state end),
+      "author  " + (.author.login // "?"),
+      "branch  " + .headRefName + " -> " + .baseRefName,
+      ""
+    ] | .[]'
+  print -r -- "$info" | "$(_wt_jq_bin)" -r '.body // ""' | _wt_pr_body_head
 }
 
 _wt_pr_gh() {
@@ -471,7 +498,7 @@ _wt_pr_gh() {
         | fzf --delimiter '\t' --with-nth 2 \
           --height=100% \
           --prompt 'pr> ' \
-          --preview 'gh pr view {1}' \
+          --preview "source ${_WT_LIB}; _wt_pr_preview_gh {1}" \
           --preview-window 'down:60%:wrap' \
         | awk -F'\t' '{print $1}'
     ) || return 1
@@ -494,6 +521,28 @@ _wt_pr_gh() {
   _wt_track_and_open "$head"
 }
 
+# Same four fields as the gh preview. Azure's own `active` / `completed` /
+# `abandoned` are mapped onto gh's vocabulary so both forges read alike.
+_wt_pr_preview_az() {
+  local number=$1 info
+  info=$(az repos pr show --id "$number" --only-show-errors -o json 2>/dev/null) || return 0
+  print -r -- "$info" | "$(_wt_jq_bin)" -r '
+    [
+      .title, "",
+      "state   " + (
+        if .isDraft then "DRAFT"
+        elif .status == "active" then "OPEN"
+        elif .status == "completed" then "MERGED"
+        elif .status == "abandoned" then "CLOSED"
+        else (.status // "?") end
+      ),
+      "author  " + (.createdBy.displayName // "?"),
+      "branch  " + (.sourceRefName | ltrimstr("refs/heads/")) + " -> " + (.targetRefName | ltrimstr("refs/heads/")),
+      ""
+    ] | .[]'
+  print -r -- "$info" | "$(_wt_jq_bin)" -r '.description // ""' | _wt_pr_body_head
+}
+
 # Azure Repos equivalent. `az repos` picks up organization / project /
 # repository from the origin remote, so no ids have to be passed here.
 _wt_pr_az() {
@@ -514,7 +563,7 @@ _wt_pr_az() {
         | fzf --delimiter '\t' --with-nth 2 \
           --height=100% \
           --prompt 'pr> ' \
-          --preview 'az repos pr show --id {1} --only-show-errors -o yaml' \
+          --preview "source ${_WT_LIB}; _wt_pr_preview_az {1}" \
           --preview-window 'down:60%:wrap' \
         | awk -F'\t' '{print $1}'
     ) || return 1
