@@ -469,8 +469,10 @@ _wt_pr_gh() {
         --template '{{range .}}{{printf "%v" .number}}	{{if .isDraft}}[draft] {{end}}{{.title}} ({{.author.login}}) — {{.headRefName}}
             {{end}}' 2>/dev/null \
         | fzf --delimiter '\t' --with-nth 2 \
+          --height=100% \
           --prompt 'pr> ' \
           --preview 'gh pr view {1}' \
+          --preview-window 'down:60%:wrap' \
         | awk -F'\t' '{print $1}'
     ) || return 1
   fi
@@ -510,8 +512,10 @@ _wt_pr_az() {
       print -r -- "$prs" \
         | "$(_wt_jq_bin)" -r '.[] | [(.pullRequestId | tostring), (if .isDraft then "[draft] " else "" end) + .title + " (" + (.createdBy.displayName // "?") + ") — " + (.sourceRefName | ltrimstr("refs/heads/"))] | @tsv' \
         | fzf --delimiter '\t' --with-nth 2 \
+          --height=100% \
           --prompt 'pr> ' \
           --preview 'az repos pr show --id {1} --only-show-errors -o yaml' \
+          --preview-window 'down:60%:wrap' \
         | awk -F'\t' '{print $1}'
     ) || return 1
   fi
