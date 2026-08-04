@@ -493,8 +493,7 @@ _wt_pr_gh() {
     number=$(
       gh pr list --limit 50 \
         --json number,title,author,isDraft,headRefName \
-        --template '{{range .}}{{printf "%v" .number}}	{{if .isDraft}}[draft] {{end}}{{.title}} ({{.author.login}}) — {{.headRefName}}
-            {{end}}' 2>/dev/null \
+        --template '{{range .}}{{printf "%v" .number}}	{{if .isDraft}}[draft] {{end}}{{.title}} ({{.author.login}}) — {{.headRefName}}{{"\n"}}{{end}}' 2>/dev/null \
         | fzf --delimiter '\t' --with-nth 2 \
           --height=100% \
           --prompt 'pr> ' \
