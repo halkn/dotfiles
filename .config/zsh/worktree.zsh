@@ -364,14 +364,29 @@ _wt_new() {
     print 'usage: wt new <branch> [base]' >&2
     return 1
   }
-  if [[ -z $base ]]; then
-    base=$(_wt_base_ref 2>/dev/null)
-  fi
+  # `wt new origin/feature` refers to the same branch as `wt new feature`;
+  # keeping the prefix would name the checkout directory origin-feature.
+  branch=${branch#origin/}
 
   if git show-ref --verify --quiet "refs/heads/$branch"; then
     print "wt: branch $branch already exists; opening it" >&2
     _wt_checkout_branch "$branch"
     return
+  fi
+
+  # Only origin has this branch: create the local tracking branch first.
+  # Without this the checkout below would branch off the base ref and silently
+  # drop the remote work. An explicit base means a new branch was asked for.
+  # Remote refs are read as-is - fetch beforehand to see branches added since.
+  if [[ -z $base ]] && git show-ref --verify --quiet "refs/remotes/origin/$branch"; then
+    git branch --track "$branch" "origin/$branch" >/dev/null || return 1
+    print "wt: tracking origin/$branch" >&2
+    _wt_checkout_branch "$branch"
+    return
+  fi
+
+  if [[ -z $base ]]; then
+    base=$(_wt_base_ref 2>/dev/null)
   fi
 
   if _wt_use_herdr; then
@@ -401,7 +416,72 @@ _wt_new() {
   return 0
 }
 
+# Which forge hosts `origin`, so `wt pr` can pick between gh and az repos.
+_wt_pr_host() {
+  local url
+  url=$(git remote get-url origin 2>/dev/null) || return 1
+  [[ -n $url ]] || return 1
+  case $url in
+    *dev.azure.com* | *.visualstudio.com*)
+      print -r -- azure
+      ;;
+    *)
+      print -r -- github
+      ;;
+  esac
+}
+
+# Fetch a branch that lives on origin and open it as a worktree.
+_wt_track_and_open() {
+  local branch=$1
+  git fetch origin "$branch" || return 1
+  if ! git show-ref --verify --quiet "refs/heads/$branch"; then
+    git branch --track "$branch" "origin/$branch" || return 1
+  fi
+  _wt_checkout_branch "$branch"
+}
+
+# Head of a PR description for the preview window; the rest is folded into a
+# line count. GitHub stores descriptions with CRLF, which shows up as ^M here.
+_wt_pr_body_head() {
+  awk '
+    { sub(/\r$/, "") }
+    NR <= 20 { print }
+    END { if (NR > 20) printf "\n… %d more lines\n", NR - 20 }
+  '
+}
+
 _wt_pr() {
+  local host
+  host=$(_wt_pr_host) || {
+    print 'wt: no origin remote' >&2
+    return 1
+  }
+  if [[ $host == azure ]]; then
+    _wt_pr_az "${1:-}"
+  else
+    _wt_pr_gh "${1:-}"
+  fi
+}
+
+# Preview body for the PR picker. `gh pr view` also prints labels, assignees,
+# reviewers, projects and the URL, which pushes the description out of view.
+_wt_pr_preview_gh() {
+  local number=$1 info
+  info=$(gh pr view "$number" \
+    --json title,state,isDraft,author,headRefName,baseRefName,body 2>/dev/null) || return 0
+  print -r -- "$info" | "$(_wt_jq_bin)" -r '
+    [
+      .title, "",
+      "state   " + (if .isDraft then "DRAFT" else .state end),
+      "author  " + (.author.login // "?"),
+      "branch  " + .headRefName + " -> " + .baseRefName,
+      ""
+    ] | .[]'
+  print -r -- "$info" | "$(_wt_jq_bin)" -r '.body // ""' | _wt_pr_body_head
+}
+
+_wt_pr_gh() {
   local number=$1 info head cross
   command -v gh >/dev/null 2>&1 || {
     print 'wt: gh is not installed' >&2
@@ -416,8 +496,10 @@ _wt_pr() {
         --template '{{range .}}{{printf "%v" .number}}	{{if .isDraft}}[draft] {{end}}{{.title}} ({{.author.login}}) — {{.headRefName}}
             {{end}}' 2>/dev/null \
         | fzf --delimiter '\t' --with-nth 2 \
+          --height=100% \
           --prompt 'pr> ' \
-          --preview 'gh pr view {1}' \
+          --preview "source ${_WT_LIB}; _wt_pr_preview_gh {1}" \
+          --preview-window 'down:60%:wrap' \
         | awk -F'\t' '{print $1}'
     ) || return 1
   fi
@@ -436,11 +518,74 @@ _wt_pr() {
     return 0
   fi
 
-  git fetch origin "$head" || return 1
-  if ! git show-ref --verify --quiet "refs/heads/$head"; then
-    git branch --track "$head" "origin/$head" || return 1
+  _wt_track_and_open "$head"
+}
+
+# Same four fields as the gh preview. Azure's own `active` / `completed` /
+# `abandoned` are mapped onto gh's vocabulary so both forges read alike.
+_wt_pr_preview_az() {
+  local number=$1 info
+  info=$(az repos pr show --id "$number" --only-show-errors -o json 2>/dev/null) || return 0
+  print -r -- "$info" | "$(_wt_jq_bin)" -r '
+    [
+      .title, "",
+      "state   " + (
+        if .isDraft then "DRAFT"
+        elif .status == "active" then "OPEN"
+        elif .status == "completed" then "MERGED"
+        elif .status == "abandoned" then "CLOSED"
+        else (.status // "?") end
+      ),
+      "author  " + (.createdBy.displayName // "?"),
+      "branch  " + (.sourceRefName | ltrimstr("refs/heads/")) + " -> " + (.targetRefName | ltrimstr("refs/heads/")),
+      ""
+    ] | .[]'
+  print -r -- "$info" | "$(_wt_jq_bin)" -r '.description // ""' | _wt_pr_body_head
+}
+
+# Azure Repos equivalent. `az repos` picks up organization / project /
+# repository from the origin remote, so no ids have to be passed here.
+_wt_pr_az() {
+  local number=$1 prs info head fork
+  command -v az >/dev/null 2>&1 || {
+    print 'wt: az is not installed' >&2
+    return 1
+  }
+
+  if [[ -z $number ]]; then
+    _wt_fzf_available || return 1
+    # Not silenced: az reports sign-in and detection failures on stderr, and
+    # they are the usual reason for an empty list.
+    prs=$(az repos pr list --status active --top 50 --only-show-errors -o json) || return 1
+    number=$(
+      print -r -- "$prs" \
+        | "$(_wt_jq_bin)" -r '.[] | [(.pullRequestId | tostring), (if .isDraft then "[draft] " else "" end) + .title + " (" + (.createdBy.displayName // "?") + ") — " + (.sourceRefName | ltrimstr("refs/heads/"))] | @tsv' \
+        | fzf --delimiter '\t' --with-nth 2 \
+          --height=100% \
+          --prompt 'pr> ' \
+          --preview "source ${_WT_LIB}; _wt_pr_preview_az {1}" \
+          --preview-window 'down:60%:wrap' \
+        | awk -F'\t' '{print $1}'
+    ) || return 1
   fi
-  _wt_checkout_branch "$head"
+  [[ -n $number ]] || return 1
+
+  info=$(az repos pr show --id "$number" --only-show-errors -o json) || return 1
+  head=$(print -r -- "$info" | "$(_wt_jq_bin)" -r '.sourceRefName // "" | ltrimstr("refs/heads/")')
+  fork=$(print -r -- "$info" | "$(_wt_jq_bin)" -r 'if .forkSource then "true" else "false" end')
+
+  if [[ $fork == true ]]; then
+    # Azure Repos only publishes refs/pull/<id>/merge on the target repository,
+    # so a fork head cannot be fetched from origin the way it can on GitHub.
+    print "wt: PR $number comes from a fork; add that repository as a remote and use 'wt new'" >&2
+    return 1
+  fi
+  [[ -n $head ]] || {
+    print "wt: could not read the source branch of PR $number" >&2
+    return 1
+  }
+
+  _wt_track_and_open "$head"
 }
 
 # Interactive removal. $1 = "clean" restricts the list to reclaimable worktrees
@@ -502,8 +647,11 @@ _wt_rm() {
 }
 
 # wt              : pick a worktree and open it (herdr workspace, or cd)
-# wt new <branch> [base] : create a branch + worktree and open it
-# wt pr [<number>]       : pick a pull request and open its head as a worktree
+# wt new <branch> [base] : create a branch + worktree and open it. Without a
+#                          base, an existing origin/<branch> is tracked instead
+#                          of branching off the default integration branch.
+# wt pr [<number>]       : pick a pull request and open its head as a worktree.
+#                          Uses gh, or az repos when origin is on Azure DevOps.
 # wt rm                  : pick worktrees to remove
 # wt clean               : remove merged / upstream-gone worktrees
 wt() {

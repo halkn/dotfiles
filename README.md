@@ -113,6 +113,13 @@ wt rm                  # pick worktrees to remove
 wt clean               # remove merged / upstream-gone worktrees
 ```
 
+`wt new` without a base tracks an existing `origin/<branch>` instead of
+branching off the default integration branch, so a branch that only exists on
+the remote is picked up rather than silently recreated (remote refs are read as
+they are; `git fetch` first to see branches added since). `wt pr` uses `gh`, or
+`az repos pr` when origin is on Azure DevOps; Azure fork heads are not fetchable
+from origin, so those are reported instead of checked out.
+
 Checkouts are placed under `[worktrees] directory` in
 `.config/herdr/config.toml` (`~/.local/share/herdr/worktrees`, i.e.
 `$XDG_DATA_HOME`), so they stay out of the ghq tree that `repo` browses.
