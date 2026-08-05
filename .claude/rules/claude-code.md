@@ -35,4 +35,5 @@ paths:
 
 - `autoMode`（および `permissions.defaultMode: "auto"`）は user settings（`~/.claude/settings.json`）・managed settings・`--settings` フラグからのみ読まれる仕様で、`.claude/settings.json` / `.claude/settings.local.json` からは読まれない（v2.1.207 以降。repo や build step が自分に auto モードや trusted infrastructure を付与できないようにするため）
 - `autoMode.classifyAllShell: true` により、auto モード中は `permissions.allow` の Bash ルール（`Bash(git *)` 等）が全て停止し、全シェルコマンドが classifier 経由になる。allow リストは `acceptEdits` 等の他モードへ切り替えたときの fallback として残している
-- main/master への直接 push は auto モードの既定では許可される（v2.1.211 以降、作業中リポジトリへの push は原則無確認）。このリポジトリでは `claude/hooks/block-main-push.sh` が refspec を解釈して `ask` する形で担保する（`permissions.ask` の `Bash(git push*)` パターンは他モード用の fallback として併存）。`autoMode` 側には重複ルールを置いていない
+- `classifyAllShell` が停止するのは allow ルールだけで、`permissions.ask` は auto モードでも classifier より前に評価され必ずプロンプトを出す。docs も push / PR に人間のチェックポイントを置く推奨手段として `permissions.ask` を挙げている。よって `permissions.ask` は他モード用の fallback ではなく auto モードでの一次ガード
+- main/master への直接 push は auto モードの既定では許可される（v2.1.211 以降、作業中リポジトリへの push は原則無確認）。このリポジトリでは 2 層で担保する: `permissions.ask` の `Bash(git push * main*)` 等が素直な形を捕捉し、`git push origin HEAD:main` のように `main` の前に空白が無く pattern がマッチしない refspec 形式は `claude/hooks/block-main-push.sh` が解釈して `ask` する。`autoMode` 側には重複ルールを置いていない
