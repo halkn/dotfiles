@@ -266,7 +266,17 @@
       ]
     },
     "excludedCommands": [
-      "git *",
+      "git push",
+      "git push *",
+      "git fetch",
+      "git fetch *",
+      "git pull",
+      "git pull *",
+      "git clone *",
+      "git ls-remote *",
+      "git remote update*",
+      "git remote prune*",
+      "git submodule *",
       "gh *"
     ]
   },
