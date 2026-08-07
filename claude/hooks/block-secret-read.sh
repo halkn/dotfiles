@@ -37,7 +37,7 @@ deny() {
 }
 
 deny_path() {
-	deny "Azure/Snowflake/GitHub の認証情報（~/.azure・~/.snowflake・~/.snowsql・~/.config/gh）への参照は禁止です。認証は az / snowflake / gh CLI 経由で行ってください。"
+	deny "Azure/Snowflake/GitHub の認証情報（~/.azure・~/.snowflake・~/.snowsql・~/.config/gh・~/.config/snowflake）への参照は禁止です。認証は az / snowflake / gh CLI 経由で行ってください。"
 }
 
 # 機微 env（$AZURE_FOO / ${SNOWFLAKE_BAR} / $GH_TOKEN 等）の展開。
@@ -60,7 +60,7 @@ normalized="$(printf '%s' "$normalized" | sed -E 's#(^|[[:space:]<>|;&=(])\./#\1
 
 # 認証情報ストアへのパス参照。直前が英数字・アンダースコアの場合は除外する
 # （`management.azure.com` のようなホスト名を巻き込まないため）。
-if printf '%s' "$normalized" | grep -Eq '(^|[^[:alnum:]_])(\.(azure|snowflake|snowsql)|\.config/gh)(/|[[:space:];|&<>)]|$)'; then
+if printf '%s' "$normalized" | grep -Eq '(^|[^[:alnum:]_])(\.(azure|snowflake|snowsql)|\.config/(gh|snowflake))(/|[[:space:];|&<>)]|$)'; then
 	deny_path
 fi
 

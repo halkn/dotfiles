@@ -200,8 +200,7 @@
         "~/.gnupg"
       ],
       "denyRead": [
-        "~/",
-        "~/.config/gh"
+        "~/"
       ],
       "allowRead": [
         ".",
