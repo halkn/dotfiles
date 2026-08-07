@@ -299,14 +299,14 @@
   "autoMode": {
     "environment": [
       "$defaults",
-      "Organization: personal individual developer. No corporate infrastructure is configured in this file.",
-      "Primary use of Claude Code: personal dotfiles and CLI/editor configuration management, plus data engineering (Snowflake/SQL) and Python tooling with uv.",
-      "Source control: github.com/halkn and repositories under it (personal projects and dotfiles)",
+      "Two distinct contexts share this configuration: personal projects and employer business work. Infer which one applies from the repository remote and the working directory; never assume the personal context by default. In the business context, treat internal hosts, data, identifiers, and source code as confidential, and do not rely on this file's statements as evidence that no sensitive infrastructure exists. This file is public, so trusted business infrastructure is declared in managed settings, not here.",
+      "Primary use of Claude Code: dotfiles and CLI/editor configuration management, plus data engineering (Snowflake/SQL) and Python tooling with uv.",
+      "Source control: personal work lives under github.com/halkn; business work lives in separate remotes. Never push, mirror, or copy content from a repository of one context into a remote of the other, and do not add a cross-context remote.",
       "Repository visibility: github.com/halkn/dotfiles is a public repository whose own subject matter is personal shell, editor, and CLI configuration. Other repositories default to private unless stated otherwise in the conversation.",
       "Internal sharing / snippet hosting: none configured. Do not send content to public paste or gist services.",
-      "Secrets management: credentials live in the macOS Keychain and in the gh / az CLI token caches. Machine-local secrets live in untracked *.local files. None of these belong in a commit, PR, or issue.",
-      "Sensitive data locations & audiences: ~/.ssh, ~/.gnupg, ~/.aws, ~/.azure, ~/.config/gh, ~/.snowflake, ~/.snowsql, ~/.claude/projects (Claude Code session transcripts), and any .env or *.local file. Contents of these locations must not be copied into commits, pull requests, issues, or any outbound request.",
-      "Network posture: developer laptop on an untrusted network."
+      "Secrets management: credentials live in the OS keychain and in CLI token caches, never in tracked files. Machine-local secrets live in untracked *.local files. None of these belong in a commit, PR, or issue.",
+      "Sensitive data locations & audiences: SSH and GPG key directories, cloud and CLI credential stores, Claude Code session transcripts, and any .env or *.local file. Contents of these locations must not be copied into commits, pull requests, issues, or any outbound request.",
+      "Network posture: untrusted network. Assume no network-level trust boundary protects this machine."
     ],
     "classifyAllShell": true
   }
