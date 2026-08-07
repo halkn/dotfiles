@@ -89,13 +89,9 @@
       "Bash(chown -R*)",
       "Bash(crontab*)",
       "Bash(sudo*)",
-      "Bash(curl*)",
-      "Bash(wget*)",
       "Bash(nc *)",
       "Bash(ssh*)",
       "Bash(scp*)",
-      "Bash(python*)",
-      "Bash(pip*)",
       "Bash(git checkout*)",
       "Bash(git reflog expire*)",
       "Bash(git gc --prune*)",
@@ -106,21 +102,7 @@
       "Bash(git push * --force*)",
       "Bash(git push * -f*)",
       "Bash(git config *alias.*)",
-      "Bash(git log --output*)",
-      "Bash(git diff --output*)",
-      "Bash(uv pip*)",
-      "Bash(uvx*)",
-      "Bash(uv tool run*)",
-      "Bash(uv tool uninstall*)",
-      "Bash(uv python uninstall*)",
-      "Bash(uv cache clean*)",
-      "Bash(uv cache prune*)",
-      "Bash(uv self update*)",
-      "Bash(uv add*)",
-      "Bash(uv sync*)",
       "Bash(uv publish*)",
-      "Bash(uv remove*)",
-      "Bash(mise run update)",
       "Bash(az devops invoke *--http-method post*)",
       "Bash(az devops invoke *--http-method POST*)",
       "Bash(az devops invoke *--http-method patch*)",
@@ -142,7 +124,17 @@
       "Bash(git branch -D*)",
       "Bash(git worktree remove*)",
       "Bash(git stash drop*)",
-      "Bash(uv version*)"
+      "Bash(uv version*)",
+      "Bash(uv self update*)",
+      "Bash(uv tool uninstall*)",
+      "Bash(uv python uninstall*)",
+      "Bash(uv cache clean*)",
+      "Bash(uv cache prune*)",
+      "Bash(mise run update)",
+      "Bash(mise run setup)",
+      "Bash(mise run sync)",
+      "Bash(mise bootstrap)",
+      "Bash(mise bootstrap --force*)"
     ],
     "defaultMode": "auto",
     "disableBypassPermissionsMode": "disable"
@@ -152,10 +144,6 @@
       {
         "matcher": "Bash",
         "hooks": [
-          {
-            "type": "command",
-            "command": "h=~/.claude/hooks/block-python.sh; [ -x \"$h\" ] || { echo \"PreToolUse hook missing: $h\" >&2; exit 2; }; exec \"$h\""
-          },
           {
             "type": "command",
             "command": "h=~/.claude/hooks/block-secret-read.sh; [ -x \"$h\" ] || { echo \"PreToolUse hook missing: $h\" >&2; exit 2; }; exec \"$h\""
