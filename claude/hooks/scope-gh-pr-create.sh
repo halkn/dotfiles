@@ -67,7 +67,7 @@ while IFS= read -r seg; do
 	while [ "$#" -gt 0 ]; do
 		case "$1" in
 		*=*) shift ;;
-		sudo | env | nohup | time | exec | command | builtin | watch | xargs | stdbuf | nice | ionice) shift ;;
+		sudo | doas | env | nohup | time | exec | command | builtin | watch | xargs | stdbuf | nice | ionice | setsid) shift ;;
 		*) break ;;
 		esac
 	done
