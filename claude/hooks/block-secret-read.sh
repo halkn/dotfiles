@@ -1,17 +1,26 @@
 #!/usr/bin/env bash
-# PreToolUse(Bash) hook: Azure / Snowflake / GitHub(gh) の認証情報の読み取り・漏洩を拒否する。
+# PreToolUse(Bash) hook: Azure / Snowflake / GitHub(gh) の認証情報への参照を拒否する。
 #
 # sandbox の allowRead は `az`/`gh` 本体の token cache 読取を許すために `~/.azure`・
-# `~/.config/gh` を開けており、プロセスを区別しないため `cat ~/.azure/...` や
-# `cat ~/.config/gh/hosts.yml` も素通りしてしまう。
-# `az`/`gh` 等の正規コマンドは通しつつ、認証情報そのものの読取/展開だけを止める。
+# `~/.config`（`~/.config/gh` を含む）を開けており、プロセスを区別しない。
+# `denyRead` は allowRead の内側では実効しない（`.claude/rules/claude-code.md` に実測記録）
+# ため、この 2 箇所だけ sandbox の denyRead: ~/ に穴が開いたままになる。そこを塞ぐ。
 #
-# 二段で検査する:
-#   A. 読取系コマンド（cat 等）が機微パス（.azure / .snowflake / .snowsql /
-#      .config/gh）を引数に取るセグメントを拒否する。`echo $(cat ~/.azure/x)` の
-#      ような コマンド置換も、置換境界を区切りに畳み込むことで cat 側で捕捉する。
-#   B. 機微 env（$AZURE_* / $SNOWFLAKE_* / $SNOWSQL_* / $GH_* / $GITHUB_*）の参照を
-#      含むコマンドを拒否する。echo / printf などでの値の展開（transcript への漏洩）を防ぐ。
+# 判定は「読み取りに使うコマンド」ではなく「参照される資産」で行う。読取コマンドの
+# 集合は開いていて列挙できない（`cat` を塞いでも `tr -d "" < file`・`perl -pe "" file`・
+# `expand file`・`while read` リダイレクトで抜けられる）のに対し、守る対象のパスと
+# 環境変数名は閉じているので、コマンド文字列全体へのマッチで検査する。az / gh /
+# snowflake CLI の正規の呼び出しはこれらのパスを引数に書かないため巻き込まれない。
+#
+# ただし、守る対象が閉じていても「その対象の綴り方」は閉じていない。表記のゆれ
+# （クォート・重複スラッシュ・`/./`・先頭 `./`）は下の正規化で畳むが、パスを分割する形
+# （`cd ~/.config && cat gh/hosts.yml`）や変数経由（`d=~/.azure; cat $d/config`）は
+# 素通りする。これは決定論的なガードの上限で、ここから先は sandbox 側で塞ぐしかない
+# （`allowRead` を `~/.config` から必要なサブディレクトリへ絞って `~/.config/gh` を外す）。
+# この hook は sandbox に残った穴を埋める二次防御であって、単独の境界ではない。
+#
+# 副作用として、これらのパスを文字列として扱うだけのコマンド（例:
+# `rg '~/.azure/' README.md`）も拒否される。誤検知時はパスを直書きしない形に書き換える。
 set -euo pipefail
 
 if command -v jaq >/dev/null 2>&1; then
@@ -27,46 +36,32 @@ deny() {
 	exit 2
 }
 
-# B: 機微 env の参照（$AZURE_FOO / ${SNOWFLAKE_BAR} / $GH_TOKEN 等）を含むなら拒否する。
+deny_path() {
+	deny "Azure/Snowflake/GitHub の認証情報（~/.azure・~/.snowflake・~/.snowsql・~/.config/gh・~/.config/snowflake）への参照は禁止です。認証は az / snowflake / gh CLI 経由で行ってください。"
+}
+
+# 機微 env（$AZURE_FOO / ${SNOWFLAKE_BAR} / $GH_TOKEN 等）の展開。
+# sandbox.credentials.envVars の `mode: "deny"` が一次防御だが、excludedCommands
+# （`gh *` 等）は sandbox の外を走るためここでも押さえる。
 if printf '%s' "$command" | grep -Eq '\$\{?(AZURE|SNOWFLAKE|SNOWSQL|GH|GITHUB)_'; then
 	deny "Azure/Snowflake/GitHub の認証系環境変数の展開は禁止です（値が transcript に漏洩するため）。設定値は az / snowflake / gh CLI のサブコマンド経由で扱ってください。"
 fi
 
-# コマンド置換とサブシェルを開く記号を改行に変換してから、
-# パイプ・順次・論理演算子などの区切りを改行へ畳み込みセグメント化する。
-segments="$(printf '%s' "$command" | sed -E 's/\$\(/\n/g; s/`/\n/g' | tr '|;&()' '\n\n\n\n\n')"
+# 同じパスを指す表記のゆれを畳んでから照合する。クォート（`"$HOME"/.azure`・
+# `~/".azure"`）・重複スラッシュ（`~//.azure`）・`/./`・先頭の `./` はいずれも
+# シェルにとって等価だが、素の文字列照合では別物になる。
+normalized="$(printf '%s' "$command" | tr -d "\"'" | sed -E 's#/{2,}#/#g')"
+# `/././` のような重なりがあるため収束するまで畳む。BSD sed はワンライナーの
+# ラベル分岐（`:a; ...; ta`）を解さないので、ループはシェル側に置く。
+while printf '%s' "$normalized" | grep -q '/\./'; do
+	normalized="$(printf '%s' "$normalized" | sed -E 's#/\./#/#g')"
+done
+normalized="$(printf '%s' "$normalized" | sed -E 's#(^|[[:space:]<>|;&=(])\./#\1#g')"
 
-is_reader() {
-	# 与えられたプログラム名（basename 済み・小文字化済み）が中身を吐く読取系か。
-	case "$1" in
-	cat | tac | nl | less | more | head | tail | xxd | od | hexdump | strings | base64 | cut | grep | egrep | fgrep | rg | sed | awk | sort | uniq | jq | jaq | yq | dd) return 0 ;;
-	*) return 1 ;;
-	esac
-}
-
-set -f # セグメント分割時のグロブ展開を無効化する
-while IFS= read -r seg; do
-	# shellcheck disable=SC2086
-	set -- $seg
-	# 先頭の環境変数代入とラッパーコマンドを読み飛ばし、実行対象まで進める。
-	while [ "$#" -gt 0 ]; do
-		case "$1" in
-		*=*) shift ;;
-		sudo | env | nohup | time | exec | command | builtin | watch | xargs | stdbuf | nice | ionice) shift ;;
-		*) break ;;
-		esac
-	done
-	prog="${1:-}"
-	base="${prog##*/}"
-	base="$(printf '%s' "$base" | tr '[:upper:]' '[:lower:]')"
-	if is_reader "$base"; then
-		# A: 読取系セグメントが機微パスを引数に含むなら拒否する。
-		if printf '%s' "$seg" | grep -Eq '(\.(azure|snowflake|snowsql)|\.config/gh)(/|\b)'; then
-			deny "Azure/Snowflake/GitHub の認証情報（~/.azure・~/.snowflake・~/.snowsql・~/.config/gh）の読み取りは禁止です。認証は az / snowflake / gh CLI 経由で行ってください。"
-		fi
-	fi
-done <<EOF
-$segments
-EOF
+# 認証情報ストアへのパス参照。直前が英数字・アンダースコアの場合は除外する
+# （`management.azure.com` のようなホスト名を巻き込まないため）。
+if printf '%s' "$normalized" | grep -Eq '(^|[^[:alnum:]_])(\.(azure|snowflake|snowsql)|\.config/(gh|snowflake))(/|[[:space:];|&<>)]|$)'; then
+	deny_path
+fi
 
 exit 0
