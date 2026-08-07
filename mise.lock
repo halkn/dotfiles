@@ -112,7 +112,7 @@ url = "https://github.com/EmmyLuaLs/emmylua-analyzer-rust/releases/download/0.24
 url_api = "https://api.github.com/repos/EmmyLuaLs/emmylua-analyzer-rust/releases/assets/472470124"
 
 [[tools."pipx:shuck-cli"]]
-version = "0.0.45"
+version = "0.1.1"
 backend = "pipx:shuck-cli"
 
 [[tools.stylua]]
