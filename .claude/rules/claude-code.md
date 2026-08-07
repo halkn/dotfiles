@@ -12,6 +12,8 @@ paths:
 
 ## 採用しない設定（実測済み）
 
+- **任意コード実行を「インタプリタ名の列挙」で止めない**: 旧 `claude/hooks/block-python.sh` は `python` を拒否していたが、`perl -e` / `ruby -e` / `node -e` / `awk 'BEGIN{...}'` / `bash -c`、さらに `echo ... > x.py && uv run x.py` が全て素通りしていた（2026-08 実測）。道具の集合は開いていて列挙できない。Bash tool を与える以上、任意コード実行は前提であり、境界は sandbox（`filesystem` の allow/deny・`network.strictAllowlist`・`allowUnsandboxedCommands: false`）と auto モードの classifier が持つ。「python より jaq / ryl を使う」といった道具の選好は防御ではなくスタイルなので `claude/CLAUDE.md` 側に置く
+- **hook は「道具」ではなく「資産」で判定する**: 同じ理由で、読取コマンドの列挙（`cat`/`head`/`rg`…）も無意味だった（`tr -d "" < f`・`perl -pe "" f`・`expand f`・`while read` リダイレクトで回避可能）。守る対象（認証情報のパス・環境変数名・push 先ブランチ・PR 先 owner）は閉じた集合なので、そちらを列挙してコマンド文字列全体にマッチさせる。現行 hook は全てこの形
 - `env.CLAUDE_CODE_SUBPROCESS_ENV_SCRUB` は**設定しない**: Anthropic・クラウドプロバイダ系の認証情報を全サブプロセスから strip する機能だが、この環境では有効化すると Bash tool が広範に機能不全を起こし、`permissions.defaultMode: "auto"` も正しく反映されなかった（2026-07 実機確認・v2.1.220）。再度有効化を検討する場合は、まず狭いスコープで再現するか確認すること
 - `sandbox.credentials.files` / `filesystem.denyRead` による `~/.config/gh` の deny は**採用しない**: read 側は `allowRead` が denied region 内を再許可する仕様のため、`allowRead: ~/.config` の内側では deny が実効しない（v2.1.207 で実測確認済み）。gh token の読取防止は `claude/hooks/block-secret-read.sh` が担う
 - PreToolUse hook に `if` フィルタ（permission rule 構文）を使わない: prefix マッチのため `git push && gh pr create ...` のような複合コマンドで hook 自体がスキップされ、スクリプト側のセグメント解析による防御が無効化される
@@ -37,7 +39,13 @@ paths:
 - `autoMode`（および `permissions.defaultMode: "auto"`）は user settings（`~/.claude/settings.json`）・managed settings・`--settings` フラグからのみ読まれる仕様で、`.claude/settings.json` / `.claude/settings.local.json` からは読まれない（`permissions.defaultMode` は v2.1.207、`autoMode` ブロックは v2.1.219 以降。repo や build step が自分に auto モードや trusted infrastructure を付与できないようにするため）
 - `autoMode.classifyAllShell: true` により、auto モード中は `permissions.allow` の Bash ルール（`Bash(git *)` 等）が全て停止し、全シェルコマンドが classifier 経由になる。allow リストは `acceptEdits` 等の他モードへ切り替えたときの fallback として残している
 - `permissions.allow` は auto モードでは死んでいるので、判断基準は「他モードへフォールバックしたときに無確認で通っても安全か」だけ。サブコマンドを明示した read-only 形にとどめ、`Bash(git *)` のような動詞を跨ぐワイルドカードは置かない（`git -c core.pager=<cmd> log` や `gh alias set --shell` のように、`*` が空白を跨いで書き込み・任意実行サブコマンドを取り込む）
-- 破壊的だが正当な用途もある操作（`git reset --hard` / `git clean -f` / `git worktree remove` 等）は deny ではなく `permissions.ask` に置く。deny は代替手段を塞ぐだけだが、ask なら auto モード中も classifier より前に確認が入る
+- 破壊的だが正当な用途もある操作（`git reset --hard` / `git clean -f` / `git worktree remove` / `uv self update` / `mise run update` 等）は deny ではなく `permissions.ask` に置く。deny は代替手段を塞ぐだけだが、ask なら auto モード中も classifier より前に確認が入る
+- `permissions.deny` に残すのは「取り返しがつかない」かつ「正当な用途がほぼ無い」ものだけ。次は deny から落とした（2026-08）:
+  - `Bash(python*)` / `Bash(pip*)`: 上記のとおり回避可能で、正当な Python 作業だけを塞いでいた
+  - `Bash(curl*)` / `Bash(wget*)`: 送信先は `sandbox.network.strictAllowlist` が決定論的に制御しており、deny は許可済みドメインへの正当な取得まで塞ぐだけ。非 HTTP の生ソケット（`nc` / `ssh` / `scp`）は allowlist proxy の対象外になりうるので deny のまま残す
+  - `Bash(uv add|sync|remove|pip*)` / `Bash(uvx*)` / `Bash(uv tool run*)`: lockfile・依存の変更は git で戻せる。任意コード実行の列挙としても意味を持たない
+  - `Bash(git log|diff --output*)`: 書込先は sandbox の write allowlist が制御する
+- 環境そのものを変える更新系（`mise run update|setup|sync`・`mise bootstrap` / `--force*`）は git で戻せないので ask に置く。`mise bootstrap --dry-run` は差分表示のみなので対象外
 - deny のパターンはオプションの等号形も併記する。`--http-method post` だけを書くと `--http-method=POST` がすり抜ける
 - `classifyAllShell` が停止するのは allow ルールだけで、`permissions.ask` は auto モードでも classifier より前に評価され必ずプロンプトを出す。docs も push / PR に人間のチェックポイントを置く推奨手段として `permissions.ask` を挙げている。よって `permissions.ask` は他モード用の fallback ではなく auto モードでの一次ガード
 - main/master への直接 push は auto モードの既定では許可される（v2.1.211 以降、作業中リポジトリへの push は原則無確認）。このリポジトリでは 2 層で担保する: `permissions.ask` の `Bash(git push * main*)` 等が素直な形を捕捉し、`git push origin HEAD:main` のように `main` の前に空白が無く pattern がマッチしない refspec 形式は `claude/hooks/block-main-push.sh` が解釈して `ask` する。`autoMode` 側には重複ルールを置いていない
