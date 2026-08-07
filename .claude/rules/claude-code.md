@@ -42,10 +42,10 @@ paths:
 - 破壊的だが正当な用途もある操作（`git reset --hard` / `git clean -f` / `git worktree remove` / `uv self update` / `mise run update` 等）は deny ではなく `permissions.ask` に置く。deny は代替手段を塞ぐだけだが、ask なら auto モード中も classifier より前に確認が入る
 - `permissions.deny` に残すのは「取り返しがつかない」かつ「正当な用途がほぼ無い」ものだけ。次は deny から落とした（2026-08）:
   - `Bash(python*)` / `Bash(pip*)`: 上記のとおり回避可能で、正当な Python 作業だけを塞いでいた
-  - `Bash(curl*)` / `Bash(wget*)`: 送信先は `sandbox.network.strictAllowlist` が決定論的に制御しており、deny は許可済みドメインへの正当な取得まで塞ぐだけ。非 HTTP の生ソケット（`nc` / `ssh` / `scp`）は allowlist proxy の対象外になりうるので deny のまま残す
+  - `Bash(curl*)` / `Bash(wget*)`: deny は許可済みドメインへの正当な取得まで塞ぐだけで、`curl | sh` 相当は他の手段でいくらでも書ける。ただし `strictAllowlist` が制御するのは**送信先だけ**で、中身は制御しない。allowlist 内にも remote code path（`codeload.github.com` からの取得と実行）と exfiltration path（`api.github.com` の gist）が残るので、ここの残余リスクを負っているのは network allowlist ではなく auto モードの classifier だと理解しておく。非 HTTP の生ソケット（`nc` / `ssh` / `scp`）は allowlist proxy の対象外になりうるので deny のまま残す
   - `Bash(uv add|sync|remove|pip*)` / `Bash(uvx*)` / `Bash(uv tool run*)`: lockfile・依存の変更は git で戻せる。任意コード実行の列挙としても意味を持たない
   - `Bash(git log|diff --output*)`: 書込先は sandbox の write allowlist が制御する
-- 環境そのものを変える更新系（`mise run update|setup|sync`・`mise bootstrap` / `--force*`）は git で戻せないので ask に置く。`mise bootstrap --dry-run` は差分表示のみなので対象外
+- 環境そのものを変える更新系（`mise run update|setup|sync`・`mise bootstrap*`）は git で戻せないので ask に置く。`mise bootstrap` は `--yes --update` / `packages upgrade` / `repos update --yes` と形が一定しないため、`*` 無しの完全一致パターンでは実際の呼び出しを 1 つも捕捉できない。読み取り専用の `--dry-run` / `status` まで ask になるが、prefix パターンでは除外を表現できないので安全側に倒す
 - deny のパターンはオプションの等号形も併記する。`--http-method post` だけを書くと `--http-method=POST` がすり抜ける
 - `classifyAllShell` が停止するのは allow ルールだけで、`permissions.ask` は auto モードでも classifier より前に評価され必ずプロンプトを出す。docs も push / PR に人間のチェックポイントを置く推奨手段として `permissions.ask` を挙げている。よって `permissions.ask` は他モード用の fallback ではなく auto モードでの一次ガード
 - main/master への直接 push は auto モードの既定では許可される（v2.1.211 以降、作業中リポジトリへの push は原則無確認）。このリポジトリでは 2 層で担保する: `permissions.ask` の `Bash(git push * main*)` 等が素直な形を捕捉し、`git push origin HEAD:main` のように `main` の前に空白が無く pattern がマッチしない refspec 形式は `claude/hooks/block-main-push.sh` が解釈して `ask` する。`autoMode` 側には重複ルールを置いていない

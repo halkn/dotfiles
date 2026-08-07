@@ -9,7 +9,7 @@
 # リモートから対象 owner を解決し、"halkn" 以外なら ask する。
 #
 # `cd X && gh pr create` のようにセグメント間で作業ディレクトリが変わる
-# ケースは追跡しない（block-python.sh 等と同じ既知の簡略化）。origin 以外の
+# ケースは追跡しない（block-main-push.sh と同じ既知の簡略化）。origin 以外の
 # remote 名を使っている場合や gh 自体の repo 解決ロジック（upstream tracking
 # 等）との完全な一致も保証しない — 判定が付かない場合は安全側に倒して ask する。
 set -euo pipefail

@@ -8,9 +8,16 @@
 #
 # 判定は「読み取りに使うコマンド」ではなく「参照される資産」で行う。読取コマンドの
 # 集合は開いていて列挙できない（`cat` を塞いでも `tr -d "" < file`・`perl -pe "" file`・
-# `expand file`・`while read` リダイレクトで抜けられる）が、守る対象のパスと環境変数名は
-# 閉じた集合なので、コマンド文字列全体へのマッチで検査する。az / gh / snowflake CLI の
-# 正規の呼び出しはこれらのパスを引数に書かないため巻き込まれない。
+# `expand file`・`while read` リダイレクトで抜けられる）のに対し、守る対象のパスと
+# 環境変数名は閉じているので、コマンド文字列全体へのマッチで検査する。az / gh /
+# snowflake CLI の正規の呼び出しはこれらのパスを引数に書かないため巻き込まれない。
+#
+# ただし、守る対象が閉じていても「その対象の綴り方」は閉じていない。表記のゆれ
+# （クォート・重複スラッシュ・`/./`・先頭 `./`）は下の正規化で畳むが、パスを分割する形
+# （`cd ~/.config && cat gh/hosts.yml`）や変数経由（`d=~/.azure; cat $d/config`）は
+# 素通りする。これは決定論的なガードの上限で、ここから先は sandbox 側で塞ぐしかない
+# （`allowRead` を `~/.config` から必要なサブディレクトリへ絞って `~/.config/gh` を外す）。
+# この hook は sandbox に残った穴を埋める二次防御であって、単独の境界ではない。
 #
 # 副作用として、これらのパスを文字列として扱うだけのコマンド（例:
 # `rg '~/.azure/' README.md`）も拒否される。誤検知時はパスを直書きしない形に書き換える。
@@ -40,15 +47,20 @@ if printf '%s' "$command" | grep -Eq '\$\{?(AZURE|SNOWFLAKE|SNOWSQL|GH|GITHUB)_'
 	deny "Azure/Snowflake/GitHub の認証系環境変数の展開は禁止です（値が transcript に漏洩するため）。設定値は az / snowflake / gh CLI のサブコマンド経由で扱ってください。"
 fi
 
-store='\.(azure|snowflake|snowsql)|\.config/gh'
+# 同じパスを指す表記のゆれを畳んでから照合する。クォート（`"$HOME"/.azure`・
+# `~/".azure"`）・重複スラッシュ（`~//.azure`）・`/./`・先頭の `./` はいずれも
+# シェルにとって等価だが、素の文字列照合では別物になる。
+normalized="$(printf '%s' "$command" | tr -d "\"'" | sed -E 's#/{2,}#/#g')"
+# `/././` のような重なりがあるため収束するまで畳む。BSD sed はワンライナーの
+# ラベル分岐（`:a; ...; ta`）を解さないので、ループはシェル側に置く。
+while printf '%s' "$normalized" | grep -q '/\./'; do
+	normalized="$(printf '%s' "$normalized" | sed -E 's#/\./#/#g')"
+done
+normalized="$(printf '%s' "$normalized" | sed -E 's#(^|[[:space:]<>|;&=(])\./#\1#g')"
 
-# home 起点の形: ~/.azure/... / $HOME/.azure / /Users/<user>/.config/gh
-if printf '%s' "$command" | grep -Eq "(~|\\\$\{?HOME\}?|/Users/[^/[:space:]]+)/(${store})([/[:space:]\"']|$)"; then
-	deny_path
-fi
-
-# `cd ~` 後を想定した相対形: .azure/... / .config/gh/...
-if printf '%s' "$command" | grep -Eq "(^|[[:space:]<>|;&\"'=(])(${store})/"; then
+# 認証情報ストアへのパス参照。直前が英数字・アンダースコアの場合は除外する
+# （`management.azure.com` のようなホスト名を巻き込まないため）。
+if printf '%s' "$normalized" | grep -Eq '(^|[^[:alnum:]_])(\.(azure|snowflake|snowsql)|\.config/gh)(/|[[:space:];|&<>)]|$)'; then
 	deny_path
 fi
 

@@ -133,8 +133,7 @@
       "Bash(mise run update)",
       "Bash(mise run setup)",
       "Bash(mise run sync)",
-      "Bash(mise bootstrap)",
-      "Bash(mise bootstrap --force*)"
+      "Bash(mise bootstrap*)"
     ],
     "defaultMode": "auto",
     "disableBypassPermissionsMode": "disable"

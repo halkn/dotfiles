@@ -12,10 +12,10 @@
 #
 # macOS 標準の /bin/bash は 3.2 系のため、空配列 + `set -u` の組み合わせで
 # unbound variable になる既知の不具合がある。配列は使わず単一変数と
-# 逐次処理で組み立てる（block-python.sh / block-secret-read.sh と同じ方針）。
+# 逐次処理で組み立てる（scope-gh-pr-create.sh と同じ方針）。
 #
 # `cd X && git push` のようにセグメント間で作業ディレクトリが変わるケースは
-# 追跡しない（block-python.sh / block-secret-read.sh と同じ既知の簡略化）。
+# 追跡しない（scope-gh-pr-create.sh と同じ既知の簡略化）。
 set -euo pipefail
 
 if command -v jaq >/dev/null 2>&1; then
