@@ -18,11 +18,25 @@
   },
   "permissions": {
     "allow": [
-      "Bash(git *)",
-      "Bash(gh * list *)",
-      "Bash(gh * view *)",
-      "Bash(gh * status *)",
-      "Bash(gh * checks *)",
+      "Bash(git status*)",
+      "Bash(git log*)",
+      "Bash(git diff*)",
+      "Bash(git show*)",
+      "Bash(git branch)",
+      "Bash(git branch -v*)",
+      "Bash(git rev-parse*)",
+      "Bash(git ls-files*)",
+      "Bash(git worktree list*)",
+      "Bash(git stash list*)",
+      "Bash(gh pr list*)",
+      "Bash(gh pr view*)",
+      "Bash(gh pr checks*)",
+      "Bash(gh pr status*)",
+      "Bash(gh issue list*)",
+      "Bash(gh issue view*)",
+      "Bash(gh run list*)",
+      "Bash(gh run view*)",
+      "Bash(gh repo view*)",
       "Bash(gh search *)",
       "Bash(uv run pytest *)",
       "Bash(uv run ruff *)",
@@ -36,14 +50,6 @@
       "Bash(jaq *)",
       "Bash(jq *)",
       "Bash(ghq list *)",
-      "Bash(which *)",
-      "Bash(echo)",
-      "Bash(echo *)",
-      "Bash(ls)",
-      "Bash(ls *)",
-      "Bash(wc *)",
-      "Bash(pwd)",
-      "Bash(cd *)",
       "Bash(az repos list *)",
       "Bash(az repos show *)",
       "Bash(az repos pr list *)",
@@ -57,8 +63,6 @@
       "Bash(az devops project list *)",
       "Bash(az devops project show *)",
       "Bash(az devops configure --list*)",
-      "Bash(az devops invoke *)",
-      "Bash(gh pr create*)",
       "WebFetch(domain:learn.microsoft.com)",
       "WebFetch(domain:docs.microsoft.com)",
       "WebFetch(domain:azure.microsoft.com)",
@@ -102,6 +106,8 @@
       "Bash(git push * --force*)",
       "Bash(git push * -f*)",
       "Bash(git config *alias.*)",
+      "Bash(git log --output*)",
+      "Bash(git diff --output*)",
       "Bash(uv pip*)",
       "Bash(uvx*)",
       "Bash(uv tool run*)",
@@ -122,7 +128,8 @@
       "Bash(az devops invoke *--http-method put*)",
       "Bash(az devops invoke *--http-method PUT*)",
       "Bash(az devops invoke *--http-method delete*)",
-      "Bash(az devops invoke *--http-method DELETE*)"
+      "Bash(az devops invoke *--http-method DELETE*)",
+      "Bash(az devops invoke *--http-method=*)"
     ],
     "ask": [
       "Bash(git push)",
@@ -130,6 +137,11 @@
       "Bash(git push * master*)",
       "Bash(git remote add*)",
       "Bash(git remote set-url*)",
+      "Bash(git reset --hard*)",
+      "Bash(git clean -*f*)",
+      "Bash(git branch -D*)",
+      "Bash(git worktree remove*)",
+      "Bash(git stash drop*)",
       "Bash(uv version*)"
     ],
     "defaultMode": "auto",
@@ -142,19 +154,19 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/block-python.sh"
+            "command": "h=~/.claude/hooks/block-python.sh; [ -x \"$h\" ] || { echo \"PreToolUse hook missing: $h\" >&2; exit 2; }; exec \"$h\""
           },
           {
             "type": "command",
-            "command": "~/.claude/hooks/block-secret-read.sh"
+            "command": "h=~/.claude/hooks/block-secret-read.sh; [ -x \"$h\" ] || { echo \"PreToolUse hook missing: $h\" >&2; exit 2; }; exec \"$h\""
           },
           {
             "type": "command",
-            "command": "~/.claude/hooks/block-main-push.sh"
+            "command": "h=~/.claude/hooks/block-main-push.sh; [ -x \"$h\" ] || { echo \"PreToolUse hook missing: $h\" >&2; exit 2; }; exec \"$h\""
           },
           {
             "type": "command",
-            "command": "~/.claude/hooks/scope-gh-pr-create.sh"
+            "command": "h=~/.claude/hooks/scope-gh-pr-create.sh; [ -x \"$h\" ] || { echo \"PreToolUse hook missing: $h\" >&2; exit 2; }; exec \"$h\""
           }
         ]
       }
