@@ -2,11 +2,11 @@
 # PreToolUse(Bash) hook: `gh pr create` の対象リポジトリが github.com/halkn
 # 配下（個人アカウント）でない場合は確認させる。
 #
-# claude/settings.json の permissions.allow は `Bash(gh pr create*)` を無条件
-# 許可しているが、settings.json はグローバル（symlink で ~/.claude/settings.json）
-# のため、仕事用リポジトリ等 autoMode.environment が想定する信頼範囲外でも
-# 無確認で発火してしまう。ここでは `--repo`/`-R` 指定、無ければ origin リモート
-# から対象 owner を解決し、"halkn" 以外なら ask する。
+# settings.json はグローバル（symlink で ~/.claude/settings.json）のため、
+# 仕事用リポジトリ等 autoMode.environment が想定する信頼範囲外でも PR 作成が
+# 発火しうる。auto モードでは classifier の裁量判断が唯一のゲートになるため、
+# owner という決定論的な基準で確認を挟む。`--repo`/`-R` 指定、無ければ origin
+# リモートから対象 owner を解決し、"halkn" 以外なら ask する。
 #
 # `cd X && gh pr create` のようにセグメント間で作業ディレクトリが変わる
 # ケースは追跡しない（block-python.sh 等と同じ既知の簡略化）。origin 以外の
