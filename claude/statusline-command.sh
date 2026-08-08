@@ -132,14 +132,33 @@ if [ -n "$ctx" ]; then
   parts="${parts} ${DIM}│${R} $(fmt 'ctx' "$ctx")"
 fi
 
+# Epoch seconds; date +%s works on both GNU and BSD date.
+now=$(date +%s)
+
+reset_in() {
+  # $1 = resets_at epoch seconds (may be empty/float)
+  resets_at=$1
+  [ -z "$resets_at" ] && return
+  resets_at=${resets_at%%.*}
+  diff=$((resets_at - now))
+  [ "$diff" -le 0 ] && return
+  h=$((diff / 3600))
+  m=$(((diff % 3600) / 60))
+  printf ' %dh%dm' "$h" "$m"
+}
+
 five=$(echo "$input" | "$JQ_BIN" -r '.rate_limits.five_hour.used_percentage // empty')
 if [ -n "$five" ]; then
-  parts="${parts} ${DIM}│${R} $(fmt '5h' "$five")"
+  five_resets_at=$(echo "$input" | "$JQ_BIN" -r '.rate_limits.five_hour.resets_at // empty')
+  five_reset_str=$(reset_in "$five_resets_at")
+  parts="${parts} ${DIM}│${R} $(fmt '5h' "$five")${DIM}${five_reset_str}${R}"
 fi
 
 week=$(echo "$input" | "$JQ_BIN" -r '.rate_limits.seven_day.used_percentage // empty')
 if [ -n "$week" ]; then
-  parts="${parts} ${DIM}│${R} $(fmt '7d' "$week")"
+  week_resets_at=$(echo "$input" | "$JQ_BIN" -r '.rate_limits.seven_day.resets_at // empty')
+  week_reset_str=$(reset_in "$week_resets_at")
+  parts="${parts} ${DIM}│${R} $(fmt '7d' "$week")${DIM}${week_reset_str}${R}"
 fi
 
 lines_added=$(echo "$input" | "$JQ_BIN" -r '.cost.total_lines_added // empty')
