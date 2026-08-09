@@ -163,9 +163,18 @@
     "type": "command",
     "command": "~/.claude/statusline-command.sh"
   },
+  "extraKnownMarketplaces": {
+    "ast-grep-marketplace": {
+      "source": {
+        "source": "github",
+        "repo": "ast-grep/agent-skill"
+      }
+    }
+  },
   "enabledPlugins": {
     "skill-creator@claude-plugins-official": true,
-    "claude-md-management@claude-plugins-official": true
+    "claude-md-management@claude-plugins-official": true,
+    "ast-grep@ast-grep-marketplace": true
   },
   "language": "japanese",
   "disableRemoteControl": true,

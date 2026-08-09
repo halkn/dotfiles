@@ -30,6 +30,7 @@ paths:
 
 - zsh の `path` は PATH の配列。worktree のパスを入れる変数に `local path` を使うと関数内で PATH が消える（`wt_path` を使う）
 - 端末固有の設定は追跡外の `.zshenv.local`（環境変数）・`.zshrc.local`（インタラクティブ）に置く。どちらも lint 対象外なので、共有したい設定をここに書かない
+- zsh 固有構文の検索・変換で `ast-grep` を既定にしない。対応 parser を確認できない場合は `rg` と既存の `shuck` / `zsh -n` に寄せる
 
 **変更時の手順:**
 

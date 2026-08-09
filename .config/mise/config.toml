@@ -14,6 +14,7 @@ herdr = "latest"
 
 # cli
 ripgrep = "latest"
+ast-grep = "latest"
 fd = "latest"
 fzf = "latest"
 eza = "latest"
