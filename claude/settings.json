@@ -207,6 +207,7 @@
         "~/.azure",
         "~/.claude/skills",
         "~/.config",
+        "~/repos/github.com/halkn/dotfiles/.config",
         "~/.cache/uv",
         "~/.cache/mise",
         "~/.cache/rumdl",
