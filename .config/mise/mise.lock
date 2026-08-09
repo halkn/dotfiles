@@ -415,29 +415,29 @@ url = "https://github.com/01mf02/jaq/releases/download/v3.1.1/jaq-x86_64-pc-wind
 url_api = "https://api.github.com/repos/01mf02/jaq/releases/assets/502328777"
 
 [[tools.neovim]]
-version = "nightly"
+version = "stable"
 backend = "vfox:mise-plugins/vfox-neovim"
 
 [tools.neovim."platforms.linux-arm64"]
-url = "https://github.com/neovim/neovim/releases/download/nightly/nvim-linux-arm64.tar.gz"
+url = "https://github.com/neovim/neovim/releases/download/stable/nvim-linux-arm64.tar.gz"
 
 [tools.neovim."platforms.linux-arm64-musl"]
-url = "https://github.com/neovim/neovim/releases/download/nightly/nvim-linux-arm64.tar.gz"
+url = "https://github.com/neovim/neovim/releases/download/stable/nvim-linux-arm64.tar.gz"
 
 [tools.neovim."platforms.linux-x64"]
-url = "https://github.com/neovim/neovim/releases/download/nightly/nvim-linux-x86_64.tar.gz"
+url = "https://github.com/neovim/neovim/releases/download/stable/nvim-linux-x86_64.tar.gz"
 
 [tools.neovim."platforms.linux-x64-musl"]
-url = "https://github.com/neovim/neovim/releases/download/nightly/nvim-linux-x86_64.tar.gz"
+url = "https://github.com/neovim/neovim/releases/download/stable/nvim-linux-x86_64.tar.gz"
 
 [tools.neovim."platforms.macos-arm64"]
-url = "https://github.com/neovim/neovim/releases/download/nightly/nvim-macos-arm64.tar.gz"
+url = "https://github.com/neovim/neovim/releases/download/stable/nvim-macos-arm64.tar.gz"
 
 [tools.neovim."platforms.macos-x64"]
-url = "https://github.com/neovim/neovim/releases/download/nightly/nvim-macos-x86_64.tar.gz"
+url = "https://github.com/neovim/neovim/releases/download/stable/nvim-macos-x86_64.tar.gz"
 
 [tools.neovim."platforms.windows-x64"]
-url = "https://github.com/neovim/neovim/releases/download/nightly/nvim-win64.zip"
+url = "https://github.com/neovim/neovim/releases/download/stable/nvim-win64.zip"
 
 [[tools.node]]
 version = "26.7.0"

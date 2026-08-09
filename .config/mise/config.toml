@@ -29,7 +29,7 @@ ghq = "latest"
 delta = "latest"
 
 # editor
-neovim = "nightly"
+neovim = "stable"
 tree-sitter = "latest"
 
 # LSP / Linter / Formatter
