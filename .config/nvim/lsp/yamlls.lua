@@ -1,5 +1,5 @@
--- NOTE: yaml は ryl (lint + format) に統一済み。
--- 再有効化する場合は lsp.lua の languages.yaml.lsp に 'yamlls' を追加する。
+-- Inactive: yaml lint and format are handled by ryl.
+-- To re-enable, add 'yamlls' to languages.yaml.lsp in lsp.lua.
 ---@type vim.lsp.Config
 local config = {
   cmd = { 'yaml-language-server', '--stdio' },

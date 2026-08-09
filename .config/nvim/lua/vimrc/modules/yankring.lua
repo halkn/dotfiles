@@ -8,7 +8,7 @@ M.config = {
   max_size = 30,
 }
 
--- 直前の paste 操作を記録（<C-p>/<C-n> で差し替えるため）
+-- <C-p>/<C-n> replace the text the last paste produced, so its extent has to outlive it.
 local last_paste = {
   tick = nil, -- b:changedtick at paste
   start = nil, -- { row, col } 0-indexed
@@ -48,7 +48,6 @@ local function highlight_paste()
 end
 
 local function add(entry)
-  -- 直前と同じ内容なら追加しない
   if ring[1] and ring[1].regcontents == entry.regcontents and ring[1].regtype == entry.regtype then
     return
   end
@@ -61,7 +60,6 @@ end
 local function paste(after, gp)
   local entry = ring[1]
   if not entry then
-    -- 履歴が空なら通常の p/P
     vim.cmd('normal! ' .. (after and 'p' or 'P'))
     return
   end
@@ -72,7 +70,6 @@ local function paste(after, gp)
   local cmd = 'normal! ' .. (after and 'p' or 'P')
   vim.cmd(cmd)
 
-  -- paste 範囲を記録
   local s = vim.api.nvim_buf_get_mark(0, '[')
   local e = vim.api.nvim_buf_get_mark(0, ']')
   last_paste.tick = vim.b.changedtick
@@ -105,7 +102,6 @@ local function cycle(delta)
 
   local entry = ring[ring_idx]
 
-  -- 前回 paste した範囲を置き換え
   local sr, sc = last_paste.start[1], last_paste.start[2]
   local er, ec = last_paste.finish[1], last_paste.finish[2]
 

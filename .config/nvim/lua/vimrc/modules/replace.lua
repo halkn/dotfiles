@@ -1,4 +1,4 @@
--- replace.lua: レジスタの内容でモーション範囲を置き換える operator
+-- Operator that replaces the motion range with the contents of a register.
 local M = {}
 
 function M.op(type)

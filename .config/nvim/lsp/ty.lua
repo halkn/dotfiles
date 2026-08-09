@@ -1,5 +1,5 @@
--- NOTE: 現在は pyright を使用している。ty の採用が広がったタイミングで再移行する。
--- 有効化する場合は lsp.lua の languages.python.lsp を { 'ty', 'ruff' } に変更する。
+-- Inactive: python runs on pyright until ty is more widely adopted.
+-- To switch, set languages.python.lsp to { 'ty', 'ruff' } in lsp.lua.
 local function has_uv_project(root_dir)
   if not root_dir or root_dir == '' then
     return false

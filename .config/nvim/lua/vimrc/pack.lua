@@ -80,7 +80,6 @@ local plugs = {
       vim.keymap.set({ 'n', 'x' }, 'g<C-x>', 'g<Plug>(dial-decrement)')
     end,
   },
-  -- Git: gitsigns (mini.diff の代替)
   {
     src = 'lewis6991/gitsigns.nvim',
     config = function()

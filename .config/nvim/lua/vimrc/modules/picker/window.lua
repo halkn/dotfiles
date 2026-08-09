@@ -29,8 +29,7 @@ function M.create_windows(layout, title, use_preview, footer)
     title_pos = 'center',
   })
 
-  -- prompt: 内容1行 + border2行 = 3行
-  -- list/preview: border付きなので内容高さ = layout.h - 3 - 2
+  -- The prompt takes 3 rows (one line plus its border) and the list another 2 for its own.
   local content_h = layout.h - 5
 
   local list_buf = vim.api.nvim_create_buf(false, true)
