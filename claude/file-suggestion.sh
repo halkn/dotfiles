@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Claude Code の `@` ファイル補完を fd + fzf の fuzzy match に置き換える。
-# stdin: {"query": "..."} / stdout: 改行区切りのファイルパス（先頭 15 件が使われる）
-# fd / fzf は mise 管理（.config/mise/config.toml）。無い環境では rg / grep に落とす。
+# Replaces Claude Code's `@` file completion with an fd + fzf fuzzy match.
+# stdin: {"query": "..."} / stdout: newline-separated paths, of which the first 15 are used.
+# fd and fzf come from mise; where they are missing this falls back to rg and grep.
 set -euo pipefail
 
 if command -v jaq >/dev/null 2>&1; then
