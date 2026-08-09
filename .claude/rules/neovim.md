@@ -23,8 +23,8 @@ paths:
 
 - formatter: `stylua` が正。editor 内では `emmylua_ls` が external formatter として呼び出す
 - diagnostics: `emmylua_check` と editor 内の `emmylua_ls` が正
-- nvim 専用ツール（`tree-sitter`）は nvim にバンドルし、グローバル PATH には通さない
-- CLI でも使うツール（`emmylua_ls`・`emmylua_check`・`stylua`・`shuck`）はグローバル PATH に置く
+- ツールの宣言先は呼び出し元で決める。nvim が任意のディレクトリで呼ぶもの（parser をビルドする `tree-sitter`）は `.config/mise/config.toml`、このリポジトリの `mise run` からだけ呼ぶもの（`stylua`・`emmylua_check`・`emmylua_ls`・`shuck`）は `mise.toml`
+- `mise.toml` のツールはこのリポジトリの外で PATH に載らない。`cmd` で PATH を直接参照する LSP（`lsp/emmylua_ls.lua`・`lsp/shuck.lua`）は他リポジトリでは起動しない。他でも使うなら `.config/mise/config.toml` へ移す
 
 **変更時の手順:**
 
