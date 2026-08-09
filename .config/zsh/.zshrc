@@ -151,30 +151,12 @@ if command -v herdr-reviewr >/dev/null 2>&1; then
   alias gd='herdr-reviewr'
 fi
 
-# ── fzf ───────────────────────────────────────────────
-if command -v fzf >/dev/null 2>&1 && [[ -t 0 ]]; then
-  source "$ZDOTDIR/fzf.zsh"
-fi
-
-# ── git worktree (wt) ────────────────────────────────
-# fzf/gh は各サブコマンドが実行時に確認するため、ここでは無条件に読み込む。
-[[ -f "$ZDOTDIR/worktree.zsh" ]] && source "$ZDOTDIR/worktree.zsh"
-
-# ── ghq リポジトリ移動 (repo) ─────────────────────────
-# herdr picker からも source されるため、worktree.zsh と同様に無条件で読み込む。
-[[ -f "$ZDOTDIR/repo.zsh" ]] && source "$ZDOTDIR/repo.zsh"
-
-# ── herdr ────────────────────────────────────────────
-HERDR_AUTO_START=${HERDR_AUTO_START:-1}
-
-if command -v herdr >/dev/null 2>&1 &&
-  [[ -o interactive ]] &&
-  [[ -z $HERDR_ENV ]] &&
-  [[ -t 0 ]] &&
-  [[ -t 1 ]] &&
-  [[ $HERDR_AUTO_START == 1 ]]; then
-  exec herdr
-fi
+# ── lib / integrations ───────────────────────────────
+# Each file guards its own dependency, so no conditions belong here.
+for _zsh_part in "$ZDOTDIR"/lib/*.zsh(N) "$ZDOTDIR"/integrations/*.zsh(N); do
+  source "$_zsh_part"
+done
+unset _zsh_part
 
 # ── starship ─────────────────────────────────────────
 if command -v starship >/dev/null 2>&1; then

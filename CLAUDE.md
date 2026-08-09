@@ -6,15 +6,14 @@
 
 - `claude/` が Claude Code 設定の実体。`~/.claude/` へはディレクトリ単位ではなく `mise.toml` の `[dotfiles]` によるファイル単位の symlink なので、`claude/` に新規ファイルを足しても宣言しない限り配置されない。`.claude/` はこのリポジトリ自身のプロジェクト設定で別物
 - `.config/mise/config.toml` は `~/.config/mise/config.toml` としても読まれる。ここへの変更はリポジトリ外の全プロジェクトに影響する
-- `.config/zsh/worktree.zsh`（`wt`）は `.zshrc` だけでなく `.config/herdr/herdr-picker.sh` からも source される。worktree の一覧・削除ロジックはここに集約し、picker 側で再実装しない
-- `.config/zsh/repo.zsh`（`repo`）も同様に `.zshrc` と `.config/herdr/herdr-repo-workspace.sh` の両方から source される。ghq リポジトリの一覧・preview はここに集約し、呼び出し側で再実装しない
-- zsh の `path` は PATH の配列。worktree のパスを入れる変数に `local path` を使うと関数内で PATH が消える（`wt_path` を使う）
+- `.config/zsh/` は `.zshrc`（ポータブル層）・`integrations/`（外部 CLI 前提）・`lib/`（他スクリプトから source される関数群）の 3 層。置き場所の基準と制約は `.claude/rules/zsh.md`
 - `.claude/rules/` の path-scoped ルールを `~/.claude/rules/` へ移さない。`paths:`/`globs:` 指定が user-level では読み込まれない（anthropics/claude-code#19377, #21858）。全プロジェクト共通のルールは `claude/CLAUDE.md` に直接書く
 
 ## Verification
 
 - 変更後は `mise run lint`。Neovim Lua を触った場合は先に `mise run fmt`
 - 既存警告が多い場合は対象ファイルに絞る（`rumdl check <file>`、`shuck format --check <file>`）
+- `shuck` は lint・整形ともリポジトリ全体（`.`）が対象。シェルスクリプトを足すと登録なしで検査対象になるため、追加時に `mise.toml` は変更しない
 - 更新系（`mise run setup` / `sync` / `update`）はユーザーが手動実行する
 - `mise bootstrap --force-dotfiles` は競合ファイルをバックアップなしで上書きする。提案する前に `mise bootstrap --dry-run` で差分を示す
 - 対話操作でしか確認できない変更は、PR に手動確認の内容を 1 行添える

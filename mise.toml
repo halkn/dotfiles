@@ -99,68 +99,55 @@ command -v claude >/dev/null && claude update || true
 # ── Quality ──────────────────────────────────────────
 
 [tasks.lint]
-description = "リポジトリ検証"
-depends = ["lint:zsh", "lint:shuck", "lint:md", "lint:shuck-format", "nvim"]
+description = "リポジトリ検証（整形チェックを含む）"
+depends = ["fmt-check", "lint:zsh", "lint:shell", "lint:nvim"]
 dir = "{{config_root}}"
 run = "git diff --check"
 
 [tasks.fmt]
 description = "ファイル整形"
-depends = ["nvim:fmt"]
 dir = "{{config_root}}"
-run = [
-  "mise fmt",
-  "rumdl fmt .",
-  "shuck format .zshenv .config/zsh/.zshenv .config/zsh/.zshrc .config/zsh/fzf.zsh .config/zsh/worktree.zsh .config/zsh/repo.zsh",
-]
+run = ["mise fmt", "rumdl fmt .", "shuck format .", "stylua .config/nvim"]
 
 [tasks.fmt-check]
 description = "整形チェック（書き換えなし）"
-depends = ["lint:md", "lint:shuck-format", "nvim:fmt-check"]
+dir = "{{config_root}}"
+run = [
+  "mise fmt --check",
+  "rumdl check .",
+  "shuck format --check .",
+  "stylua --check .config/nvim",
+]
 
+# `shuck check` の zsh dialect では解釈しきれない zsh 固有構文（glob qualifier 等）を
+# 拾うため lint:shell とは別に持つ。追跡外の `*.local` は誤検知になるので含めない
 [tasks."lint:zsh"]
 hide = true
 dir = "{{config_root}}"
-run = "zsh -n .zshenv .config/zsh/.zshenv .config/zsh/.zshrc .config/zsh/fzf.zsh .config/zsh/worktree.zsh .config/zsh/repo.zsh"
-
-[tasks."lint:shuck"]
-hide = true
-dir = "{{config_root}}"
-run = "shuck check .zshenv .config/zsh claude .config/herdr/herdr-picker.sh .config/herdr/herdr-repo-workspace.sh"
-
-[tasks."lint:md"]
-hide = true
-dir = "{{config_root}}"
-run = "rumdl check ."
-
-[tasks."lint:shuck-format"]
-hide = true
-dir = "{{config_root}}"
-run = "shuck format --check .zshenv .config/zsh/.zshenv .config/zsh/.zshrc .config/zsh/fzf.zsh .config/zsh/worktree.zsh .config/zsh/repo.zsh"
-
-[tasks.nvim]
-description = "Neovim 設定の検証"
-depends = ["nvim:fmt-check", "nvim:check", "nvim:startup"]
-
-[tasks."nvim:fmt"]
-hide = true
-dir = "{{config_root}}"
-run = "stylua .config/nvim"
-
-[tasks."nvim:fmt-check"]
-hide = true
-dir = "{{config_root}}"
-run = "stylua --check .config/nvim"
-
-[tasks."nvim:check"]
-hide = true
-dir = "{{config_root}}"
 run = """
-VIMRUNTIME="$(NVIM_LOG_FILE=/dev/null nvim --clean --headless -c 'lua io.write(vim.env.VIMRUNTIME)' +q 2>/dev/null)" \\
-  emmylua_check .config/nvim
+#!/usr/bin/env zsh
+# `zsh -n a b` は a だけを解析して b 以降を位置引数にするため、1 ファイルずつ渡す
+set -uo pipefail
+rc=0
+for f in .zshenv .config/zsh/.zshenv .config/zsh/.zshrc .config/zsh/**/*.zsh(N); do
+  zsh -n "$f" || rc=1
+done
+exit $rc
 """
 
-[tasks."nvim:startup"]
+# shuck はディレクトリを渡すと拡張子なしの `.zshrc` 等も dialect 判定で拾う（shuck 0.1.1）
+[tasks."lint:shell"]
 hide = true
 dir = "{{config_root}}"
-run = "NVIM_LOG_FILE=/dev/null nvim --headless -i NONE '+quitall'"
+run = "shuck check ."
+
+[tasks."lint:nvim"]
+description = "Neovim Lua の診断と起動確認"
+dir = "{{config_root}}"
+run = [
+  """
+VIMRUNTIME="$(NVIM_LOG_FILE=/dev/null nvim --clean --headless -c 'lua io.write(vim.env.VIMRUNTIME)' +q 2>/dev/null)" \\
+  emmylua_check .config/nvim
+""",
+  "NVIM_LOG_FILE=/dev/null nvim --headless -i NONE '+quitall'",
+]

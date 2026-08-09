@@ -1,4 +1,5 @@
-# fzf setup and helpers. This file is sourced from .zshrc only when fzf and a TTY are available.
+# Sourced unconditionally by the integrations glob in .zshrc, so guard here.
+command -v fzf >/dev/null 2>&1 && [[ -t 0 ]] || return 0
 
 export FZF_DEFAULT_OPTS="
   --height 60%
@@ -119,6 +120,6 @@ fgl() {
       --bind 'enter:execute(git show --color=always {1} | less -R)'
 }
 
-# Worktree navigation lives in worktree.zsh as `wt` (herdr workspace aware).
+# Worktree navigation lives in lib/worktree.zsh as `wt` (herdr workspace aware).
 
-# Repository navigation lives in repo.zsh as `repo` (shared with the herdr picker).
+# Repository navigation lives in lib/repo.zsh as `repo` (shared with the herdr picker).

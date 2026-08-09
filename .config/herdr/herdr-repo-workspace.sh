@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # ghq リポジトリの一覧・preview は repo（zsh 関数）に集約し、ここでは再実装しない。
-repo_lib=${XDG_CONFIG_HOME:-$HOME/.config}/zsh/repo.zsh
+repo_lib=${XDG_CONFIG_HOME:-$HOME/.config}/zsh/lib/repo.zsh
 [[ -r $repo_lib ]] || {
   print -u2 "herdr-repo-workspace: $repo_lib not found"
   exit 1
