@@ -1,6 +1,7 @@
 local source = {
   name = 'grep',
   use_preview = true,
+  debounce_query = true,
 }
 
 function source.load(_, _, callback)

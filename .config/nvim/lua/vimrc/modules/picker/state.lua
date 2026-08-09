@@ -20,7 +20,7 @@ function M.new()
     origin_buf = nil,
     on_select = nil,
     augroup = nil,
-    no_ignore = false,
+    source_opts = {},
     on_esc = nil,
     on_cursor_moved = nil,
     generation = 0,
@@ -80,7 +80,7 @@ function M.reset_session(state)
   state.origin_win = nil
   state.origin_buf = nil
   state.on_select = nil
-  state.no_ignore = false
+  state.source_opts = {}
   state.on_esc = nil
   state.on_cursor_moved = nil
 end
