@@ -114,10 +114,65 @@ local function accept_with_split(split_cmd)
   end
 end
 
+local function source_title(source, fallback)
+  local title = source and source.title and source.title(state.source_opts)
+  return title or fallback
+end
+
+local function apply_window_decorations(source, title)
+  pcall(vim.api.nvim_win_set_config, state.prompt_win, {
+    title = ' ' .. title .. ' ',
+    title_pos = 'center',
+  })
+  local footer = source and source.footer
+  pcall(vim.api.nvim_win_set_config, state.list_win, {
+    footer = footer and (' ' .. footer .. ' ') or nil,
+    footer_pos = footer and 'right' or nil,
+  })
+end
+
+local function load_opts()
+  return vim.tbl_extend('force', { origin_buf = state.origin_buf }, state.source_opts)
+end
+
+local function on_loaded(generation, source_name, source)
+  return function(items)
+    if not is_active(generation, source_name) then
+      return
+    end
+    state.all_items = items
+    local query = ui.get_query(state)
+    state.filtered = query == '' and items or (source.filter or ui.default_filter)(items, query)
+    state.cursor_idx = 1
+    ui.render_list(state)
+    ui.update_cursor(state)
+    update_preview()
+  end
+end
+
+local function reload()
+  local source, source_name = state.source_def, state.source_name
+  if not source then
+    return
+  end
+  local generation = picker_state.begin(state)
+  picker_state.cancel_job(state)
+  state.all_items = {}
+  state.filtered = {}
+  state.cursor_idx = 1
+  ui.render_list(state)
+  apply_window_decorations(source, source_title(source, source_name))
+  picker_state.set_job(
+    state,
+    source.load(M.config, load_opts(), on_loaded(generation, source_name, source))
+  )
+end
+
 -- Source contract:
 --   required: name, load(config, options, callback)
---   optional: filter, on_open, on_close, on_query_change, on_accept,
---   on_accept_split, preview_file, update_preview, match_highlight_offset.
+--   optional: filter, footer, title, keymaps, debounce_query, on_open, on_close,
+--   on_query_change, on_accept, on_accept_split, preview_file, update_preview,
+--   match_highlight_offset.
 local function build_source_context()
   return {
     list_buf = state.list_buf,
@@ -175,6 +230,13 @@ local function build_source_context()
     switch_source = function(name)
       M._switch_source(name)
     end,
+    get_opt = function(key)
+      return state.source_opts[key]
+    end,
+    set_opt = function(key, value)
+      state.source_opts[key] = value
+    end,
+    reload = reload,
     set_on_esc = function(callback)
       state.on_esc = callback
     end,
@@ -201,52 +263,19 @@ local function debounce(callback)
   end
 end
 
-local grep_debounced
-
-local function reload_files()
-  if state.source_name ~= 'files' then
-    return
-  end
-  local generation = picker_state.begin(state)
-  picker_state.cancel_job(state)
-  state.all_items = {}
-  state.filtered = {}
-  state.cursor_idx = 1
-  ui.render_list(state)
-  local title = state.no_ignore and 'files [no-ignore]' or 'files'
-  pcall(vim.api.nvim_win_set_config, state.prompt_win, {
-    title = ' ' .. title .. ' ',
-    title_pos = 'center',
-  })
-  local source = state.source_def
-  if not source then
-    return
-  end
-  local job = source.load(M.config, { no_ignore = state.no_ignore }, function(items)
-    if not is_active(generation, 'files') then
-      return
-    end
-    state.all_items = items
-    state.filtered = ui.default_filter(items, ui.get_query(state))
-    state.cursor_idx = 1
-    ui.render_list(state)
-    ui.update_cursor(state)
-    update_preview()
-  end)
-  picker_state.set_job(state, job)
-end
+local query_debounced
 
 local function on_query_change()
   local source = state.source_def
   local query = ui.get_query(state)
   if source and source.on_query_change then
-    if state.source_name == 'grep' then
-      if not grep_debounced then
-        grep_debounced = debounce(function(debounced_query)
+    if source.debounce_query then
+      if not query_debounced then
+        query_debounced = debounce(function(debounced_query)
           source.on_query_change(debounced_query, build_source_context())
         end)
       end
-      grep_debounced(query)
+      query_debounced(query)
     else
       source.on_query_change(query, build_source_context())
     end
@@ -261,6 +290,58 @@ local function on_query_change()
   update_preview()
 end
 
+local source_keymap_lhs = {}
+
+local function set_source_keymaps(source)
+  if state.prompt_buf and vim.api.nvim_buf_is_valid(state.prompt_buf) then
+    for _, lhs in ipairs(source_keymap_lhs) do
+      pcall(vim.keymap.del, 'i', lhs, { buffer = state.prompt_buf })
+    end
+  end
+  source_keymap_lhs = {}
+  if not source.keymaps then
+    return
+  end
+  local opts = { noremap = true, silent = true, buffer = state.prompt_buf }
+  for lhs, callback in pairs(source.keymaps) do
+    vim.keymap.set('i', lhs, function()
+      callback(build_source_context())
+    end, opts)
+    table.insert(source_keymap_lhs, lhs)
+  end
+end
+
+local function start_source(source_name, source, opts)
+  local generation = picker_state.begin(state)
+  state.source_name = source_name
+  state.source_def = source
+  state.all_items = {}
+  state.filtered = {}
+  state.cursor_idx = 1
+  state.source_opts = {}
+  state.on_esc = nil
+  state.on_cursor_moved = nil
+  query_debounced = nil
+
+  apply_window_decorations(source, opts.title or source_title(source, source_name))
+  set_source_keymaps(source)
+
+  if source.on_open then
+    source.on_open(build_source_context())
+  end
+  if opts.items then
+    state.all_items = opts.items
+    state.filtered = opts.items
+    ui.render_list(state)
+    ui.update_cursor(state)
+    return
+  end
+  picker_state.set_job(
+    state,
+    source.load(M.config, load_opts(), on_loaded(generation, source_name, source))
+  )
+end
+
 function M._switch_source(target_name)
   local target = sources[target_name]
   if not target then
@@ -268,49 +349,11 @@ function M._switch_source(target_name)
   end
   picker_state.cancel_job(state)
   close_source(state.source_def)
-  local generation = picker_state.begin(state)
 
   if state.prompt_buf and vim.api.nvim_buf_is_valid(state.prompt_buf) then
     vim.api.nvim_buf_set_lines(state.prompt_buf, 0, -1, false, { '> ' })
   end
-  state.source_name = target_name
-  state.source_def = target
-  state.all_items = {}
-  state.filtered = {}
-  state.cursor_idx = 1
-  state.no_ignore = false
-  state.on_esc = nil
-  state.on_cursor_moved = nil
-  grep_debounced = nil
-
-  local footer = target_name == 'files' and '<C-i>: toggle ignore | <C-t>: tree'
-    or target_name == 'tree' and '<C-t>: files'
-    or nil
-  pcall(vim.api.nvim_win_set_config, state.prompt_win, {
-    title = ' ' .. target_name .. ' ',
-    title_pos = 'center',
-  })
-  pcall(vim.api.nvim_win_set_config, state.list_win, {
-    footer = footer and (' ' .. footer .. ' ') or nil,
-    footer_pos = footer and 'right' or nil,
-  })
-
-  local ctx = build_source_context()
-  if target.on_open then
-    target.on_open(ctx)
-  end
-  local job = target.load(M.config, { origin_buf = state.origin_buf }, function(items)
-    if not is_active(generation, target_name) then
-      return
-    end
-    state.all_items = items
-    state.filtered = items
-    state.cursor_idx = 1
-    ui.render_list(state)
-    ui.update_cursor(state)
-    update_preview()
-  end)
-  picker_state.set_job(state, job)
+  start_source(target_name, target, {})
 
   if not target.on_open then
     win.restore_cursor()
@@ -382,19 +425,6 @@ local function set_prompt_keymaps()
   vim.keymap.set('i', '<C-c>', M.close, opts)
   vim.keymap.set('n', '<Esc>', M.close, opts)
   vim.keymap.set('n', '<C-c>', M.close, opts)
-  vim.keymap.set('i', '<C-i>', function()
-    if state.source_name == 'files' then
-      state.no_ignore = not state.no_ignore
-      reload_files()
-    end
-  end, opts)
-  vim.keymap.set('i', '<C-t>', function()
-    if state.source_name == 'files' then
-      M._switch_source('tree')
-    elseif state.source_name == 'tree' then
-      M._switch_source('files')
-    end
-  end, opts)
   vim.keymap.set('i', '<C-b>', '<Left>', opts)
   vim.keymap.set('i', '<C-f>', '<Right>', opts)
   vim.keymap.set('i', '<C-a>', '<Home>', opts)
@@ -412,26 +442,17 @@ function M.open(source_name, opts)
     M.close()
   end
 
-  local generation = picker_state.begin(state)
   state.origin_win = vim.api.nvim_get_current_win()
   state.origin_buf = vim.api.nvim_get_current_buf()
-  state.source_name = source_name
-  state.source_def = source
-  state.all_items = {}
-  state.filtered = {}
-  state.cursor_idx = 1
   state.on_select = opts.on_select
   state.use_preview = source.use_preview or false
-  grep_debounced = nil
+  state.source_opts = {}
 
-  local footer = source_name == 'files' and '<C-i>: toggle ignore | <C-t>: tree'
-    or source_name == 'tree' and '<C-t>: files'
-    or nil
   local prompt_buf, prompt_win, list_buf, list_win, preview_buf, preview_win = win.create_windows(
     win.calc_layout(M.config),
-    opts.title or source_name,
+    opts.title or source_title(source, source_name),
     state.use_preview,
-    footer
+    source.footer
   )
   state.prompt_buf, state.prompt_win = prompt_buf, prompt_win
   state.list_buf, state.list_win = list_buf, list_win
@@ -442,35 +463,7 @@ function M.open(source_name, opts)
   vim.cmd('startinsert!')
   set_prompt_keymaps()
   setup_autocmds()
-
-  if source.on_open then
-    source.on_open(build_source_context())
-  end
-  if opts.items then
-    state.all_items = opts.items
-    state.filtered = opts.items
-    ui.render_list(state)
-    ui.update_cursor(state)
-    return
-  end
-
-  local job = source.load(
-    M.config,
-    { origin_buf = state.origin_buf, no_ignore = state.no_ignore },
-    function(items)
-      if not is_active(generation, source_name) then
-        return
-      end
-      state.all_items = items
-      local query = ui.get_query(state)
-      state.filtered = query == '' and items or (source.filter or ui.default_filter)(items, query)
-      state.cursor_idx = 1
-      ui.render_list(state)
-      ui.update_cursor(state)
-      update_preview()
-    end
-  )
-  picker_state.set_job(state, job)
+  start_source(source_name, source, opts)
 end
 
 function M.setup(opts)
@@ -484,23 +477,23 @@ function M.setup(opts)
 end
 
 function M.files()
-  M.open('files', { title = 'files' })
+  M.open('files')
 end
 
 function M.buffers()
-  M.open('buffers', { title = 'buffers' })
+  M.open('buffers')
 end
 
 function M.grep()
-  M.open('grep', { title = 'grep' })
+  M.open('grep')
 end
 
 function M.buf_lines()
-  M.open('buf_lines', { title = 'buf_lines' })
+  M.open('buf_lines')
 end
 
 function M.tree()
-  M.open('tree', { title = 'tree' })
+  M.open('tree')
 end
 
 function M.ui_select(items, opts, on_choice)

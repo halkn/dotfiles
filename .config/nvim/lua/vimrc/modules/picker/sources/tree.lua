@@ -4,6 +4,7 @@ local picker_win = require('vimrc.modules.picker.window')
 local source = {
   name = 'tree',
   use_preview = true,
+  footer = '<C-t>: files',
 }
 
 local tree_state = {

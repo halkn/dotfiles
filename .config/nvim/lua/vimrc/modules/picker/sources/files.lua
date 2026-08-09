@@ -3,7 +3,21 @@ local icons = require('vimrc.modules.picker.icons')
 local source = {
   name = 'files',
   use_preview = true,
+  footer = '<C-i>: toggle ignore | <C-t>: tree',
+  keymaps = {
+    ['<C-i>'] = function(ctx)
+      ctx.set_opt('no_ignore', not ctx.get_opt('no_ignore'))
+      ctx.reload()
+    end,
+    ['<C-t>'] = function(ctx)
+      ctx.switch_source('tree')
+    end,
+  },
 }
+
+function source.title(opts)
+  return opts.no_ignore and 'files [no-ignore]' or 'files'
+end
 
 function source.load(config, opts, callback)
   local items = {}
