@@ -92,40 +92,97 @@ fmt() {
   printf '%b%s%b %b%s%b %d%%' "$DIM" "$label" "$R" "$col" "$bar" "$R" "$pct_int"
 }
 
-cwd=$(echo "$input" | "$JQ_BIN" -r '.workspace.current_dir // .cwd // empty')
-model=$(echo "$input" | "$JQ_BIN" -r '.model.display_name // "Claude"')
+# One value per line, read back with `IFS= read -r` so that empty values keep
+# their position instead of collapsing the way IFS splitting would.
+{
+  IFS= read -r cwd
+  IFS= read -r model
+  IFS= read -r effort
+  IFS= read -r thinking
+  IFS= read -r ctx
+  IFS= read -r five
+  IFS= read -r five_resets_at
+  IFS= read -r week
+  IFS= read -r week_resets_at
+  IFS= read -r lines_added
+  IFS= read -r lines_removed
+} <<EOF
+$(printf '%s' "$input" | "$JQ_BIN" -r '
+  [
+    (.workspace.current_dir // .cwd // ""),
+    (.model.display_name // "Claude"),
+    (.effort.level // ""),
+    (.thinking.enabled // false),
+    (.context_window.used_percentage // ""),
+    (.rate_limits.five_hour.used_percentage // ""),
+    (.rate_limits.five_hour.resets_at // ""),
+    (.rate_limits.seven_day.used_percentage // ""),
+    (.rate_limits.seven_day.resets_at // ""),
+    (.cost.total_lines_added // ""),
+    (.cost.total_lines_removed // "")
+  ] | map(tostring) | .[]
+')
+EOF
 
-# Git branch
+# A single porcelain=v2 --branch run carries the branch name, the HEAD oid, the
+# upstream distance and the per-file index/worktree state, so no further git
+# process is needed. --no-optional-locks keeps the status line from touching
+# index.lock while the user runs git in the same repository.
+git_dir=${cwd:-$(pwd)}
+git_raw=$(git --no-optional-locks -C "$git_dir" status --porcelain=v2 --branch 2>/dev/null) || git_raw=""
+
 git_branch=""
-if git_ref=$(git -C "${cwd:-$(pwd)}" symbolic-ref --short HEAD 2>/dev/null); then
-  git_branch=" $git_ref"
-elif git_ref=$(git -C "${cwd:-$(pwd)}" rev-parse --short HEAD 2>/dev/null); then
-  git_branch=" $git_ref"
+git_status_str=""
+if [ -n "$git_raw" ]; then
+  {
+    IFS= read -r git_head
+    IFS= read -r git_oid
+    IFS= read -r staged
+    IFS= read -r modified
+    IFS= read -r untracked
+    IFS= read -r ahead
+    IFS= read -r behind
+  } <<EOF
+$(printf '%s\n' "$git_raw" | awk '
+    $1 == "#" {
+      if ($2 == "branch.oid") oid = $3
+      else if ($2 == "branch.head") head = $3
+      else if ($2 == "branch.ab") { ahead = $3 + 0; behind = -($4 + 0) }
+      next
+    }
+    $1 == "?" { untracked = 1; next }
+    # XY status, where "." means unchanged: X is the index, Y the worktree.
+    $1 == "1" || $1 == "2" || $1 == "u" {
+      if (substr($2, 1, 1) != ".") staged = 1
+      if (substr($2, 2, 1) != ".") modified = 1
+    }
+    END {
+      printf "%s\n%s\n%d\n%d\n%d\n%d\n%d\n",
+        head, oid, staged, modified, untracked, ahead, behind
+    }
+  ')
+EOF
+
+  if [ "$git_head" = "(detached)" ]; then
+    git_branch=$(printf ' %.7s' "$git_oid")
+  elif [ -n "$git_head" ]; then
+    git_branch=" $git_head"
+  fi
 fi
 
-# Git status indicators
-git_status_str=""
 if [ -n "$git_branch" ]; then
-  git_dir="${cwd:-$(pwd)}"
-  modified=$(git -C "$git_dir" status --porcelain 2>/dev/null | grep -c '^ M\|^M ')
-  untracked=$(git -C "$git_dir" status --porcelain 2>/dev/null | grep -c '^??')
-  staged=$(git -C "$git_dir" status --porcelain 2>/dev/null | grep -c '^[MADRCU]')
-  ahead=$(git -C "$git_dir" rev-list --count @{u}..HEAD 2>/dev/null || echo 0)
-  behind=$(git -C "$git_dir" rev-list --count HEAD..@{u} 2>/dev/null || echo 0)
-
   markers=""
-  [ "$modified" -gt 0 ] 2>/dev/null && markers="${markers}*"
-  [ "$untracked" -gt 0 ] 2>/dev/null && markers="${markers}?"
-  [ "$staged" -gt 0 ] 2>/dev/null && markers="${markers}+"
-  [ "$ahead" -gt 0 ] 2>/dev/null && markers="${markers}⇡"
-  [ "$behind" -gt 0 ] 2>/dev/null && markers="${markers}⇣"
+  [ "$modified" -gt 0 ] && markers="${markers}*"
+  [ "$untracked" -gt 0 ] && markers="${markers}?"
+  [ "$staged" -gt 0 ] && markers="${markers}+"
+  [ "$ahead" -gt 0 ] && markers="${markers}⇡"
+  [ "$behind" -gt 0 ] && markers="${markers}⇣"
 
   [ -n "$markers" ] && git_status_str=" ($markers)"
 fi
 
 parts="$model"
 
-effort=$(echo "$input" | "$JQ_BIN" -r '.effort.level // empty')
 if [ -n "$effort" ]; then
   case "$effort" in
     low)
@@ -150,12 +207,10 @@ if [ -n "$effort" ]; then
   parts="${parts} ${effort_col}${effort}${R}"
 fi
 
-thinking=$(echo "$input" | "$JQ_BIN" -r '.thinking.enabled // empty')
 if [ "$thinking" = "true" ]; then
   parts="${parts} ${DIM}~${R}"
 fi
 
-ctx=$(echo "$input" | "$JQ_BIN" -r '.context_window.used_percentage // empty')
 if [ -n "$ctx" ]; then
   parts="${parts} ${DIM}│${R} $(fmt 'ctx' "$ctx")"
 fi
@@ -175,22 +230,15 @@ reset_in() {
   printf ' %dh%dm' "$h" "$m"
 }
 
-five=$(echo "$input" | "$JQ_BIN" -r '.rate_limits.five_hour.used_percentage // empty')
 if [ -n "$five" ]; then
-  five_resets_at=$(echo "$input" | "$JQ_BIN" -r '.rate_limits.five_hour.resets_at // empty')
   five_reset_str=$(reset_in "$five_resets_at")
   parts="${parts} ${DIM}│${R} $(fmt '5h' "$five")${DIM}${five_reset_str}${R}"
 fi
 
-week=$(echo "$input" | "$JQ_BIN" -r '.rate_limits.seven_day.used_percentage // empty')
 if [ -n "$week" ]; then
-  week_resets_at=$(echo "$input" | "$JQ_BIN" -r '.rate_limits.seven_day.resets_at // empty')
   week_reset_str=$(reset_in "$week_resets_at")
   parts="${parts} ${DIM}│${R} $(fmt '7d' "$week")${DIM}${week_reset_str}${R}"
 fi
-
-lines_added=$(echo "$input" | "$JQ_BIN" -r '.cost.total_lines_added // empty')
-lines_removed=$(echo "$input" | "$JQ_BIN" -r '.cost.total_lines_removed // empty')
 
 if [ -n "$git_branch" ]; then
   parts="${parts} ${DIM}│${R}\033[90m${git_branch}${git_status_str}\033[0m"
