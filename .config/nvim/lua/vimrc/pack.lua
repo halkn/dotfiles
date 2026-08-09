@@ -139,6 +139,69 @@ local configure_plugins = function()
   end
 end
 
+-- commands -----------------------------------------------------------------
+-- Stable Neovim exposes vim.pack only as a Lua API; wrap it in commands until
+-- `:packupdate` / `:packdel` land in a stable release.
+local update_opts = {
+  offline = { offline = true },
+  lockfile = { target = 'lockfile' },
+}
+
+vim.api.nvim_create_user_command('PackUpdate', function(opts)
+  local o = opts.args == '' and {} or update_opts[opts.args]
+  if not o then
+    vim.notify('PackUpdate: unknown argument: ' .. opts.args, vim.log.levels.ERROR)
+    return
+  end
+  vim.pack.update(nil, o)
+end, {
+  nargs = '?',
+  desc = 'Update all plugins (offline: skip download, lockfile: use lockfile revisions)',
+  complete = function()
+    return vim.tbl_keys(update_opts)
+  end,
+})
+
+vim.api.nvim_create_user_command('PackClean', function()
+  local inactive = vim
+    .iter(vim.pack.get())
+    :filter(function(x)
+      return not x.active
+    end)
+    :map(function(x)
+      return x.spec.name
+    end)
+    :totable()
+
+  if #inactive == 0 then
+    vim.notify('Nothing to clean', vim.log.levels.INFO)
+    return
+  end
+
+  vim.notify('Removing: ' .. table.concat(inactive, ', '), vim.log.levels.INFO)
+  vim.pack.del(inactive)
+end, { desc = 'Remove plugins not in vim.pack.add()' })
+
+vim.api.nvim_create_user_command('PackReinstall', function(opts)
+  local names = opts.fargs
+  local specs = vim.tbl_map(function(x)
+    return x.spec
+  end, vim.pack.get(names))
+
+  vim.pack.del(names, { force = true })
+  vim.pack.add(specs)
+
+  vim.notify('Reinstalled: ' .. table.concat(names, ', '), vim.log.levels.INFO)
+end, {
+  nargs = '+',
+  desc = 'Reinstall specified plugins',
+  complete = function()
+    return vim.tbl_map(function(x)
+      return x.spec.name
+    end, vim.pack.get())
+  end,
+})
+
 vim.api.nvim_create_autocmd('PackChanged', { callback = on_pack_changed })
 add_plugins()
 configure_plugins()

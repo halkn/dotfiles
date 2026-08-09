@@ -194,12 +194,15 @@ Neovim plugins are managed by the built-in `vim.pack`; their lockfile is
 `.config/nvim/nvim-pack-lock.json` and must be committed with plugin updates.
 Do not edit the lockfile manually.
 
-- Update plugins with `:packupdate`, review the resulting buffer, then use
-  `:write` to confirm or `:quit` to discard. Restart Neovim when the updated
+`vim.pack` is a Lua API only, so `.config/nvim/lua/vimrc/pack.lua` wraps it in
+the commands below. Drop them once Neovim ships equivalent built-in commands.
+
+- Update plugins with `:PackUpdate`, review the resulting buffer, then use
+  `:write` to confirm or `:quit` to discard. Run `:restart` when the updated
   code must be loaded immediately.
-- Inspect available updates without downloading with `:packupdate ++offline`.
-- On another machine, pull the lockfile, restart Neovim, and run
-  `:packupdate ++lockfile` to synchronize installed plugins.
-- To remove a plugin, delete its specification, restart Neovim, then run
-  `:packdel {name}`. Use `:packdel ++all` to remove all inactive plugins.
-- To reinstall a plugin, run `:packdel! {name}` and restart Neovim.
+- Inspect available updates without downloading with `:PackUpdate offline`.
+- On another machine, pull the lockfile and `:restart` to install the missing
+  plugins, then run `:PackUpdate lockfile` to align the rest with the lockfile.
+- To remove a plugin, delete its specification, `:restart`, then run
+  `:PackClean` to delete every plugin that is no longer specified.
+- To reinstall a plugin, run `:PackReinstall {name}`.
