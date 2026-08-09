@@ -7,7 +7,7 @@ else
   JQ_BIN=jq
 fi
 
-# worktree の一覧・削除ロジックは wt（zsh 関数）に集約し、ここでは再実装しない。
+# Listing and removing worktrees lives in `wt`; do not reimplement either here.
 wt_lib=${XDG_CONFIG_HOME:-$HOME/.config}/zsh/lib/worktree.zsh
 [[ -r $wt_lib ]] && source "$wt_lib"
 
@@ -53,8 +53,7 @@ preview_workspace() {
   fi
 }
 
-# fzf の preview から呼ばれる内部エントリポイント。worktree の表示は wt 側の
-# _wt_preview に委譲する。
+# Internal entry point, called by the fzf preview.
 if [[ ${1:-} == --preview ]]; then
   entry=${2:-}
   [[ -n $entry ]] || exit 0
@@ -117,14 +116,14 @@ next_mode() {
 self=${0:A}
 default_mode=workspace
 
-# reload() で自分自身を呼び出して各モードの一覧を出力するための内部エントリポイント
+# Internal entry point, called by reload() to re-list the current mode.
 if [[ ${1:-} == --list ]]; then
   list_for_mode "$2"
   exit 0
 fi
 
-# ctrl-x:transform() から呼ばれ、worktree モードのときだけ選択中の worktree を削除する。
-# 未コミット変更があると git worktree remove が失敗するため、確認プロンプト無しでも安全側に倒れる。
+# Internal entry point, called by ctrl-x:transform(). No confirmation prompt is needed:
+# `git worktree remove` refuses a checkout that still holds uncommitted work.
 if [[ ${1:-} == --remove ]]; then
   [[ $(<"$HERDR_PICKER_STATE") == worktree ]] || exit 0
   target=${2#worktree:}
@@ -141,7 +140,7 @@ if [[ ${1:-} == --remove ]]; then
   exit 0
 fi
 
-# tab:transform() から呼ばれ、現在モードを次に進めつつ reload+change-prompt 用のバインド式を出力する
+# Internal entry point, called by tab:transform().
 if [[ ${1:-} == --cycle ]]; then
   current=$(<"$HERDR_PICKER_STATE")
   next=$(next_mode "$current")

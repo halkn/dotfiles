@@ -1,11 +1,11 @@
-# この project config は ~/.config/shuck/shuck.toml を継承しない。CLI と LSP の
-# 両方で下記の repo 固有ルールを有効にするため、Google Shell Style の基準も繰り返す。
+# A project config does not inherit ~/.config/shuck/shuck.toml, so the Google Shell Style
+# baseline is repeated here to keep the repo-specific rules below active in CLI and LSP alike.
 
 [lint]
 select = ["google"]
 per-file-ignores = { ".config/zsh/.zshenv" = ["S017"] }
 
-# zsh の compinit が起動時に読む予約変数。静的な source グラフでは追跡できない。
+# A reserved variable that zsh's compinit reads at startup, invisible to a static source graph.
 [[lint.contracts.custom]]
 id = "zsh-compinit"
 when = "always"

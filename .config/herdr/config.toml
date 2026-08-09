@@ -1,5 +1,5 @@
 onboarding = false
-# 既定値: `herdr --default-config` / 反映: `herdr server reload-config`
+# Defaults: `herdr --default-config` / apply changes: `herdr server reload-config`
 
 [experimental]
 kitty_graphics = true
@@ -16,7 +16,7 @@ new_cwd = "follow"
 name = "kanagawa"
 
 [theme.custom]
-# サイドバーのspaceとagentsの区切り線を目立たせる
+# The default is too faint to separate spaces from agents in the sidebar.
 surface_dim = "#54546d"
 
 # ── UI ───────────────────────────────────────────────
@@ -41,10 +41,9 @@ delivery = "system"
 delay_seconds = 3
 
 # ── Worktrees ────────────────────────────────────────
-# 既定は ~/.herdr/worktrees。XDG に合わせて $XDG_DATA_HOME 相当へ置く
-# （worktree は未コミットの作業を含みうるので cache/state ではなく data）。
-# zsh 側の `wt` はこの値を読んでフォールバックのパスを決めるため、
-# 配置先の single source of truth はここ。
+# Moved out of the default ~/.herdr/worktrees to follow XDG. A worktree can hold uncommitted
+# work, so it belongs under data rather than cache or state. `wt` reads this value to decide
+# its own fallback path, which makes this line the single source of truth for the location.
 [worktrees]
 directory = "~/.local/share/herdr/worktrees"
 
@@ -55,8 +54,8 @@ resume_agents_on_restore = true
 # ── Keybindings ──────────────────────────────────────
 [keys]
 prefix = "ctrl+space"
-# alt+w は ghq リポジトリを選んでから作る popup（下の [[keys.command]]）に譲り、
-# 現在の cwd でそのまま作る組み込みは alt+shift+w に置く。
+# alt+w is given to the popup below, which picks a ghq repository first; the built-in that
+# creates a workspace straight from the current cwd moves to alt+shift+w.
 new_workspace = "alt+shift+w"
 new_worktree = "alt+g"
 split_vertical = "alt+;"

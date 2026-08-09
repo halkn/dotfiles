@@ -1,8 +1,6 @@
 [settings]
-# tools のバージョン・checksum・URL を mise.lock に固定する。
-# 更新は `mise run update`（または `mise upgrade`）で行う。
-# このファイルは [dotfiles] で ~/.config/mise/config.toml に symlink されるため、
-# mise のグローバル設定として全プロジェクトに適用される（このリポジトリ内に閉じない）。
+# [dotfiles] symlinks this file to ~/.config/mise/config.toml, so everything here applies to
+# every project on the machine, not just this repository.
 lockfile = true
 
 [tools]
@@ -19,7 +17,6 @@ ripgrep = "latest"
 fd = "latest"
 fzf = "latest"
 eza = "latest"
-# NOTE: JSON/YAML の値確認は jq/yq から jaq (Rust) に統一。未導入時は各スクリプトが jq にフォールバックする。
 jaq = "latest"
 "github:halkn/docsail" = { version = "latest", minimum_release_age = "0s" }
 "github:halkn/mdiv" = { version = "latest", minimum_release_age = "0s" }
@@ -37,4 +34,4 @@ tree-sitter = "latest"
 # LSP / Linter / Formatter
 "pipx:ryl" = "latest"
 rumdl = "latest"
-# NOTE: yaml は ryl (lint + format) に統一。
+# No yaml language server here: ryl covers both lint and format.
