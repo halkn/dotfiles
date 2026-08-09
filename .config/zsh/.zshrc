@@ -160,6 +160,10 @@ fi
 # fzf/gh は各サブコマンドが実行時に確認するため、ここでは無条件に読み込む。
 [[ -f "$ZDOTDIR/worktree.zsh" ]] && source "$ZDOTDIR/worktree.zsh"
 
+# ── ghq リポジトリ移動 (repo) ─────────────────────────
+# herdr picker からも source されるため、worktree.zsh と同様に無条件で読み込む。
+[[ -f "$ZDOTDIR/repo.zsh" ]] && source "$ZDOTDIR/repo.zsh"
+
 # ── herdr ────────────────────────────────────────────
 HERDR_AUTO_START=${HERDR_AUTO_START:-1}
 

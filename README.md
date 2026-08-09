@@ -127,6 +127,15 @@ Checkouts are placed under `[worktrees] directory` in
 worktrees to jump to, and removes the selected one with `ctrl-x`; creation is
 `wt new` / `wt pr` only.
 
+## Repositories and herdr workspaces
+
+`repo` (`.config/zsh/repo.zsh`) picks a ghq-managed repository with fzf and
+cd's into it; `repo get <owner/repo|url>` clones one and cd's into the clone.
+The same listing backs `alt+w`, which picks a repository and creates a herdr
+workspace with that repository as its cwd, replacing the "create a workspace,
+then run `repo` inside it" pair of steps. Plain "new workspace in the current
+directory" moved to `alt+shift+w`.
+
 Outside a herdr session everything degrades to plain `git worktree` plus `cd`.
 
 Removal never discards work: `wt rm` skips the main checkout and the worktree
