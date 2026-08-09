@@ -19,56 +19,64 @@
 set -euo pipefail
 
 if command -v jaq >/dev/null 2>&1; then
-	JQ_BIN=jaq
+  JQ_BIN=jaq
 else
-	JQ_BIN=jq
+  JQ_BIN=jq
 fi
 
 command="$("$JQ_BIN" -r '.tool_input.command // ""')"
 
 ask() {
-	"$JQ_BIN" -n --arg reason "$1" '{
+  "$JQ_BIN" -n --arg reason "$1" '{
 		hookSpecificOutput: {
 			hookEventName: "PreToolUse",
 			permissionDecision: "ask",
 			permissionDecisionReason: $reason
 		}
 	}'
-	exit 0
+  exit 0
 }
 
 deny() {
-	echo "$1" >&2
-	exit 2
+  echo "$1" >&2
+  exit 2
 }
 
 is_protected_branch() {
-	case "$1" in
-	main | master) return 0 ;;
-	*) return 1 ;;
-	esac
+  case "$1" in
+    main | master)
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
 }
 
 # refspec（`<src>:<dst>` または `<ref>`）の送信先ブランチが main/master なら ask する。
 check_refspec() {
-	local refspec="$1" dst
-	case "$refspec" in
-	*:*) dst="${refspec#*:}" ;;
-	*) dst="$refspec" ;;
-	esac
-	[ -n "$dst" ] || return 0
-	dst="${dst#refs/heads/}"
-	if is_protected_branch "$dst"; then
-		ask "main/master への直接 push（refspec: ${refspec}）を実行してよいですか?"
-	fi
+  local refspec="$1" dst
+  case "$refspec" in
+    *:*)
+      dst="${refspec#*:}"
+      ;;
+    *)
+      dst="$refspec"
+      ;;
+  esac
+  [ -n "$dst" ] || return 0
+  dst="${dst#refs/heads/}"
+  if is_protected_branch "$dst"; then
+    ask "main/master への直接 push（refspec: ${refspec}）を実行してよいですか?"
+  fi
 }
 
 run_git() {
-	if [ -n "$git_dir" ]; then
-		git -C "$git_dir" "$@"
-	else
-		git "$@"
-	fi
+  if [ -n "$git_dir" ]; then
+    git -C "$git_dir" "$@"
+  else
+    git "$@"
+  fi
 }
 
 # コマンド置換とサブシェルを開く記号を改行に変換してから、
@@ -77,104 +85,118 @@ segments="$(printf '%s' "$command" | sed -E 's/\$\(/\n/g; s/`/\n/g' | tr '|;&()'
 
 set -f # セグメント分割時のグロブ展開を無効化する
 while IFS= read -r seg; do
-	# shellcheck disable=SC2086
-	set -- $seg
+  # shellcheck disable=SC2086
+  set -- $seg
 
-	# 先頭の環境変数代入とラッパーコマンドを読み飛ばす。
-	while [ "$#" -gt 0 ]; do
-		case "$1" in
-		*=*) shift ;;
-		sudo | doas | env | nohup | time | exec | command | builtin | watch | xargs | stdbuf | nice | ionice | setsid) shift ;;
-		*) break ;;
-		esac
-	done
+  # 先頭の環境変数代入とラッパーコマンドを読み飛ばす。
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      *=*)
+        shift
+        ;;
+      sudo | doas | env | nohup | time | exec | command | builtin | watch | xargs | stdbuf | nice | ionice | setsid)
+        shift
+        ;;
+      *)
+        break
+        ;;
+    esac
+  done
 
-	prog="${1:-}"
-	base="${prog##*/}"
-	[ "$base" = "git" ] || continue
-	shift
+  prog="${1:-}"
+  base="${prog##*/}"
+  [ "$base" = "git" ] || continue
+  shift
 
-	# git のグローバルオプションを読み飛ばし、サブコマンドまで進める。
-	git_dir=""
-	while [ "$#" -gt 0 ]; do
-		case "$1" in
-		-C)
-			git_dir="${2:-}"
-			shift 2
-			;;
-		-c)
-			shift 2
-			;;
-		push) break ;;
-		-*) shift ;;
-		*) break ;;
-		esac
-	done
-	[ "${1:-}" = "push" ] || continue
-	shift
+  # git のグローバルオプションを読み飛ばし、サブコマンドまで進める。
+  git_dir=""
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      -C)
+        git_dir="${2:-}"
+        shift 2
+        ;;
+      -c)
+        shift 2
+        ;;
+      push)
+        break
+        ;;
+      -*)
+        shift
+        ;;
+      *)
+        break
+        ;;
+    esac
+  done
+  [ "${1:-}" = "push" ] || continue
+  shift
 
-	mirror=0
-	all=0
-	saw_remote=0
-	saw_refspec=0
-	while [ "$#" -gt 0 ]; do
-		case "$1" in
-		--)
-			shift
-			while [ "$#" -gt 0 ]; do
-				if [ "$saw_remote" -eq 0 ]; then
-					saw_remote=1
-				else
-					saw_refspec=1
-					check_refspec "$1"
-				fi
-				shift
-			done
-			;;
-		--mirror)
-			mirror=1
-			shift
-			;;
-		--all)
-			all=1
-			shift
-			;;
-		-o | --push-option)
-			shift 2
-			;;
-		-*) shift ;;
-		*)
-			if [ "$saw_remote" -eq 0 ]; then
-				saw_remote=1
-			else
-				saw_refspec=1
-				check_refspec "$1"
-			fi
-			shift
-			;;
-		esac
-	done
+  mirror=0
+  all=0
+  saw_remote=0
+  saw_refspec=0
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      --)
+        shift
+        while [ "$#" -gt 0 ]; do
+          if [ "$saw_remote" -eq 0 ]; then
+            saw_remote=1
+          else
+            saw_refspec=1
+            check_refspec "$1"
+          fi
+          shift
+        done
+        ;;
+      --mirror)
+        mirror=1
+        shift
+        ;;
+      --all)
+        all=1
+        shift
+        ;;
+      -o | --push-option)
+        shift 2
+        ;;
+      -*)
+        shift
+        ;;
+      *)
+        if [ "$saw_remote" -eq 0 ]; then
+          saw_remote=1
+        else
+          saw_refspec=1
+          check_refspec "$1"
+        fi
+        shift
+        ;;
+    esac
+  done
 
-	if [ "$mirror" -eq 1 ]; then
-		deny "git push --mirror は main/master を含む全 ref に強制的に影響する（リモートにしか無い ref の削除もありうる）ため禁止です。個別ブランチを指定して push してください。"
-	fi
+  if [ "$mirror" -eq 1 ]; then
+    deny "git push --mirror は main/master を含む全 ref に強制的に影響する（リモートにしか無い ref の削除もありうる）ため禁止です。個別ブランチを指定して push してください。"
+  fi
 
-	if [ "$all" -eq 1 ]; then
-		if run_git rev-parse --verify --quiet refs/heads/main >/dev/null 2>&1 ||
-			run_git rev-parse --verify --quiet refs/heads/master >/dev/null 2>&1; then
-			ask "git push --all はローカルの main/master ブランチも含めて push します。実行してよいですか?"
-		fi
-		continue
-	fi
+  if [ "$all" -eq 1 ]; then
+    if run_git rev-parse --verify --quiet refs/heads/main >/dev/null 2>&1 ||
+      run_git rev-parse --verify --quiet refs/heads/master >/dev/null 2>&1; then
+      ask "git push --all はローカルの main/master ブランチも含めて push します。実行してよいですか?"
+    fi
+    continue
+  fi
 
-	# 明示的な refspec が一つも無かった場合（`git push` / `git push origin`）は
-	# 現在のブランチが送信先になる。
-	if [ "$saw_refspec" -eq 0 ]; then
-		branch="$(run_git branch --show-current 2>/dev/null || true)"
-		if [ -n "$branch" ] && is_protected_branch "$branch"; then
-			ask "現在のブランチ ($branch) は main/master です。main/master への直接 push を実行してよいですか?"
-		fi
-	fi
+  # 明示的な refspec が一つも無かった場合（`git push` / `git push origin`）は
+  # 現在のブランチが送信先になる。
+  if [ "$saw_refspec" -eq 0 ]; then
+    branch="$(run_git branch --show-current 2>/dev/null || true)"
+    if [ -n "$branch" ] && is_protected_branch "$branch"; then
+      ask "現在のブランチ ($branch) は main/master です。main/master への直接 push を実行してよいですか?"
+    fi
+  fi
 done <<EOF
 $segments
 EOF

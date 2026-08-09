@@ -17,41 +17,41 @@ set -euo pipefail
 TRUSTED_OWNER="halkn"
 
 if command -v jaq >/dev/null 2>&1; then
-	JQ_BIN=jaq
+  JQ_BIN=jaq
 else
-	JQ_BIN=jq
+  JQ_BIN=jq
 fi
 
 command="$("$JQ_BIN" -r '.tool_input.command // ""')"
 
 ask() {
-	"$JQ_BIN" -n --arg reason "$1" '{
+  "$JQ_BIN" -n --arg reason "$1" '{
 		hookSpecificOutput: {
 			hookEventName: "PreToolUse",
 			permissionDecision: "ask",
 			permissionDecisionReason: $reason
 		}
 	}'
-	exit 0
+  exit 0
 }
 
 # "git@github.com:OWNER/REPO.git" / "https://github.com/OWNER/REPO" /
 # "OWNER/REPO"（--repo 省略形）のいずれからも owner を取り出す。
 extract_owner() {
-	local url="$1" rest owner
-	case "$url" in
-	*github.com[:/]*)
-		rest="${url#*github.com[:/]}"
-		owner="${rest%%/*}"
-		;;
-	*/*)
-		owner="${url%%/*}"
-		;;
-	*)
-		owner=""
-		;;
-	esac
-	printf '%s' "$owner"
+  local url="$1" rest owner
+  case "$url" in
+    *github.com[:/]*)
+      rest="${url#*github.com[:/]}"
+      owner="${rest%%/*}"
+      ;;
+    */*)
+      owner="${url%%/*}"
+      ;;
+    *)
+      owner=""
+      ;;
+  esac
+  printf '%s' "$owner"
 }
 
 # コマンド置換とサブシェルを開く記号を改行に変換してから、
@@ -60,52 +60,62 @@ segments="$(printf '%s' "$command" | sed -E 's/\$\(/\n/g; s/`/\n/g' | tr '|;&()'
 
 set -f # セグメント分割時のグロブ展開を無効化する
 while IFS= read -r seg; do
-	# shellcheck disable=SC2086
-	set -- $seg
+  # shellcheck disable=SC2086
+  set -- $seg
 
-	# 先頭の環境変数代入とラッパーコマンドを読み飛ばす。
-	while [ "$#" -gt 0 ]; do
-		case "$1" in
-		*=*) shift ;;
-		sudo | doas | env | nohup | time | exec | command | builtin | watch | xargs | stdbuf | nice | ionice | setsid) shift ;;
-		*) break ;;
-		esac
-	done
+  # 先頭の環境変数代入とラッパーコマンドを読み飛ばす。
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      *=*)
+        shift
+        ;;
+      sudo | doas | env | nohup | time | exec | command | builtin | watch | xargs | stdbuf | nice | ionice | setsid)
+        shift
+        ;;
+      *)
+        break
+        ;;
+    esac
+  done
 
-	prog="${1:-}"
-	base="${prog##*/}"
-	[ "$base" = "gh" ] || continue
-	shift
+  prog="${1:-}"
+  base="${prog##*/}"
+  [ "$base" = "gh" ] || continue
+  shift
 
-	[ "${1:-}" = "pr" ] || continue
-	shift
-	[ "${1:-}" = "create" ] || continue
-	shift
+  [ "${1:-}" = "pr" ] || continue
+  shift
+  [ "${1:-}" = "create" ] || continue
+  shift
 
-	repo_flag=""
-	while [ "$#" -gt 0 ]; do
-		case "$1" in
-		--repo=*) repo_flag="${1#--repo=}" ;;
-		--repo | -R) repo_flag="${2:-}" ;;
-		esac
-		shift
-	done
+  repo_flag=""
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      --repo=*)
+        repo_flag="${1#--repo=}"
+        ;;
+      --repo | -R)
+        repo_flag="${2:-}"
+        ;;
+    esac
+    shift
+  done
 
-	if [ -n "$repo_flag" ]; then
-		owner="$(extract_owner "$repo_flag")"
-	else
-		origin_url="$(git config --get remote.origin.url 2>/dev/null || true)"
-		owner="$(extract_owner "$origin_url")"
-	fi
+  if [ -n "$repo_flag" ]; then
+    owner="$(extract_owner "$repo_flag")"
+  else
+    origin_url="$(git config --get remote.origin.url 2>/dev/null || true)"
+    owner="$(extract_owner "$origin_url")"
+  fi
 
-	if [ -z "$owner" ]; then
-		ask "gh pr create の対象リポジトリの owner を特定できませんでした。実行してよいですか?"
-	fi
+  if [ -z "$owner" ]; then
+    ask "gh pr create の対象リポジトリの owner を特定できませんでした。実行してよいですか?"
+  fi
 
-	lower_owner="$(printf '%s' "$owner" | tr '[:upper:]' '[:lower:]')"
-	if [ "$lower_owner" != "$TRUSTED_OWNER" ]; then
-		ask "gh pr create の対象リポジトリ owner が \"${owner}\" です（信頼範囲は github.com/${TRUSTED_OWNER} 配下）。実行してよいですか?"
-	fi
+  lower_owner="$(printf '%s' "$owner" | tr '[:upper:]' '[:lower:]')"
+  if [ "$lower_owner" != "$TRUSTED_OWNER" ]; then
+    ask "gh pr create の対象リポジトリ owner が \"${owner}\" です（信頼範囲は github.com/${TRUSTED_OWNER} 配下）。実行してよいですか?"
+  fi
 done <<EOF
 $segments
 EOF

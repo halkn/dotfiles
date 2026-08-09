@@ -24,27 +24,27 @@
 set -euo pipefail
 
 if command -v jaq >/dev/null 2>&1; then
-	JQ_BIN=jaq
+  JQ_BIN=jaq
 else
-	JQ_BIN=jq
+  JQ_BIN=jq
 fi
 
 command="$("$JQ_BIN" -r '.tool_input.command // ""')"
 
 deny() {
-	echo "$1" >&2
-	exit 2
+  echo "$1" >&2
+  exit 2
 }
 
 deny_path() {
-	deny "Azure/Snowflake/GitHub の認証情報（~/.azure・~/.snowflake・~/.snowsql・~/.config/gh・~/.config/snowflake）への参照は禁止です。認証は az / snowflake / gh CLI 経由で行ってください。"
+  deny "Azure/Snowflake/GitHub の認証情報（~/.azure・~/.snowflake・~/.snowsql・~/.config/gh・~/.config/snowflake）への参照は禁止です。認証は az / snowflake / gh CLI 経由で行ってください。"
 }
 
 # 機微 env（$AZURE_FOO / ${SNOWFLAKE_BAR} / $GH_TOKEN 等）の展開。
 # sandbox.credentials.envVars の `mode: "deny"` が一次防御だが、excludedCommands
 # （`gh *` 等）は sandbox の外を走るためここでも押さえる。
 if printf '%s' "$command" | grep -Eq '\$\{?(AZURE|SNOWFLAKE|SNOWSQL|GH|GITHUB)_'; then
-	deny "Azure/Snowflake/GitHub の認証系環境変数の展開は禁止です（値が transcript に漏洩するため）。設定値は az / snowflake / gh CLI のサブコマンド経由で扱ってください。"
+  deny "Azure/Snowflake/GitHub の認証系環境変数の展開は禁止です（値が transcript に漏洩するため）。設定値は az / snowflake / gh CLI のサブコマンド経由で扱ってください。"
 fi
 
 # 同じパスを指す表記のゆれを畳んでから照合する。クォート（`"$HOME"/.azure`・
@@ -54,14 +54,14 @@ normalized="$(printf '%s' "$command" | tr -d "\"'" | sed -E 's#/{2,}#/#g')"
 # `/././` のような重なりがあるため収束するまで畳む。BSD sed はワンライナーの
 # ラベル分岐（`:a; ...; ta`）を解さないので、ループはシェル側に置く。
 while printf '%s' "$normalized" | grep -q '/\./'; do
-	normalized="$(printf '%s' "$normalized" | sed -E 's#/\./#/#g')"
+  normalized="$(printf '%s' "$normalized" | sed -E 's#/\./#/#g')"
 done
 normalized="$(printf '%s' "$normalized" | sed -E 's#(^|[[:space:]<>|;&=(])\./#\1#g')"
 
 # 認証情報ストアへのパス参照。直前が英数字・アンダースコアの場合は除外する
 # （`management.azure.com` のようなホスト名を巻き込まないため）。
 if printf '%s' "$normalized" | grep -Eq '(^|[^[:alnum:]_])(\.(azure|snowflake|snowsql)|\.config/(gh|snowflake))(/|[[:space:];|&<>)]|$)'; then
-	deny_path
+  deny_path
 fi
 
 exit 0
