@@ -1,17 +1,13 @@
 #!/usr/bin/env bash
-# PreToolUse(Bash) hook: `gh pr create` の対象リポジトリが github.com/halkn
-# 配下（個人アカウント）でない場合は確認させる。
+# PreToolUse(Bash): ask when `gh pr create` targets a repository outside github.com/halkn.
 #
-# settings.json はグローバル（symlink で ~/.claude/settings.json）のため、
-# 仕事用リポジトリ等 autoMode.environment が想定する信頼範囲外でも PR 作成が
-# 発火しうる。auto モードでは classifier の裁量判断が唯一のゲートになるため、
-# owner という決定論的な基準で確認を挟む。`--repo`/`-R` 指定、無ければ origin
-# リモートから対象 owner を解決し、"halkn" 以外なら ask する。
+# settings.json is global (symlinked to ~/.claude/settings.json), so PR creation can fire in
+# work repositories that autoMode.environment never meant to trust, where the classifier's
+# judgement is the only gate. Owner is a deterministic criterion to gate on instead.
 #
-# `cd X && gh pr create` のようにセグメント間で作業ディレクトリが変わる
-# ケースは追跡しない（block-main-push.sh と同じ既知の簡略化）。origin 以外の
-# remote 名を使っている場合や gh 自体の repo 解決ロジック（upstream tracking
-# 等）との完全な一致も保証しない — 判定が付かない場合は安全側に倒して ask する。
+# A working directory that changes between segments (`cd X && gh pr create`) is not tracked,
+# and neither a remote named other than origin nor gh's own repo resolution (upstream
+# tracking) is reproduced here. An owner that cannot be resolved falls through to ask.
 set -euo pipefail
 
 TRUSTED_OWNER="halkn"
@@ -35,8 +31,8 @@ ask() {
   exit 0
 }
 
-# "git@github.com:OWNER/REPO.git" / "https://github.com/OWNER/REPO" /
-# "OWNER/REPO"（--repo 省略形）のいずれからも owner を取り出す。
+# Accepts "git@github.com:OWNER/REPO.git", "https://github.com/OWNER/REPO" and the short
+# "OWNER/REPO" form that --repo allows.
 extract_owner() {
   local url="$1" rest owner
   case "$url" in
@@ -54,16 +50,16 @@ extract_owner() {
   printf '%s' "$owner"
 }
 
-# コマンド置換とサブシェルを開く記号を改行に変換してから、
-# パイプ・順次・論理演算子などの区切りを改行へ畳み込みセグメント化する。
+# Command substitutions and subshells open a new command too, so their opening symbols are
+# turned into newlines before the ordinary separators are folded into segments.
 segments="$(printf '%s' "$command" | sed -E 's/\$\(/\n/g; s/`/\n/g' | tr '|;&()' '\n\n\n\n\n')"
 
-set -f # セグメント分割時のグロブ展開を無効化する
+set -f # `set -- $seg` below would otherwise glob-expand the segment
 while IFS= read -r seg; do
   # shellcheck disable=SC2086
   set -- $seg
 
-  # 先頭の環境変数代入とラッパーコマンドを読み飛ばす。
+  # Skip leading assignments and wrapper commands to reach the real program.
   while [ "$#" -gt 0 ]; do
     case "$1" in
       *=*)

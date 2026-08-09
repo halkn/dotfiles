@@ -1,7 +1,7 @@
--- surround.lua: sa/sd/sr を自作実装（括弧・クォート・任意1文字のみ）
+-- sa/sd/sr for brackets, quotes and single characters.
 local M = {}
 
--- opening side はスペースあり、closing side はスペースなし
+-- Following vim-surround: the opening key pads with spaces, the closing key does not.
 local surround_map = {
   ['('] = { open = '( ', close = ' )' },
   [')'] = { open = '(', close = ')' },
@@ -11,8 +11,7 @@ local surround_map = {
   ['}'] = { open = '{', close = '}' },
 }
 
--- searchpairpos に渡す Vim 正規表現パターン
--- [ ] のみエスケープが必要（() {} はリテラルとして機能する）
+-- In the Vim regex searchpairpos() takes, only [ ] needs escaping; () {} match literally.
 local bracket_pairs = {
   ['('] = { open = '(', close = ')', open_pat = '(', close_pat = ')' },
   [')'] = { open = '(', close = ')', open_pat = '(', close_pat = ')' },
@@ -26,12 +25,11 @@ local function get_surround(char)
   return surround_map[char] or { open = char, close = char }
 end
 
--- カーソルを囲むサラウンドの位置を検出
--- 返り値: { open = {row, col}, close = {row, col} } (0-based row, 0-based col)
+-- Returns { open = {row, col}, close = {row, col} }, rows and cols both 0-based.
 local function find_surround(char)
   local pair = bracket_pairs[char]
   if pair then
-    -- searchpairpos は行・列ともに 1-based で返す → 0-based に変換
+    -- searchpairpos() reports 1-based rows and cols.
     local op = vim.fn.searchpairpos(pair.open_pat, '', pair.close_pat, 'nbW')
     local cp = vim.fn.searchpairpos(pair.open_pat, '', pair.close_pat, 'nW')
     if op[1] == 0 or cp[1] == 0 then
@@ -39,7 +37,8 @@ local function find_surround(char)
     end
     return { open = { op[1] - 1, op[2] - 1 }, close = { cp[1] - 1, cp[2] - 1 } }
   else
-    -- クォート・任意文字: 現在行を左右に探索
+    -- Quotes and free characters have no open/close distinction, so pairs cannot be
+    -- nested and the search can stay on the current line.
     local line = vim.api.nvim_get_current_line()
     local col = vim.fn.col('.') - 1
     local left_col, right_col
@@ -62,7 +61,8 @@ local function find_surround(char)
   end
 end
 
--- 削除範囲を計算: 括弧文字本体 + 直後/直前のスペースをバッファから確認して含める
+-- Padding is read back from the buffer rather than from surround_map, so text added
+-- with `(` and text added with `)` are both removed cleanly.
 local function calc_delete_range(pos, char)
   local pair = bracket_pairs[char]
   local open_char = pair and pair.open or char
@@ -85,7 +85,8 @@ local function calc_delete_range(pos, char)
   return o_row, o_col, open_end, c_row, close_start, c_col + #close_char
 end
 
--- ドット繰り返し用キャッシュ（sa/sd/sr の最後の入力文字を保持）
+-- Dot-repeat replays the operator without the keymap, so the typed character has to
+-- survive the first invocation instead of being read again from getcharstr().
 local cache = {}
 
 M.add_op = function(type)
@@ -99,7 +100,7 @@ M.add_op = function(type)
     vim.api.nvim_buf_set_text(0, e[1] - 1, #e_line, e[1] - 1, #e_line, { surr.close })
     vim.api.nvim_buf_set_text(0, s[1] - 1, 0, s[1] - 1, 0, { surr.open })
   else
-    -- 右端→左端の順で挿入（列位置がずれないよう）
+    -- Insert right to left; the opening insert would shift the closing column.
     vim.api.nvim_buf_set_text(0, e[1] - 1, e[2] + 1, e[1] - 1, e[2] + 1, { surr.close })
     vim.api.nvim_buf_set_text(0, s[1] - 1, s[2], s[1] - 1, s[2], { surr.open })
   end
@@ -136,14 +137,12 @@ end
 function M.setup()
   _G._vimrc_surround = M
 
-  -- sa (normal): キャッシュをリセットして g@ + モーション → add_op 内でキャッシュを参照
   vim.keymap.set('n', 'sa', function()
     cache.add_char = nil
     vim.o.operatorfunc = 'v:lua._vimrc_surround.add_op'
     return 'g@'
   end, { expr = true, noremap = true })
 
-  -- sa (visual): '< '> マークから範囲を取得
   vim.keymap.set('x', 'sa', function()
     local char = vim.fn.getcharstr()
     local surr = get_surround(char)
@@ -155,7 +154,6 @@ function M.setup()
     vim.api.nvim_buf_set_text(0, s[1] - 1, s[2], s[1] - 1, s[2], { surr.open })
   end, { noremap = true })
 
-  -- sd/sr: キャッシュをリセットして g@  → delete_op/replace_op 内でキャッシュを参照
   vim.keymap.set('n', 'sd', function()
     cache.delete_char = nil
     vim.o.operatorfunc = 'v:lua._vimrc_surround.delete_op'

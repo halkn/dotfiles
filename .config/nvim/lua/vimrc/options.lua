@@ -24,7 +24,6 @@ g.loaded_tarPlugin = 1
 g.loaded_zip = 1
 g.loaded_zipPlugin = 1
 
--- encoding
 opt.fileencodings = 'utf-8,sjis,iso-2022-jp,cp932,euc-jp'
 opt.fileencoding = 'utf-8'
 
@@ -55,12 +54,10 @@ opt.fillchars = {
 opt.hidden = true
 opt.switchbuf = 'useopen'
 
--- backupfile
 opt.undofile = true
 opt.swapfile = false
 opt.backup = false
 
--- diff
 opt.diffopt = opt.diffopt + 'vertical,linematch:40,indent-heuristic,inline:char'
 
 -- edit
@@ -91,16 +88,13 @@ opt.incsearch = true
 opt.hlsearch = true
 opt.inccommand = 'split'
 
--- pum
 opt.wildoptions = 'pum'
 opt.pumblend = 10
 opt.pumborder = 'rounded'
 
--- other
 opt.clipboard = 'unnamedplus'
 opt.updatetime = 250
 
--- grep
 if vim.fn.executable('rg') == 1 then
   opt.grepprg = 'rg --vimgrep --hidden --glob "!**/.git/*"'
   opt.grepformat = '%f:%l:%c:%m'

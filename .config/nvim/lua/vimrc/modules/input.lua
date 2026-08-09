@@ -1,4 +1,4 @@
--- input.lua: vim.ui.input をフローティングウィンドウで実装
+-- vim.ui.input in a floating window.
 local M = {}
 
 function M.setup()
@@ -30,7 +30,6 @@ function M.setup()
     })
     vim.wo[win].wrap = false
 
-    -- カーソルを末尾に
     vim.api.nvim_win_set_cursor(win, { 1, #default })
 
     local function close_win()
@@ -60,7 +59,7 @@ function M.setup()
       on_confirm(nil)
     end, map_opts)
 
-    -- Emacs風カーソル移動（picker.lua と統一）
+    -- Emacs-style motions, kept identical to the picker prompt.
     vim.keymap.set('i', '<C-b>', '<Left>', map_opts)
     vim.keymap.set('i', '<C-f>', '<Right>', map_opts)
     vim.keymap.set('i', '<C-a>', '<Home>', map_opts)

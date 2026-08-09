@@ -1,5 +1,5 @@
-# グローバル shell 方針。shuck は project config とこのファイルをマージしないため、
-# project config 側でもこれらの値を繰り返す。
+# Global shell policy. shuck does not merge this file with a project config, so these values
+# are repeated on the project side.
 
 [lint]
 select = ["google"]

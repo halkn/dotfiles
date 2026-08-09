@@ -22,6 +22,8 @@
 
 - macOS に GNU `timeout` は無い。timeout が要る script は `timeout` / `gtimeout` / 直接実行の順にフォールバックする（`claude/file-suggestion.sh` の `run_with_timeout` を踏襲する）
 - 整形は `mise run fmt` に任せる（`shuck`・`stylua`・`rumdl`）
+- コードコメントは英語で書く。識別子・コマンド名と同じ語彙で書けるため。ユーザーに表示される文字列（hook の拒否メッセージ、`mise` の task description）は日本語のまま
+- 長い設計背景はコードに置かず `.claude/rules/*.md` へ。コード側には、その実装でなければならない理由と、rules に無い実装固有の制約だけを残す
 - commit: 小文字 conventional prefix（`fix:` `add:` `feat:` `refactor:`）+ 短い英語要約。1 コミット 1 ツール・1 テーマ（例: `fix: python lsp settings.`）
 - PR: 変更理由・影響範囲（`nvim`・`zsh`・`claude` 等）・確認手順を書く
 

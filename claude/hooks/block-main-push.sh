@@ -1,21 +1,16 @@
 #!/usr/bin/env bash
-# PreToolUse(Bash) hook: main/master ブランチへの直接 push を確認させる。
+# PreToolUse(Bash): ask before a direct push to main/master.
 #
-# permissions.ask の `Bash(git push * main*)` 等は "main" の直前にスペースを
-# 要求する文字列パターンマッチのため、コロン refspec
-# （`git push origin HEAD:main`）や空 refspec 削除（`git push origin :main`）、
-# `--all` など、コマンド文字列に " main"/" master" というトークンを含まない
-# push で回避できる。ここでは push コマンドを実際に解釈し、送信先ブランチ名を
-# 解決してから判定する。`--mirror` は強制 push 相当（ローカルに無い remote ref
-# を削除しうる）とみなし、既存の force push 向け deny ポリシーに合わせて
-# ハード拒否する。
+# The `permissions.ask` patterns (`Bash(git push * main*)`) require a space before "main",
+# so any push that never spells that token out — a colon refspec (`git push origin HEAD:main`),
+# a deletion (`git push origin :main`), `--all` — slips past them. This hook parses the push
+# instead and resolves the destination branch first. `--mirror` can delete remote-only refs,
+# so it is treated as a force push and denied outright rather than asked.
 #
-# macOS 標準の /bin/bash は 3.2 系のため、空配列 + `set -u` の組み合わせで
-# unbound variable になる既知の不具合がある。配列は使わず単一変数と
-# 逐次処理で組み立てる（scope-gh-pr-create.sh と同じ方針）。
+# /bin/bash on macOS is 3.2, where an empty array under `set -u` raises unbound variable, so
+# arguments are accumulated in plain variables instead of arrays.
 #
-# `cd X && git push` のようにセグメント間で作業ディレクトリが変わるケースは
-# 追跡しない（scope-gh-pr-create.sh と同じ既知の簡略化）。
+# A working directory that changes between segments (`cd X && git push`) is not tracked.
 set -euo pipefail
 
 if command -v jaq >/dev/null 2>&1; then
@@ -53,7 +48,7 @@ is_protected_branch() {
   esac
 }
 
-# refspec（`<src>:<dst>` または `<ref>`）の送信先ブランチが main/master なら ask する。
+# Asks when the destination half of `<src>:<dst>` (or a bare `<ref>`) is main/master.
 check_refspec() {
   local refspec="$1" dst
   case "$refspec" in
@@ -79,16 +74,16 @@ run_git() {
   fi
 }
 
-# コマンド置換とサブシェルを開く記号を改行に変換してから、
-# パイプ・順次・論理演算子などの区切りを改行へ畳み込みセグメント化する。
+# Command substitutions and subshells open a new command too, so their opening symbols are
+# turned into newlines before the ordinary separators are folded into segments.
 segments="$(printf '%s' "$command" | sed -E 's/\$\(/\n/g; s/`/\n/g' | tr '|;&()' '\n\n\n\n\n')"
 
-set -f # セグメント分割時のグロブ展開を無効化する
+set -f # `set -- $seg` below would otherwise glob-expand the segment
 while IFS= read -r seg; do
   # shellcheck disable=SC2086
   set -- $seg
 
-  # 先頭の環境変数代入とラッパーコマンドを読み飛ばす。
+  # Skip leading assignments and wrapper commands to reach the real program.
   while [ "$#" -gt 0 ]; do
     case "$1" in
       *=*)
@@ -108,7 +103,7 @@ while IFS= read -r seg; do
   [ "$base" = "git" ] || continue
   shift
 
-  # git のグローバルオプションを読み飛ばし、サブコマンドまで進める。
+  # Skip git's global options to reach the subcommand, keeping -C as the working directory.
   git_dir=""
   while [ "$#" -gt 0 ]; do
     case "$1" in
@@ -189,8 +184,8 @@ while IFS= read -r seg; do
     continue
   fi
 
-  # 明示的な refspec が一つも無かった場合（`git push` / `git push origin`）は
-  # 現在のブランチが送信先になる。
+  # Without an explicit refspec (`git push` / `git push origin`) the current branch is
+  # the destination.
   if [ "$saw_refspec" -eq 0 ]; then
     branch="$(run_git branch --show-current 2>/dev/null || true)"
     if [ -n "$branch" ] && is_protected_branch "$branch"; then

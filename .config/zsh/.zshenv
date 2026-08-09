@@ -1,7 +1,6 @@
 # ---------------------------------------------------------------------------
 # environment variables
 # ---------------------------------------------------------------------------
-# common
 export LANG=C.UTF-8
 export EDITOR=nvim
 export PAGER=less
@@ -39,7 +38,6 @@ export RIPGREP_CONFIG_PATH=$XDG_CONFIG_HOME/ripgrep/config
 typeset -U path
 path=(
   $XDG_BIN_HOME(N-/)
-  # $XDG_DATA_HOME/mise/shims(N-/)
   $path
 )
 
