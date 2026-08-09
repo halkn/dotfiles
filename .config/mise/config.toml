@@ -29,8 +29,6 @@ jaq = "latest"
 gh = "latest"
 ghq = "latest"
 delta = "latest"
-# NOTE: diff レビューは diffnav -> codediff.nvim -> hunk と移行。
-"npm:hunkdiff" = "latest"
 
 # editor
 neovim = "nightly"
