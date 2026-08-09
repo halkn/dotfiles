@@ -57,6 +57,7 @@ local sources = {
   grep = require('vimrc.modules.picker.sources.grep'),
   buf_lines = require('vimrc.modules.picker.sources.buf_lines'),
   tree = require('vimrc.modules.picker.sources.tree'),
+  git = require('vimrc.modules.picker.sources.git'),
   select = require('vimrc.modules.picker.sources.select'),
 }
 
@@ -472,6 +473,7 @@ function M.setup(opts)
   vim.keymap.set('n', '<Leader>f', M.files, { desc = 'picker: files' })
   vim.keymap.set('n', '<Leader>b', M.buffers, { desc = 'picker: buffers' })
   vim.keymap.set('n', '<Leader>G', M.grep, { desc = 'picker: grep' })
+  vim.keymap.set('n', '<Leader>g', M.git, { desc = 'picker: git' })
   vim.keymap.set('n', '<Leader>l', M.buf_lines, { desc = 'picker: buf_lines' })
   vim.keymap.set('n', '<Leader>e', M.tree, { desc = 'picker: tree' })
 end
@@ -494,6 +496,10 @@ end
 
 function M.tree()
   M.open('tree')
+end
+
+function M.git()
+  M.open('git')
 end
 
 function M.ui_select(items, opts, on_choice)
