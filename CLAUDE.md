@@ -7,6 +7,7 @@
 - `claude/` が Claude Code 設定の実体。`~/.claude/` へはディレクトリ単位ではなく `mise.toml` の `[dotfiles]` によるファイル単位の symlink なので、`claude/` に新規ファイルを足しても宣言しない限り配置されない。`.claude/` はこのリポジトリ自身のプロジェクト設定で別物
 - `.config/mise/config.toml` は `~/.config/mise/config.toml` としても読まれる。ここへの変更はリポジトリ外の全プロジェクトに影響する
 - `.config/zsh/worktree.zsh`（`wt`）は `.zshrc` だけでなく `.config/herdr/herdr-picker.sh` からも source される。worktree の一覧・削除ロジックはここに集約し、picker 側で再実装しない
+- `.config/zsh/repo.zsh`（`repo`）も同様に `.zshrc` と `.config/herdr/herdr-repo-workspace.sh` の両方から source される。ghq リポジトリの一覧・preview はここに集約し、呼び出し側で再実装しない
 - zsh の `path` は PATH の配列。worktree のパスを入れる変数に `local path` を使うと関数内で PATH が消える（`wt_path` を使う）
 - `.claude/rules/` の path-scoped ルールを `~/.claude/rules/` へ移さない。`paths:`/`globs:` 指定が user-level では読み込まれない（anthropics/claude-code#19377, #21858）。全プロジェクト共通のルールは `claude/CLAUDE.md` に直接書く
 

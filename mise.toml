@@ -126,7 +126,7 @@ run = "zsh -n .zshenv .config/zsh/.zshenv .config/zsh/.zshrc .config/zsh/fzf.zsh
 [tasks."lint:shuck"]
 hide = true
 dir = "{{config_root}}"
-run = "shuck check .zshenv .config/zsh claude .config/herdr/herdr-picker.sh"
+run = "shuck check .zshenv .config/zsh claude .config/herdr/herdr-picker.sh .config/herdr/herdr-repo-workspace.sh"
 
 [tasks."lint:md"]
 hide = true
