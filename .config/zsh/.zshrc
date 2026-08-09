@@ -86,18 +86,11 @@ zstyle ':completion:*' completer \
   _prefix
 
 # ── aliases ──────────────────────────────────────────
-# ls
 alias ll='ls -lhF'
 alias la='ls -lhAF'
-
-# human readable for du and df
 alias du='du -h'
 alias df='df -h'
-
-# cd
 alias ..='cd ..'
-
-# etc
 alias zs='exec zsh'
 alias :q='exit'
 dot() {
