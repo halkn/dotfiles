@@ -146,9 +146,9 @@ if command -v nvim >/dev/null 2>&1; then
   alias vimdiff='nvim -d'
 fi
 
-# ── hunk ─────────────────────────────────────────────
-if command -v hunk >/dev/null 2>&1; then
-  alias gd='hunk diff'
+# ── reviewr ──────────────────────────────────────────
+if command -v herdr-reviewr >/dev/null 2>&1; then
+  alias gd='herdr-reviewr'
 fi
 
 # ── fzf ───────────────────────────────────────────────

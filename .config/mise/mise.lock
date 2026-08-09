@@ -442,10 +442,6 @@ url = "https://nodejs.org/dist/v26.7.0/node-v26.7.0-darwin-x64.tar.gz"
 checksum = "sha256:d3bd72755141ed32bbcd841228ee81897c8a98d50dfa7dae2179399a0a7c90f8"
 url = "https://nodejs.org/dist/v26.7.0/node-v26.7.0-win-x64.zip"
 
-[[tools."npm:hunkdiff"]]
-version = "0.17.7"
-backend = "npm:hunkdiff"
-
 [[tools."pipx:ryl"]]
 version = "0.21.0"
 backend = "pipx:ryl"

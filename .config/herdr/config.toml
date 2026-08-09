@@ -97,16 +97,15 @@ width = "90%"
 height = "90%"
 
 [[keys.command]]
-key = "alt+d"
-type = "popup"
-command = "hunk diff"
-width = "90%"
-height = "90%"
-
-[[keys.command]]
 key = "alt+t"
 type = "popup"
 command = "exec \"${SHELL:-sh}\""
 description = "open scratch terminal"
 width = "80%"
 height = "80%"
+
+[[keys.command]]
+key = "alt+r"
+type = "plugin_action"
+command = "persiyanov.reviewr.toggle"
+description = "toggle reviewr pane"

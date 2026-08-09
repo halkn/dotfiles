@@ -62,9 +62,19 @@ dir = "{{config_root}}"
 run = "mise bootstrap --yes --update"
 
 # mise bootstrap の最終ステップで自動実行される（冪等に保つ）
+# herdr プラグインの本体は herdr が取得し gitignore されるため、[dotfiles] ではなくここで宣言する
 [tasks.bootstrap]
-description = "Claude Code をインストール（未導入時のみ）"
-run = "command -v claude >/dev/null || curl -fsSL https://claude.ai/install.sh | bash"
+description = "Claude Code と herdr プラグインをインストール（未導入時のみ）"
+run = """
+#!/usr/bin/env bash
+set -euo pipefail
+command -v claude >/dev/null || curl -fsSL https://claude.ai/install.sh | bash
+# `herdr plugin list` は未導入でも 0 を返す（herdr 0.8.0）ため、出力で判定する
+if command -v herdr >/dev/null; then
+  herdr plugin list --plugin persiyanov.reviewr 2>/dev/null | grep -q persiyanov.reviewr ||
+    herdr plugin install --yes persiyanov/herdr-reviewr
+fi
+"""
 
 # ── Maintenance ──────────────────────────────────────
 
