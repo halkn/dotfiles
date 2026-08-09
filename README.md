@@ -91,10 +91,17 @@ git config user.name && git config user.email
 
 zsh keeps its config under `.config/zsh` (XDG); the only file in `$HOME` is
 a small `.zshenv` stub that sets `ZDOTDIR` and hands off to it. `.zshenv`
-defines only the shared environment and PATH; interactive configuration,
-including `mise activate zsh`, is in `.zshrc`. zsh history is stored under
-`$XDG_STATE_HOME/zsh`, while completion and generated shell-completion files
-are cached under `$XDG_CACHE_HOME/zsh`.
+defines only the shared environment and PATH. Interactive configuration is
+split by how strongly it depends on an external CLI:
+
+| Location | Holds |
+| --- | --- |
+| `.zshrc` | Portable settings (history, options, completion, keybindings, aliases) and overrides for tools that degrade to a standard command when missing, such as `eza` for `ls` or `nvim` for `vim` |
+| `integrations/*.zsh` | Setups that need an external CLI and go beyond an alias — `fzf` widgets, `herdr` auto-start. `.zshrc` sources the directory as a glob, and each file checks for its own dependency and returns early, so a new file needs no registration |
+| `lib/*.zsh` | Function libraries that other scripts source by absolute path (`wt`, `repo`); moving or renaming them breaks those callers |
+
+zsh history is stored under `$XDG_STATE_HOME/zsh`, while completion and
+generated shell-completion files are cached under `$XDG_CACHE_HOME/zsh`.
 
 Put machine-local shell settings in `.config/zsh/.zshenv.local` (environment)
 or `.config/zsh/.zshrc.local` (interactive); both are gitignored.
@@ -103,7 +110,7 @@ or `.config/zsh/.zshrc.local` (interactive); both are gitignored.
 
 Parallel work (reviewing several pull requests while developing) uses one
 worktree per branch, and inside [herdr](https://herdr.dev) each worktree is a
-workspace. The `wt` function in `.config/zsh/worktree.zsh` is the entry point:
+workspace. The `wt` function in `.config/zsh/lib/worktree.zsh` is the entry point:
 
 ```sh
 wt                     # pick a worktree and open it (focus its workspace, or cd)
@@ -129,7 +136,7 @@ worktrees to jump to, and removes the selected one with `ctrl-x`; creation is
 
 ## Repositories and herdr workspaces
 
-`repo` (`.config/zsh/repo.zsh`) picks a ghq-managed repository with fzf and
+`repo` (`.config/zsh/lib/repo.zsh`) picks a ghq-managed repository with fzf and
 cd's into it; `repo get <owner/repo|url>` clones one and cd's into the clone.
 The same listing backs `alt+w`, which picks a repository and creates a herdr
 workspace with that repository as its cwd, replacing the "create a workspace,

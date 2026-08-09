@@ -49,16 +49,32 @@ braille_bar() {
     elif [ "$pct" -le "$seg_start" ]; then
       bar="${bar} "
     else
-      frac=$(( (pct - seg_start) * 7 / (seg_end - seg_start) ))
+      frac=$(((pct - seg_start) * 7 / (seg_end - seg_start)))
       case $frac in
-        0) bar="${bar} "  ;;
-        1) bar="${bar}⣀" ;;
-        2) bar="${bar}⣄" ;;
-        3) bar="${bar}⣤" ;;
-        4) bar="${bar}⣦" ;;
-        5) bar="${bar}⣶" ;;
-        6) bar="${bar}⣷" ;;
-        *) bar="${bar}⣿" ;;
+        0)
+          bar="${bar} "
+          ;;
+        1)
+          bar="${bar}⣀"
+          ;;
+        2)
+          bar="${bar}⣄"
+          ;;
+        3)
+          bar="${bar}⣤"
+          ;;
+        4)
+          bar="${bar}⣦"
+          ;;
+        5)
+          bar="${bar}⣶"
+          ;;
+        6)
+          bar="${bar}⣷"
+          ;;
+        *)
+          bar="${bar}⣿"
+          ;;
       esac
     fi
     i=$((i + 1))
@@ -112,12 +128,24 @@ parts="$model"
 effort=$(echo "$input" | "$JQ_BIN" -r '.effort.level // empty')
 if [ -n "$effort" ]; then
   case "$effort" in
-    low)    effort_col="$DIM" ;;
-    medium) effort_col="$GREEN" ;;
-    high)   effort_col="$YELLOW" ;;
-    xhigh)  effort_col="$ORANGE" ;;
-    max)    effort_col="$RED" ;;
-    *)      effort_col="$GREEN" ;;
+    low)
+      effort_col="$DIM"
+      ;;
+    medium)
+      effort_col="$GREEN"
+      ;;
+    high)
+      effort_col="$YELLOW"
+      ;;
+    xhigh)
+      effort_col="$ORANGE"
+      ;;
+    max)
+      effort_col="$RED"
+      ;;
+    *)
+      effort_col="$GREEN"
+      ;;
   esac
   parts="${parts} ${effort_col}${effort}${R}"
 fi

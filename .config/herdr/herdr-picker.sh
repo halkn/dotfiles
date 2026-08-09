@@ -8,7 +8,7 @@ else
 fi
 
 # worktree の一覧・削除ロジックは wt（zsh 関数）に集約し、ここでは再実装しない。
-wt_lib=${XDG_CONFIG_HOME:-$HOME/.config}/zsh/worktree.zsh
+wt_lib=${XDG_CONFIG_HOME:-$HOME/.config}/zsh/lib/worktree.zsh
 [[ -r $wt_lib ]] && source "$wt_lib"
 
 list_workspaces() {
@@ -59,34 +59,58 @@ if [[ ${1:-} == --preview ]]; then
   entry=${2:-}
   [[ -n $entry ]] || exit 0
   case ${entry%%:*} in
-    agent) herdr agent read "${entry#*:}" --source recent --lines "${FZF_PREVIEW_LINES:-40}" --format ansi 2>/dev/null ;;
-    worktree) whence _wt_preview >/dev/null && _wt_preview "${entry#*:}" ;;
-    workspace) preview_workspace "${entry#*:}" ;;
+    agent)
+      herdr agent read "${entry#*:}" --source recent --lines "${FZF_PREVIEW_LINES:-40}" --format ansi 2>/dev/null
+      ;;
+    worktree)
+      whence _wt_preview >/dev/null && _wt_preview "${entry#*:}"
+      ;;
+    workspace)
+      preview_workspace "${entry#*:}"
+      ;;
   esac
   exit 0
 fi
 
 list_for_mode() {
   case $1 in
-    workspace) list_workspaces ;;
-    agent) list_agents ;;
-    worktree) list_worktrees ;;
+    workspace)
+      list_workspaces
+      ;;
+    agent)
+      list_agents
+      ;;
+    worktree)
+      list_worktrees
+      ;;
   esac
 }
 
 prompt_for_mode() {
   case $1 in
-    workspace) print -r -- 'workspaces> ' ;;
-    agent) print -r -- 'agents> ' ;;
-    worktree) print -r -- 'worktrees> ' ;;
+    workspace)
+      print -r -- 'workspaces> '
+      ;;
+    agent)
+      print -r -- 'agents> '
+      ;;
+    worktree)
+      print -r -- 'worktrees> '
+      ;;
   esac
 }
 
 next_mode() {
   case $1 in
-    agent) print -r -- workspace ;;
-    workspace) print -r -- worktree ;;
-    worktree) print -r -- agent ;;
+    agent)
+      print -r -- workspace
+      ;;
+    workspace)
+      print -r -- worktree
+      ;;
+    worktree)
+      print -r -- agent
+      ;;
   esac
 }
 
@@ -149,7 +173,13 @@ mode=${mode_target%%:*}
 target=${mode_target#*:}
 
 case $mode in
-  workspace) herdr workspace focus "$target" ;;
-  agent) herdr agent focus "$target" ;;
-  worktree) herdr worktree open --path "$target" --focus ;;
+  workspace)
+    herdr workspace focus "$target"
+    ;;
+  agent)
+    herdr agent focus "$target"
+    ;;
+  worktree)
+    herdr worktree open --path "$target" --focus
+    ;;
 esac

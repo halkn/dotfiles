@@ -9,27 +9,27 @@ protected_ref_pattern='^refs/heads/(main|master)$'
 zero_sha='0000000000000000000000000000000000000000'
 
 if [ "${ALLOW_FORCE_PUSH:-}" = "1" ]; then
-	exit 0
+  exit 0
 fi
 
-while read -r local_ref local_sha remote_ref remote_sha; do
-	[[ "$remote_ref" =~ $protected_ref_pattern ]] || continue
+while read -r _ local_sha remote_ref remote_sha; do
+  [[ "$remote_ref" =~ $protected_ref_pattern ]] || continue
 
-	if [ "$local_sha" = "$zero_sha" ]; then
-		echo "pre-push: 保護ブランチ ($remote_ref) の削除は拒否されました。" >&2
-		echo "pre-push: 意図的な操作なら ALLOW_FORCE_PUSH=1 を付けて再実行してください。" >&2
-		exit 1
-	fi
+  if [ "$local_sha" = "$zero_sha" ]; then
+    echo "pre-push: 保護ブランチ ($remote_ref) の削除は拒否されました。" >&2
+    echo "pre-push: 意図的な操作なら ALLOW_FORCE_PUSH=1 を付けて再実行してください。" >&2
+    exit 1
+  fi
 
-	if [ "$remote_sha" = "$zero_sha" ]; then
-		continue # 新規ブランチの push
-	fi
+  if [ "$remote_sha" = "$zero_sha" ]; then
+    continue # 新規ブランチの push
+  fi
 
-	if ! git merge-base --is-ancestor "$remote_sha" "$local_sha" 2>/dev/null; then
-		echo "pre-push: 保護ブランチ ($remote_ref) への force push (非 fast-forward) は拒否されました。" >&2
-		echo "pre-push: 意図的な操作なら ALLOW_FORCE_PUSH=1 を付けて再実行してください。" >&2
-		exit 1
-	fi
+  if ! git merge-base --is-ancestor "$remote_sha" "$local_sha" 2>/dev/null; then
+    echo "pre-push: 保護ブランチ ($remote_ref) への force push (非 fast-forward) は拒否されました。" >&2
+    echo "pre-push: 意図的な操作なら ALLOW_FORCE_PUSH=1 を付けて再実行してください。" >&2
+    exit 1
+  fi
 done
 
 exit 0
