@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 # PreToolUse(Bash): refuse references to Azure / Snowflake / GitHub credential stores.
 #
-# sandbox allowRead has to open ~/.azure and ~/.config so `az` and `gh` can read their own
-# token caches, and a denyRead nested inside an allowRead does not take effect, so those two
-# paths stay readable by any process. This hook covers that gap as a second line of defence,
-# not as a boundary of its own: it matches on the protected assets, which are a closed set,
-# rather than on reading commands, which are not. Splitting a path across segments
-# (`cd ~/.config && cat gh/hosts.yml`) or going through a variable still gets past it.
-# .claude/rules/claude-code.md records the measurements behind both points.
+# sandbox allowRead has to open ~/.azure so `az` can read its own token cache, and the
+# excludedCommands (`gh *`, network git) run outside the sandbox where neither the filesystem
+# rules nor the credentials.envVars deny apply. Those are the gaps this hook covers; the paths
+# the sandbox can close (~/.config/gh via its resolved path, ~/.snowflake, ~/.snowsql) stay
+# listed here only as a second line of defence. It matches on the protected assets, which are
+# a closed set, rather than on reading commands, which are not. Splitting a path across
+# segments (`cd ~/.config && cat gh/hosts.yml`) or going through a variable still gets past it.
+# .claude/rules/claude-code.md records the measurements behind these points.
 #
 # Side effect: commands that only mention these paths as text (`rg '~/.azure/' README.md`)
 # are refused as well. Rewrite them without a literal path.

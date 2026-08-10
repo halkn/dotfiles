@@ -209,7 +209,9 @@
         "~/.gnupg"
       ],
       "denyRead": [
-        "~/"
+        "~/",
+        "~/.config/gh",
+        "~/repos/github.com/halkn/dotfiles/.config/gh"
       ],
       "allowRead": [
         ".",
