@@ -74,7 +74,7 @@ worktree isolation（`isolation: worktree`）の要否は書込の競合で判�
 - 要る: 2 体以上が同時に同じ repo へ書き込む / 親セッションが編集中のファイルに触る / 長時間の自律実行で途中状態を親へ混ぜたくない
 - 要らない: read-only の調査・レビュー、書込先が重ならないと事前に分かっている作業、単発の小さな修正
 - isolation した subagent の成果は commit / branch 経由で受け取る。親から worktree 内のファイルを直接読み書きしない
-- Claude Code が作る worktree（`.claude/worktrees/` 配下）は ephemeral で、lifecycle owner は Claude Code。人間が後から戻る作業場は `wt` / herdr で作る（persistent・human-managed）。この 2 つを混同しない
+- Claude Code が作る worktree（`.claude/worktrees/` 配下）は ephemeral で、lifecycle owner は Claude Code。人間が後から戻る作業場は human-managed で、その repo の worktree workflow が持つ。agent の隔離をそちらの代わりに使わない
 
 ## 報告
 
