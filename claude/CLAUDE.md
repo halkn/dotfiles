@@ -69,6 +69,13 @@
 - 直列依存（前タスクの結果が次の入力）は並列化しない
 - subagent はメインの会話履歴・auto memory を継承しない。必要な前提はプロンプトに明示して渡す
 
+worktree isolation（`isolation: worktree`）の要否は書込の競合で判断する。`subagent = worktree` にはしない。fresh checkout なので環境の作り直しコストが掛かり、変更が残ると sweep が回収するまで作業木に残る。
+
+- 要る: 2 体以上が同時に同じ repo へ書き込む / 親セッションが編集中のファイルに触る / 長時間の自律実行で途中状態を親へ混ぜたくない
+- 要らない: read-only の調査・レビュー、書込先が重ならないと事前に分かっている作業、単発の小さな修正
+- isolation した subagent の成果は commit / branch 経由で受け取る。親から worktree 内のファイルを直接読み書きしない
+- Claude Code が作る worktree（`.claude/worktrees/` 配下）は ephemeral で、lifecycle owner は Claude Code。人間が後から戻る作業場は `wt` / herdr で作る（persistent・human-managed）。この 2 つを混同しない
+
 ## 報告
 
 - 実行した検証の結果はそのまま報告する。失敗は失敗として出力とともに書き、実行できなかった検証は理由と代替確認を書く

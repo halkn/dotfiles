@@ -25,6 +25,7 @@ paths:
 
 - `lib/worktree.zsh`（`wt`）は `.config/herdr/herdr-picker.sh`、`lib/repo.zsh`（`repo`）は `.config/herdr/herdr-repo-workspace.sh` から絶対パスで source される。worktree の一覧・削除、ghq リポジトリの一覧・preview のロジックはここに集約し、呼び出し側で再実装しない
 - パスが外部との契約になっているので、移動・改名は herdr 側の参照と同時に直す
+- `wt` が lifecycle を持つのは人間が作った persistent worktree だけ。`.claude/worktrees/` 配下は Claude Code が作る ephemeral な checkout で、削除は向こうの sweep が持つ。`_wt_flags` の `agent` フラグで印を付け、`wt clean` の対象から外してある（一覧には残して手動回収の逃げ道にする）
 
 **言語上の注意:**
 

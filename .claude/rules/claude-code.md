@@ -58,6 +58,18 @@ hook を足す・消すときは、標準機能（sandbox・`permissions`・auto
 - push は `.config/git/config` の `pushInsteadOf` により SSH。HTTPS 化しても credential helper が Seatbelt 下で通らず、`allowUnsandboxedCommands: false` のため即ハードエラーになるので、ネットワーク系 git は除外に残す
 - 引数なし形（`git push` 等）とワイルドカード形を併記する。除外に追加する前に、そのサブコマンドがサンドボックス内で実際に失敗することを確認する
 
+## native worktree の扱い
+
+Claude Code は `--worktree` / `EnterWorktree` / subagent の `isolation: worktree` で `<repo>/.claude/worktrees/<name>` に `worktree-<name>` branch の checkout を作る（docs 記載・v2.1.226）。ここは ephemeral・agent-managed の領域で、削除は Claude Code 側（変更なしなら即時、変更があれば `cleanupPeriodDays` に従う sweep）が持つ。人間が継続して使う worktree は `wt` / herdr の領域（`~/.local/share/herdr/worktrees/`）で、両者を同じ場所に集約しない。
+
+- `worktree.baseRef` は `"head"`。既定の `"fresh"` は remote の default branch から分岐するので、herdr worktree の feature branch 上で立てた subagent が作業対象のコミットを持たない。docs も in-progress work を隔離する場合の値として `"head"` を挙げている。worktree 内では**その worktree の HEAD** に解決される
+- `.claude/worktrees/` は `.gitignore` に入れる。このリポジトリの `.claude/` は追跡対象なので、入れないと agent の checkout が main checkout に untracked で現れる
+- `.worktreeinclude` は**置かない**: gitignored file をコピーする機能だが、このリポジトリの gitignored file は machine-local な identity（`.config/git/config.local`・`.zshenv.local`）と `.config/gh/`（認証情報）で、agent の checkout へ複製すると露出面が広がる。tracked file だけで `mise run lint` は成立する。必要が出たら、複製してよいファイルを個別に列挙してから置く
+- native worktree の中で `mise trust` は要らない。mise は linked worktree の config を main checkout の同じパスの trust で扱う（`mise trust --help`・mise 2026.8.3。paranoid mode ではこの共有が切れる）
+- **`git worktree add` を Bash から実行しない**: sandbox は `.zshrc` / `.bashrc` への書込をリポジトリ内のどの階層でも拒否するため、この 2 つを含むこのリポジトリでは checkout が `unable to create file .config/zsh/.zshrc: Operation not permitted` で失敗し、作成途中の worktree だけが残る（v2.1.226・macOS で実測）。Claude Code 自身が作る worktree はこの制限を受けない（`isolation: worktree` の subagent が `.config/zsh/.zshrc` を持つ checkout を得られることを確認済み）。worktree が要るときは native の仕組みを使い、人間の作業場は `wt` から作る
+- `.claude` / `.claude/worktrees` / worktree 自身が symlink だと Claude Code は作成を拒否する。`~/.config` のようにこのリポジトリへ symlink を張る運用を `.claude/` 配下へ広げない
+- **worktree 内では設定ファイルの自己保護が外れる**（v2.1.226・macOS で実測）。絶対パスで表現される deny（`<repo>/claude/settings.json`・`<repo>/.claude/settings.json`・`<repo>/claude/CLAUDE.md`・`<repo>/.claude/hooks` 等）は `.claude/worktrees/<name>/` 配下の複製に一致せず、隔離した subagent はこれらを書き換えられる。一方 glob 形の deny（`.zshrc` 等）は階層を問わず効く。worktree で走らせる agent に settings・hook を触らせる作業を渡さず、その diff は merge 前に人間が読む
+
 ## 手動での追記が必要な設定
 
 - `sandbox.credentials.envVars` はワイルドカード非対応の手動列挙リスト。新しいシークレット系 CLI ツールを導入したら対応する環境変数名をここに追加する。`mode: "deny"` はサンドボックス内のコマンドから当該変数を消す（ダミー変数で動作を確認済み・v2.1.226）が、`excludedCommands` は sandbox 外で走るため適用されない。そちらは `claude/hooks/block-secret-read.sh` の環境変数展開チェックが受け持つ
