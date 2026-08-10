@@ -10,6 +10,10 @@ paths:
 
 - `claude/settings.json` の監査・変更は公式 docs（code.claude.com/docs）と CHANGELOG を根拠にする。`$schema` が指す schemastore 定義は追従が遅く（`sandbox`・`fileSuggestion` 等が未収録）、キーの有効性判断には使わない
 - このファイルの「実測済み」記述にはバージョンを添える。docs 側の仕様が後から変わることがあるので、記述したバージョンと現行バージョンが離れていたら、docs と再測定で裏を取り直してから従う
+- sandbox の実測は macOS（Seatbelt）と WSL2（bubblewrap）で別に取る。実装が違うので片方の結果を他方へ一般化しない。バージョンだけ書かれていてプラットフォームが書かれていない記述は macOS のものとして扱う
+- sandbox の挙動を測るときは `~/.claude/settings.json` を書き換えず、`claude --settings <file> -p` の使い捨てセッションで測る。ただし配列はスコープ間でマージされるので、この方法で **allow を狭めることはできない**（deny の追加だけができる）。`CLAUDE_CONFIG_DIR` を差し替える方法は OAuth を引けず（`Not logged in`）使えない
+- サンドボックス内から起動した `claude` は keychain を読めないので、probe セッションは Claude Code の外側のターミナルから実行する
+- `sandbox` を変更したら**新規セッション**で効果を確認する。作業中のセッションは変更前のポリシーで動き続けることがあるので、そこでの結果を根拠にしない
 
 ## 3 層の役割分担
 
@@ -21,15 +25,25 @@ paths:
 
 よって、任意コード実行やファイル読取のような能力の制限は sandbox に寄せる。`permissions` / hook は sandbox で表現できないもの（不可逆な外向き操作の確認）と、sandbox に残った穴の二次防御に使う。
 
+## PreToolUse hook を 3 本残す理由
+
+hook を足す・消すときは、標準機能（sandbox・`permissions`・auto モードの classifier）で代替できないことを先に示す。現行 3 本の根拠は以下（v2.1.226・macOS で確認）。
+
+- `block-secret-read.sh`: `az` は sandbox 内で動くため `~/.azure` は allowRead に置くしかなく、sandbox では閉じられない。加えて `excludedCommands` の `gh` / ネットワーク系 git は sandbox 外で走るので `credentials.envVars` の deny も効かない。この 2 点が hook の担当範囲で、`~/.config/gh` のように sandbox で閉じられるものについては二次防御
+- `block-main-push.sh`: auto モードの既定 allow ルール `Git Push Destination` が「セッションの repo なら default branch への push も通常操作」と明示しているため、classifier は main/master を止めない。`permissions.ask` のパターンは `main` の前に空白を要求するので refspec 形（`HEAD:main`）を捕捉できない
+- `scope-gh-pr-create.sh`: classifier の `Create Public Surface` が扱うのは「別の repo / org を狙う PR」で、セッション中の repo の owner が信頼範囲かどうかは判定しない。owner は決定論的に判定できるので hook に置く
+
 ## 採用しない設定（実測済み）
 
 - **「道具の列挙」で防御を書かない**: インタプリタ名（`python` 等）や読取コマンド名（`cat` 等）を deny / hook で列挙しても、`perl -e`・`node -e`・`bash -c`・`tr < f`・`while read` リダイレクト・一旦ファイルに書いてから実行、で回避できる（実測済み）。道具の集合は開いている。Bash tool を与える以上、任意コード実行は前提であり、境界は sandbox（`filesystem` の allow/deny・`network.strictAllowlist`・`allowUnsandboxedCommands: false`）と auto モードの classifier が持つ。道具の選好（`python` より `jaq` / `ryl`）は防御ではなくスタイルなので `claude/CLAUDE.md` 側に置く
 - **hook の判定基準は「参照される資産」側に置く**: 認証情報のパス・環境変数名・push 先ブランチ・PR 先 owner は閉じた集合なので、そちらを列挙してコマンド文字列全体に照合する。現行 hook は全てこの形。ただし対象が閉じていても綴り方は閉じていないので、パスを照合する前にクォート・重複スラッシュ・`/./`・先頭 `./` を正規化する。それでもパスを分割する形（`cd <dir> && cat <rest>`）や変数経由は通るため、hook は sandbox に残った穴の二次防御と位置づけ、単独の境界にしない
 - `env.CLAUDE_CODE_SUBPROCESS_ENV_SCRUB` は**設定しない**: Anthropic・クラウドプロバイダ系の認証情報を全サブプロセスから strip する機能だが、この環境では有効化すると Bash tool が広範に機能不全を起こし、`permissions.defaultMode: "auto"` も正しく反映されなかった（2026-07 実機確認・v2.1.220）。再度有効化を検討する場合は、まず狭いスコープで再現するか確認すること
-- `allowRead` の内側に `denyRead` を置いて穴を塞ごうとしない: **効かない**。docs は「read 規則はより具体的なパスが勝つ」「an exact deny holds inside a wider allow」と書いているが、macOS/Seatbelt では `allowRead: ~/.config` + `denyRead: ~/.config/gh` の状態で `~/.config/gh/hosts.yml` が読めた（v2.1.207 と v2.1.223 で実測、sandbox 自体は同時に `~/.ssh` 等を拒否しており有効）。しかも `filesystem.denyRead` は `credentials.files` の deny と違って無効時の `error` 通知が無いので、書いても無言で失効する。**read を塞ぐ唯一の手段は `allowRead` にそのパスを含めないこと**
-- `~/.config` は allowRead に**サブディレクトリ単位で書けない**。`~/.config` を外して `~/.config/mise` 等を列挙すると、列挙したパスまで含めて `~/.config` 配下が全て読めなくなる（v2.1.223・macOS で再起動後も再現）。`~/.cache/mise`・`~/.local/bin`・`~/.claude/skills` のように他の親配下では同じ書き方が効くので、`~/.config` 固有の挙動。よってここは「丸ごと開ける / 丸ごと閉じる」の二択になり、`~/.config/gh`・`~/.config/snowflake` だけを閉じることはできない。現在は開ける側を選んでいる（閉じると rumdl がユーザー設定を読めず MD013 を既定の 80 文字で適用して誤検知を出し、`rg` も `RIPGREP_CONFIG_PATH` の読取に失敗する）。この 2 つは `claude/hooks/block-secret-read.sh` が唯一のガード
+- `allowRead` の内側の `denyRead` は効く（v2.1.226・macOS/Seatbelt で実測。`allowRead` した親の中の 1 ファイル・1 ディレクトリを deny すると、そこだけ EPERM になる）。ただし判定は**解決後のパス**で行われるので、symlink 経由の表記で書いた deny は実体に一致せず無言で失効する。`filesystem.denyRead` は `credentials.files` の deny と違って無効時の `error` 通知が無いので、deny を足したら実際に読めなくなることを確認する
+- `~/.config` は `~/repos/github.com/halkn/dotfiles/.config` への symlink。そのため `~/.config/<name>` 表記の `denyRead` は dir 単位でも file 単位でも効かず（実体は `allowRead: "."` の内側にある repo 配下）、逆に `~/.config` を allowRead から外して `~/.config/mise` だけを列挙する形も効かない（symlink 本体が `~/` の denyRead 側に残り辿れない）。**閉じたいものは実体パスで書く**: `~/repos/github.com/halkn/dotfiles/.config/gh` を deny すると symlink 経由の read も EPERM になる（v2.1.226 で実測）。symlink でない環境のために `~/.config/gh` 表記も併記する
+- repo に追跡されている公開設定（`.config/snowflake/config.toml` 等）は deny しない。守る対象が無いうえ、repo 内の追跡ファイルを Bash から読めなくするだけになる。閉じる対象は「追跡外で認証情報を持つもの」に限る
+- `permissions.deny` の `Read(...)` は sandbox の read deny にも降りるが、降りるのは**ファイル名パターンだけ**。`//**/.env`・`//**/*.pem`・`//**/id_rsa*` は書込可能なディレクトリの中でも EPERM になる一方、subtree 形（`//**/.ssh/**`・`//**/secrets/**`・`//**/credentials/**`）は Read tool にしか効かず、Bash からは配下のファイルが読める（v2.1.226 実測。`.ssh/id_rsa` が止まるのは `id_rsa*` の側にマッチするため）。Bash からも塞ぐなら `sandbox.filesystem.denyRead` に書く
 - `allowRead` を削ったら `mise run lint` を通す。ツールが自分の設定を読めなくなっても多くは失敗せず、黙って既定値で動く。壊れたことが**結果の変化**としてしか出ないので、read を狭める変更は必ず lint で確認する
-- sandbox から除外したコマンド（`excludedCommands`）には filesystem 制限が一切効かない。`gh` は除外しているので、仮に `~/.config/gh` を閉じられたとしても `gh` 自身の認証は壊れない。逆に `az` は sandbox 内で動くため `~/.azure` は allowRead が必要で、こちらは hook でしか守れない
+- sandbox から除外したコマンド（`excludedCommands`）には filesystem 制限も `credentials.envVars` の deny も効かない。`gh` は除外しているので、`~/.config/gh` を実体パスで閉じても `gh` 自身の認証は壊れない。逆に `az` は sandbox 内で動くため `~/.azure` は allowRead が必要で、こちらは hook でしか守れない
 - PreToolUse hook に `if` フィルタ（permission rule 構文）を使わない: prefix マッチのため `git push && gh pr create ...` のような複合コマンドで hook 自体がスキップされ、スクリプト側のセグメント解析による防御が無効化される
 - hook の停止は `exit 2` で書く。docs 上、exit 2 は permission rule の評価より前に tool call を止めるので allow ルールにも勝つ。JSON の `permissionDecision` は permission rule を飛び越えられない（`"allow"` を返しても deny / ask ルールは評価される）。逆に確認を出したいだけなら JSON の `"ask"` を使う。これは auto モードの classifier を迂回してプロンプトを出す唯一の hook 手段。exit 1 は non-blocking なので停止に使わない
 - PreToolUse hook の `command` にスクリプトパスを直接書かない: スクリプト不在時は exit 127 の non-blocking error になりガードが無言で失効する。`h=<path>; [ -x "$h" ] || { echo ... >&2; exit 2; }; exec "$h"` の形で包み、欠落を exit 2 でブロックさせる。`claude/hooks/` に追加したスクリプトは `mise bootstrap` を実行するまで `~/.claude/hooks/` に symlink されないため、この失効は容易に起きる
@@ -37,14 +51,15 @@ paths:
 
 ## sandbox.excludedCommands の方針
 
-- `gh *` の除外は**維持する**。docs の Troubleshooting が Seatbelt 下の Go 製 CLI（`gh`・`gcloud`・`terraform`）の TLS 検証失敗に対して `excludedCommands` を明示的に推奨している。監査のたびに再検討しない
-- `git` はネットワーク／認証を要するサブコマンド（`push`・`fetch`・`pull`・`clone`・`ls-remote`・`remote update|prune`・`submodule`）だけを除外する。`git *` 全体を除外すると `filesystem.denyRead: ["~/"]` が git 経由で素通しになる（`git hash-object ~/.ssh/id_ed25519` 等）。docs は linked worktree の共有 `.git` への書き込みを明示的に許可しており、ローカル操作はサンドボックス内で動く前提
+- `gh *` の除外は**維持する**。sandbox 内で `gh` を走らせると 2 系統で壊れる: keyring のトークンを引けず `The token in default is invalid.`、ネットワークは `tls: failed to verify certificate: x509: OSStatus -26276`（v2.1.226・macOS で実測。docs の Troubleshooting も Seatbelt 下の Go 製 CLI に対して `excludedCommands` を推奨している）。監査のたびに再検討しない
+- 除外はツール呼び出しのコマンド文字列に対するマッチなので、`bash script.sh` の中から `gh` を呼ぶと除外は効かず sandbox 内で上記の失敗になる。スクリプト経由で `gh` を使わない
+- `git` はネットワーク／認証を要するサブコマンド（`push`・`fetch`・`pull`・`clone`・`ls-remote`・`remote update|prune`・`submodule`）だけを除外する。`git *` 全体を除外すると `filesystem.denyRead: ["~/"]` が git 経由で素通しになる。除外していない現在は `git hash-object <denyRead 配下>` が EPERM になることを確認済み（v2.1.226）。docs は linked worktree の共有 `.git` への書き込みを明示的に許可しており、ローカル操作はサンドボックス内で動く前提
 - push は `.config/git/config` の `pushInsteadOf` により SSH。HTTPS 化しても credential helper が Seatbelt 下で通らず、`allowUnsandboxedCommands: false` のため即ハードエラーになるので、ネットワーク系 git は除外に残す
 - 引数なし形（`git push` 等）とワイルドカード形を併記する。除外に追加する前に、そのサブコマンドがサンドボックス内で実際に失敗することを確認する
 
 ## 手動での追記が必要な設定
 
-- `sandbox.credentials.envVars` はワイルドカード非対応の手動列挙リスト。新しいシークレット系 CLI ツールを導入したら対応する環境変数名をここに追加する
+- `sandbox.credentials.envVars` はワイルドカード非対応の手動列挙リスト。新しいシークレット系 CLI ツールを導入したら対応する環境変数名をここに追加する。`mode: "deny"` はサンドボックス内のコマンドから当該変数を消す（ダミー変数で動作を確認済み・v2.1.226）が、`excludedCommands` は sandbox 外で走るため適用されない。そちらは `claude/hooks/block-secret-read.sh` の環境変数展開チェックが受け持つ
 - `claude/settings.json` は public repo にコミットされるため `autoMode.environment` に社内・仕事用のインフラ情報（組織名・内部ホスト名等）を書かない。仕事用の trusted infrastructure は `/Library/Application Support/ClaudeCode/managed-settings.json`（repo 外・追跡外）に記述する
 
 ## Auto モードの前提
@@ -66,4 +81,5 @@ paths:
   - 複合コマンドは `&&` `||` `;` `|` `|&` `&` と改行で分割され、各サブコマンドが独立に照合される。パイプで繋いでも deny は回避できない一方、allow は全サブコマンドが一致しないと成立しない
   - `watch` / `setsid` / `flock` などの exec wrapper と `find -exec|-delete` は prefix ルールで自動承認されない。hook 側でもこれらを読み飛ばして実行対象まで進める（オペランドを取る `timeout N` / `flock FILE` は単純な読み飛ばしでは解決できないので、hook は捕捉できない前提で扱う）
 - `classifyAllShell` が停止するのは allow ルールだけで、`permissions.ask` は auto モードでも classifier より前に評価され必ずプロンプトを出す。docs も push / PR に人間のチェックポイントを置く推奨手段として `permissions.ask` を挙げている。よって `permissions.ask` は他モード用の fallback ではなく auto モードでの一次ガード
-- main/master への直接 push は auto モードの既定では許可される（v2.1.211 以降、作業中リポジトリへの push は原則無確認）。このリポジトリでは 2 層で担保する: `permissions.ask` の `Bash(git push * main*)` 等が素直な形を捕捉し、`git push origin HEAD:main` のように `main` の前に空白が無く pattern がマッチしない refspec 形式は `claude/hooks/block-main-push.sh` が解釈して `ask` する。`autoMode` 側には重複ルールを置いていない
+- 既定の classifier ルールは `claude auto-mode defaults` で読める。ここの allow / soft_deny を先に読んでから hook を足す・消すを判断する
+- main/master への直接 push は auto モードの既定では許可される（allow ルール `Git Push Destination`: 「Pushing to any branch of the session's repo is ordinary — the default branch included」。v2.1.226 で確認）。このリポジトリでは 2 層で担保する: `permissions.ask` の `Bash(git push * main*)` 等が素直な形を捕捉し、`git push origin HEAD:main` のように `main` の前に空白が無く pattern がマッチしない refspec 形式は `claude/hooks/block-main-push.sh` が解釈して `ask` する。`autoMode` 側には重複ルールを置いていない
