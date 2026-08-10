@@ -126,6 +126,10 @@ _wt_flags() {
 
   [[ $wt_path == "$main_root" ]] && flags+=(main)
   [[ $wt_path == "$cur_root" ]] && flags+=(current)
+  # Claude Code owns the lifecycle of its own checkouts. Matched by pattern
+  # rather than against main_root: a session started inside a worktree creates
+  # .claude/worktrees/ inside that worktree, not in the main checkout.
+  [[ $wt_path == */.claude/worktrees/* ]] && flags+=(agent)
   [[ -z $branch ]] && flags+=(detached)
   [[ -d $wt_path ]] || flags+=(missing)
 
@@ -599,7 +603,9 @@ _wt_rm() {
   if [[ $mode == clean ]]; then
     # Reclaimable = merged or upstream gone, and not the main / current / dirty
     # checkout. Everything shown is preselected; deselect what should stay.
-    rows=$(print -r -- "$rows" | grep -E '(merged|gone)' | grep -v -E '(main|current|dirty)')
+    # `agent` checkouts are excluded: Claude Code's own sweep reclaims them, and
+    # one may be locked and in use by a running agent.
+    rows=$(print -r -- "$rows" | grep -E '(merged|gone)' | grep -v -E '(main|current|dirty|agent)')
     [[ -n $rows ]] || {
       print 'wt: nothing to reclaim' >&2
       return 0
