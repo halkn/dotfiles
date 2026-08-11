@@ -3,11 +3,33 @@
     "filesystem": {
       "allowRead": [
         "./",
-        "~/.local/share/nvim"
+        "~/.zshenv",
+        "~/.local/share/nvim",
+        "~/.local/share/zsh"
       ],
       "allowWrite": [
+        "~/.local/share/zsh",
         "~/.local/share/nvim"
       ]
     }
+  },
+  "permissions": {
+    "allow": [
+      "Bash(mise bootstrap status*)",
+      "Bash(mise bootstrap plan*)",
+      "Bash(mise bootstrap --dry-run*)",
+      "Bash(mise bootstrap * status*)"
+    ],
+    "deny": [
+      "Bash(mise bootstrap remote*)"
+    ],
+    "ask": [
+      "Bash(mise run setup)",
+      "Bash(mise run sync)",
+      "Bash(mise run update)",
+      "Bash(mise bootstrap --yes*)",
+      "Bash(mise bootstrap -y*)",
+      "Bash(mise bootstrap --force-dotfiles*)"
+    ]
   }
 }

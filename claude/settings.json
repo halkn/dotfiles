@@ -50,10 +50,6 @@
       "Bash(uv export *)",
       "Bash(mise tasks*)",
       "Bash(mise task info*)",
-      "Bash(mise bootstrap status*)",
-      "Bash(mise bootstrap plan*)",
-      "Bash(mise bootstrap --dry-run*)",
-      "Bash(mise bootstrap * status*)",
       "Bash(eza *)",
       "Bash(tree *)",
       "Bash(jaq *)",
@@ -112,7 +108,6 @@
       "Bash(git push * -f*)",
       "Bash(git config *alias.*)",
       "Bash(uv publish*)",
-      "Bash(mise bootstrap remote*)",
       "Bash(az devops invoke *--http-method post*)",
       "Bash(az devops invoke *--http-method POST*)",
       "Bash(az devops invoke *--http-method patch*)",
@@ -139,13 +134,7 @@
       "Bash(uv tool uninstall*)",
       "Bash(uv python uninstall*)",
       "Bash(uv cache clean*)",
-      "Bash(uv cache prune*)",
-      "Bash(mise run update)",
-      "Bash(mise run setup)",
-      "Bash(mise run sync)",
-      "Bash(mise bootstrap --yes*)",
-      "Bash(mise bootstrap -y*)",
-      "Bash(mise bootstrap --force-dotfiles*)"
+      "Bash(uv cache prune*)"
     ],
     "defaultMode": "auto",
     "disableBypassPermissionsMode": "disable"
