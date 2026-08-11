@@ -93,11 +93,13 @@ Claude Code は `--worktree` / `EnterWorktree` / subagent の `isolation: worktr
 - `autoMode`（および `permissions.defaultMode: "auto"`）は user settings（`~/.claude/settings.json`）・managed settings・`--settings` フラグからのみ読まれる仕様で、`.claude/settings.json` / `.claude/settings.local.json` からは読まれない（`permissions.defaultMode` は v2.1.207、`autoMode` ブロックは v2.1.219 以降。repo や build step が自分に auto モードや trusted infrastructure を付与できないようにするため）
 - `autoMode.classifyAllShell: true` により、auto モード中は `permissions.allow` の Bash ルール（`Bash(git *)` 等）が全て停止し、全シェルコマンドが classifier 経由になる。allow リストは `acceptEdits` 等の他モードへ切り替えたときの fallback として残している
 - `permissions.allow` は auto モードでは死んでいるので、判断基準は「他モードへフォールバックしたときに無確認で通っても安全か」だけ。サブコマンドを明示した read-only 形にとどめ、`Bash(git *)` のような動詞を跨ぐワイルドカードは置かない（`git -c core.pager=<cmd> log` や `gh alias set --shell` のように、`*` が空白を跨いで書き込み・任意実行サブコマンドを取り込む）
-- 破壊的だが正当な用途もある操作（`git reset --hard` / `git clean -f` / `git worktree remove` / `uv self update` / `mise run update` 等）は deny ではなく `permissions.ask` に置く。deny は代替手段を塞ぐだけだが、ask なら auto モード中も classifier より前に確認が入る
+- 破壊的だが正当な用途もある操作（`git reset --hard` / `git clean -f` / `git worktree remove` / `uv self update` / `mise bootstrap --force-dotfiles` 等）は deny ではなく `permissions.ask` に置く。deny は代替手段を塞ぐだけだが、ask なら auto モード中も classifier より前に確認が入る
 - `permissions.deny` に残すのは「取り返しがつかない」かつ「正当な用途がほぼ無い」ものだけ。回避可能な道具の列挙と、sandbox が既に決定論的に制御しているもの（書込先は write allowlist、送信先は network allowlist）は deny に置かない。git で戻せる変更（lockfile・依存）も deny の対象にしない
 - `sandbox.network.strictAllowlist` を exfiltration の防波堤として数えない。制御するのは送信先だけで中身ではなく、docs は `github.com` のような広いドメインの許可について「can create paths for data exfiltration」と明記し、proxy が TLS を検査せず client 提供のホスト名で判断するため domain fronting で allowlist 外へ到達しうるとまで書いている。allowlist 内にも remote code path（`codeload.github.com`）と exfiltration path（`api.github.com` の gist）が残る。ネットワーク系の deny を外すときは、残余リスクを負うのが classifier だと承知の上で外す。非 HTTP の生ソケット（`nc` / `ssh` / `scp`）は proxy の対象外になりうるので deny に残す
-- 環境そのものを変える更新系（`mise run update|setup|sync`・`mise bootstrap*`）は git で戻せないので ask に置く
-- ask / deny のパターンは、実際に打たれる形を `mise.toml` や `README.md` で確認してから書く。`mise bootstrap` のようにサブコマンド・フラグの形が一定しないものは、`*` 無しの完全一致では実際の呼び出しを 1 つも捕捉できない。prefix パターンでは例外（`--dry-run` 等の read-only 形）を表現できないので、そこまで ask に含めて安全側に倒す
+- 環境を変える操作は「入口が閉じているか」で書き分ける。`mise run setup|sync|update` のような task 名は閉じた集合なので、完全一致で ask に列挙して人間のチェックポイントにする。`mise bootstrap` のようにサブコマンドとフラグの形が開いているものは列挙しない。mutating 形を網羅しようとすると際限なく伸び、それでも alias 表記（`packages up`）や稀なグローバルフラグは漏れる
+- 開いている側は、両端と「無確認で走る形」だけをルールで固定し、残りは classifier に渡す: 他ホストへ作用するもの（`mise bootstrap remote`）は deny、取り返しがつかないが正当な用途があるもの（`mise bootstrap --force-dotfiles`）と、ツール側の確認を落とす形（`--yes` / `-y`。短縮形も併記する）は ask、完全に read-only な形（`status` / `plan` / `--dry-run`）は allow
+- ask は allow より先に評価される。`Bash(mise bootstrap*)` のような広い prefix を ask に置くと read-only 形まで毎回プロンプトになり、同じ形を allow へ足しても外れない。read-only 形を通したいなら ask 側を狭めるしかない
+- ask / deny のパターンは、実際に打たれる形を `mise.toml` や `README.md` で確認してから書く。`mise bootstrap` のようにサブコマンド・フラグの形が一定しないものは、`*` 無しの完全一致では実際の呼び出しを 1 つも捕捉できない
 - deny のパターンはオプションの等号形も併記する。`--http-method post` だけを書くと `--http-method=POST` がすり抜ける
 - パターンの照合規則（docs 記載。ここを誤解すると書いたつもりのルールが効かない）:
   - `*` は空白を跨いで任意長にマッチする。`Bash(git * main)` は `git push origin main` にも `git merge main` にもマッチする
