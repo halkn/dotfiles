@@ -65,10 +65,8 @@
 
 - 委譲しない: 数回の tool call で終わる作業、結論より過程の共有が要る作業、自分の作業の検証目的（例外は高リスクな変更——広範囲・セキュリティ / 権限設計・不可逆な操作・長時間の自律実行——で、このときだけ fresh context のレビューを 1 体立ててよい）
 - 直列依存（前タスクの結果が次の入力）は並列化しない。隔離だけが目的なら 1 体ずつ順に使う
-- 並列度は独立トラックの数で決める。同時実行数と nesting の深さは別概念で、上限はどちらも runtime が持つのでプロンプト側に数値を置かない。抑えたいのは「利得の無い委譲」であって同時実行数ではない
+- 並列度は独立トラックの数で決める。抑えたいのは「利得の無い委譲」であって同時実行数ではない
 - 通常の subagent は fresh context で、会話履歴・読んだファイル・invoke 済み skill・auto memory を引き継がない。必要な前提はプロンプトに明示して渡す
-- fork は会話を継承するので前提の再説明が要らない。入力側の隔離が無いので context 削減には使わず、同じ地点から複数案を並行して試すときに限る
-- 既定は background で、結果は後のターンに通知として届く。次の判断に結果が要るなら foreground で走らせる
 - 1 session 内の委譲と、独立 session を並べる仕組み（background session・cross-session messaging・agent teams・workflow）は別物。後者は既定では使わず、必要と判断したらユーザーに諮る
 
 worktree isolation（`isolation: worktree`）は書込の競合で判断する。`subagent = worktree` にはしない（fresh checkout の作り直しコストが掛かり、変更が残ると sweep まで作業木に残る）。
