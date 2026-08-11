@@ -70,6 +70,10 @@ beforehand.
 When the bootstrap finishes, reopen the terminal (or start a new login
 shell) to enter zsh with the linked config.
 
+`setup` is for the first run on a machine. Afterwards, `mise run sync` applies
+changes to these declarations and `mise run update` moves versions forward; see
+[Tool Manager](#tool-manager).
+
 ### Git identity
 
 The git config (`$XDG_CONFIG_HOME/git/config`) includes a relative
@@ -176,8 +180,12 @@ and dotfiles-specific Neovim tools in `mise.toml`.
 [Claude Code](https://code.claude.com/) is installed standalone.
 
 Each configuration root has its own lockfile: `.config/mise/mise.lock` for
-the shared global tools and `mise.lock` for dotfiles-specific tools.
-`mise run update` refreshes both; commit their diffs afterwards.
+the shared global tools and `mise.lock` for dotfiles-specific tools. Both are
+committed, and only `mise run update` is allowed to move the versions in them
+— `mise run setup` and `mise run sync` install what the lockfiles already pin.
+A lockfile diff after `update` is the update itself; commit it. A lockfile diff
+after `setup` or `sync` means a newly declared tool had no locked version yet,
+so commit that too.
 
 mise shell activation uses PATH mode rather than shims. Keep shell aliases and
 functions in zsh; use mise's `[env]` only for project-specific environments.
@@ -187,18 +195,53 @@ repository's gitignored `mise.local.toml`. These files may override `[env]`,
 `[tools]`, and settings without changing the shared configuration.
 
 Task automation uses [mise tasks](https://mise.jdx.dev/tasks/), defined in the
-repo's `mise.toml` and run with `mise run`:
+repo's `mise.toml` and run with `mise run` (`mise tasks` lists them).
+
+The three machine-state tasks are separated by the state transition they make,
+not by the commands they happen to run:
+
+| Task | Use it when | Moves versions | Touches machine-global state |
+| --- | --- | --- | --- |
+| `setup` | this machine has never been set up | zsh plugin repos only (they are unpinned, and on a first run they are being cloned) | yes — OS packages, login shell, symlinks |
+| `sync` | this repo changed (here or on another machine) and the machine should follow | no — tools come from the lockfiles | yes, the same set, by converging on the new declarations |
+| `update` | a tool or external component should move to a newer version | yes — that is its purpose | yes, but only versions of what is already declared |
+
+- `setup` (= `mise bootstrap --yes --update`) refreshes the package-manager
+  metadata first, because a fresh machine has never fetched it, and then
+  converges every declaration as listed under [Bootstrap](#bootstrap).
+- `sync` (= `git pull --ff-only` + `mise bootstrap --yes`) runs the same
+  convergence without the metadata refresh. It uses the full bootstrap rather
+  than `mise install` alone because a pulled commit can change any declaration
+  — a new symlink in `[dotfiles]`, an OS package, a zsh plugin repo — and
+  installing tools alone would leave the rest of the machine on the previous
+  declaration.
+- `update` updates mise itself, the tools in both configuration roots (which
+  rewrites both lockfiles), the installed OS packages, the zsh plugin repos,
+  and Claude Code. It never pulls this repo: run `sync` first if you want the
+  current declarations, then `update`, then commit the lockfile diffs.
+
+`setup` and `sync` converge, so re-running them changes nothing once the
+machine matches the declarations.
+
+Each `update` step is independent: a component that is not installed is
+skipped, a step that fails is reported and the remaining steps still run, and
+the task exits non-zero listing every step that failed.
+
+Narrower entry points into the same declarations, useful for previewing:
 
 ```sh
-mise tasks         # List tasks
-mise run setup     # Refresh package metadata, then bootstrap OS packages, dotfiles, zsh plugins, login shell, mise tools, and Claude Code
-mise run sync      # Fast-forward dotfiles and install the lockfile-pinned mise tools
-mise run update    # Update mise itself, tools, both lockfiles, declared OS packages, zsh plugins, and Claude Code
-mise bootstrap status    # Show what `mise bootstrap` would change
+mise bootstrap status            # Show what `mise bootstrap` would change
+mise bootstrap --dry-run         # Same, as the diff each step would apply
 mise bootstrap packages upgrade  # Upgrade only the declared OS packages
+```
+
+Repository quality tasks are separate from all of the above and touch no
+machine state:
+
+```sh
 mise run fmt       # Format Markdown, zsh files, and Neovim Lua files
 mise run fmt-check # Check formatting without writing files
-mise run lint      # Run repository checks
+mise run lint      # Full repository verification (fmt-check + zsh/shell/Lua checks)
 ```
 
 ## Neovim plugins
