@@ -48,6 +48,8 @@
       "Bash(uv lock --check *)",
       "Bash(uv audit *)",
       "Bash(uv export *)",
+      "Bash(mise tasks*)",
+      "Bash(mise task info*)",
       "Bash(eza *)",
       "Bash(tree *)",
       "Bash(jaq *)",
@@ -132,11 +134,7 @@
       "Bash(uv tool uninstall*)",
       "Bash(uv python uninstall*)",
       "Bash(uv cache clean*)",
-      "Bash(uv cache prune*)",
-      "Bash(mise run update)",
-      "Bash(mise run setup)",
-      "Bash(mise run sync)",
-      "Bash(mise bootstrap*)"
+      "Bash(uv cache prune*)"
     ],
     "defaultMode": "auto",
     "disableBypassPermissionsMode": "disable"

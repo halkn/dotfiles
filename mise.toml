@@ -54,14 +54,19 @@ login_shell = "/bin/zsh"
 "~/.local/share/zsh/plugins/zsh-autosuggestions" = { url = "https://github.com/zsh-users/zsh-autosuggestions" }
 "~/.local/share/zsh/plugins/fast-syntax-highlighting" = { url = "https://github.com/zdharma-continuum/fast-syntax-highlighting" }
 
+# `--update` refreshes the package manager metadata, which a fresh machine has never fetched;
+# it also fast-forwards [bootstrap.repos], harmless on a first run because they are being cloned.
+# `mise run sync` is the same convergence without either, for machines that are already set up.
 [tasks.setup]
-description = "フルセットアップ（パッケージ索引更新 → mise bootstrap → Claude Code）"
+description = "初回セットアップ（パッケージ索引更新 → 宣言状態へ収束）"
 dir = "{{config_root}}"
 run = "mise bootstrap --yes --update"
 
 # Runs as the last step of `mise bootstrap`, so it has to stay idempotent. The herdr plugin
 # itself is fetched by herdr and gitignored, which is why it is declared here, not in [dotfiles].
+# Hidden: this is a step of `mise bootstrap`, not an entry point to run on its own.
 [tasks.bootstrap]
+hide = true
 description = "Claude Code と herdr プラグインをインストール（未導入時のみ）"
 run = """
 #!/usr/bin/env bash
@@ -76,22 +81,53 @@ fi
 
 # ── Maintenance ──────────────────────────────────────
 
+# Full convergence, not just `mise install`: a pulled commit can change any declaration
+# ([dotfiles], [bootstrap.packages], [bootstrap.repos], [bootstrap.user]), and installing tools
+# alone would leave the rest of the machine on the previous declaration. No `--update`, so
+# versions only move where the lockfile moved.
 [tasks.sync]
-description = "dotfiles と lockfile 固定の mise ツールを同期"
+description = "リポジトリの更新を取り込み、宣言状態へ収束"
 dir = "{{config_root}}"
-run = ["git pull --ff-only", "mise install"]
+run = ["git pull --ff-only", "mise bootstrap --yes"]
 
+# No `set -e`: every step is independent, so one failure must not skip the rest. Failures are
+# collected and surfaced in the exit code instead, and a component that is not installed is
+# skipped rather than counted as a failure.
 [tasks.update]
 description = "mise 本体・ツール・lockfile・OS パッケージ・zsh プラグイン・Claude Code を更新"
 dir = "{{config_root}}"
 run = """
 #!/usr/bin/env bash
-set -euo pipefail
-mise self-update --yes
-mise upgrade
-mise bootstrap packages upgrade
-mise bootstrap repos update --yes
-command -v claude >/dev/null && claude update || true
+set -uo pipefail
+
+failed=()
+
+step() {
+  local name=$1
+  shift
+  "$@" || failed+=("$name")
+}
+
+optional_step() {
+  local name=$1
+  shift
+  if command -v "$1" >/dev/null; then
+    step "$name" "$@"
+  else
+    echo "skip: $1 is not installed"
+  fi
+}
+
+step "mise self-update" mise self-update --yes
+step "mise upgrade" mise upgrade
+step "bootstrap packages" mise bootstrap packages upgrade
+step "bootstrap repos" mise bootstrap repos update --yes
+optional_step "claude update" claude update
+
+if ((${#failed[@]} > 0)); then
+  printf 'failed: %s\\n' "${failed[@]}" >&2
+  exit 1
+fi
 """
 
 # ── Quality ──────────────────────────────────────────

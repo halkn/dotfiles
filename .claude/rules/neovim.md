@@ -30,5 +30,5 @@ paths:
 
 1. `mise run fmt` で整形（`stylua` + `shuck`）
 1. `mise run lint` で確認（`stylua --check`・`emmylua_check`・起動確認）
-1. tools がない場合は先に `mise run setup` を実行する
+1. tools がない場合は先に `mise install` を実行する（lockfile 固定のまま導入される）
 1. `.config/nvim/.emmyrc.json` の前提（`statusline`・`vim` global 等）を崩さないこと
