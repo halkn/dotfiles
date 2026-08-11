@@ -17,6 +17,9 @@ mise.*.local.toml
 # machine-local git identity
 .config/git/config.local
 
+# Claude Code worktrees (ephemeral agent checkouts)
+.claude/worktrees/
+
 # uv installer receipt
 .config/uv/uv-receipt.json
 

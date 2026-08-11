@@ -5,6 +5,9 @@
     "command": "~/.claude/file-suggestion.sh"
   },
   "cleanupPeriodDays": 14,
+  "worktree": {
+    "baseRef": "head"
+  },
   "env": {
     "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
     "BASH_DEFAULT_TIMEOUT_MS": "30000",

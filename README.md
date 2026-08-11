@@ -155,6 +155,19 @@ Pull requests from a fork are fetched read-only as `pr-<number>`; run
 code is not pre-trusted for mise (same-repository branches are), so treat that
 worktree as untrusted: inspect it before running its tasks or an agent in it.
 
+Claude Code creates worktrees of its own, so the two kinds are kept apart:
+
+| | `wt` / herdr | Claude Code |
+| --- | --- | --- |
+| For | branch, pull request and multi-session work a human returns to | isolating a session or a subagent while it runs |
+| Created by | `wt new`, `wt pr`, herdr `alt+g` | `--worktree`, `EnterWorktree`, `isolation: worktree` |
+| Placed in | `~/.local/share/herdr/worktrees/` | `<repo>/.claude/worktrees/` (gitignored) |
+| Removed by | you — `wt rm`, `wt clean`, `ctrl-x` in the `alt+s` picker | Claude Code, on exit or by its periodic sweep |
+
+`wt` marks the second kind with an `agent` flag and leaves it out of
+`wt clean`, so reclaiming merged worktrees never races a running agent; it stays
+listed in `wt` and `wt rm` for the times a sweep leaves one behind.
+
 ## Tool Manager
 
 CLI tools, LSP servers, and formatters are managed by
