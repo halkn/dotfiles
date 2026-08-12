@@ -4,7 +4,8 @@ M.config = {
   statusline = "%!v:lua.require'vimrc.statusline'.render()",
 }
 
--- Below this width the statusline drops everything that is available elsewhere.
+-- Below this width the left side shortens the file name and keeps only the most
+-- severe diagnostic. The right side is never dropped.
 local narrow_width = 80
 local narrow_filename_width = 20
 local section_separator = ' | '
@@ -97,11 +98,18 @@ local function normalize_mode(mode)
   return mode
 end
 
+-- The result of a `%!` statusline is parsed again, so literal `%` coming from a
+-- buffer name or from vim.lsp.status() ("%3d%%: ...") has to be escaped.
 local function hl(group, text)
   if text == nil or text == '' then
     return ''
   end
-  return ('%%#%s#%s%%*'):format(group, text)
+  return ('%%#%s#%s%%*'):format(group, (text:gsub('%%', '%%%%')))
+end
+
+-- Same, for text that is meant to be a statusline item rather than a literal.
+local function hl_item(group, item)
+  return ('%%#%s#%s%%*'):format(group, item)
 end
 
 local function join(parts, separator)
@@ -156,7 +164,6 @@ local function truncate_tail(text, max_width)
   return '…' .. vim.fn.strcharpart(text, chars - keep)
 end
 
--- Signs come from vim.diagnostic.config(), which is set once at startup.
 local function resolve_diagnostic_icons()
   local config = vim.diagnostic.config()
   local signs = type(config) == 'table' and config.signs or nil
@@ -341,7 +348,10 @@ function M.render()
 
   local left = {
     mode_label(raw_mode, mode_code),
-    hl('VimrcStatuslineSection', file_label(buffer_name(bufnr), buffer_flags(bufnr), compact)),
+    -- `%<` keeps the mode indicator when the line overflows: without it Vim
+    -- truncates from the very start of the statusline.
+    '%<'
+      .. hl('VimrcStatuslineSection', file_label(buffer_name(bufnr), buffer_flags(bufnr), compact)),
     diagnostics_summary(diagnostics_counts(bufnr), compact),
   }
 
@@ -352,8 +362,8 @@ function M.render()
     hl('VimrcStatuslineSection', filetype_summary(bufnr, lsp_clients)),
     hl('VimrcStatuslineMuted', file_encoding(bufnr)),
     hl('VimrcStatuslineMuted', vim.bo[bufnr].fileformat),
-    hl('VimrcStatuslineMuted', '%p%%'),
-    hl('VimrcStatuslineSection', '%l:%c'),
+    hl_item('VimrcStatuslineMuted', '%p%%'),
+    hl_item('VimrcStatuslineSection', '%l:%c'),
   }
 
   return (' %s %%= %s '):format(section(left), section(right))
@@ -368,14 +378,26 @@ function M.setup(opts)
   vim.o.statusline = M.config.statusline
 
   local group = vim.api.nvim_create_augroup('vimrc_statusline', { clear = true })
-  vim.api.nvim_create_autocmd({ 'BufEnter', 'DiagnosticChanged', 'ModeChanged', 'WinEnter' }, {
+  -- BufWritePost clears the [+] flag when writing an otherwise idle buffer;
+  -- OptionSet does not fire for 'modified'.
+  vim.api.nvim_create_autocmd({ 'BufEnter', 'BufWritePost', 'ModeChanged', 'WinEnter' }, {
     group = group,
     callback = redraw_statusline,
   })
 
+  vim.api.nvim_create_autocmd('DiagnosticChanged', {
+    group = group,
+    callback = function()
+      -- vim.diagnostic.config() can still be overridden after this setup() runs,
+      -- since init.lua requires the machine-local module last.
+      resolve_diagnostic_icons()
+      redraw_statusline()
+    end,
+  })
+
   vim.api.nvim_create_autocmd('OptionSet', {
     group = group,
-    pattern = { 'modified', 'fileencoding', 'fileformat' },
+    pattern = { 'fileencoding', 'fileformat' },
     callback = redraw_statusline,
   })
 
