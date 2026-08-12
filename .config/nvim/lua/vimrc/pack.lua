@@ -10,6 +10,12 @@ local on_pack_changed = function(ev)
 end
 
 -- plugins ------------------------------------------------------------------
+---@class vimrc.pack.Spec
+---@field src string
+---@field version string?
+---@field config fun()?
+
+---@type vimrc.pack.Spec[]
 local plugs = {
   {
     src = 'rebelot/kanagawa.nvim',
@@ -38,7 +44,9 @@ local plugs = {
     src = 'saghen/blink.cmp',
     version = 'v1.10.2',
     config = function()
-      require('blink.cmp').setup({
+      -- blink.cmp declares every field of its *ConfigPartial types as required,
+      -- so the option table is built outside the call and cast.
+      local opts = {
         keymap = {
           preset = 'super-tab',
         },
@@ -53,7 +61,11 @@ local plugs = {
         sources = {
           default = { 'lsp', 'path', 'snippets', 'buffer' },
         },
-      })
+      }
+      -- blink.cmp declares every field of its *ConfigPartial types as required,
+      -- so any partial config is reported as incomplete. The cast drops a check
+      -- that cannot pass rather than one that works.
+      require('blink.cmp').setup(opts --[[@as blink.cmp.Config]])
     end,
   },
   {
@@ -163,8 +175,10 @@ end, {
 })
 
 vim.api.nvim_create_user_command('PackClean', function()
-  local inactive = vim
-    .iter(vim.pack.get())
+  -- vim.iter is callable through `@operator call`, which the analyzer reads as
+  -- taking no arguments.
+  local iter = vim.iter --[[@as fun(src: table): Iter]]
+  local inactive = iter(vim.pack.get())
     :filter(function(x)
       return not x.active
     end)

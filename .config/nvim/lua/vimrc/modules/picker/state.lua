@@ -1,5 +1,33 @@
 local M = {}
 
+-- Every field starts nil and is filled in by M.open(), so without this class the
+-- analyzer infers the whole session state as nil and reports every guard against
+-- it as dead code.
+---@class vimrc.picker.State
+---@field prompt_buf integer?
+---@field prompt_win integer?
+---@field list_buf integer?
+---@field list_win integer?
+---@field preview_buf integer?
+---@field preview_win integer?
+---@field source_name string?
+---@field source_def table?
+---@field all_items table[]
+---@field filtered table[]
+---@field cursor_idx integer
+---@field use_preview boolean
+---@field async_job table?
+---@field debounce_timer uv.uv_timer_t?
+---@field origin_win integer?
+---@field origin_buf integer?
+---@field on_select fun(item: table)?
+---@field augroup integer?
+---@field source_opts table
+---@field on_esc fun()?
+---@field on_cursor_moved fun(idx: integer)?
+---@field generation integer
+
+---@return vimrc.picker.State
 function M.new()
   return {
     prompt_buf = nil,
@@ -96,15 +124,21 @@ function M.cleanup(state, on_close)
 
   for _, key in ipairs({ 'prompt_win', 'list_win', 'preview_win' }) do
     local win = state[key]
-    if type(win) == 'number' and vim.api.nvim_win_is_valid(win) then
-      vim.api.nvim_win_close(win, true)
+    if type(win) == 'number' then
+      local handle = math.floor(win)
+      if vim.api.nvim_win_is_valid(handle) then
+        vim.api.nvim_win_close(handle, true)
+      end
     end
     state[key] = nil
   end
   for _, key in ipairs({ 'prompt_buf', 'list_buf', 'preview_buf' }) do
     local buf = state[key]
-    if type(buf) == 'number' and vim.api.nvim_buf_is_valid(buf) then
-      vim.api.nvim_buf_delete(buf, { force = true })
+    if type(buf) == 'number' then
+      local handle = math.floor(buf)
+      if vim.api.nvim_buf_is_valid(handle) then
+        vim.api.nvim_buf_delete(handle, { force = true })
+      end
     end
     state[key] = nil
   end
