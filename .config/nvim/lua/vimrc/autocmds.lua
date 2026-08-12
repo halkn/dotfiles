@@ -36,6 +36,6 @@ autocmd('TermOpen', {
 autocmd('TextYankPost', {
   group = group_name,
   callback = function()
-    vim.hl.hl_op({ timeout = 200 })
+    vim.hl.on_yank({ timeout = 200 })
   end,
 })
