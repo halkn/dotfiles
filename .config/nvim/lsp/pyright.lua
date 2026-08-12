@@ -26,7 +26,6 @@ local config = {
     'uv.lock',
     '.git',
   },
-  single_file_support = true,
   settings = {
     pyright = {
       disableOrganizeImports = false,

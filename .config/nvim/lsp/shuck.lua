@@ -7,5 +7,4 @@ return {
     'shuck.toml',
     '.git/',
   },
-  single_file_support = true,
 }

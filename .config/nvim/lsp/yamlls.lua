@@ -1,5 +1,5 @@
 -- Inactive: yaml lint and format are handled by ryl.
--- To re-enable, add 'yamlls' to languages.yaml.lsp in lsp.lua.
+-- To re-enable, add 'yamlls' to the servers list in lsp.lua.
 ---@type vim.lsp.Config
 local config = {
   cmd = { 'yaml-language-server', '--stdio' },
@@ -7,7 +7,6 @@ local config = {
   root_markers = {
     '.git/',
   },
-  single_file_support = true,
   settings = {
     yaml = {
       format = {

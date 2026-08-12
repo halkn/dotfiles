@@ -26,7 +26,11 @@ local config = {
     'uv.lock',
     '.git',
   },
-  single_file_support = true,
+  -- The Python type checker owns hover. Deciding this on LspAttach would depend
+  -- on which client attaches first, so it is settled before any request is sent.
+  on_init = function(client)
+    client.server_capabilities.hoverProvider = false
+  end,
   settings = {
     organizeImports = true,
     fixAll = true,
