@@ -4,7 +4,7 @@
     "callSnippet": false
   },
   "diagnostics": {
-    "globals": ["vim"]
+    "disable": ["global-in-non-module"]
   },
   "format": {
     "externalTool": {
@@ -14,14 +14,13 @@
     }
   },
   "runtime": {
-    "version": "LuaJIT",
-    "requirePattern": ["?.lua", "?/init.lua"]
+    "version": "LuaJIT"
   },
   "workspace": {
+    "workspaceRoots": ["${workspaceFolder}/lua"],
     "library": [
-      "{env:HOME}/.local/share/nvim/site/pack/core/opt/mini.nvim/lua",
-      "${workspaceFolder}/lua",
-      "{env:VIMRUNTIME}/lua"
+      "{env:VIMRUNTIME}/lua",
+      "{env:HOME}/.local/share/nvim/site/pack/core/opt"
     ]
   }
 }
