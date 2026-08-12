@@ -304,18 +304,12 @@ local function filetype_summary(bufnr, lsp_clients)
   return ('%s[%s]'):format(filetype, lsp_clients)
 end
 
--- Encoding and format only carry information when they deviate from the default.
 local function file_encoding(bufnr)
   local encoding = vim.bo[bufnr].fileencoding
-  if encoding == '' then
-    encoding = vim.o.encoding
+  if encoding ~= '' then
+    return encoding
   end
-  return encoding ~= 'utf-8' and encoding or ''
-end
-
-local function file_format(bufnr)
-  local fileformat = vim.bo[bufnr].fileformat
-  return fileformat ~= 'unix' and fileformat or ''
+  return vim.o.encoding
 end
 
 -- laststatus=3 draws a single statusline spanning the whole editor, so the
@@ -351,11 +345,14 @@ function M.render()
     diagnostics_summary(diagnostics_counts(bufnr), compact),
   }
 
+  -- The right side always renders every item: sections that appear and vanish
+  -- with buffer state make the line hard to read at a glance.
   local right = {
-    not compact and hl('VimrcStatuslineSection', progress_summary()) or '',
+    hl('VimrcStatuslineSection', progress_summary()),
     hl('VimrcStatuslineSection', filetype_summary(bufnr, lsp_clients)),
     hl('VimrcStatuslineMuted', file_encoding(bufnr)),
-    hl('VimrcStatuslineMuted', file_format(bufnr)),
+    hl('VimrcStatuslineMuted', vim.bo[bufnr].fileformat),
+    hl('VimrcStatuslineMuted', '%p%%'),
     hl('VimrcStatuslineSection', '%l:%c'),
   }
 
