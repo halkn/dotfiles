@@ -45,7 +45,7 @@
 - バージョンで変わる仕様（Claude Code の設定・CLI のフラグ・API）は記憶で答えず、公式 docs や `--help` で裏を取ってから書く。リポジトリ内の実測メモを代わりに使うのは、そのメモが記録バージョンを明示していて現行バージョンと一致するときだけ。一致しない・バージョンの記載が無い場合は一次情報を引き直す
 - コード探索は、文字列・ファイル名・単純な識別子検索には `rg`、構文構造を条件にする検索・分析・変換には `ast-grep` を使う。ast-grep の rule 作成・検証手順は利用可能な ast-grep Skill に従う
 - `ast-grep` で書き換えるときは、まず match と diff を確認してから適用する。対象言語の parser が対応していない場合は `rg` や言語固有ツールへ戻す
-- JSON/YAML: 値の確認は `jaq`（Rust 製 jq 互換、未導入時は `jq` にフォールバック、YAML は `--from yaml` を付与）。YAML構文は `ryl`（`python -c "import yaml"` は使わない）
+- JSON/YAML: 値の確認は JSON が `jq`、YAML が `yq`。YAML 構文は `ryl`（`python -c "import yaml"` は使わない）
 
 ## Git
 

@@ -4,13 +4,7 @@
 # fd and fzf come from mise; where they are missing this falls back to rg and grep.
 set -euo pipefail
 
-if command -v jaq >/dev/null 2>&1; then
-  JQ_BIN=jaq
-else
-  JQ_BIN=jq
-fi
-
-query="$("$JQ_BIN" -r '.query // ""' 2>/dev/null)" || query=""
+query="$(jq -r '.query // ""' 2>/dev/null)" || query=""
 cd "${CLAUDE_PROJECT_DIR:-.}"
 
 run_with_timeout() {

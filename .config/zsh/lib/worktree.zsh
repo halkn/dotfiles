@@ -9,14 +9,6 @@
 # functions) can re-source it. `%x` expands to the file being sourced.
 _WT_LIB=${${(%):-%x}:A}
 
-_wt_jq_bin() {
-  if command -v jaq >/dev/null 2>&1; then
-    print -r -- jaq
-  else
-    print -r -- jq
-  fi
-}
-
 _wt_in_repo() {
   git rev-parse --is-inside-work-tree >/dev/null 2>&1 || {
     print 'wt: not inside a git repository' >&2
@@ -187,13 +179,13 @@ _wt_workspace_id() {
   local wt_path=$1
   _wt_use_herdr || return 0
   herdr worktree list --json 2>/dev/null \
-    | "$(_wt_jq_bin)" -r --arg p "$wt_path" \
+    | jq -r --arg p "$wt_path" \
       '.result.worktrees[]? | select(.path == $p) | .open_workspace_id // empty' 2>/dev/null
 }
 
 # Extract the checkout path from a herdr worktree create/open response.
 _wt_response_path() {
-  "$(_wt_jq_bin)" -r '
+  jq -r '
     [.result | .. | objects | (.checkout_path? // .path?) | select(type == "string")][0] // empty
   ' 2>/dev/null
 }
@@ -474,7 +466,7 @@ _wt_pr_preview_gh() {
   local number=$1 info
   info=$(gh pr view "$number" \
     --json title,state,isDraft,author,headRefName,baseRefName,body 2>/dev/null) || return 0
-  print -r -- "$info" | "$(_wt_jq_bin)" -r '
+  print -r -- "$info" | jq -r '
     [
       .title, "",
       "state   " + (if .isDraft then "DRAFT" else .state end),
@@ -482,7 +474,7 @@ _wt_pr_preview_gh() {
       "branch  " + .headRefName + " -> " + .baseRefName,
       ""
     ] | .[]'
-  print -r -- "$info" | "$(_wt_jq_bin)" -r '.body // ""' | _wt_pr_body_head
+  print -r -- "$info" | jq -r '.body // ""' | _wt_pr_body_head
 }
 
 _wt_pr_gh() {
@@ -509,8 +501,8 @@ _wt_pr_gh() {
   [[ -n $number ]] || return 1
 
   info=$(gh pr view "$number" --json headRefName,isCrossRepository) || return 1
-  head=$(print -r -- "$info" | "$(_wt_jq_bin)" -r '.headRefName')
-  cross=$(print -r -- "$info" | "$(_wt_jq_bin)" -r '.isCrossRepository')
+  head=$(print -r -- "$info" | jq -r '.headRefName')
+  cross=$(print -r -- "$info" | jq -r '.isCrossRepository')
 
   if [[ $cross == true ]]; then
     # Fork heads are untrusted code: fetch read-only into pr-<n> and do not
@@ -529,7 +521,7 @@ _wt_pr_gh() {
 _wt_pr_preview_az() {
   local number=$1 info
   info=$(az repos pr show --id "$number" --only-show-errors -o json 2>/dev/null) || return 0
-  print -r -- "$info" | "$(_wt_jq_bin)" -r '
+  print -r -- "$info" | jq -r '
     [
       .title, "",
       "state   " + (
@@ -543,7 +535,7 @@ _wt_pr_preview_az() {
       "branch  " + (.sourceRefName | ltrimstr("refs/heads/")) + " -> " + (.targetRefName | ltrimstr("refs/heads/")),
       ""
     ] | .[]'
-  print -r -- "$info" | "$(_wt_jq_bin)" -r '.description // ""' | _wt_pr_body_head
+  print -r -- "$info" | jq -r '.description // ""' | _wt_pr_body_head
 }
 
 # Azure Repos equivalent. `az repos` picks up organization / project /
@@ -562,7 +554,7 @@ _wt_pr_az() {
     prs=$(az repos pr list --status active --top 50 --only-show-errors -o json) || return 1
     number=$(
       print -r -- "$prs" \
-        | "$(_wt_jq_bin)" -r '.[] | [(.pullRequestId | tostring), (if .isDraft then "[draft] " else "" end) + .title + " (" + (.createdBy.displayName // "?") + ") — " + (.sourceRefName | ltrimstr("refs/heads/"))] | @tsv' \
+        | jq -r '.[] | [(.pullRequestId | tostring), (if .isDraft then "[draft] " else "" end) + .title + " (" + (.createdBy.displayName // "?") + ") — " + (.sourceRefName | ltrimstr("refs/heads/"))] | @tsv' \
         | fzf --delimiter '\t' --with-nth 2 \
           --height=100% \
           --prompt 'pr> ' \
@@ -574,8 +566,8 @@ _wt_pr_az() {
   [[ -n $number ]] || return 1
 
   info=$(az repos pr show --id "$number" --only-show-errors -o json) || return 1
-  head=$(print -r -- "$info" | "$(_wt_jq_bin)" -r '.sourceRefName // "" | ltrimstr("refs/heads/")')
-  fork=$(print -r -- "$info" | "$(_wt_jq_bin)" -r 'if .forkSource then "true" else "false" end')
+  head=$(print -r -- "$info" | jq -r '.sourceRefName // "" | ltrimstr("refs/heads/")')
+  fork=$(print -r -- "$info" | jq -r 'if .forkSource then "true" else "false" end')
 
   if [[ $fork == true ]]; then
     # Azure Repos only publishes refs/pull/<id>/merge on the target repository,
