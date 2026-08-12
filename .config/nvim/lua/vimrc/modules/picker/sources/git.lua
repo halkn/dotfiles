@@ -34,7 +34,7 @@ local function parse_status(stdout, root)
   local fields = vim.split(stdout, '\0', { plain = true })
   local i = 1
   while i <= #fields do
-    local entry = fields[i]
+    local entry = fields[i] or ''
     i = i + 1
     if #entry > 3 then
       local status = entry:sub(1, 2)
@@ -49,12 +49,13 @@ end
 
 -- `--name-status -z` emits status and path as separate fields; rename and copy
 -- statuses are followed by the old path and then the new one.
+---@return table[]
 local function parse_name_status(stdout, root)
   local items = {}
   local fields = vim.split(stdout, '\0', { plain = true })
   local i = 1
   while i + 1 <= #fields do
-    local status = fields[i]
+    local status = fields[i] or ''
     if status == '' then
       break
     end
@@ -144,7 +145,7 @@ local function load_branch(root, callback)
 end
 
 function source.load(_, opts, callback)
-  local root = vim.fs.root(vim.uv.cwd(), '.git')
+  local root = vim.fs.root(vim.uv.cwd() or vim.fn.getcwd(), '.git')
   if not root then
     vim.schedule(function()
       vim.notify('git リポジトリではありません', vim.log.levels.WARN)

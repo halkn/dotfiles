@@ -7,6 +7,13 @@ local win = require('vimrc.modules.picker.window')
 
 vim.api.nvim_set_hl(0, 'PickerMatch', { link = 'Special' })
 
+---@class vimrc.picker.Config
+---@field debounce_ms integer
+---@field height_ratio number
+---@field width_ratio number
+---@field exclude_globs string[]
+
+---@type vimrc.picker.Config
 M.config = {
   debounce_ms = 150,
   height_ratio = 0.8,
@@ -121,15 +128,21 @@ local function source_title(source, fallback)
 end
 
 local function apply_window_decorations(source, title)
-  pcall(vim.api.nvim_win_set_config, state.prompt_win, {
-    title = ' ' .. title .. ' ',
-    title_pos = 'center',
-  })
+  local prompt_win = state.prompt_win
+  if prompt_win then
+    pcall(vim.api.nvim_win_set_config, prompt_win, {
+      title = ' ' .. title .. ' ',
+      title_pos = 'center',
+    })
+  end
   local footer = source and source.footer
-  pcall(vim.api.nvim_win_set_config, state.list_win, {
-    footer = footer and (' ' .. footer .. ' ') or nil,
-    footer_pos = footer and 'right' or nil,
-  })
+  local list_win = state.list_win
+  if list_win then
+    pcall(vim.api.nvim_win_set_config, list_win, {
+      footer = footer and (' ' .. footer .. ' ') or nil,
+      footer_pos = footer and 'right' or nil,
+    })
+  end
 end
 
 local function load_opts()
@@ -250,6 +263,9 @@ end
 local function debounce(callback)
   return function(query)
     local timer = vim.uv.new_timer()
+    if not timer then
+      return callback(query)
+    end
     picker_state.set_timer(state, timer)
     timer:start(
       M.config.debounce_ms,
@@ -467,6 +483,7 @@ function M.open(source_name, opts)
   start_source(source_name, source, opts)
 end
 
+---@param opts vimrc.picker.Config?
 function M.setup(opts)
   M.config = vim.tbl_deep_extend('force', M.config, opts or {})
   select.install(M.open)

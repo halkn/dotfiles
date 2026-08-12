@@ -1,5 +1,10 @@
 local M = {}
 
+---@class vimrc.pairs.Config
+---@field pairs table<string, string>
+---@field quotes string[]
+
+---@type vimrc.pairs.Config
 M.config = {
   pairs = {
     ['('] = ')',
@@ -11,17 +16,19 @@ M.config = {
 
 local function get_cursor_context()
   local col = vim.fn.col('.')
-  local line = vim.fn.getline('.')
+  local line = vim.api.nvim_get_current_line()
   local before = col > 1 and line:sub(col - 1, col - 1) or ''
   local after = line:sub(col, col)
   return before, after
 end
 
+---@return boolean
 local function is_escaped()
   local col = vim.fn.col('.')
-  local line = vim.fn.getline('.')
+  local line = vim.api.nvim_get_current_line()
   local bs_count = 0
-  for i = col - 2, 1, -1 do
+  -- col - 1 is the character before the cursor, matching get_cursor_context().
+  for i = col - 1, 1, -1 do
     if line:sub(i, i) == '\\' then
       bs_count = bs_count + 1
     else
@@ -74,6 +81,19 @@ local function backspace()
   return '<BS>'
 end
 
+-- A fence line closes a block when an odd number of fences precede it, and there
+-- the closing fence already exists.
+local function opens_fence()
+  local row = vim.api.nvim_win_get_cursor(0)[1]
+  local count = 0
+  for _, line in ipairs(vim.api.nvim_buf_get_lines(0, 0, row - 1, false)) do
+    if line:match('^%s*```') then
+      count = count + 1
+    end
+  end
+  return count % 2 == 0
+end
+
 local function cr()
   local before, after = get_cursor_context()
   for open, close in pairs(M.config.pairs) do
@@ -81,17 +101,18 @@ local function cr()
       return '<CR><C-o>O'
     end
   end
-  local line = vim.fn.getline('.')
-  if line:match('^%s*```') then
+  local line = vim.api.nvim_get_current_line()
+  if line:match('^%s*```') and opens_fence() then
     return '<End><CR>```<C-o>O'
   end
   return '<CR>'
 end
 
+---@param opts vimrc.pairs.Config?
 function M.setup(opts)
   M.config = vim.tbl_deep_extend('force', M.config, opts or {})
 
-  local opts = { expr = true, noremap = true }
+  local map_opts = { expr = true, noremap = true }
 
   for open, close in pairs(M.config.pairs) do
     vim.keymap.set('i', open, function()
@@ -99,21 +120,21 @@ function M.setup(opts)
         return open
       end
       return open .. close .. '<Left>'
-    end, opts)
+    end, map_opts)
     vim.keymap.set('i', close, function()
       return close_pair(close)
-    end, opts)
+    end, map_opts)
   end
 
   for _, q in ipairs(M.config.quotes) do
     vim.keymap.set('i', q, function()
       return quote_pair(q)
-    end, opts)
+    end, map_opts)
   end
 
-  vim.keymap.set('i', '<BS>', backspace, opts)
-  vim.keymap.set('i', '<C-h>', backspace, opts)
-  vim.keymap.set('i', '<CR>', cr, opts)
+  vim.keymap.set('i', '<BS>', backspace, map_opts)
+  vim.keymap.set('i', '<C-h>', backspace, map_opts)
+  vim.keymap.set('i', '<CR>', cr, map_opts)
 end
 
 return M
