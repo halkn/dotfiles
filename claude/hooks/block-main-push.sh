@@ -13,16 +13,10 @@
 # A working directory that changes between segments (`cd X && git push`) is not tracked.
 set -euo pipefail
 
-if command -v jaq >/dev/null 2>&1; then
-  JQ_BIN=jaq
-else
-  JQ_BIN=jq
-fi
-
-command="$("$JQ_BIN" -r '.tool_input.command // ""')"
+command="$(jq -r '.tool_input.command // ""')"
 
 ask() {
-  "$JQ_BIN" -n --arg reason "$1" '{
+  jq -n --arg reason "$1" '{
 		hookSpecificOutput: {
 			hookEventName: "PreToolUse",
 			permissionDecision: "ask",

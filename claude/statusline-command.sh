@@ -3,12 +3,6 @@
 
 input=$(cat)
 
-if command -v jaq >/dev/null 2>&1; then
-  JQ_BIN=jaq
-else
-  JQ_BIN=jq
-fi
-
 # Colors
 GREEN='\033[38;2;98;198;99m'
 YELLOW='\033[38;2;229;192;123m'
@@ -107,7 +101,7 @@ fmt() {
   IFS= read -r lines_added
   IFS= read -r lines_removed
 } <<EOF
-$(printf '%s' "$input" | "$JQ_BIN" -r '
+$(printf '%s' "$input" | jq -r '
   [
     (.workspace.current_dir // .cwd // ""),
     (.model.display_name // "Claude"),

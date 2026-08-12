@@ -35,7 +35,7 @@ hook を足す・消すときは、標準機能（sandbox・`permissions`・auto
 
 ## 採用しない設定（実測済み）
 
-- **「道具の列挙」で防御を書かない**: インタプリタ名（`python` 等）や読取コマンド名（`cat` 等）を deny / hook で列挙しても、`perl -e`・`node -e`・`bash -c`・`tr < f`・`while read` リダイレクト・一旦ファイルに書いてから実行、で回避できる（実測済み）。道具の集合は開いている。Bash tool を与える以上、任意コード実行は前提であり、境界は sandbox（`filesystem` の allow/deny・`network.strictAllowlist`・`allowUnsandboxedCommands: false`）と auto モードの classifier が持つ。道具の選好（`python` より `jaq` / `ryl`）は防御ではなくスタイルなので `claude/CLAUDE.md` 側に置く
+- **「道具の列挙」で防御を書かない**: インタプリタ名（`python` 等）や読取コマンド名（`cat` 等）を deny / hook で列挙しても、`perl -e`・`node -e`・`bash -c`・`tr < f`・`while read` リダイレクト・一旦ファイルに書いてから実行、で回避できる（実測済み）。道具の集合は開いている。Bash tool を与える以上、任意コード実行は前提であり、境界は sandbox（`filesystem` の allow/deny・`network.strictAllowlist`・`allowUnsandboxedCommands: false`）と auto モードの classifier が持つ。道具の選好（`python` より `jq` / `yq` / `ryl`）は防御ではなくスタイルなので `claude/CLAUDE.md` 側に置く
 - **hook の判定基準は「参照される資産」側に置く**: 認証情報のパス・環境変数名・push 先ブランチ・PR 先 owner は閉じた集合なので、そちらを列挙してコマンド文字列全体に照合する。現行 hook は全てこの形。ただし対象が閉じていても綴り方は閉じていないので、パスを照合する前にクォート・重複スラッシュ・`/./`・先頭 `./` を正規化する。それでもパスを分割する形（`cd <dir> && cat <rest>`）や変数経由は通るため、hook は sandbox に残った穴の二次防御と位置づけ、単独の境界にしない
 - `env.CLAUDE_CODE_SUBPROCESS_ENV_SCRUB` は**設定しない**: Anthropic・クラウドプロバイダ系の認証情報を全サブプロセスから strip する機能だが、この環境では有効化すると Bash tool が広範に機能不全を起こし、`permissions.defaultMode: "auto"` も正しく反映されなかった（2026-07 実機確認・v2.1.220）。再度有効化を検討する場合は、まず狭いスコープで再現するか確認すること
 - 認証情報のパスは `filesystem.denyRead` ではなく `sandbox.credentials.files` に置く。docs は `credentials.files` の `mode: "deny"` を「`filesystem.denyRead` が適用するのと同じ制限」と書いており、パスのプレフィックス規則もスコープ間のマージも共通。`credentials` 側は「これは認証情報だ」と宣言でき、`mode` が `deny` しか無いので広げる誤用も起きない。`filesystem.denyRead` は `~/` 全体のような広域ポリシーに使う

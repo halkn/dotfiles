@@ -14,13 +14,7 @@
 # are refused as well. Rewrite them without a literal path.
 set -euo pipefail
 
-if command -v jaq >/dev/null 2>&1; then
-  JQ_BIN=jaq
-else
-  JQ_BIN=jq
-fi
-
-command="$("$JQ_BIN" -r '.tool_input.command // ""')"
+command="$(jq -r '.tool_input.command // ""')"
 
 deny() {
   echo "$1" >&2

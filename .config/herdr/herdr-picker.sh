@@ -1,36 +1,30 @@
 #!/bin/zsh
 set -euo pipefail
 
-if command -v jaq >/dev/null 2>&1; then
-  JQ_BIN=jaq
-else
-  JQ_BIN=jq
-fi
-
 # Listing and removing worktrees lives in `wt`; do not reimplement either here.
 wt_lib=${XDG_CONFIG_HOME:-$HOME/.config}/zsh/lib/worktree.zsh
 [[ -r $wt_lib ]] && source "$wt_lib"
 
 list_workspaces() {
   herdr workspace list \
-    | "$JQ_BIN" -r '.result.workspaces[] | "[\(.number)] \(.label)\tworkspace:\(.workspace_id)"'
+    | jq -r '.result.workspaces[] | "[\(.number)] \(.label)\tworkspace:\(.workspace_id)"'
 }
 
 list_agents() {
   herdr agent list \
-    | "$JQ_BIN" -r '.result.agents[] | "\(.agent_status)  \(.name // .display_agent // .agent // "agent")  \(.cwd // "-")\tagent:\(.terminal_id)"'
+    | jq -r '.result.agents[] | "\(.agent_status)  \(.name // .display_agent // .agent // "agent")  \(.cwd // "-")\tagent:\(.terminal_id)"'
 }
 
 list_worktrees() {
   herdr worktree list --json \
-    | "$JQ_BIN" -r '.result.worktrees[] | "\(.label)  \(.branch // "-")  \(.path)\tworktree:\(.path)"'
+    | jq -r '.result.worktrees[] | "\(.label)  \(.branch // "-")  \(.path)\tworktree:\(.path)"'
 }
 
 preview_workspace() {
   local id=$1 workspaces checkout
   workspaces=$(herdr workspace list) || return 0
   print -r -- "$workspaces" \
-    | "$JQ_BIN" -r --arg w "$id" '
+    | jq -r --arg w "$id" '
       .result.workspaces[] | select(.workspace_id == $w)
       | "[\(.number)] \(.label)",
         "agent: \(.agent_status // "-")   tabs: \(.tab_count)   panes: \(.pane_count)"
@@ -38,13 +32,13 @@ preview_workspace() {
   print
   print -r -- 'agents:'
   herdr agent list \
-    | "$JQ_BIN" -r --arg w "$id" '
+    | jq -r --arg w "$id" '
       .result.agents[] | select(.workspace_id == $w)
       | "  \(.agent_status)  \(.name // .display_agent // .agent // "agent")  \(.terminal_title_stripped // "")"
     '
   checkout=$(
     print -r -- "$workspaces" \
-      | "$JQ_BIN" -r --arg w "$id" \
+      | jq -r --arg w "$id" \
         '.result.workspaces[] | select(.workspace_id == $w) | .worktree.checkout_path // empty'
   )
   if [[ -n $checkout ]] && whence _wt_preview >/dev/null; then

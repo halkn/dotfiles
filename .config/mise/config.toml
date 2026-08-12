@@ -18,7 +18,8 @@ ast-grep = "latest"
 fd = "latest"
 fzf = "latest"
 eza = "latest"
-jaq = "latest"
+jq = "latest"
+yq = "latest"
 "github:halkn/docsail" = { version = "latest", minimum_release_age = "0s" }
 "github:halkn/mdiv" = { version = "latest", minimum_release_age = "0s" }
 "github:halkn/mdvu" = { version = "latest", minimum_release_age = "0s" }

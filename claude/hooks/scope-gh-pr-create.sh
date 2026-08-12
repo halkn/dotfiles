@@ -12,16 +12,10 @@ set -euo pipefail
 
 TRUSTED_OWNER="halkn"
 
-if command -v jaq >/dev/null 2>&1; then
-  JQ_BIN=jaq
-else
-  JQ_BIN=jq
-fi
-
-command="$("$JQ_BIN" -r '.tool_input.command // ""')"
+command="$(jq -r '.tool_input.command // ""')"
 
 ask() {
-  "$JQ_BIN" -n --arg reason "$1" '{
+  jq -n --arg reason "$1" '{
 		hookSpecificOutput: {
 			hookEventName: "PreToolUse",
 			permissionDecision: "ask",
