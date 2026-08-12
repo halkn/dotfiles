@@ -3,19 +3,40 @@ local M = {}
 local ring = {}
 local ring_idx = 0
 
+---@class vimrc.yankring.Config
+---@field highlight_ms integer
+---@field max_size integer
+
+---@type vimrc.yankring.Config
 M.config = {
   highlight_ms = 200,
   max_size = 30,
 }
 
--- <C-p>/<C-n> replace the text the last paste produced, so its extent has to outlive it.
+-- <C-p>/<C-n> undo the last paste and redo it with another entry, so the shape of
+-- that paste has to outlive it. Undo is used instead of deleting the pasted range
+-- because a byte range cannot express linewise or blockwise registers, and
+-- computing its end from `'[`/`']` splits multibyte characters.
+---@class vimrc.yankring.LastPaste
+---@field tick integer?
+---@field cursor [integer, integer]?
+---@field seq integer?
+---@field after boolean?
+---@field gp boolean?
+---@field count integer?
+
+---@type vimrc.yankring.LastPaste
 local last_paste = {
-  tick = nil, -- b:changedtick at paste
-  start = nil, -- { row, col } 0-indexed
-  finish = nil, -- { row, col } 0-indexed
+  tick = nil, -- b:changedtick right after the paste
+  cursor = nil, -- { row, col } before the paste, 1-indexed row
+  seq = nil, -- undo sequence number before the paste
+  after = nil, -- p (true) or P (false)
+  gp = nil, -- leave the cursor past the pasted text
+  count = nil,
 }
 
 local ns = vim.api.nvim_create_namespace('yankring_highlight')
+---@type uv.uv_timer_t?
 local hl_timer = nil
 
 local function highlight_paste()
@@ -30,19 +51,27 @@ local function highlight_paste()
   if hl_timer then
     hl_timer:stop()
     hl_timer:close()
+    hl_timer = nil
   end
-  hl_timer = vim.uv.new_timer()
-  if not hl_timer then
+  local timer = vim.uv.new_timer()
+  if not timer then
     return
   end
-  hl_timer:start(
+  hl_timer = timer
+  -- The callback is scheduled, so a paste can replace hl_timer before it runs.
+  -- Touching only this timer keeps it from closing its successor.
+  timer:start(
     M.config.highlight_ms,
     0,
     vim.schedule_wrap(function()
       vim.api.nvim_buf_clear_namespace(buf, ns, 0, -1)
-      hl_timer:stop()
-      hl_timer:close()
-      hl_timer = nil
+      if not timer:is_closing() then
+        timer:stop()
+        timer:close()
+      end
+      if hl_timer == timer then
+        hl_timer = nil
+      end
     end)
   )
 end
@@ -57,34 +86,57 @@ local function add(entry)
   end
 end
 
-local function paste(after, gp)
-  local entry = ring[1]
-  if not entry then
-    vim.cmd('normal! ' .. (after and 'p' or 'P'))
-    return
-  end
-
-  ring_idx = 1
+local function put(entry, after, gp, count)
+  local cursor = vim.api.nvim_win_get_cursor(0)
+  -- Closes the pending undo block so the paste becomes a state of its own.
+  -- Without it a paste issued in the same block as the preceding edit cannot be
+  -- rewound separately, and the cycle would undo that edit too.
+  vim.cmd('let &undolevels = &undolevels')
+  -- Restoring by sequence number rather than plain `:undo` keeps a paste that is
+  -- the first change in a buffer from rewinding everything before it.
+  local seq = vim.fn.undotree().seq_cur
 
   vim.fn.setreg('"', entry.regcontents, entry.regtype)
-  local cmd = 'normal! ' .. (after and 'p' or 'P')
-  vim.cmd(cmd)
+  vim.cmd('normal! ' .. count .. (after and 'p' or 'P'))
 
-  local s = vim.api.nvim_buf_get_mark(0, '[')
-  local e = vim.api.nvim_buf_get_mark(0, ']')
   last_paste.tick = vim.b.changedtick
-  last_paste.start = { s[1] - 1, s[2] }
-  last_paste.finish = { e[1] - 1, e[2] }
+  last_paste.cursor = cursor
+  last_paste.seq = seq
+  last_paste.after = after
+  last_paste.gp = gp
+  last_paste.count = count
 
   highlight_paste()
 
   if gp then
+    local e = vim.api.nvim_buf_get_mark(0, ']')
     vim.api.nvim_win_set_cursor(0, { e[1], e[2] })
   end
 end
 
+local function paste(after, gp)
+  local register = vim.v.register
+  local count = vim.v.count1
+  local entry = ring[1]
+
+  -- An explicit register asks for that register, not for the ring.
+  if register ~= '"' or not entry then
+    vim.cmd('normal! ' .. count .. '"' .. register .. (after and 'p' or 'P'))
+    return
+  end
+
+  ring_idx = 1
+  put(entry, after, gp, count)
+end
+
 local function cycle(delta)
   if last_paste.tick ~= vim.b.changedtick then
+    return
+  end
+  -- Bound locally so the nil check narrows the type for nvim_win_set_cursor.
+  -- The tick guard above already implies it was set by the last paste.
+  local cursor = last_paste.cursor
+  if not cursor then
     return
   end
   if #ring == 0 then
@@ -100,24 +152,9 @@ local function cycle(delta)
   end
   ring_idx = new_idx
 
-  local entry = ring[ring_idx]
-
-  local sr, sc = last_paste.start[1], last_paste.start[2]
-  local er, ec = last_paste.finish[1], last_paste.finish[2]
-
-  vim.api.nvim_buf_set_text(0, sr, sc, er, ec + 1, {})
-  vim.api.nvim_win_set_cursor(0, { sr + 1, sc })
-
-  vim.fn.setreg('"', entry.regcontents, entry.regtype)
-  vim.cmd('normal! P')
-
-  local s = vim.api.nvim_buf_get_mark(0, '[')
-  local e = vim.api.nvim_buf_get_mark(0, ']')
-  last_paste.tick = vim.b.changedtick
-  last_paste.start = { s[1] - 1, s[2] }
-  last_paste.finish = { e[1] - 1, e[2] }
-
-  highlight_paste()
+  vim.cmd('silent! undo ' .. last_paste.seq)
+  vim.api.nvim_win_set_cursor(0, cursor)
+  put(ring[ring_idx], last_paste.after, last_paste.gp, last_paste.count)
 end
 
 local function show_ring()
@@ -128,7 +165,7 @@ local function show_ring()
   vim.ui.select(ring, {
     prompt = 'yank ring',
     format_item = function(entry)
-      return entry.regcontents:gsub('\n', '\\n')
+      return (entry.regcontents:gsub('\n', '\\n'))
     end,
   }, function(entry)
     if not entry then
@@ -139,6 +176,7 @@ local function show_ring()
   end)
 end
 
+---@param opts vimrc.yankring.Config?
 function M.setup(opts)
   M.config = vim.tbl_deep_extend('force', M.config, opts or {})
 
@@ -157,26 +195,28 @@ function M.setup(opts)
     end,
   })
 
-  local opts = { noremap = true, silent = true }
-  vim.keymap.set({ 'n', 'v' }, 'p', function()
+  local map_opts = { noremap = true, silent = true }
+
+  -- x rather than v: in select mode p replaces the selection with a literal "p".
+  vim.keymap.set({ 'n', 'x' }, 'p', function()
     paste(true, false)
-  end, opts)
-  vim.keymap.set({ 'n', 'v' }, 'P', function()
+  end, map_opts)
+  vim.keymap.set({ 'n', 'x' }, 'P', function()
     paste(false, false)
-  end, opts)
-  vim.keymap.set({ 'n', 'v' }, 'gp', function()
+  end, map_opts)
+  vim.keymap.set({ 'n', 'x' }, 'gp', function()
     paste(true, true)
-  end, opts)
-  vim.keymap.set({ 'n', 'v' }, 'gP', function()
+  end, map_opts)
+  vim.keymap.set({ 'n', 'x' }, 'gP', function()
     paste(false, true)
-  end, opts)
+  end, map_opts)
   vim.keymap.set('n', '<C-p>', function()
     cycle(-1)
-  end, opts)
+  end, map_opts)
   vim.keymap.set('n', '<C-n>', function()
     cycle(1)
-  end, opts)
-  vim.keymap.set('n', '<Leader>y', show_ring, opts)
+  end, map_opts)
+  vim.keymap.set('n', '<Leader>y', show_ring, map_opts)
 end
 
 return M

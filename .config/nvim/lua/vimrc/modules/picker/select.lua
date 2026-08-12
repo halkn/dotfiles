@@ -11,10 +11,7 @@ function M.open(open, items, opts, on_choice)
   on_choice = on_choice or function() end
 
   if type(items) ~= 'table' then
-    if original_ui_select then
-      return original_ui_select(items, opts, on_choice)
-    end
-    return on_choice(nil)
+    return original_ui_select(items, opts, on_choice)
   end
 
   local picker_items = vim.tbl_map(function(item)

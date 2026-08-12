@@ -26,6 +26,10 @@ function M.show_file(state, path, lnum)
   for i, line in ipairs(lines) do
     lines[i] = line:gsub('[\n\r]', '')
   end
+  -- An empty file yields no lines, and the lnum highlight below indexes lines[1].
+  if #lines == 0 then
+    lines = { '' }
+  end
 
   vim.bo[state.preview_buf].modifiable = true
   vim.api.nvim_buf_set_lines(state.preview_buf, 0, -1, false, lines)

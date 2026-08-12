@@ -10,13 +10,15 @@ function M.op(type)
   else
     local s = vim.api.nvim_buf_get_mark(0, '[')
     local e = vim.api.nvim_buf_get_mark(0, ']')
+    -- getreg() without the list argument always returns a string.
+    local contents = vim.fn.getreg(reg) --[[@as string]]
     vim.api.nvim_buf_set_text(
       0,
       s[1] - 1,
       s[2],
       e[1] - 1,
       e[2] + 1,
-      vim.split(vim.fn.getreg(reg), '\n', { plain = true })
+      vim.split(contents, '\n', { plain = true })
     )
   end
 end

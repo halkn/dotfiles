@@ -1,7 +1,15 @@
 local M = {}
 
+---@type string?
 local _saved_guicursor = nil
 
+---@class vimrc.picker.Layout
+---@field w integer
+---@field h integer
+---@field row integer
+---@field col integer
+
+---@return vimrc.picker.Layout
 function M.calc_layout(config)
   local total_w = vim.o.columns
   local total_h = vim.o.lines
@@ -30,16 +38,18 @@ function M.create_windows(layout, title, use_preview, footer)
   })
 
   -- The prompt takes 3 rows (one line plus its border) and the list another 2 for its own.
-  local content_h = layout.h - 5
+  local content_h = math.floor(layout.h - 5)
 
   local list_buf = vim.api.nvim_create_buf(false, true)
   vim.bo[list_buf].buftype = 'nofile'
   vim.bo[list_buf].filetype = 'picker_list'
 
-  local list_w, preview_buf, preview_win
+  ---@type integer
+  local list_w
+  local preview_buf, preview_win
   if use_preview then
     list_w = math.floor((layout.w - 3) * 0.45)
-    local preview_w = layout.w - list_w - 3
+    local preview_w = math.floor(layout.w - list_w - 3)
     preview_buf = vim.api.nvim_create_buf(false, true)
     vim.bo[preview_buf].buftype = 'nofile'
 

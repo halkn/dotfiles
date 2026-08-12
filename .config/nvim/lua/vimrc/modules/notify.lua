@@ -1,8 +1,29 @@
 local M = {}
 
+---@class vimrc.notify.Entry
+---@field id integer|string
+---@field win integer?
+---@field buf integer?
+---@field timer uv.uv_timer_t?
+
+---@class vimrc.notify.HistoryEntry
+---@field msg string
+---@field level integer
+---@field title string
+---@field time integer
+
+---@type vimrc.notify.Entry[]
 local active = {}
+---@type vimrc.notify.HistoryEntry[]
 local history = {}
 
+---@class vimrc.notify.Config
+---@field display_ms integer
+---@field max_history integer
+---@field max_width_ratio number
+---@field min_width integer
+
+---@type vimrc.notify.Config
 M.config = {
   display_ms = 3000,
   max_history = 50,
@@ -126,8 +147,13 @@ local function reset_timer(entry, timeout)
     entry.timer = nil
     return
   end
-  entry.timer = vim.uv.new_timer()
-  entry.timer:start(
+  local timer = vim.uv.new_timer()
+  if not timer then
+    entry.timer = nil
+    return
+  end
+  entry.timer = timer
+  timer:start(
     timeout,
     0,
     vim.schedule_wrap(function()
@@ -165,24 +191,27 @@ local function show(msg, level, opts)
 
   add_history(msg, level, title)
 
-  -- Update existing notification with same id
+  -- Update existing notification with same id.
+  -- The handles are bound locally so the validity checks narrow them for the api calls.
   local existing = id and find_active(id)
+  local ex_win = existing and existing.win
+  local ex_buf = existing and existing.buf
   if existing then
     if
-      not (existing.win and vim.api.nvim_win_is_valid(existing.win))
-      or not (existing.buf and vim.api.nvim_buf_is_valid(existing.buf))
+      not (ex_win and vim.api.nvim_win_is_valid(ex_win))
+      or not (ex_buf and vim.api.nvim_buf_is_valid(ex_buf))
     then
       remove_by_id(id)
       existing = nil
     end
   end
 
-  if existing then
-    vim.bo[existing.buf].modifiable = true
-    vim.api.nvim_buf_set_lines(existing.buf, 0, -1, false, lines)
-    vim.bo[existing.buf].modifiable = false
-    local cur = vim.api.nvim_win_get_config(existing.win)
-    vim.api.nvim_win_set_config(existing.win, {
+  if existing and ex_win and ex_buf then
+    vim.bo[ex_buf].modifiable = true
+    vim.api.nvim_buf_set_lines(ex_buf, 0, -1, false, lines)
+    vim.bo[ex_buf].modifiable = false
+    local cur = vim.api.nvim_win_get_config(ex_win)
+    vim.api.nvim_win_set_config(ex_win, {
       relative = 'editor',
       row = cur.row,
       col = cur.col,
@@ -217,8 +246,8 @@ local function show(msg, level, opts)
   })
   vim.api.nvim_set_option_value('winhighlight', 'FloatBorder:' .. cfg.hl, { win = win })
 
-  id_counter = id_counter + 1
   if not id then
+    id_counter = id_counter + 1
     id = id_counter
   end
   local entry = { id = id, win = win, buf = buf, timer = nil }
@@ -243,7 +272,7 @@ local function show_history()
     local title = h.title ~= '' and (' [' .. h.title .. ']') or ''
     table.insert(
       lines,
-      string.format('%s %s %s%s: %s', time, c.icon, c.name, title, h.msg:gsub('\n', ' '))
+      string.format('%s %s %s%s: %s', time, c.icon, c.name, title, (h.msg:gsub('\n', ' ')))
     )
   end
 
@@ -267,6 +296,7 @@ local function show_history()
   vim.keymap.set('n', 'q', '<cmd>close<CR>', { buffer = buf })
 end
 
+---@param opts vimrc.notify.Config?
 function M.setup(opts)
   M.config = vim.tbl_deep_extend('force', M.config, opts or {})
 
@@ -283,19 +313,19 @@ function M.setup(opts)
   })
 
   ---@diagnostic disable-next-line: duplicate-set-field
-  vim.notify = function(msg, level, opts)
+  vim.notify = function(msg, level, notify_opts)
     if not msg or msg == '' then
       return
     end
-    opts = opts or {}
-    if opts.id == nil then
+    notify_opts = notify_opts or {}
+    if notify_opts.id == nil then
       id_counter = id_counter + 1
-      opts.id = id_counter
+      notify_opts.id = id_counter
     end
     vim.schedule(function()
-      show(msg, level, opts)
+      show(msg, level, notify_opts)
     end)
-    return opts.id
+    return notify_opts.id
   end
 
   vim.api.nvim_create_user_command(

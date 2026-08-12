@@ -182,7 +182,7 @@ dir = "{{config_root}}"
 run = [
   """
 VIMRUNTIME="$(NVIM_LOG_FILE=/dev/null nvim --clean --headless -c 'lua io.write(vim.env.VIMRUNTIME)' +q 2>/dev/null)" \\
-  emmylua_check .config/nvim
+  emmylua_check --warnings-as-errors .config/nvim
 """,
-  "NVIM_LOG_FILE=/dev/null nvim --headless -i NONE '+quitall'",
+  "NVIM_LOG_FILE=/dev/null nvim --headless -i NONE -c 'luafile .config/nvim/test/smoke.lua'",
 ]

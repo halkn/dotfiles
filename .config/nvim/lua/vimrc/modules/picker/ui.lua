@@ -7,7 +7,7 @@ function M.default_filter(items, query)
     return items
   end
   local result = vim.fn.matchfuzzypos(items, query, { key = 'text' })
-  local matched, positions = result[1], result[2]
+  local matched, positions = result[1] or {}, result[2] or {}
   for i = 1, #matched do
     matched[i]._match_pos = positions[i]
   end
@@ -48,7 +48,7 @@ function M.apply_match_highlights(state)
       local offset = source and source.match_highlight_offset and source.match_highlight_offset()
         or (#display - #item.text)
       for _, pos in ipairs(item._match_pos) do
-        local col = offset + pos
+        local col = math.floor(offset + pos)
         pcall(vim.api.nvim_buf_set_extmark, state.list_buf, match_ns, i - 1, col, {
           end_col = col + 1,
           hl_group = 'PickerMatch',

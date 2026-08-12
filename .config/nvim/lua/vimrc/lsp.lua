@@ -12,7 +12,8 @@ local servers = {
 local format_group = vim.api.nvim_create_augroup('vimrc_lspformat', { clear = true })
 
 local function apply_ruff_action(client, bufnr, kind)
-  local params = vim.lsp.util.make_range_params(0, client.offset_encoding)
+  -- codeAction requires `context`, which make_range_params() does not return.
+  local params = vim.lsp.util.make_range_params(0, client.offset_encoding) --[[@as lsp.CodeActionParams]]
   params.context = { diagnostics = {}, only = { kind } }
 
   local response, err = client:request_sync('textDocument/codeAction', params, 1000, bufnr)

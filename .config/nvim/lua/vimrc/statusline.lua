@@ -1,5 +1,9 @@
 local M = {}
 
+---@class vimrc.statusline.Config
+---@field statusline string
+
+---@type vimrc.statusline.Config
 M.config = {
   statusline = "%!v:lua.require'vimrc.statusline'.render()",
 }
@@ -256,7 +260,7 @@ local function file_label(filename, flags, compact)
 end
 
 local function redraw_statusline()
-  if vim.api.nvim__redraw then
+  if type(vim.api.nvim__redraw) == 'function' then
     vim.api.nvim__redraw({ statusline = true })
     return
   end
@@ -301,6 +305,7 @@ local function lsp_clients_summary(bufnr)
 end
 
 local function filetype_summary(bufnr, lsp_clients)
+  ---@type string
   local filetype = vim.bo[bufnr].filetype
   if filetype == '' then
     filetype = 'noft'
@@ -369,6 +374,7 @@ function M.render()
   return (' %s %%= %s '):format(section(left), section(right))
 end
 
+---@param opts vimrc.statusline.Config?
 function M.setup(opts)
   M.config = vim.tbl_deep_extend('force', M.config, opts or {})
 

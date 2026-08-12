@@ -51,8 +51,9 @@ function source.on_accept(item)
   local path, lnum = item.text:match('^([^:]+):(%d+):')
   if path then
     vim.cmd.edit(path)
-    if lnum then
-      vim.api.nvim_win_set_cursor(0, { tonumber(lnum), 0 })
+    local line = tonumber(lnum)
+    if line then
+      vim.api.nvim_win_set_cursor(0, { math.floor(line), 0 })
     end
   end
 end
@@ -61,8 +62,9 @@ function source.on_accept_split(item, split_cmd)
   local path, lnum = item.text:match('^([^:]+):(%d+):')
   if path then
     vim.cmd(split_cmd .. ' ' .. vim.fn.fnameescape(path))
-    if lnum then
-      vim.api.nvim_win_set_cursor(0, { tonumber(lnum), 0 })
+    local line = tonumber(lnum)
+    if line then
+      vim.api.nvim_win_set_cursor(0, { math.floor(line), 0 })
     end
   end
 end

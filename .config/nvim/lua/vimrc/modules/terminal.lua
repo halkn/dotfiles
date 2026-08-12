@@ -1,21 +1,31 @@
 local M = {}
 
+---@class vimrc.terminal.Config
+---@field height_ratio number
+---@field width_ratio number
+
+---@type vimrc.terminal.Config
 M.config = {
   height_ratio = 0.85,
   width_ratio = 0.85,
 }
 
+---@class vimrc.terminal.State
+---@field buf integer?
+---@field win integer?
 local state = {
   buf = nil,
   win = nil,
 }
 
+---@param buf integer?
 local function is_valid_buffer(buf)
-  return buf and vim.api.nvim_buf_is_valid(buf)
+  return buf ~= nil and vim.api.nvim_buf_is_valid(buf)
 end
 
+---@param win integer?
 local function is_valid_window(win)
-  return win and vim.api.nvim_win_is_valid(win)
+  return win ~= nil and vim.api.nvim_win_is_valid(win)
 end
 
 ---@return vim.api.keyset.win_config
@@ -34,8 +44,10 @@ local function floating_config()
 end
 
 local function hide()
-  if is_valid_window(state.win) then
-    vim.api.nvim_win_hide(state.win)
+  -- Bound locally so the nil check narrows the type for nvim_win_hide.
+  local win = state.win
+  if win and vim.api.nvim_win_is_valid(win) then
+    vim.api.nvim_win_hide(win)
   end
   state.win = nil
 end
@@ -48,7 +60,10 @@ local function is_terminal_running(buf)
   end
 
   local job_id = vim.b[buf].terminal_job_id
-  return type(job_id) == 'number' and vim.fn.jobwait({ job_id }, 0)[1] == -1
+  if type(job_id) ~= 'number' then
+    return false
+  end
+  return vim.fn.jobwait({ math.floor(job_id) }, 0)[1] == -1
 end
 
 ---@return integer
@@ -88,6 +103,7 @@ function M.toggle()
   vim.cmd.startinsert()
 end
 
+---@param opts vimrc.terminal.Config?
 function M.setup(opts)
   M.config = vim.tbl_deep_extend('force', M.config, opts or {})
 

@@ -7,6 +7,13 @@ local source = {
   footer = '<C-t>: files',
 }
 
+---@class vimrc.picker.TreeState
+---@field root table?
+---@field open_dirs table<string, boolean?>
+---@field all_files table[]?
+---@field nav_mode boolean
+
+---@type vimrc.picker.TreeState
 local tree_state = {
   root = nil,
   open_dirs = {},
@@ -88,6 +95,7 @@ end
 local function build_filtered(matched_items)
   local root = { children = {} }
   local node_map = { [''] = root }
+  ---@type table<string, integer[]>
   local match_pos_map = {}
 
   for _, item in ipairs(matched_items) do
@@ -168,7 +176,9 @@ local function build_filtered(matched_items)
   return items
 end
 
-function source.load(config, _, callback)
+-- The tree renders itself through ctx.set_items() in on_open, so the loader only
+-- fills tree_state.all_files and never reports back.
+function source.load(config, _, _callback)
   local cmd = { 'rg', '--files', '--hidden' }
   for _, glob in ipairs(config.exclude_globs) do
     vim.list_extend(cmd, { '--glob', glob })
@@ -330,7 +340,7 @@ function source.on_query_change(query, ctx)
     ctx.set_cursor_idx(1)
   elseif tree_state.all_files then
     local r = vim.fn.matchfuzzypos(tree_state.all_files, query, { key = 'text' })
-    local matched, positions = r[1], r[2]
+    local matched, positions = r[1] or {}, r[2] or {}
     for i = 1, #matched do
       matched[i]._match_pos = positions[i]
     end

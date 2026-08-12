@@ -11,7 +11,14 @@ local surround_map = {
   ['}'] = { open = '{', close = '}' },
 }
 
+---@class vimrc.surround.BracketPair
+---@field open string
+---@field close string
+---@field open_pat string
+---@field close_pat string
+
 -- In the Vim regex searchpairpos() takes, only [ ] needs escaping; () {} match literally.
+---@type table<string, vimrc.surround.BracketPair?>
 local bracket_pairs = {
   ['('] = { open = '(', close = ')', open_pat = '(', close_pat = ')' },
   [')'] = { open = '(', close = ')', open_pat = '(', close_pat = ')' },
@@ -70,13 +77,13 @@ local function calc_delete_range(pos, char)
   local o_row, o_col = pos.open[1], pos.open[2]
   local c_row, c_col = pos.close[1], pos.close[2]
 
-  local open_line = vim.api.nvim_buf_get_lines(0, o_row, o_row + 1, false)[1]
+  local open_line = vim.api.nvim_buf_get_lines(0, o_row, o_row + 1, false)[1] or ''
   local open_end = o_col + #open_char
   if open_line:sub(open_end + 1, open_end + 1) == ' ' then
     open_end = open_end + 1
   end
 
-  local close_line = vim.api.nvim_buf_get_lines(0, c_row, c_row + 1, false)[1]
+  local close_line = vim.api.nvim_buf_get_lines(0, c_row, c_row + 1, false)[1] or ''
   local close_start = c_col
   if c_col > 0 and close_line:sub(c_col, c_col) == ' ' then
     close_start = c_col - 1
