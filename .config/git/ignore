@@ -7,4 +7,5 @@
 
 # mise
 mise.local.toml
+mise.local.lock
 
