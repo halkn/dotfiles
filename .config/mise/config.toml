@@ -26,7 +26,6 @@ yq = "latest"
 
 # vcs
 gh = "latest"
-ghq = "latest"
 delta = "latest"
 
 # editor

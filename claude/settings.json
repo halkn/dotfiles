@@ -54,7 +54,6 @@
       "Bash(tree *)",
       "Bash(jq *)",
       "Bash(yq *)",
-      "Bash(ghq list *)",
       "Bash(az repos list *)",
       "Bash(az repos show *)",
       "Bash(az repos pr list *)",
