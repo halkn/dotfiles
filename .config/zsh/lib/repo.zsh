@@ -16,9 +16,19 @@ _repo_root() {
   print -r -- "${root%/}"
 }
 
-_repo_available() {
+# `repo get` only needs git: cloning creates the root, so requiring it up front
+# would leave a fresh machine unable to make its first checkout.
+_repo_git_available() {
   command -v git >/dev/null 2>&1 || {
     print 'repo: git is not installed or not in PATH' >&2
+    return 1
+  }
+}
+
+# Picking, on the other hand, has nothing to offer without fzf and a root.
+_repo_fzf_available() {
+  command -v fzf >/dev/null 2>&1 || {
+    print 'repo: fzf is not installed' >&2
     return 1
   }
   local root
@@ -29,14 +39,17 @@ _repo_available() {
   }
 }
 
+# Layouts a clone can have below the root: host/owner/repo (GitHub and friends)
+# and host/org/project/repo (Azure DevOps). Fixed depths keep nested
+# repositories such as vendored node_modules out of the list.
+_REPO_DEPTHS=('*/*/*' '*/*/*/*')
+
 # One row per repository: `<path without host><TAB>full path`. The host is
 # dropped from the label because it is rarely what distinguishes two clones.
 _repo_rows() {
   local root marker rel
   root=$(_repo_root)
-  # host/owner/repo (GitHub and friends) and host/org/project/repo (Azure DevOps).
-  # A fixed depth keeps nested repositories such as vendored node_modules out.
-  for marker in $root/*/*/*/.git(N) $root/*/*/*/*/.git(N); do
+  for marker in $root/${~^_REPO_DEPTHS}/.git(N); do
     rel=${${marker:h}#$root/}
     printf '%s\t%s\n' "${rel#*/}" "${marker:h}"
   done
@@ -49,13 +62,17 @@ _repo_preview() {
 }
 
 # Print the path of an interactively selected repository. $1 is an initial query.
+# Returns non-zero when the picker is cancelled, so `--accept-nth` prints the
+# path instead of piping fzf into awk, whose status would mask the cancel.
 _repo_pick() {
-  print -r -- "$(_repo_rows)" \
-    | fzf --delimiter '\t' --with-nth 1 \
+  local rows
+  rows=$(_repo_rows)
+  [[ -n $rows ]] || return 1
+  print -r -- "$rows" \
+    | fzf --delimiter '\t' --with-nth 1 --accept-nth 2 \
       --query="${1:-}" \
       --prompt 'repo> ' \
-      --preview "source ${_REPO_LIB}; _repo_preview {2}" \
-    | awk -F'\t' '{print $2}'
+      --preview "source ${_REPO_LIB}; _repo_preview {2}"
 }
 
 # Fold the forge-specific spellings of one repository onto a single host/path.
@@ -111,35 +128,53 @@ _repo_dest() {
   print -r -- "$(_repo_root)/$1/$2"
 }
 
-# repo            : pick a repository with fzf and cd into it
-# repo get <repo> : clone into the root and cd into it (owner/repo or URL)
-repo() {
-  _repo_available || return 1
-
+# Clone into the root and cd into it. `owner/repo` or any clone URL.
+_repo_get() {
   local dir
-  if [[ "$1" == get ]]; then
-    shift
-    (($# == 1)) || {
-      print 'usage: repo get <owner/repo|url>' >&2
-      return 1
-    }
-    local -a reply
-    _repo_parse "$1" || {
-      print "repo: cannot derive a path from '$1'" >&2
-      return 1
-    }
-    dir=$(_repo_dest "$reply[1]" "$reply[2]")
-    if [[ ! -d $dir ]]; then
-      git clone "$reply[3]" "$dir" || return
-    fi
-    cd -- "$dir" && la
-    return
-  fi
-
-  command -v fzf >/dev/null 2>&1 || {
-    print 'repo: fzf is not installed' >&2
+  local -a reply
+  (($# == 1)) || {
+    print 'usage: repo get <owner/repo|url>' >&2
     return 1
   }
-  dir=$(_repo_pick "$*") || return
-  [[ -n "$dir" ]] && cd -- "$dir" && la
+  _repo_git_available || return 1
+  _repo_parse "$1" || {
+    print "repo: cannot derive a path from '$1'" >&2
+    return 1
+  }
+
+  dir=$(_repo_dest "$reply[1]" "$reply[2]")
+  if [[ ! -d $dir ]]; then
+    mkdir -p -- "${dir:h}" || return 1
+    git clone "$reply[3]" "$dir" || return 1
+  fi
+  cd -- "$dir"
+}
+
+_repo_go() {
+  local dir
+  _repo_fzf_available || return 1
+  dir=$(_repo_pick "$*") || return 1
+  [[ -n $dir ]] || return 1
+  cd -- "$dir"
+}
+
+# repo               : pick a repository with fzf and cd into it
+# repo <words...>    : same, with the words as the initial fzf query
+# repo get <repo>    : clone into the root and cd into it (owner/repo or URL)
+#
+# `get` and the help flags are the only reserved words; anything else is a
+# query, so `repo dotfiles` narrows the picker instead of failing.
+repo() {
+  case ${1:-} in
+    get)
+      shift
+      _repo_get "$@"
+      ;;
+    -h | --help | help)
+      print 'usage: repo [<query>... | get <owner/repo|url>]'
+      ;;
+    *)
+      _repo_go "$@"
+      ;;
+  esac
 }
