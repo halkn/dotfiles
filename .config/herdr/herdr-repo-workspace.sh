@@ -9,7 +9,7 @@ repo_lib=${XDG_CONFIG_HOME:-$HOME/.config}/zsh/lib/repo.zsh
 }
 source "$repo_lib"
 
-_repo_available || exit 1
+_repo_fzf_available || exit 1
 
 dir=$(_repo_pick "${1:-}") || exit 0
 [[ -n $dir ]] || exit 0
