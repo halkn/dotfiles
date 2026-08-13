@@ -12,15 +12,16 @@ paths:
 
 - **CLAUDE.md / `.claude/rules/`**: context であって強制ではない。守ってほしい規約・判断基準を置く
 - **`permissions` / hook**: クライアントがコマンド文字列を見て判断する。文字列解析なので、変数展開や余分な空白で外れる。「モデルが従わなくても止まる」層だが、確実ではない
-- **`sandbox`**: OS が実行中プロセスに強制する。文字列解析に依存しない唯一の境界で、prompt injection がモデルの判断を回避しても効く
+- **`sandbox`**: OS が Bash とその子プロセスに強制する。文字列解析に依存しない唯一の境界だが、効くのは Bash 層だけ。Edit / Write でのファイル書込は `permissions` の管轄で、auto モードでは classifier が判断する
 
-よって、任意コード実行やファイル読取のような能力の制限は sandbox に寄せる。`permissions` / hook は sandbox で表現できないもの（不可逆な外向き操作の確認）と、sandbox に残った穴の二次防御に使う。
+よって、任意コード実行やファイル読取のような能力の制限は sandbox に寄せる。`permissions` / hook は sandbox で表現できないもの（不可逆な外向き操作の確認）と、sandbox に残った穴の二次防御に使う。書込を確実に止めたい対象は、Bash 経路と tool 経路の両方を塞ぐ。
 
 ## ガードを足す・消すとき
 
 - 標準機能（sandbox・`permissions`・auto モードの classifier）で代替できないことを先に示す。既定の classifier ルールは `claude auto-mode defaults` で読める
 - 防御は「道具」ではなく「参照される資産」側を列挙する。インタプリタ名・読取コマンド名の列挙は回避手段が開いており、防御にならない
 - deny に置くのは「取り返しがつかない」かつ「正当な用途がほぼ無い」ものだけ。破壊的だが正当な用途もある操作（`git reset --hard`・`mise bootstrap --force-dotfiles` 等）は ask に置く。deny は代替手段を塞ぐだけだが、ask なら auto モード中も classifier より前に確認が入る
+- Claude Code の自己保護が効くのは、それ自身がロードする側のパス（`.claude/**`・`~/.claude/**`・`.mcp.json`）と、そこから張られた symlink の先だけ。`claude/hooks/*.sh` のように repo 側に実体を持ち Claude Code が実行するファイルは対象外なので、`sandbox.filesystem.denyWrite` に明示する
 - sandbox が既に決定論的に制御しているもの（書込先は write allowlist、送信先は network allowlist）と、git で戻せる変更（lockfile・依存）は deny に置かない
 - ask は allow より先に評価されるので、ask のパターンを広げると read-only 形まで毎回プロンプトになる
 
