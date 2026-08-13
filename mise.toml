@@ -142,7 +142,7 @@ fi
 
 [tasks.lint]
 description = "リポジトリ検証（整形チェックを含む）"
-depends = ["fmt-check", "lint:zsh", "lint:shell", "lint:nvim"]
+depends = ["fmt-check", "lint:zsh", "lint:shell", "lint:nvim", "test:zsh"]
 dir = "{{config_root}}"
 run = "git diff --check"
 
@@ -177,6 +177,11 @@ for f in .zshenv .config/zsh/.zshenv .config/zsh/.zshrc .config/zsh/**/*.zsh(N);
 done
 exit $rc
 """
+
+[tasks."test:zsh"]
+description = "zsh ライブラリのテスト"
+dir = "{{config_root}}"
+run = "zsh .config/zsh/test/repo_test.zsh"
 
 # Given a directory, shuck also picks up extensionless files such as `.zshrc` (shuck 0.1.1).
 [tasks."lint:shell"]
