@@ -58,16 +58,32 @@ _repo_pick() {
     | awk -F'\t' '{print $2}'
 }
 
-# Map `owner/repo` or a clone URL to the checkout path under the root.
+# Fold the forge-specific spellings of one repository onto a single host/path.
 # Azure DevOps is normalized twice over: the `_git` segment is an artifact of its
 # URL scheme, and its SSH host/`v3` prefix would otherwise place the same
 # repository somewhere else than the HTTPS URL does.
-_repo_dest() {
-  local arg=$1 rest host path
+_repo_normalize() {
+  local host=$1 path=$2
+  if [[ $host == ssh.dev.azure.com ]]; then
+    host=dev.azure.com
+    path=${path#v3/}
+  fi
+  path=${path//\/_git\//\/}
+  reply=("$host" "$path")
+}
+
+# Split `owner/repo` or a clone URL into `reply=(host path url)`. No root, no
+# filesystem, no output: everything that decides where a repository lands is
+# here so that .config/zsh/test/repo_test.zsh can pin it down.
+_repo_parse() {
+  local arg=$1 rest host path url=$1
 
   if [[ $arg != *:* && $arg == */* && $arg != */*/* ]]; then
     host=github.com
     path=$arg
+    # Only the bare shorthand needs a URL built; anything else is already one,
+    # and rewriting it would drop the credentials the user picked.
+    url=https://github.com/$arg
   elif [[ $arg == *://* ]]; then
     rest=${arg#*://}
     host=${rest%%/*}
@@ -76,26 +92,23 @@ _repo_dest() {
     host=${arg%%:*}
     path=${arg#*:}
   else
-    print "repo: cannot derive a path from '$arg'" >&2
     return 1
   fi
 
   host=${host#*@}
   host=${host%%:*}
-  if [[ $host == ssh.dev.azure.com ]]; then
-    host=dev.azure.com
-    path=${path#v3/}
-  fi
   path=${path#/}
   path=${path%/}
   path=${path%.git}
-  path=${path//\/_git\//\/}
+  _repo_normalize "$host" "$path"
 
-  [[ -n $host && -n $path ]] || {
-    print "repo: cannot derive a path from '$arg'" >&2
-    return 1
-  }
-  print -r -- "$(_repo_root)/$host/$path"
+  [[ -n $reply[1] && -n $reply[2] ]] || return 1
+  reply=("$reply[1]" "$reply[2]" "$url")
+}
+
+# Checkout path of an already parsed host/path pair.
+_repo_dest() {
+  print -r -- "$(_repo_root)/$1/$2"
 }
 
 # repo            : pick a repository with fzf and cd into it
@@ -110,13 +123,14 @@ repo() {
       print 'usage: repo get <owner/repo|url>' >&2
       return 1
     }
-    dir=$(_repo_dest "$1") || return 1
+    local -a reply
+    _repo_parse "$1" || {
+      print "repo: cannot derive a path from '$1'" >&2
+      return 1
+    }
+    dir=$(_repo_dest "$reply[1]" "$reply[2]")
     if [[ ! -d $dir ]]; then
-      local url=$1
-      # Only the bare shorthand needs a URL built; anything else is already one,
-      # and rewriting it would drop the credentials the user picked.
-      [[ $url == *:* ]] || url=https://github.com/$url
-      git clone "$url" "$dir" || return
+      git clone "$reply[3]" "$dir" || return
     fi
     cd -- "$dir" && la
     return
