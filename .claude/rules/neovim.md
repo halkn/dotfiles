@@ -43,7 +43,7 @@ paths:
 - `emmylua_check` は `vim.hl` / `vim.pack` のような遅延ロードモジュールのフィールドを検証しない。存在しない `vim.*` API はここには出ないので、実行時検査（`test/smoke.lua`）が受け持つ
 - 警告は 0 件を維持する（`--warnings-as-errors`）。推論限界に見えるものの大半は型注釈で解ける: module-local の state テーブルには `---@class` + `---@field x integer?` を、`M.config` には `---@class` + `---@type` と `M.setup` の `---@param opts <Config>?` を付ける
 - ヘルパー関数越しの nil チェックはナローイングされない。値をローカルに束縛してその場で `if x and ...` する。`number` を `integer` 引数へ渡すところは `math.floor()` を挟む
-- 型注釈で解けないときだけ `--[[@as T]]` を使い、なぜその検査が成立しないのかをコメントに書く（現行 4 箇所: `getreg()` の多重シグネチャ・`make_range_params()` に無い `context`・`vim.iter` の `@operator call`・blink.cmp の `*ConfigPartial`）。`---@diagnostic disable` は使わない
+- 型注釈で解けないときだけ `--[[@as T]]` を使い、なぜその検査が成立しないのかをコメントに書く。`---@diagnostic disable` は使わない
 - `diagnostics.disable` に入れるのは、その診断がこの構成では常に無意味なときだけ（`operatorfunc` へ `v:lua` 経由で渡すための `_G` 代入）
 
 **実行時検査（`test/smoke.lua`）:**
