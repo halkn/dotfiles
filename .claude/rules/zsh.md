@@ -25,6 +25,7 @@ paths:
 
 - `lib/worktree.zsh`（`wt`）は `.config/herdr/herdr-picker.sh`、`lib/repo.zsh`（`repo`）は `.config/herdr/herdr-repo-workspace.sh` から絶対パスで source される。worktree の一覧・削除、リポジトリの一覧・preview のロジックはここに集約し、呼び出し側で再実装しない
 - パスが外部との契約になっているので、移動・改名は herdr 側の参照と同時に直す
+- forge（GitHub / Azure DevOps）の差異は `lib/forge.zsh` に集約する。`wt` は worktree、`repo` はリポジトリ配置の層で、どちらも `gh` / `az` の癖を持たない。ただし `repo` の URL 正規化は例外で `repo.zsh` に残す（origin ではなく引数から host を決めるため入口が違い、`repo.zsh` は herdr から単独 source される）
 - `wt` が lifecycle を持つのは人間が作った persistent worktree だけ。`.claude/worktrees/` 配下は Claude Code が作る ephemeral な checkout で、削除は向こうの sweep が持つ。一覧には出しつつ削除対象からは外す
 
 **言語上の注意:**
