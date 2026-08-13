@@ -108,13 +108,12 @@ _wt_entries() {
 }
 
 # Comma-separated markers describing how safe a worktree is to remove.
+# main_root and cur_root are the same for every worktree of a repository, so
+# they are computed once by the caller instead of once per row.
 _wt_flags() {
-  local wt_path=$1 branch=$2 base=$3
+  local wt_path=$1 branch=$2 base=$3 main_root=$4 cur_root=$5
   local -a flags
-  local main_root cur_root track
-
-  main_root=$(_wt_main_root)
-  cur_root=$(git rev-parse --path-format=absolute --show-toplevel 2>/dev/null)
+  local track
 
   [[ $wt_path == "$main_root" ]] && flags+=(main)
   [[ $wt_path == "$cur_root" ]] && flags+=(current)
@@ -154,10 +153,12 @@ _wt_flags() {
 # named fix/main-nav must not read as the `main` marker.
 # `--with-nth 1,2` shows the label and the flags and hides the path.
 _wt_rows() {
-  local base wt_path branch flags
+  local base wt_path branch flags main_root cur_root
   base=$(_wt_base_ref 2>/dev/null)
+  main_root=$(_wt_main_root)
+  cur_root=$(git rev-parse --path-format=absolute --show-toplevel 2>/dev/null)
   while IFS=$'\t' read -r wt_path branch; do
-    flags=$(_wt_flags "$wt_path" "$branch" "$base")
+    flags=$(_wt_flags "$wt_path" "$branch" "$base" "$main_root" "$cur_root")
     printf '%-28s %-32s\t%s\t%s\n' "${wt_path:t}" "${branch:-(detached)}" "$flags" "$wt_path"
   done < <(_wt_entries)
 }
