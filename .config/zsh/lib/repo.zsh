@@ -1,5 +1,6 @@
-# repo - navigate ghq-managed repositories. The listing and preview live here
-# because herdr-repo-workspace.sh offers the same list when creating a workspace.
+# repo - navigate repositories cloned under $REPO_ROOT. The listing and preview
+# live here because herdr-repo-workspace.sh offers the same list when creating a
+# workspace.
 #
 # This file is sourced from .zshrc and from
 # ~/.config/herdr/herdr-repo-workspace.sh, so it must only define functions and
@@ -9,19 +10,35 @@
 # functions) can re-source it. `%x` expands to the file being sourced.
 _REPO_LIB=${${(%):-%x}:A}
 
+_repo_root() {
+  local root=${REPO_ROOT:-$HOME/repos}
+  root=${root/#\~/$HOME}
+  print -r -- "${root%/}"
+}
+
 _repo_available() {
-  command -v ghq >/dev/null 2>&1 || {
-    print 'repo: ghq is not installed or not in PATH' >&2
+  command -v git >/dev/null 2>&1 || {
+    print 'repo: git is not installed or not in PATH' >&2
+    return 1
+  }
+  local root
+  root=$(_repo_root)
+  [[ -d $root ]] || {
+    print "repo: $root does not exist (set REPO_ROOT)" >&2
     return 1
   }
 }
 
-# One row per repository: `owner/repo<TAB>full path`. The ghq tree is
-# host/owner/repo, so the two trailing components identify it well enough.
+# One row per repository: `<path without host><TAB>full path`. The host is
+# dropped from the label because it is rarely what distinguishes two clones.
 _repo_rows() {
-  local dir
-  ghq list --full-path | while IFS= read -r dir; do
-    printf '%s\t%s\n' "${dir:h:t}/${dir:t}" "$dir"
+  local root marker rel
+  root=$(_repo_root)
+  # host/owner/repo (GitHub and friends) and host/org/project/repo (Azure DevOps).
+  # A fixed depth keeps nested repositories such as vendored node_modules out.
+  for marker in $root/*/*/*/.git(N) $root/*/*/*/*/.git(N); do
+    rel=${${marker:h}#$root/}
+    printf '%s\t%s\n' "${rel#*/}" "${marker:h}"
   done
 }
 
@@ -41,22 +58,67 @@ _repo_pick() {
     | awk -F'\t' '{print $2}'
 }
 
-# repo            : pick a ghq-managed repository with fzf and cd into it
-# repo get <repo> : clone with ghq and cd into it (owner/repo or URL)
+# Map `owner/repo` or a clone URL to the checkout path under the root.
+# Azure DevOps is normalized twice over: the `_git` segment is an artifact of its
+# URL scheme, and its SSH host/`v3` prefix would otherwise place the same
+# repository somewhere else than the HTTPS URL does.
+_repo_dest() {
+  local arg=$1 rest host path
+
+  if [[ $arg != *:* && $arg == */* && $arg != */*/* ]]; then
+    host=github.com
+    path=$arg
+  elif [[ $arg == *://* ]]; then
+    rest=${arg#*://}
+    host=${rest%%/*}
+    path=${rest#*/}
+  elif [[ $arg == *:* ]]; then
+    host=${arg%%:*}
+    path=${arg#*:}
+  else
+    print "repo: cannot derive a path from '$arg'" >&2
+    return 1
+  fi
+
+  host=${host#*@}
+  host=${host%%:*}
+  if [[ $host == ssh.dev.azure.com ]]; then
+    host=dev.azure.com
+    path=${path#v3/}
+  fi
+  path=${path#/}
+  path=${path%/}
+  path=${path%.git}
+  path=${path//\/_git\//\/}
+
+  [[ -n $host && -n $path ]] || {
+    print "repo: cannot derive a path from '$arg'" >&2
+    return 1
+  }
+  print -r -- "$(_repo_root)/$host/$path"
+}
+
+# repo            : pick a repository with fzf and cd into it
+# repo get <repo> : clone into the root and cd into it (owner/repo or URL)
 repo() {
   _repo_available || return 1
 
   local dir
   if [[ "$1" == get ]]; then
     shift
-    (($#)) || {
+    (($# == 1)) || {
       print 'usage: repo get <owner/repo|url>' >&2
       return 1
     }
-    ghq get "$@" || return
-    # --exact resolves owner/repo to its full path; URLs may not match, so cd is best-effort.
-    dir=$(ghq list --full-path --exact "${@[-1]}" 2>/dev/null | head -1)
-    [[ -n "$dir" ]] && cd -- "$dir" && la
+    dir=$(_repo_dest "$1") || return 1
+    if [[ ! -d $dir ]]; then
+      local url=$1
+      # Only the bare shorthand needs a URL built; anything else is already one,
+      # and rewriting it would drop the credentials the user picked.
+      [[ $url == *:* ]] || url=https://github.com/$url
+      git clone "$url" "$dir" || return
+    fi
+    cd -- "$dir" && la
     return
   fi
 

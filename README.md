@@ -23,9 +23,8 @@ itself is installed in the bootstrap below.
 
 ### Bootstrap
 
-1. Clone the dotfiles. All repositories are managed under `~/repos`
-   via ghq, so place it at the ghq-compatible path (ghq itself is
-   installed later by mise).
+1. Clone the dotfiles. All repositories live under `$REPO_ROOT` (`~/repos`)
+   as `<host>/<path>`, so place it at that path.
 
    ```sh
    git clone https://github.com/halkn/dotfiles.git "$HOME/repos/github.com/halkn/dotfiles"
@@ -133,15 +132,25 @@ from origin, so those are reported instead of checked out.
 
 Checkouts are placed under `[worktrees] directory` in
 `.config/herdr/config.toml` (`~/.local/share/herdr/worktrees`, i.e.
-`$XDG_DATA_HOME`), so they stay out of the ghq tree that `repo` browses.
+`$XDG_DATA_HOME`), so they stay out of the `$REPO_ROOT` tree that `repo`
+browses.
 `herdr` itself can also create one with `alt+g`. The `alt+s` picker lists
 worktrees to jump to, and removes the selected one with `ctrl-x`; creation is
 `wt new` / `wt pr` only.
 
 ## Repositories and herdr workspaces
 
-`repo` (`.config/zsh/lib/repo.zsh`) picks a ghq-managed repository with fzf and
-cd's into it; `repo get <owner/repo|url>` clones one and cd's into the clone.
+`repo` (`.config/zsh/lib/repo.zsh`) picks a repository under `$REPO_ROOT`
+(`~/repos`) with fzf and cd's into it; `repo get <owner/repo|url>` clones one
+and cd's into the clone.
+
+Clones are placed at `$REPO_ROOT/<host>/<path>`. A bare `owner/repo` is taken
+as GitHub, and Azure DevOps is normalized: the `_git` segment is dropped and its
+SSH form (`git@ssh.dev.azure.com:v3/org/proj/repo`) resolves to the same
+directory as the HTTPS URL, i.e. `dev.azure.com/org/proj/repo`. The listing is
+a depth-bounded glob over that layout, so a repository placed at another depth
+is not picked up.
+
 The same listing backs `alt+w`, which picks a repository and creates a herdr
 workspace with that repository as its cwd, replacing the "create a workspace,
 then run `repo` inside it" pair of steps. Plain "new workspace in the current

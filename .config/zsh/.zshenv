@@ -13,6 +13,10 @@ export PAGER=less
 : "${XDG_STATE_HOME:=$HOME/.local/state}"
 export XDG_CONFIG_HOME XDG_CACHE_HOME XDG_DATA_HOME XDG_BIN_HOME XDG_STATE_HOME
 
+# repositories (<host>/<path> layout under this root; see .config/zsh/lib/repo.zsh)
+: "${REPO_ROOT:=$HOME/repos}"
+export REPO_ROOT
+
 # zsh
 skip_global_compinit=1
 

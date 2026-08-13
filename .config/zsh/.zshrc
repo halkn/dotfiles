@@ -94,9 +94,7 @@ alias ..='cd ..'
 alias zs='exec zsh'
 alias :q='exit'
 dot() {
-  local target
-  target="$(ghq list -p halkn/dotfiles 2>/dev/null | head -1)"
-  cd "${target:-.}"
+  cd "${REPO_ROOT:-$HOME/repos}/github.com/halkn/dotfiles"
 }
 
 # ── plugins (git clone) ───────────────────────────────
