@@ -77,9 +77,10 @@ end
 
 -- attach
 
--- Only the requests Nvim has no global default for. `grn` `grr` `gri` `gra`
--- `grt` `grx` `gO` and `K` already cover the rest; a buffer-local `gr` would
--- also make every `gr` chord wait for 'timeoutlen'.
+-- `g` stays a jump prefix: cursor motion goes there, everything else does not.
+-- Jumps reuse the global defaults (`grr` `gri` `grt`) so no buffer-local `gr`
+-- shadows them and makes every `gr` chord wait for 'timeoutlen'; `gd` and `gD`
+-- have no default. The rest sits on <F2> and <LocalLeader>.
 local function setup_keymaps(client, bufnr)
   local bufopts = { noremap = true, silent = true, buffer = bufnr }
   if client:supports_method('textDocument/definition') then
@@ -88,11 +89,20 @@ local function setup_keymaps(client, bufnr)
   if client:supports_method('textDocument/declaration') then
     vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, bufopts)
   end
+  if client:supports_method('textDocument/rename') then
+    vim.keymap.set('n', '<F2>', vim.lsp.buf.rename, bufopts)
+  end
   if client:supports_method('textDocument/signatureHelp') then
     vim.keymap.set('i', '<C-k>', vim.lsp.buf.signature_help, bufopts)
   end
+  if client:supports_method('textDocument/documentSymbol') then
+    vim.keymap.set('n', '<LocalLeader>s', vim.lsp.buf.document_symbol, bufopts)
+  end
   if client:supports_method('workspace/symbol') then
     vim.keymap.set('n', '<LocalLeader>S', vim.lsp.buf.workspace_symbol, bufopts)
+  end
+  if client:supports_method('textDocument/codeAction') then
+    vim.keymap.set('n', '<LocalLeader>c', vim.lsp.buf.code_action, bufopts)
   end
 end
 

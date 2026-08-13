@@ -21,7 +21,9 @@ paths:
 
 **LSP:**
 
-- 0.12 が定義するグローバル既定（`grn` `grr` `gri` `gra` `grt` `grx` `gO` `K` `i_CTRL-S`）と同じ機能を buffer-local に張り直さない。`gr` を buffer-local に張ると `gr*` 系の入力が全て 'timeoutlen' 待ちになる（`:help map-nowait`）
+- `g` は移動・ジャンプの prefix。ジャンプ系（definition・declaration・references・implementation・type_definition）を `g` に置き、rename・symbol・code action は `<F2>` と `<LocalLeader>` に置く
+- ジャンプ系のうち標準が持つもの（`grr` `gri` `grt`）は標準をそのまま使い、buffer-local に張り直さない。`gr` を buffer-local に張ると `gr*` 系の入力が全て 'timeoutlen' 待ちになる（`:help map-nowait`）。自前で張るのは標準に無い `gd` `gD` だけ
+- 標準の非ジャンプ既定（`grn` `gra` `gO` `grx`）は消さずに残す。`<F2>` / `<LocalLeader>*` と二重になるが、他環境との差分を小さく保つ
 - `LspAttach` で張るキーマップは `client:supports_method()` で分岐する。server が持たない機能のキーが残るとエラーになる
 - `LspAttach` で作った buffer-local の autocmd は `LspDetach` で外す。augroup はバッファごとに作らず単一 augroup + `buffer` 指定にする
 - server 単位で決まる capability の調整（ruff の hover 無効化など）は `lsp/<name>.lua` の `on_init` に置く。`LspAttach` で他 client の有無を見る形は attach 順に依存して落ちる
