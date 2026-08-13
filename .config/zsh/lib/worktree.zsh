@@ -9,6 +9,10 @@
 # functions) can re-source it. `%x` expands to the file being sourced.
 _WT_LIB=${${(%):-%x}:A}
 
+# herdr-picker.sh sources this file on its own, so `wt pr` cannot rely on
+# .zshrc having loaded the forge helpers.
+source "${_WT_LIB:h}/forge.zsh"
+
 _wt_in_repo() {
   git rev-parse --is-inside-work-tree >/dev/null 2>&1 || {
     print 'wt: not inside a git repository' >&2
@@ -415,21 +419,6 @@ _wt_new() {
   return 0
 }
 
-# Which forge hosts `origin`, so `wt pr` can pick between gh and az repos.
-_wt_pr_host() {
-  local url
-  url=$(git remote get-url origin 2>/dev/null) || return 1
-  [[ -n $url ]] || return 1
-  case $url in
-    *dev.azure.com* | *.visualstudio.com*)
-      print -r -- azure
-      ;;
-    *)
-      print -r -- github
-      ;;
-  esac
-}
-
 # Fetch a branch that lives on origin and open it as a worktree.
 _wt_track_and_open() {
   local branch=$1
@@ -440,143 +429,54 @@ _wt_track_and_open() {
   _wt_checkout_branch "$branch"
 }
 
-# Head of a PR description for the preview window; the rest is folded into a
-# line count. GitHub stores descriptions with CRLF, which shows up as ^M here.
-_wt_pr_body_head() {
-  awk '
-    { sub(/\r$/, "") }
-    NR <= 20 { print }
-    END { if (NR > 20) printf "\n… %d more lines\n", NR - 20 }
-  '
-}
+# What to do with a PR whose head lives in a fork. This is the one step where
+# the forges cannot be made to look alike.
+_wt_pr_fork() {
+  local number=$1 host
+  host=$(_forge_host) || return 1
 
-_wt_pr() {
-  local host
-  host=$(_wt_pr_host) || {
-    print 'wt: no origin remote' >&2
-    return 1
-  }
   if [[ $host == azure ]]; then
-    _wt_pr_az "${1:-}"
-  else
-    _wt_pr_gh "${1:-}"
-  fi
-}
-
-# Preview body for the PR picker. `gh pr view` also prints labels, assignees,
-# reviewers, projects and the URL, which pushes the description out of view.
-_wt_pr_preview_gh() {
-  local number=$1 info
-  info=$(gh pr view "$number" \
-    --json title,state,isDraft,author,headRefName,baseRefName,body 2>/dev/null) || return 0
-  print -r -- "$info" | jq -r '
-    [
-      .title, "",
-      "state   " + (if .isDraft then "DRAFT" else .state end),
-      "author  " + (.author.login // "?"),
-      "branch  " + .headRefName + " -> " + .baseRefName,
-      ""
-    ] | .[]'
-  print -r -- "$info" | jq -r '.body // ""' | _wt_pr_body_head
-}
-
-_wt_pr_gh() {
-  local number=$1 info head cross
-  command -v gh >/dev/null 2>&1 || {
-    print 'wt: gh is not installed' >&2
-    return 1
-  }
-
-  if [[ -z $number ]]; then
-    _wt_fzf_available || return 1
-    number=$(
-      gh pr list --limit 50 \
-        --json number,title,author,isDraft,headRefName \
-        --template '{{range .}}{{printf "%v" .number}}	{{if .isDraft}}[draft] {{end}}{{.title}} ({{.author.login}}) — {{.headRefName}}{{"\n"}}{{end}}' 2>/dev/null \
-        | fzf --delimiter '\t' --with-nth 2 \
-          --height=100% \
-          --prompt 'pr> ' \
-          --preview "source ${_WT_LIB}; _wt_pr_preview_gh {1}" \
-          --preview-window 'down:60%:wrap' \
-        | awk -F'\t' '{print $1}'
-    ) || return 1
-  fi
-  [[ -n $number ]] || return 1
-
-  info=$(gh pr view "$number" --json headRefName,isCrossRepository) || return 1
-  head=$(print -r -- "$info" | jq -r '.headRefName')
-  cross=$(print -r -- "$info" | jq -r '.isCrossRepository')
-
-  if [[ $cross == true ]]; then
-    # Fork heads are untrusted code: fetch read-only into pr-<n> and do not
-    # pre-trust mise. Run `gh pr checkout <n>` inside the worktree to push back.
-    git fetch origin "refs/pull/$number/head:pr-$number" --force || return 1
-    _wt_checkout_branch "pr-$number" 0
-    print "wt: fork PR checked out as pr-$number (run 'gh pr checkout $number' inside it to push back)" >&2
-    return 0
-  fi
-
-  _wt_track_and_open "$head"
-}
-
-# Same four fields as the gh preview. Azure's own `active` / `completed` /
-# `abandoned` are mapped onto gh's vocabulary so both forges read alike.
-_wt_pr_preview_az() {
-  local number=$1 info
-  info=$(az repos pr show --id "$number" --only-show-errors -o json 2>/dev/null) || return 0
-  print -r -- "$info" | jq -r '
-    [
-      .title, "",
-      "state   " + (
-        if .isDraft then "DRAFT"
-        elif .status == "active" then "OPEN"
-        elif .status == "completed" then "MERGED"
-        elif .status == "abandoned" then "CLOSED"
-        else (.status // "?") end
-      ),
-      "author  " + (.createdBy.displayName // "?"),
-      "branch  " + (.sourceRefName | ltrimstr("refs/heads/")) + " -> " + (.targetRefName | ltrimstr("refs/heads/")),
-      ""
-    ] | .[]'
-  print -r -- "$info" | jq -r '.description // ""' | _wt_pr_body_head
-}
-
-# Azure Repos equivalent. `az repos` picks up organization / project /
-# repository from the origin remote, so no ids have to be passed here.
-_wt_pr_az() {
-  local number=$1 prs info head fork
-  command -v az >/dev/null 2>&1 || {
-    print 'wt: az is not installed' >&2
-    return 1
-  }
-
-  if [[ -z $number ]]; then
-    _wt_fzf_available || return 1
-    # Not silenced: az reports sign-in and detection failures on stderr, and
-    # they are the usual reason for an empty list.
-    prs=$(az repos pr list --status active --top 50 --only-show-errors -o json) || return 1
-    number=$(
-      print -r -- "$prs" \
-        | jq -r '.[] | [(.pullRequestId | tostring), (if .isDraft then "[draft] " else "" end) + .title + " (" + (.createdBy.displayName // "?") + ") — " + (.sourceRefName | ltrimstr("refs/heads/"))] | @tsv' \
-        | fzf --delimiter '\t' --with-nth 2 \
-          --height=100% \
-          --prompt 'pr> ' \
-          --preview "source ${_WT_LIB}; _wt_pr_preview_az {1}" \
-          --preview-window 'down:60%:wrap' \
-        | awk -F'\t' '{print $1}'
-    ) || return 1
-  fi
-  [[ -n $number ]] || return 1
-
-  info=$(az repos pr show --id "$number" --only-show-errors -o json) || return 1
-  head=$(print -r -- "$info" | jq -r '.sourceRefName // "" | ltrimstr("refs/heads/")')
-  fork=$(print -r -- "$info" | jq -r 'if .forkSource then "true" else "false" end')
-
-  if [[ $fork == true ]]; then
     # Azure Repos only publishes refs/pull/<id>/merge on the target repository,
     # so a fork head cannot be fetched from origin the way it can on GitHub.
     print "wt: PR $number comes from a fork; add that repository as a remote and use 'wt new'" >&2
     return 1
+  fi
+
+  # Fork heads are untrusted code: fetch read-only into pr-<n> and do not
+  # pre-trust mise. Run `gh pr checkout <n>` inside the worktree to push back.
+  git fetch origin "refs/pull/$number/head:pr-$number" --force || return 1
+  _wt_checkout_branch "pr-$number" 0
+  print "wt: fork PR checked out as pr-$number (run 'gh pr checkout $number' inside it to push back)" >&2
+  return 0
+}
+
+# Open the head of a pull request as a worktree. Which forge answers is the
+# forge layer's problem; this is only the picker and the checkout.
+_wt_pr() {
+  local number=${1:-} rows head fork
+  if [[ -z $number ]]; then
+    _wt_fzf_available || return 1
+    rows=$(_forge_pr_rows) || return 1
+    [[ -n $rows ]] || {
+      print 'wt: no open pull requests' >&2
+      return 1
+    }
+    number=$(
+      print -r -- "$rows" \
+        | fzf --delimiter '\t' --with-nth 2 --accept-nth 1 \
+          --height=100% \
+          --prompt 'pr> ' \
+          --preview "source ${_FORGE_LIB}; _forge_pr_preview {1}" \
+          --preview-window 'down:60%:wrap'
+    ) || return 1
+  fi
+  [[ -n $number ]] || return 1
+
+  IFS=$'\t' read -r head fork < <(_forge_pr_head "$number") || return 1
+
+  if [[ $fork == true ]]; then
+    _wt_pr_fork "$number"
+    return
   fi
   [[ -n $head ]] || {
     print "wt: could not read the source branch of PR $number" >&2
