@@ -149,13 +149,16 @@ _wt_flags() {
   fi
 }
 
-# Display line<TAB>path for fzf. `--with-nth 1` hides the path column.
+# Display line<TAB>flags<TAB>path for fzf. Flags get a column of their own so
+# that filters match them as a field instead of anywhere in the text: a branch
+# named fix/main-nav must not read as the `main` marker.
+# `--with-nth 1,2` shows the label and the flags and hides the path.
 _wt_rows() {
   local base wt_path branch flags
   base=$(_wt_base_ref 2>/dev/null)
   while IFS=$'\t' read -r wt_path branch; do
     flags=$(_wt_flags "$wt_path" "$branch" "$base")
-    printf '%-28s %-32s %s\t%s\n' "${wt_path:t}" "${branch:-(detached)}" "$flags" "$wt_path"
+    printf '%-28s %-32s\t%s\t%s\n' "${wt_path:t}" "${branch:-(detached)}" "$flags" "$wt_path"
   done < <(_wt_entries)
 }
 
@@ -339,11 +342,11 @@ _wt_pick() {
   rows=$(_wt_rows)
   [[ -n $rows ]] || return 1
   print -r -- "$rows" \
-    | fzf --delimiter '\t' --with-nth 1 \
+    | fzf --delimiter '\t' --with-nth 1,2 \
       --prompt 'worktree> ' \
       --header 'Enter: open' \
-      --preview "source ${_WT_LIB}; _wt_preview {2}" \
-    | awk -F'\t' '{print $2}'
+      --preview "source ${_WT_LIB}; _wt_preview {3}" \
+    | awk -F'\t' '{print $3}'
 }
 
 _wt_go() {
@@ -597,7 +600,9 @@ _wt_rm() {
     # checkout. Everything shown is preselected; deselect what should stay.
     # `agent` checkouts are excluded: Claude Code's own sweep reclaims them, and
     # one may be locked and in use by a running agent.
-    rows=$(print -r -- "$rows" | grep -E '(merged|gone)' | grep -v -E '(main|current|dirty|agent)')
+    rows=$(print -r -- "$rows" | awk -F'\t' '
+      $2 ~ /(^|,)(merged|gone)(,|$)/ && $2 !~ /(^|,)(main|current|dirty|agent)(,|$)/
+    ')
     [[ -n $rows ]] || {
       print 'wt: nothing to reclaim' >&2
       return 0
@@ -607,10 +612,10 @@ _wt_rm() {
 
   tmp=$(mktemp "${TMPDIR:-/tmp}/wt-rm.XXXXXX") || return 1
   print -r -- "$rows" \
-    | fzf --multi --delimiter '\t' --with-nth 1 \
+    | fzf --multi --delimiter '\t' --with-nth 1,2 \
       "${opts[@]}" \
       --header 'Tab: toggle / Enter: remove selected' \
-      --preview "source ${_WT_LIB}; _wt_preview {2}" >|"$tmp"
+      --preview "source ${_WT_LIB}; _wt_preview {3}" >|"$tmp"
 
   while IFS= read -r line; do
     [[ -n $line ]] || continue
