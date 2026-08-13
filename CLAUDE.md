@@ -25,7 +25,7 @@
 - コードコメントは英語で書く。識別子・コマンド名と同じ語彙で書けるため。ユーザーに表示される文字列（hook の拒否メッセージ、`mise` の task description）は日本語のまま
 - 長い設計背景はコードに置かず `.claude/rules/*.md` へ。コード側には、その実装でなければならない理由と、rules に無い実装固有の制約だけを残す
 - commit: 小文字 conventional prefix（`fix:` `add:` `feat:` `refactor:`）+ 短い英語要約。1 コミット 1 ツール・1 テーマ（例: `fix: python lsp settings.`）
-- PR: 変更理由・影響範囲（`nvim`・`zsh`・`claude` 等）・確認手順を書く
+- PR: 本文は `.github/pull_request_template.md` の節構成に沿う。`gh pr create --body` はテンプレートを適用しないので、本文を書く前にテンプレートを読む
 
 ## Machine-local overrides（gitignore 対象）
 

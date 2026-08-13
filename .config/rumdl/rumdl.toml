@@ -4,6 +4,11 @@
 disable = ["MD013"]
 respect-gitignore = true
 
+# GitHub issue / PR templates are body fragments, not documents: they start at h2.
+[per-file-ignores]
+"**/.github/pull_request_template.md" = ["MD041"]
+"**/.github/ISSUE_TEMPLATE/*.md" = ["MD041"]
+
 [MD003]
 style = "atx"
 
