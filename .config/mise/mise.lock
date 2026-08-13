@@ -240,38 +240,38 @@ url = "https://github.com/halkn/mdiv/releases/download/v0.2.2/mdiv-windows-x64.z
 url_api = "https://api.github.com/repos/halkn/mdiv/releases/assets/498693726"
 
 [[tools."github:halkn/mdvu"]]
-version = "0.7.0"
+version = "0.8.0"
 backend = "github:halkn/mdvu"
 
 [tools."github:halkn/mdvu"."platforms.linux-arm64"]
-checksum = "sha256:d35095840b369f04198ddfac134b05f2b64f98929d941cf58e86e582acf5c82d"
-url = "https://github.com/halkn/mdvu/releases/download/v0.7.0/mdvu-0.7.0-aarch64-unknown-linux-gnu.tar.gz"
-url_api = "https://api.github.com/repos/halkn/mdvu/releases/assets/511348665"
+checksum = "sha256:e9aca48ef89da0161d3390786a140ea231d8e73c8af3bae7dc0d764336449270"
+url = "https://github.com/halkn/mdvu/releases/download/v0.8.0/mdvu-0.8.0-aarch64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/halkn/mdvu/releases/assets/513664168"
 
 [tools."github:halkn/mdvu"."platforms.linux-arm64-musl"]
-checksum = "sha256:d35095840b369f04198ddfac134b05f2b64f98929d941cf58e86e582acf5c82d"
-url = "https://github.com/halkn/mdvu/releases/download/v0.7.0/mdvu-0.7.0-aarch64-unknown-linux-gnu.tar.gz"
-url_api = "https://api.github.com/repos/halkn/mdvu/releases/assets/511348665"
+checksum = "sha256:e9aca48ef89da0161d3390786a140ea231d8e73c8af3bae7dc0d764336449270"
+url = "https://github.com/halkn/mdvu/releases/download/v0.8.0/mdvu-0.8.0-aarch64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/halkn/mdvu/releases/assets/513664168"
 
 [tools."github:halkn/mdvu"."platforms.linux-x64"]
-checksum = "sha256:5ddeb149155213f4140bb7e2b65e1508e045d84ee6adf76668ed80f8b5c6ba6c"
-url = "https://github.com/halkn/mdvu/releases/download/v0.7.0/mdvu-0.7.0-x86_64-unknown-linux-gnu.tar.gz"
-url_api = "https://api.github.com/repos/halkn/mdvu/releases/assets/511348666"
+checksum = "sha256:7cde2a4615c90032c6e586b78b183abf88c5cfb421ce5ca7ae87330be6f8b2f7"
+url = "https://github.com/halkn/mdvu/releases/download/v0.8.0/mdvu-0.8.0-x86_64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/halkn/mdvu/releases/assets/513664169"
 
 [tools."github:halkn/mdvu"."platforms.linux-x64-musl"]
-checksum = "sha256:5ddeb149155213f4140bb7e2b65e1508e045d84ee6adf76668ed80f8b5c6ba6c"
-url = "https://github.com/halkn/mdvu/releases/download/v0.7.0/mdvu-0.7.0-x86_64-unknown-linux-gnu.tar.gz"
-url_api = "https://api.github.com/repos/halkn/mdvu/releases/assets/511348666"
+checksum = "sha256:7cde2a4615c90032c6e586b78b183abf88c5cfb421ce5ca7ae87330be6f8b2f7"
+url = "https://github.com/halkn/mdvu/releases/download/v0.8.0/mdvu-0.8.0-x86_64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/halkn/mdvu/releases/assets/513664169"
 
 [tools."github:halkn/mdvu"."platforms.macos-arm64"]
-checksum = "sha256:036e163100406633c66b7217996e5eddc57d83ad7944a651a578648191ddd8af"
-url = "https://github.com/halkn/mdvu/releases/download/v0.7.0/mdvu-0.7.0-aarch64-apple-darwin.tar.gz"
-url_api = "https://api.github.com/repos/halkn/mdvu/releases/assets/511348662"
+checksum = "sha256:3080c3f652553f69e5271817e6f1bb26e280fa6c1feab1eba06db98f6741b54c"
+url = "https://github.com/halkn/mdvu/releases/download/v0.8.0/mdvu-0.8.0-aarch64-apple-darwin.tar.gz"
+url_api = "https://api.github.com/repos/halkn/mdvu/releases/assets/513664166"
 
 [tools."github:halkn/mdvu"."platforms.macos-x64"]
-checksum = "sha256:8a3347819c8082179d040b6cd9e53de5b2a8ea20f4f037a2d4c9ee6f5c5d4b1a"
-url = "https://github.com/halkn/mdvu/releases/download/v0.7.0/mdvu-0.7.0-x86_64-apple-darwin.tar.gz"
-url_api = "https://api.github.com/repos/halkn/mdvu/releases/assets/511348664"
+checksum = "sha256:104f67fa09c74ab917fe0c482f69f3554b7d0477379aecf25b4b348102dfc862"
+url = "https://github.com/halkn/mdvu/releases/download/v0.8.0/mdvu-0.8.0-x86_64-apple-darwin.tar.gz"
+url_api = "https://api.github.com/repos/halkn/mdvu/releases/assets/513664164"
 
 [[tools.herdr]]
 version = "0.8.0"
@@ -488,49 +488,49 @@ url = "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15
 url_api = "https://api.github.com/repos/BurntSushi/ripgrep/releases/assets/478119643"
 
 [[tools.rumdl]]
-version = "0.2.54"
+version = "0.2.55"
 backend = "aqua:rvben/rumdl"
 
 [tools.rumdl."platforms.linux-arm64"]
-checksum = "sha256:c27a96495f66415489d61346efef69bee4cf700d3739a9c5ba89bd477f9249ba"
-url = "https://github.com/rvben/rumdl/releases/download/v0.2.54/rumdl-v0.2.54-aarch64-unknown-linux-musl.tar.gz"
-url_api = "https://api.github.com/repos/rvben/rumdl/releases/assets/510066175"
+checksum = "sha256:baed03dac3bf50565f4e1e461fb8162fcff58742034c6d643a1977d9025dfdb6"
+url = "https://github.com/rvben/rumdl/releases/download/v0.2.55/rumdl-v0.2.55-aarch64-unknown-linux-musl.tar.gz"
+url_api = "https://api.github.com/repos/rvben/rumdl/releases/assets/512169605"
 provenance = "github-attestations"
 
 [tools.rumdl."platforms.linux-arm64-musl"]
-checksum = "sha256:c27a96495f66415489d61346efef69bee4cf700d3739a9c5ba89bd477f9249ba"
-url = "https://github.com/rvben/rumdl/releases/download/v0.2.54/rumdl-v0.2.54-aarch64-unknown-linux-musl.tar.gz"
-url_api = "https://api.github.com/repos/rvben/rumdl/releases/assets/510066175"
+checksum = "sha256:baed03dac3bf50565f4e1e461fb8162fcff58742034c6d643a1977d9025dfdb6"
+url = "https://github.com/rvben/rumdl/releases/download/v0.2.55/rumdl-v0.2.55-aarch64-unknown-linux-musl.tar.gz"
+url_api = "https://api.github.com/repos/rvben/rumdl/releases/assets/512169605"
 provenance = "github-attestations"
 
 [tools.rumdl."platforms.linux-x64"]
-checksum = "sha256:a58c8de71484d4587f2a138476d70b3b2595366941d37b00606e80f86912aabb"
-url = "https://github.com/rvben/rumdl/releases/download/v0.2.54/rumdl-v0.2.54-x86_64-unknown-linux-musl.tar.gz"
-url_api = "https://api.github.com/repos/rvben/rumdl/releases/assets/510066179"
+checksum = "sha256:09c8f72cb57f1ff646d68b5ec2ef6a7b296e6d9f945093db2698c260e81d9f90"
+url = "https://github.com/rvben/rumdl/releases/download/v0.2.55/rumdl-v0.2.55-x86_64-unknown-linux-musl.tar.gz"
+url_api = "https://api.github.com/repos/rvben/rumdl/releases/assets/512169600"
 provenance = "github-attestations"
 
 [tools.rumdl."platforms.linux-x64-musl"]
-checksum = "sha256:a58c8de71484d4587f2a138476d70b3b2595366941d37b00606e80f86912aabb"
-url = "https://github.com/rvben/rumdl/releases/download/v0.2.54/rumdl-v0.2.54-x86_64-unknown-linux-musl.tar.gz"
-url_api = "https://api.github.com/repos/rvben/rumdl/releases/assets/510066179"
+checksum = "sha256:09c8f72cb57f1ff646d68b5ec2ef6a7b296e6d9f945093db2698c260e81d9f90"
+url = "https://github.com/rvben/rumdl/releases/download/v0.2.55/rumdl-v0.2.55-x86_64-unknown-linux-musl.tar.gz"
+url_api = "https://api.github.com/repos/rvben/rumdl/releases/assets/512169600"
 provenance = "github-attestations"
 
 [tools.rumdl."platforms.macos-arm64"]
-checksum = "sha256:e2e005d6824d41402567feb5af21e1cfcd0ee47ea52a8ea53695479822ef4094"
-url = "https://github.com/rvben/rumdl/releases/download/v0.2.54/rumdl-v0.2.54-aarch64-apple-darwin.tar.gz"
-url_api = "https://api.github.com/repos/rvben/rumdl/releases/assets/510066176"
+checksum = "sha256:98dd5620e7eb8ba8fd77830fe1f313530ae2a6368ae867149f7de13dbebde6e3"
+url = "https://github.com/rvben/rumdl/releases/download/v0.2.55/rumdl-v0.2.55-aarch64-apple-darwin.tar.gz"
+url_api = "https://api.github.com/repos/rvben/rumdl/releases/assets/512169607"
 provenance = "github-attestations"
 
 [tools.rumdl."platforms.macos-x64"]
-checksum = "sha256:b3035da193b40a0247a9a88d07679bf248919a3e1f2664ad7ef822d97e65cc1d"
-url = "https://github.com/rvben/rumdl/releases/download/v0.2.54/rumdl-v0.2.54-x86_64-apple-darwin.tar.gz"
-url_api = "https://api.github.com/repos/rvben/rumdl/releases/assets/510066172"
+checksum = "sha256:8dadf1b9aeda17f8a41ab4fcdd2a7f7dfb6eda8981ddce3ebf61b72e3d1d3f89"
+url = "https://github.com/rvben/rumdl/releases/download/v0.2.55/rumdl-v0.2.55-x86_64-apple-darwin.tar.gz"
+url_api = "https://api.github.com/repos/rvben/rumdl/releases/assets/512169601"
 provenance = "github-attestations"
 
 [tools.rumdl."platforms.windows-x64"]
-checksum = "sha256:9300939bde46bd39f6f492409dc8645dc6225ca43b772b9c8c559e24a67211e4"
-url = "https://github.com/rvben/rumdl/releases/download/v0.2.54/rumdl-v0.2.54-x86_64-pc-windows-msvc.zip"
-url_api = "https://api.github.com/repos/rvben/rumdl/releases/assets/510066180"
+checksum = "sha256:47c04176f960e2d196b1e465564869363469ec00714c2970e1f441deff7f679d"
+url = "https://github.com/rvben/rumdl/releases/download/v0.2.55/rumdl-v0.2.55-x86_64-pc-windows-msvc.zip"
+url_api = "https://api.github.com/repos/rvben/rumdl/releases/assets/512169608"
 provenance = "github-attestations"
 
 [[tools.starship]]
