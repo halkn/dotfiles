@@ -207,7 +207,8 @@
       ],
       "denyWrite": [
         "~/.ssh",
-        "~/.gnupg"
+        "~/.gnupg",
+        "~/repos/github.com/halkn/dotfiles/claude"
       ],
       "denyRead": [
         "~/"
