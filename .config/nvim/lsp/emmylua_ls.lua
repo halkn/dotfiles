@@ -8,5 +8,4 @@ return {
     '.luarc.json',
     '.git',
   },
-  single_file_support = true,
 }

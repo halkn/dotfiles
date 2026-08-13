@@ -1,5 +1,5 @@
 -- Inactive: python runs on pyright until ty is more widely adopted.
--- To switch, set languages.python.lsp to { 'ty', 'ruff' } in lsp.lua.
+-- To switch, replace 'pyright' with 'ty' in the servers list in lsp.lua.
 local function has_uv_project(root_dir)
   if not root_dir or root_dir == '' then
     return false

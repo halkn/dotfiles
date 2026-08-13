@@ -196,6 +196,19 @@ check('ui.select', function()
   require('vimrc.modules.picker').close()
 end)
 
+-- vim.lsp.enable() loads lsp/<name>.lua only once a matching filetype appears,
+-- so an error inside one stays hidden until that language is opened. Loading
+-- them here surfaces it. The servers are not started; that needs their binaries.
+check('lsp configs load', function()
+  local files = vim.api.nvim_get_runtime_file('lsp/*.lua', true)
+  assert(#files > 0, 'no lsp/*.lua found')
+  for _, path in ipairs(files) do
+    local config = dofile(path)
+    assert(type(config) == 'table', path .. ' did not return a table')
+    assert(config.cmd, path .. ' has no cmd')
+  end
+end)
+
 if #failures > 0 then
   io.stderr:write('smoke test failed:\n' .. table.concat(failures, '\n') .. '\n')
   os.exit(1)

@@ -19,6 +19,17 @@ paths:
 - plugin manager は Neovim 標準パッケージマネージャーを使用する
 - UI 系（`statusline`、`picker`、`notify`）は自作を優先する
 
+**LSP:**
+
+- `g` は移動・ジャンプの prefix。ジャンプ系（definition・declaration・references・implementation・type_definition）を `g` に置き、rename・symbol・code action は `<F2>` と `<LocalLeader>` に置く
+- ジャンプ系のうち標準が持つもの（`grr` `gri` `grt`）は標準をそのまま使い、buffer-local に張り直さない。`gr` を buffer-local に張ると `gr*` 系の入力が全て 'timeoutlen' 待ちになる（`:help map-nowait`）。自前で張るのは標準に無い `gd` `gD` だけ
+- 標準の非ジャンプ既定（`grn` `gra` `gO` `grx`）は消さずに残す。`<F2>` / `<LocalLeader>*` と二重になるが、他環境との差分を小さく保つ
+- `LspAttach` で張るキーマップは `client:supports_method()` で分岐する。server が持たない機能のキーが残るとエラーになる
+- `LspAttach` で作った buffer-local の autocmd は `LspDetach` で外す。augroup はバッファごとに作らず単一 augroup + `buffer` 指定にする
+- server 単位で決まる capability の調整（ruff の hover 無効化など）は `lsp/<name>.lua` の `on_init` に置く。`LspAttach` で他 client の有無を見る形は attach 順に依存して落ちる
+- `lsp/<name>.lua` は 1 サーバー 1 ファイルで自己完結させる。数行の重複は共通モジュール化しない
+- `single_file_support` は 0.11 以降の `vim.lsp.Config` に無い（相当するのは既定 `false` の `workspace_required`）。`vim.lsp.config()` は呼び出し時に検証しないので、未知キーも型不一致も黙って通る
+
 **ツールチェーン:**
 
 - formatter: `stylua` が正。editor 内では `emmylua_ls` が external formatter として呼び出す
@@ -37,6 +48,7 @@ paths:
 
 **実行時検査（`test/smoke.lua`）:**
 
+- `lsp/*.lua` は `vim.lsp.enable()` が対象 filetype を開くまで読まないので、`nvim_get_runtime_file('lsp/*.lua')` で全件 `dofile` して読み込みエラーを表に出す
 - autocmd・keymap を headless で実際に発火させる。autocmd 内のエラーは Neovim が握り潰して `:messages` に流すだけで例外にならないため、pcall ではなく messages を照合して判定する
 - モジュールを足したら代表操作を 1 つ足す。プロセスを起動できない環境では terminal 系が自動でスキップされる
 
