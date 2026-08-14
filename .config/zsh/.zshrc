@@ -116,29 +116,13 @@ if command -v uv >/dev/null 2>&1; then
   unset _uv_comp
 fi
 
-# ── fzf ──────────────────────────────────────────────
-# Only the shell-wide bits: the widgets and the look. Workflows built on fzf
-# live under workflows/.
-if command -v fzf >/dev/null 2>&1 && [[ -t 0 ]]; then
-  export FZF_DEFAULT_OPTS="
-    --height 60%
-    --layout=reverse
-    --border
-    --info=inline
-    --preview-window=right:60%:wrap
-    --bind ctrl-u:preview-page-up,ctrl-d:preview-page-down
-    --bind ctrl-/:toggle-preview
-  "
-
-  # Provides the built-in widgets: Ctrl-R (history), Alt-C (cd), Ctrl-T (paste).
-  source <(fzf --zsh)
-
-  # fh - select a history entry and place it on the command-line buffer for editing.
-  fh() {
-    local cmd
-    cmd=$(fc -l 1 | fzf --tac --no-sort | sed 's/^ *[0-9]* *//') || return
-    [[ -n $cmd ]] && print -z -- "$cmd"
-  }
+# ── television ───────────────────────────────────────
+# Only the shell-wide bits: the widgets and the completion. Workflows built on
+# tv live under workflows/, its look in $XDG_CONFIG_HOME/television.
+# The script calls compdef, so it has to come after compinit above.
+if command -v tv >/dev/null 2>&1 && [[ -t 0 ]]; then
+  # Provides the widgets: Ctrl-R (history) and Ctrl-T (completion of the buffer).
+  source <(tv init zsh)
 fi
 
 # ── eza ──────────────────────────────────────────────
