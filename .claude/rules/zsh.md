@@ -12,9 +12,10 @@ paths:
 
 **置き場所:**
 
-- `.zshrc`: interactive zsh を成立させる基盤（history・options・completion・keybind・alias）と、軽量な tool init。`fzf` の widget や `eza`・`nvim` の上書きのように、無くても標準の動作が残るものはここで `command -v` 分岐する
+- `.zshrc`: interactive zsh を成立させる基盤（history・options・completion・keybind・alias）と、軽量な tool init。`tv` の widget や `eza`・`nvim` の上書きのように、無くても標準の動作が残るものはここで `command -v` 分岐する
 - `.config/zsh/workflows/*.zsh`: ユーザーの操作単位で分けた独自機能（`filesystem` / `git` / `repo` / `worktree`）。新しい function はどの workflow の操作かで置き場所を決める。既存 4 つに収まらない責務のときだけファイルを足す
-- 分割の軸に外部ツール名を使わない。`fzf` / Television のような picker backend を切り替えるためだけの抽象も作らない
+- 分割の軸に外部ツール名を使わない。picker backend を切り替えるためだけの抽象も作らない
+- `tv` の設定は `.config/television/`（`config.toml` と `cable/*.toml`）。built-in channel で足りない選択 UI だけ channel を足し、workflow のドメインロジックは channel へ移さない。`~/.config` はこのリポジトリへの symlink なので `tv update-channels` / `tv migrate-config` を実行しない（checkout に書き込む）
 
 **workflows/ の制約:**
 
@@ -35,4 +36,4 @@ paths:
 
 1. `mise run fmt` で整形（`shuck`）
 1. `mise run lint` で確認（`zsh -n`・`shuck check`・`shuck format --check`・`test/*_test.zsh`）
-1. 対話動作（fzf の widget、herdr の picker と自動起動）は lint で確認できない。実端末で新規シェルを開いて確認し、PR にその内容を 1 行添える
+1. 対話動作（`tv` の widget、herdr の picker と自動起動）は lint で確認できない。実端末で新規シェルを開いて確認し、PR にその内容を 1 行添える

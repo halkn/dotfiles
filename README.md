@@ -99,11 +99,17 @@ split into a portable core and workflows named after what they do:
 
 | Location | Holds |
 | --- | --- |
-| `.zshrc` | The portable core (history, options, completion, keybindings, aliases) plus lightweight tool setup guarded by `command -v` — `fzf` widgets, `eza` for `ls`, `nvim` for `vim`, the `herdr` auto-start on the last line |
-| `workflows/*.zsh` | Own commands, grouped by the task rather than by the tool: `filesystem` (`fcd`, `frm`), `git` (`fgb`, `fga`, `fgl`), `repo` (`repo`, `dot`), `worktree` (`wt`). `.zshrc` sources the directory as a glob, so a new file needs no registration |
+| `.zshrc` | The portable core (history, options, completion, keybindings, aliases) plus lightweight tool setup guarded by `command -v` — the Television widgets, `eza` for `ls`, `nvim` for `vim`, the `herdr` auto-start on the last line |
+| `workflows/*.zsh` | Own commands, grouped by the task rather than by the tool: `filesystem` (`fcd`, `frm`), `git` (`fgb`), `repo` (`repo`, `dot`), `worktree` (`wt`). `.zshrc` sources the directory as a glob, so a new file needs no registration |
+
+Interactive selection goes through [Television](https://github.com/alexpasmantier/television)
+(`tv`): `Ctrl-R` searches the history, `Ctrl-T` completes the buffer, and
+`tv git-log` / `tv git-stage` cover browsing the log and staging files. Its
+configuration and the channels this repository adds are in
+`.config/television`.
 
 Workflow files always define their functions and check dependencies inside
-them, so a machine without `fzf` or `gh` reports what is missing instead of
+them, so a machine without `tv` or `gh` reports what is missing instead of
 losing the command. `worktree.zsh` and `repo.zsh` are also sourced by absolute
 path from `.config/herdr/*.sh`; moving or renaming them breaks those callers.
 
@@ -124,7 +130,7 @@ wt                     # pick a worktree and open it (focus its workspace, or cd
 wt new <branch> [base] # create a branch + worktree and open it
 wt pr [<number>]       # pick a pull request and open its head as a worktree
 wt rm                  # pick worktrees to remove
-wt clean               # remove merged / upstream-gone worktrees
+wt clean               # remove every merged / upstream-gone worktree
 ```
 
 `wt new` without a base tracks an existing `origin/<branch>` instead of
@@ -138,14 +144,15 @@ Checkouts are placed under `[worktrees] directory` in
 `.config/herdr/config.toml` (`~/.local/share/herdr/worktrees`, i.e.
 `$XDG_DATA_HOME`), so they stay out of the `$REPO_ROOT` tree that `repo`
 browses.
-`herdr` itself can also create one with `alt+g`. The `alt+s` picker lists
-worktrees to jump to, and removes the selected one with `ctrl-x`; creation is
-`wt new` / `wt pr` only.
+`herdr` itself can also create one with `alt+g`. The `alt+s` picker cycles
+workspaces, agents and worktrees with `ctrl-s`; on a worktree, `ctrl-x` removes
+it and `ctrl-r` refreshes the list afterwards. Creation is `wt new` / `wt pr`
+only.
 
 ## Repositories and herdr workspaces
 
 `repo` (`.config/zsh/workflows/repo.zsh`) picks a repository under `$REPO_ROOT`
-(`~/repos`) with fzf and cd's into it; `repo get <owner/repo|url>` clones one
+(`~/repos`) and cd's into it; `repo get <owner/repo|url>` clones one
 and cd's into the clone.
 
 Clones are placed at `$REPO_ROOT/<host>/<path>`. A bare `owner/repo` is taken
