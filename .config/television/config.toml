@@ -8,6 +8,16 @@ layout = "landscape"
 [ui.preview_panel]
 size = 60
 
+# Emacs-style editing while filtering, matching the insert-mode maps in
+# .config/nvim: the cursor and deletion keys win over tv's panel toggles, which
+# move to the alt- variants. An unknown action name here is ignored silently,
+# so names are the ones in tv's actions reference.
 [keybindings]
-ctrl-u = "scroll_preview_half_page_up"
-ctrl-d = "scroll_preview_half_page_down"
+ctrl-h = "delete_prev_char"
+ctrl-d = "delete_next_char"
+ctrl-b = "go_to_prev_char"
+ctrl-f = "go_to_next_char"
+alt-h = "toggle_help"
+alt-f = "cycle_previews"
+ctrl-v = "scroll_preview_half_page_down"
+alt-v = "scroll_preview_half_page_up"
