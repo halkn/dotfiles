@@ -1,0 +1,32 @@
+[metadata]
+name = "herdr"
+description = "Switch between herdr workspaces, agents and worktrees"
+requirements = ["herdr", "jq"]
+
+[source]
+# One source per mode, cycled with ctrl-s. Every row carries its own
+# `<mode>:<target>` key, so the caller knows which list the entry came from.
+command = [
+  { name = "Workspaces", run = "$HOME/.config/herdr/herdr-picker.sh --list workspace" },
+  { name = "Agents", run = "$HOME/.config/herdr/herdr-picker.sh --list agent" },
+  { name = "Worktrees", run = "$HOME/.config/herdr/herdr-picker.sh --list worktree" },
+]
+display = "{strip_ansi|split:\t:0}"
+output = "{strip_ansi|split:\t:1}"
+
+[preview]
+command = "$HOME/.config/herdr/herdr-picker.sh --preview '{strip_ansi|split:\t:1}'"
+
+[ui]
+layout = "portrait"
+
+[ui.preview_panel]
+size = 60
+
+[keybindings]
+ctrl-x = "actions:remove"
+
+[actions.remove]
+description = "Remove the selected worktree (ctrl-r to refresh the list)"
+command = "$HOME/.config/herdr/herdr-picker.sh --remove '{strip_ansi|split:\t:1}'"
+mode = "fork"
