@@ -1,0 +1,13 @@
+# [dotfiles] symlinks ~/.config to this repository, so `tv update-channels` and
+# `tv migrate-config` write into the checkout: use the channels shipped with the
+# binary and keep custom ones under cable/ in git instead.
+
+[ui]
+layout = "landscape"
+
+[ui.preview_panel]
+size = 60
+
+[keybindings]
+ctrl-u = "scroll_preview_half_page_up"
+ctrl-d = "scroll_preview_half_page_down"
