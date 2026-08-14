@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Replaces Claude Code's `@` file completion with an fd + fzf fuzzy match.
+# Replaces Claude Code's `@` file completion with an fd + grep match.
 # stdin: {"query": "..."} / stdout: newline-separated paths, of which the first 15 are used.
-# fd and fzf come from mise; where they are missing this falls back to rg and grep.
+# fd comes from mise; where it is missing this falls back to rg.
 set -euo pipefail
 
 query="$(jq -r '.query // ""' 2>/dev/null)" || query=""
@@ -25,9 +25,7 @@ list_files() {
   fi
 }
 
-if [ -n "$query" ] && command -v fzf >/dev/null 2>&1; then
-  filter=(fzf --filter "$query")
-elif [ -n "$query" ]; then
+if [ -n "$query" ]; then
   filter=(grep -iF -- "$query")
 else
   filter=(cat)
