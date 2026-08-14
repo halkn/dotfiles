@@ -28,7 +28,7 @@ workflows_dir=${0:A:h}/../workflows
 
 PATH=$stub_bin
 hash -r
-for cmd in tv fzf fd gh az jq herdr; do
+for cmd in tv fd gh az jq herdr; do
   command -v "$cmd" >/dev/null 2>&1 && fail "$cmd is still reachable; the stub PATH is not isolating the test"
 done
 
@@ -57,8 +57,8 @@ cd -- "$scratch" || exit 1
 expect_guard fcd 'fcd: tv is not installed'
 expect_guard frm 'frm: tv is not installed'
 expect_guard fgb 'fgb: tv is not installed'
-expect_guard wt 'wt: fzf is not installed'
-expect_guard repo 'repo: fzf is not installed'
+expect_guard wt 'wt: tv is not installed'
+expect_guard repo 'repo: tv is not installed'
 
 # 4. The repository guards fire outside a work tree instead of the tv ones.
 cd -- "$stub_bin" || exit 1
