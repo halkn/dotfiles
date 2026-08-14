@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Listing and removing worktrees lives in `wt`; do not reimplement either here.
-wt_lib=${XDG_CONFIG_HOME:-$HOME/.config}/zsh/lib/worktree.zsh
+wt_lib=${XDG_CONFIG_HOME:-$HOME/.config}/zsh/workflows/worktree.zsh
 [[ -r $wt_lib ]] && source "$wt_lib"
 
 list_workspaces() {

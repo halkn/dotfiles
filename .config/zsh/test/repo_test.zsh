@@ -4,7 +4,7 @@
 
 set -uo pipefail
 
-source "${0:A:h}/../lib/repo.zsh"
+source "${0:A:h}/../workflows/repo.zsh"
 
 typeset -i failures=0
 

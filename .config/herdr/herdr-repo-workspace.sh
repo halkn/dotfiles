@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Listing and previewing repositories lives in `repo`; do not reimplement either here.
-repo_lib=${XDG_CONFIG_HOME:-$HOME/.config}/zsh/lib/repo.zsh
+repo_lib=${XDG_CONFIG_HOME:-$HOME/.config}/zsh/workflows/repo.zsh
 [[ -r $repo_lib ]] || {
   print -u2 "herdr-repo-workspace: $repo_lib not found"
   exit 1
