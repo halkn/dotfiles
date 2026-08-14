@@ -8,25 +8,22 @@ paths:
 
 # zsh Design Principles
 
-方針: 「`.zshrc` は素の zsh でも成立させ、外部 CLI への依存は外に出す」
+方針: 「`.zshenv` / `.zshrc` は portable な shell core。独自機能はツール名ではなく workflow 単位で分ける」
 
 **置き場所:**
 
-- `.zshrc`: 外部 CLI に依存しない設定（history・options・completion・keybind・alias）と、`eza`・`nvim` のように無くても標準コマンドで代替できるものの上書き。`command -v` で分岐し、CLI が無い環境では標準コマンドのまま動くこと
-- `.config/zsh/integrations/*.zsh`: `fzf`・`herdr` のように UX を大きく変える、または function を提供する外部 CLI 前提の設定。alias 1 行で済むものはここに置かず `.zshrc` に書く
-- `.config/zsh/lib/*.zsh`: 他のスクリプトからも source される関数群
+- `.zshrc`: interactive zsh を成立させる基盤（history・options・completion・keybind・alias）と、軽量な tool init。`fzf` の widget や `eza`・`nvim` の上書きのように、無くても標準の動作が残るものはここで `command -v` 分岐する
+- `.config/zsh/workflows/*.zsh`: ユーザーの操作単位で分けた独自機能（`filesystem` / `git` / `repo` / `worktree`）。新しい function はどの workflow の操作かで置き場所を決める。既存 4 つに収まらない責務のときだけファイルを足す
+- 分割の軸に外部ツール名を使わない。`fzf` / Television のような picker backend を切り替えるためだけの抽象も作らない
 
-**integrations/ の制約:**
+**workflows/ の制約:**
 
-- `.zshrc` が glob で source するので登録は不要。代わりに各ファイルが冒頭で自分の依存を判定して `return 0` する（`integrations/fzf.zsh` を踏襲）
-- 読み込み順は `lib/` → `integrations/` のファイル名順。`exec herdr` を持つ `herdr.zsh` が最後に来ることに依存しているため、それより後に読ませたいファイルを足すときは順序の作り方から見直す
-
-**lib/ の制約:**
-
-- `lib/worktree.zsh`（`wt`）は `.config/herdr/herdr-picker.sh`、`lib/repo.zsh`（`repo`）は `.config/herdr/herdr-repo-workspace.sh` から絶対パスで source される。worktree の一覧・削除、リポジトリの一覧・preview のロジックはここに集約し、呼び出し側で再実装しない
-- パスが外部との契約になっているので、移動・改名は herdr 側の参照と同時に直す
-- forge（GitHub / Azure DevOps）の差異は `lib/forge.zsh` に集約する。`wt` は worktree、`repo` はリポジトリ配置の層で、どちらも `gh` / `az` の癖を持たない。ただし `repo` の URL 正規化は例外で `repo.zsh` に残す（origin ではなく引数から host を決めるため入口が違い、`repo.zsh` は herdr から単独 source される）
+- `.zshrc` が glob で source するので登録は不要。読み込み順に依存させない（相互 source をしない）
+- **ファイル冒頭で `return 0` しない。** function は常に定義し、依存判定は各エントリポイントの内部で行って `<コマンド名>: <tool> is not installed` を stderr に出し非 0 で返す。file-level guard だと function 自体が消えて `command not found` になり、herdr から単独 source されるファイルでは沈黙して壊れる
+- `workflows/worktree.zsh`（`wt`）は `.config/herdr/herdr-picker.sh`、`workflows/repo.zsh`（`repo`）は `.config/herdr/herdr-repo-workspace.sh` から絶対パスで source される。worktree の一覧・削除、リポジトリの一覧・preview のロジックはここに集約し、呼び出し側で再実装しない。パスが外部との契約なので、移動・改名は herdr 側の参照と同時に直す
+- forge（GitHub / Azure DevOps）の差異は `worktree.zsh` 末尾の `_forge_*` 節に集約する。`wt` 本体と `repo` は `gh` / `az` の癖を持たない。`repo` の URL 正規化は例外で `repo.zsh` に残す（origin ではなく引数から host を決めるため入口が違う）
 - `wt` が lifecycle を持つのは人間が作った persistent worktree だけ。`.claude/worktrees/` 配下は Claude Code が作る ephemeral な checkout で、削除は向こうの sweep が持つ。一覧には出しつつ削除対象からは外す
+- OS 固有処理は必要箇所に局所化する。workflow に macOS / WSL の分岐を持ち込まない
 
 **言語上の注意:**
 
@@ -37,5 +34,5 @@ paths:
 **変更時の手順:**
 
 1. `mise run fmt` で整形（`shuck`）
-1. `mise run lint` で確認（`zsh -n`・`shuck check`・`shuck format --check`）
-1. 対話動作（fzf の widget、herdr の自動起動）は lint で確認できない。実端末で新規シェルを開いて確認し、PR にその内容を 1 行添える
+1. `mise run lint` で確認（`zsh -n`・`shuck check`・`shuck format --check`・`test/*_test.zsh`）
+1. 対話動作（fzf の widget、herdr の picker と自動起動）は lint で確認できない。実端末で新規シェルを開いて確認し、PR にその内容を 1 行添える

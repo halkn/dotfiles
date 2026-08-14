@@ -4,7 +4,8 @@
 #
 # This file is sourced from .zshrc and from
 # ~/.config/herdr/herdr-repo-workspace.sh, so it must only define functions and
-# must not touch the current shell state.
+# must not touch the current shell state. For the same reason it never returns
+# early on a missing dependency: the picker would lose `_repo_pick` silently.
 
 # Own path, so fzf preview commands (which run in a fresh shell without these
 # functions) can re-source it. `%x` expands to the file being sourced.
@@ -177,4 +178,9 @@ repo() {
       _repo_go "$@"
       ;;
   esac
+}
+
+# dot - jump to this dotfiles checkout, which lives under the same root.
+dot() {
+  cd -- "$(_repo_root)/github.com/halkn/dotfiles"
 }

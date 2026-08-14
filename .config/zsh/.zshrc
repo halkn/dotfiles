@@ -93,9 +93,6 @@ alias df='df -h'
 alias ..='cd ..'
 alias zs='exec zsh'
 alias :q='exit'
-dot() {
-  cd "${REPO_ROOT:-$HOME/repos}/github.com/halkn/dotfiles"
-}
 
 # ── plugins (git clone) ───────────────────────────────
 zsh_plugins_dir=$zsh_data_dir/plugins
@@ -117,6 +114,31 @@ if command -v uv >/dev/null 2>&1; then
   fi
   source "$_uv_comp"
   unset _uv_comp
+fi
+
+# ── fzf ──────────────────────────────────────────────
+# Only the shell-wide bits: the widgets and the look. Workflows built on fzf
+# live under workflows/.
+if command -v fzf >/dev/null 2>&1 && [[ -t 0 ]]; then
+  export FZF_DEFAULT_OPTS="
+    --height 60%
+    --layout=reverse
+    --border
+    --info=inline
+    --preview-window=right:60%:wrap
+    --bind ctrl-u:preview-page-up,ctrl-d:preview-page-down
+    --bind ctrl-/:toggle-preview
+  "
+
+  # Provides the built-in widgets: Ctrl-R (history), Alt-C (cd), Ctrl-T (paste).
+  source <(fzf --zsh)
+
+  # fh - select a history entry and place it on the command-line buffer for editing.
+  fh() {
+    local cmd
+    cmd=$(fc -l 1 | fzf --tac --no-sort | sed 's/^ *[0-9]* *//') || return
+    [[ -n $cmd ]] && print -z -- "$cmd"
+  }
 fi
 
 # ── eza ──────────────────────────────────────────────
@@ -142,9 +164,10 @@ if command -v herdr-reviewr >/dev/null 2>&1; then
   alias gd='herdr-reviewr'
 fi
 
-# ── lib / integrations ───────────────────────────────
-# Each file guards its own dependency, so no conditions belong here.
-for _zsh_part in "$ZDOTDIR"/lib/*.zsh(N) "$ZDOTDIR"/integrations/*.zsh(N); do
+# ── workflows ────────────────────────────────────────
+# Each file defines its functions unconditionally and checks its dependencies
+# inside them, so no conditions belong here and the load order does not matter.
+for _zsh_part in "$ZDOTDIR"/workflows/*.zsh(N); do
   source "$_zsh_part"
 done
 unset _zsh_part
@@ -158,3 +181,18 @@ fi
 
 # ── machine-local overrides (not tracked in git) ─────
 [[ -f "$ZDOTDIR/.zshrc.local" ]] && source "$ZDOTDIR/.zshrc.local"
+
+# ── herdr ────────────────────────────────────────────
+# `exec` replaces the shell, so this stays the last thing .zshrc does - which is
+# also what lets .zshrc.local above turn the auto-start off.
+# HERDR_ENV is set inside herdr-managed shells and stops the recursion.
+HERDR_AUTO_START=${HERDR_AUTO_START:-1}
+
+if command -v herdr >/dev/null 2>&1 &&
+  [[ -o interactive ]] &&
+  [[ -z $HERDR_ENV ]] &&
+  [[ -t 0 ]] &&
+  [[ -t 1 ]] &&
+  [[ $HERDR_AUTO_START == 1 ]]; then
+  exec herdr
+fi

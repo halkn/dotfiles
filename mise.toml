@@ -179,9 +179,17 @@ exit $rc
 """
 
 [tasks."test:zsh"]
-description = "zsh ライブラリのテスト"
+description = "zsh workflow のテスト"
 dir = "{{config_root}}"
-run = "zsh .config/zsh/test/repo_test.zsh"
+run = """
+#!/usr/bin/env zsh
+set -uo pipefail
+rc=0
+for f in .config/zsh/test/*_test.zsh; do
+  zsh "$f" || rc=1
+done
+exit $rc
+"""
 
 # Given a directory, shuck also picks up extensionless files such as `.zshrc` (shuck 0.1.1).
 [tasks."lint:shell"]
