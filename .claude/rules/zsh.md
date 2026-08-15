@@ -33,3 +33,4 @@ paths:
 - zsh の `path` は PATH の配列。worktree のパスを入れる変数に `local path` を使うと関数内で PATH が消える（`wt_path` を使う）
 - `.zshenv.local` / `.zshrc.local` は lint 対象外。共有したい設定をここに書かない
 - zsh 固有構文の検索・変換で `ast-grep` を既定にしない。対応 parser を確認できない場合は `rg` と既存の `shuck` / `zsh -n` に寄せる
+- `tv` の widget と herdr の picker・自動起動は lint で確認できない。実端末で新規シェルを開いて確認する

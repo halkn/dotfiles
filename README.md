@@ -93,7 +93,7 @@ split into a portable core and workflows named after what they do:
 | `.zshrc` | The portable core (history, options, completion, keybindings, aliases) plus lightweight tool setup guarded by `command -v`, so a machine without those tools still gets a working shell |
 | `workflows/*.zsh` | Own commands, grouped by the task rather than by the tool: `repo` (`repo`, `dot`), `worktree` (`wt`) |
 
-Splitting by task rather than by tool keeps swapping a backend out of the file
+Splitting by task rather than by tool keeps a backend swap out of the file
 layout. The workflow files also carry no dependency guard at file level: they
 define their functions unconditionally and check inside them, because
 `.config/herdr/*.sh` sources them by absolute path and a function that never got
@@ -124,20 +124,23 @@ wt rm                  # pick worktrees to remove
 wt clean               # remove every merged / upstream-gone worktree
 ```
 
-Which forge answers `wt pr` (GitHub via `gh`, Azure DevOps via `az repos`) is
-decided inside `worktree.zsh`, whose `_forge_*` section is the only place that
-knows the difference.
+`wt new` without a base tracks an existing `origin/<branch>` instead of
+branching off the default integration branch, so a branch that only exists on
+the remote is picked up rather than silently recreated. `wt pr` uses `gh`, or
+`az repos pr` when origin is on Azure DevOps; Azure fork heads are not fetchable
+from origin, so those are reported instead of checked out.
 
 Checkouts are placed under `[worktrees] directory` in
-`.config/herdr/config.toml` (`$XDG_DATA_HOME/herdr/worktrees`), so they stay out
-of the `$REPO_ROOT` tree that `repo` browses. herdr can create one itself with
-`alt+g` and lists them in its `alt+s` picker.
+`.config/herdr/config.toml` (`~/.local/share/herdr/worktrees`, following XDG),
+so they stay out of the `$REPO_ROOT` tree that `repo` browses. herdr can create
+one itself with `alt+g` and lists them in its `alt+s` picker.
 
-Removal never discards work: `wt rm` refuses what cannot be given back and
-deletes local branches with `git branch -d` only, the same rule as the `git pm`
-alias. Pull requests from a fork are fetched read-only as `pr-<number>` and are
-not pre-trusted for mise, unlike same-repository branches, so treat such a
-worktree as untrusted before running its tasks or an agent in it.
+`wt rm` never removes the main checkout or the worktree you are standing in,
+asks a second time when a worktree is dirty, and deletes the local branch with
+`git branch -d` only, the same rule as the `git pm` alias. Pull requests from a
+GitHub fork are fetched read-only as `pr-<number>` and are not pre-trusted for
+mise, unlike same-repository branches, so treat such a worktree as untrusted
+before running its tasks or an agent in it.
 
 Claude Code creates worktrees of its own, so the two kinds are kept apart:
 
@@ -145,8 +148,8 @@ Claude Code creates worktrees of its own, so the two kinds are kept apart:
 | --- | --- | --- |
 | For | branch, pull request and multi-session work a human returns to | isolating a session or a subagent while it runs |
 | Created by | `wt new`, `wt pr`, herdr `alt+g` | `--worktree`, `EnterWorktree`, `isolation: worktree` |
-| Placed in | `$XDG_DATA_HOME/herdr/worktrees/` | `<repo>/.claude/worktrees/` (gitignored) |
-| Removed by | you — `wt rm`, `wt clean`, the `alt+s` picker | Claude Code, on exit or by its periodic sweep |
+| Placed in | `~/.local/share/herdr/worktrees/` | `<repo>/.claude/worktrees/` (gitignored) |
+| Removed by | you — `wt rm`, `wt clean`, `ctrl-x` in the `alt+s` picker | Claude Code, on exit or by its periodic sweep |
 
 `wt` marks the second kind with an `agent` flag and leaves it out of
 `wt clean`, so reclaiming merged worktrees never races a running agent; it stays
@@ -191,9 +194,9 @@ so commit that too.
 
 mise shell activation uses PATH mode rather than shims. Keep shell aliases and
 functions in zsh; use mise's `[env]` only for project-specific environments.
-Machine-local overrides go in the gitignored `config.local.toml` (global) or
-`mise.local.toml` (per repository), which may override `[env]`, `[tools]`, and
-settings without changing the shared configuration.
+Machine-local overrides go in the gitignored `.config/mise/config.local.toml`
+(global) or a repository's own `mise.local.toml`, which may override `[env]`,
+`[tools]`, and settings without changing the shared configuration.
 
 Task automation uses [mise tasks](https://mise.jdx.dev/tasks/), defined in the
 repo's `mise.toml` and run with `mise run` (`mise tasks` lists them).
