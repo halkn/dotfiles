@@ -100,13 +100,17 @@ split into a portable core and workflows named after what they do:
 | Location | Holds |
 | --- | --- |
 | `.zshrc` | The portable core (history, options, completion, keybindings, aliases) plus lightweight tool setup guarded by `command -v` — the Television widgets, `eza` for `ls`, `nvim` for `vim`, the `herdr` auto-start on the last line |
-| `workflows/*.zsh` | Own commands, grouped by the task rather than by the tool: `filesystem` (`fcd`, `frm`), `git` (`fgb`), `repo` (`repo`, `dot`), `worktree` (`wt`). `.zshrc` sources the directory as a glob, so a new file needs no registration |
+| `workflows/*.zsh` | Own commands, grouped by the task rather than by the tool: `repo` (`repo`, `dot`), `worktree` (`wt`). `.zshrc` sources the directory as a glob, so a new file needs no registration |
 
 Interactive selection goes through [Television](https://github.com/alexpasmantier/television)
-(`tv`): `Ctrl-R` searches the history, `Ctrl-T` completes the buffer, and
-`tv git-log` / `tv git-stage` cover browsing the log and staging files. Its
-configuration and the channels this repository adds are in
-`.config/television`.
+(`tv`). A workflow only owns the picking when it also owns the decision that
+follows it — where to cd, what is safe to remove. Everything that is selection
+plus one command is a channel instead: `Ctrl-T` completes the current buffer
+from the channel that matches the command (`cd`, `rm`, `git switch`, `git add`,
+…), `Ctrl-R` searches the history, and `tv git-log` / `tv git-stage` /
+`tv git-branch` can be called directly. The configuration and the channels this
+repository adds are in `.config/television`; the trigger table there replaces
+tv's defaults rather than extending them.
 
 Workflow files always define their functions and check dependencies inside
 them, so a machine without `tv` or `gh` reports what is missing instead of

@@ -1,0 +1,16 @@
+[metadata]
+name = "git-branch"
+description = "Select a branch, most recently committed first"
+requirements = ["git"]
+
+[source]
+# `%(refname:short)` renders the remote HEAD symref as a bare `origin`, which is
+# not a branch anyone can switch to.
+command = "git branch --all --sort=-committerdate --format='%(refname:short)' | grep -vx origin"
+# A remote-only branch is handed back under its short name, so that the command
+# it completes (`git switch <name>`) creates the tracking branch instead of
+# detaching HEAD on origin/<name>.
+output = "{replace:s/^origin\\///}"
+
+[preview]
+command = "git log --oneline --graph --color=always '{}' -- | head -200"

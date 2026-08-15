@@ -21,3 +21,15 @@ ctrl-d = "scroll_preview_half_page_down"
 ctrl-u = "scroll_preview_half_page_up"
 ctrl-g = "toggle_help"
 f4 = "cycle_previews"
+
+# Which channel ctrl-t completes from, per command. This table replaces tv's
+# defaults rather than extending them, so every command that should complete has
+# to be listed here.
+[shell_integration.channel_triggers]
+"dirs" = ["cd", "ls", "rmdir"]
+"files" = ["cat", "less", "head", "tail", "bat", "cp", "mv", "rm", "touch", "chmod", "ln", "tar", "zip", "unzip", "nvim", "v"]
+"env" = ["export", "unset"]
+"git-branch" = ["git checkout", "git switch", "git branch", "git br", "git merge", "git rebase", "git pull", "git push"]
+"git-stage" = ["git add", "git restore"]
+"git-log" = ["git log", "git show"]
+"git-repos" = ["git clone"]
