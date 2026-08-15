@@ -4,23 +4,30 @@ description = "Stage or restore changed files"
 requirements = ["git"]
 
 [source]
-# The built-in git-diff channel lists `git diff --name-only HEAD`, which leaves
-# out untracked files; `git status` is what makes a new file stageable here.
-command = "git status --porcelain | cut -c4-"
+# The built-in git-diff channel lists only the first half of this, so an
+# untracked file is never stageable there. `git status --porcelain` covers both
+# but is unusable as a source of paths: it quotes anything holding a space or a
+# non-ASCII byte, and renders a rename as `old -> new`, which the shell running
+# the actions below reads as a redirect into `new`.
+command = "git -c core.quotePath=false diff --name-only HEAD 2>/dev/null; git -c core.quotePath=false ls-files --others --exclude-standard"
 
 [preview]
-command = "git diff HEAD --color=always -- '{}'"
+command = "if git ls-files --error-unmatch -- '{}' >/dev/null 2>&1; then git diff HEAD --color=always -- '{}'; else git diff --no-index --color=always -- /dev/null '{}'; fi"
 
 [keybindings]
 ctrl-s = "actions:stage"
-ctrl-r = "actions:restore"
+# Not ctrl-r: that reloads the source in every other channel, and `git restore`
+# is not undoable.
+f5 = "actions:restore"
 
 [actions.stage]
 description = "Stage the selected files"
-command = "git add -- {}"
+command = "git add -- '{}'"
+separator = "' '"
 mode = "fork"
 
 [actions.restore]
 description = "Restore the selected files"
-command = "git restore -- {}"
+command = "git restore -- '{}'"
+separator = "' '"
 mode = "fork"

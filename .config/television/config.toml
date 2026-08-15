@@ -32,7 +32,9 @@ f4 = "cycle_previews"
 "dirs" = ["cd", "ls", "rmdir"]
 "files" = ["cat", "less", "head", "tail", "bat", "cp", "mv", "rm", "touch", "chmod", "ln", "tar", "zip", "unzip", "nvim", "v"]
 "env" = ["export", "unset"]
-"git-branch" = ["git checkout", "git switch", "git branch", "git br", "git merge", "git rebase", "git pull", "git push"]
+# Only the commands that take a local branch name: the output template strips
+# `origin/`, which `git merge` / `git rebase` would need to keep.
+"git-branch" = ["git checkout", "git switch", "git branch", "git br"]
 "git-stage" = ["git add", "git restore"]
 "git-log" = ["git log", "git show"]
 "git-repos" = ["git clone"]
