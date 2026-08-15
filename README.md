@@ -199,9 +199,14 @@ listed in `wt` and `wt rm` for the times a sweep leaves one behind.
 ## Tool Manager
 
 CLI tools, LSP servers, and formatters are managed by
-[mise](https://mise.jdx.dev/): shared tools live in `.config/mise/config.toml`
-and dotfiles-specific Neovim tools in `mise.toml`.
-[Claude Code](https://code.claude.com/) is installed standalone.
+[mise](https://mise.jdx.dev/), and the declaration goes where the tool is
+called from: anything invoked from an arbitrary directory — the shell, the LSP
+servers and formatters Neovim starts per filetype, checks meant to run in every
+repository — is declared in `.config/mise/config.toml`, while tools only this
+repository's `mise run` uses (the Lua toolchain) stay in `mise.toml`.
+[Claude Code](https://code.claude.com/) is the one exception installed
+standalone, because its own installer is the supported path and it should
+always be on the latest version.
 
 Each configuration root has its own lockfile: `.config/mise/mise.lock` for
 the shared global tools and `mise.lock` for dotfiles-specific tools. Both are

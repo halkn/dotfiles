@@ -4,8 +4,7 @@
 run_auto_install = false
 
 [tools]
-# Neovim LSP / formatter, only for the file types this repository owns.
-"pipx:shuck-cli" = "latest"
+# Lua toolchain, called only from this repository's `mise run` and from nvim opened inside it.
 stylua = "latest"
 
 [tool_alias]
