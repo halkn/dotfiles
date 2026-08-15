@@ -34,7 +34,7 @@ paths:
 
 - formatter: `stylua` が正。editor 内では `emmylua_ls` が external formatter として呼び出す
 - diagnostics: `emmylua_check` と editor 内の `emmylua_ls` が正
-- ツールの宣言先は呼び出し元で決める。nvim が任意のディレクトリで呼ぶもの（`tree-sitter`・`shuck`・`ryl`・`rumdl`）は `.config/mise/config.toml`、このリポジトリの `mise run` からだけ呼ぶ Lua 系（`stylua`・`emmylua_check`・`emmylua_ls`）は `mise.toml`
+- ツールの宣言先は呼び出し元で決める。nvim が任意のディレクトリで呼ぶものは `.config/mise/config.toml`、このリポジトリの `mise run` からだけ呼ぶ Lua 系（`stylua`・`emmylua_check`・`emmylua_ls`）は `mise.toml`
 - `mise.toml` のツールはこのリポジトリの外で PATH に載らない。`cmd` で PATH を直接参照する `lsp/emmylua_ls.lua` は他リポジトリで開いた Lua には attach しない（Lua はここでしか書かないため許容している）
 
 **静的解析の境界:**
@@ -51,9 +51,3 @@ paths:
 - `lsp/*.lua` は `vim.lsp.enable()` が対象 filetype を開くまで読まないので、`nvim_get_runtime_file('lsp/*.lua')` で全件 `dofile` して読み込みエラーを表に出す
 - autocmd・keymap を headless で実際に発火させる。autocmd 内のエラーは Neovim が握り潰して `:messages` に流すだけで例外にならないため、pcall ではなく messages を照合して判定する
 - モジュールを足したら代表操作を 1 つ足す。プロセスを起動できない環境では terminal 系が自動でスキップされる
-
-**変更時の手順:**
-
-1. `mise run fmt` で整形（`stylua` + `shuck`）
-1. `mise run lint` で確認（`stylua --check`・`emmylua_check`・`test/smoke.lua`）
-1. tools がない場合は先に `mise install` を実行する（lockfile 固定のまま導入される）
