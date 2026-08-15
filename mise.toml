@@ -140,7 +140,14 @@ fi
 
 [tasks.lint]
 description = "リポジトリ検証（整形チェックを含む）"
-depends = ["fmt-check", "lint:zsh", "lint:shell", "lint:nvim", "test:zsh"]
+depends = [
+  "fmt-check",
+  "lint:zsh",
+  "lint:shell",
+  "lint:nvim",
+  "lint:rules",
+  "test:zsh",
+]
 dir = "{{config_root}}"
 run = "git diff --check"
 
@@ -158,6 +165,25 @@ run = [
   "shuck format --check .",
   "stylua --check .config/nvim",
 ]
+
+# A rules file is loaded in full whenever its `paths:` match, so its length is a context cost
+# paid on every matching session rather than a style preference.
+[tasks."lint:rules"]
+hide = true
+dir = "{{config_root}}"
+run = """
+#!/usr/bin/env zsh
+set -uo pipefail
+rc=0
+for f in .claude/rules/*.md(N); do
+  n=$(wc -l < "$f")
+  if ((n > 40)); then
+    print "$f: $n lines exceeds the 40-line budget; move procedures and measurements to a skill" >&2
+    rc=1
+  fi
+done
+exit $rc
+"""
 
 # Kept apart from lint:shell to catch zsh-only syntax (glob qualifiers and the like) that the
 # zsh dialect of `shuck check` does not fully parse. Untracked `*.local` files are excluded
