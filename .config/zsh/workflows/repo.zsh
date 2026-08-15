@@ -63,9 +63,9 @@ _repo_preview() {
 }
 
 # Print the path of an interactively selected repository. $1 is an initial query.
-# The output template prints the path, so nothing has to run downstream of tv
-# and mask its exit status when the picker is cancelled. The preview is spawned
-# through $SHELL, which is not necessarily zsh, hence the explicit `zsh -c`.
+# The output template keeps anything from running downstream of tv and masking
+# its status when the picker is cancelled. The preview runs under $SHELL, which
+# is not necessarily zsh, hence the explicit `zsh -c`.
 _repo_pick() {
   local rows
   rows=$(_repo_rows)

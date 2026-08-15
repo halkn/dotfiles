@@ -153,10 +153,9 @@ _wt_flags() {
   fi
 }
 
-# Display line<TAB>flags<TAB>path for the picker. Flags get a column of their own
-# so that filters match them as a field instead of anywhere in the text: a branch
-# named fix/main-nav must not read as the `main` marker. The display template
-# shows the label and the flags and hides the path.
+# Display line<TAB>flags<TAB>path. Flags get a column of their own so that
+# filters match them as a field instead of anywhere in the text: a branch named
+# fix/main-nav must not read as the `main` marker.
 _wt_rows() {
   local base wt_path branch flags main_root cur_root
   base=$(_wt_base_ref 2>/dev/null)
@@ -343,8 +342,7 @@ _wt_tv_available() {
   }
 }
 
-# The preview is spawned through $SHELL, which is not necessarily zsh, hence the
-# explicit `zsh -c` around the re-source.
+# The preview runs under $SHELL, which is not necessarily zsh.
 _wt_preview_command() {
   print -r -- "zsh -c 'source ${_WT_LIB}; _wt_preview \"{split:\t:2}\"'"
 }
@@ -492,8 +490,7 @@ _wt_pr() {
 }
 
 # Confirm a set of worktrees and remove them. A dirty checkout is asked about on
-# its own: uncommitted work is the one thing `git worktree remove` cannot give
-# back.
+# its own: uncommitted work is what no later step can give back.
 _wt_remove_targets() {
   local wt_path
   local -a targets=("$@")
@@ -532,9 +529,8 @@ _wt_rm() {
   rows=$(_wt_rows)
   [[ -n $rows ]] || return 0
 
-  # Buffer the selection through a temp file: an interactive picker inside
-  # <(...) is not in the foreground process group, so it blocks on /dev/tty
-  # (SIGTTIN) and wt hangs.
+  # Buffer through a temp file: a picker inside <(...) is not in the foreground
+  # process group, so it blocks on /dev/tty (SIGTTIN) and wt hangs.
   tmp=$(mktemp "${TMPDIR:-/tmp}/wt-rm.XXXXXX") || return 1
   print -r -- "$rows" \
     | tv --source-display '{split:\t:0}  {split:\t:1}' --source-output '{split:\t:2}' \
@@ -550,9 +546,8 @@ _wt_rm() {
   _wt_remove_targets "${targets[@]}"
 }
 
-# Remove every reclaimable worktree. The list is printed and confirmed as a
-# whole rather than preselected in a picker, which tv cannot do; `wt rm` is the
-# entry point for choosing individually.
+# Remove every reclaimable worktree. Confirmed as a whole rather than
+# preselected in a picker, which tv cannot do; `wt rm` chooses individually.
 _wt_clean() {
   local rows line
   local -a targets

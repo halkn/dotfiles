@@ -4,8 +4,8 @@ description = "Switch between herdr workspaces, agents and worktrees"
 requirements = ["herdr", "jq"]
 
 [source]
-# One source per mode, cycled with ctrl-s. Every row carries its own
-# `<mode>:<target>` key, so the caller knows which list the entry came from.
+# One source per mode, cycled with ctrl-s. The `<mode>:<target>` key in every
+# row is what tells the caller which list the entry came from.
 command = [
   { name = "Workspaces", run = "$HOME/.config/herdr/herdr-picker.sh --list workspace" },
   { name = "Agents", run = "$HOME/.config/herdr/herdr-picker.sh --list agent" },

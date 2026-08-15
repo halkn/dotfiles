@@ -4,12 +4,9 @@ description = "Select a branch, most recently committed first"
 requirements = ["git"]
 
 [source]
-# `%(refname:short)` renders the remote HEAD symref as a bare `origin`, which is
-# not a branch anyone can switch to.
+# `%(refname:short)` renders the remote HEAD symref as a bare `origin`.
 command = "git branch --all --sort=-committerdate --format='%(refname:short)' | grep -vx origin"
-# A remote-only branch is handed back under its short name, so that the command
-# it completes (`git switch <name>`) creates the tracking branch instead of
-# detaching HEAD on origin/<name>.
+# Short name, so that `git switch <name>` tracks instead of detaching HEAD.
 output = "{replace:s/^origin\\///}"
 
 [preview]

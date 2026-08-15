@@ -87,8 +87,7 @@ fi
 
 # Internal entry point, called by the ctrl-x action. No confirmation prompt is
 # needed: `git worktree remove` refuses a checkout that still holds uncommitted
-# work. Anything but a worktree row is ignored, since the same key is live in
-# every mode.
+# work. The key is live in every mode, so other rows are ignored here.
 if [[ ${1:-} == --remove ]]; then
   entry=${2:-}
   [[ $entry == worktree:* ]] || exit 0
@@ -107,8 +106,7 @@ command -v tv >/dev/null 2>&1 || {
   exit 1
 }
 
-# The channel prints `<mode>:<target>`; which list it came from decides what
-# focusing it means.
+# The channel prints `<mode>:<target>`: focusing means something else per mode.
 selected=$(tv herdr) || exit 0
 [[ -n $selected ]] || exit 0
 mode=${selected%%:*}

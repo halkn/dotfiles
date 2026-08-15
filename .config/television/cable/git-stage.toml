@@ -4,11 +4,9 @@ description = "Stage or restore changed files"
 requirements = ["git"]
 
 [source]
-# The built-in git-diff channel lists only the first half of this, so an
-# untracked file is never stageable there. `git status --porcelain` covers both
-# but is unusable as a source of paths: it quotes anything holding a space or a
-# non-ASCII byte, and renders a rename as `old -> new`, which the shell running
-# the actions below reads as a redirect into `new`.
+# Not `git status --porcelain`, which quotes paths holding a space or a
+# non-ASCII byte and renders a rename as `old -> new` - a redirect to the shell
+# running the actions below. The built-in git-diff channel misses untracked.
 command = "git -c core.quotePath=false diff --name-only HEAD 2>/dev/null; git -c core.quotePath=false ls-files --others --exclude-standard"
 
 [preview]
@@ -16,8 +14,7 @@ command = "if git ls-files --error-unmatch -- '{}' >/dev/null 2>&1; then git dif
 
 [keybindings]
 ctrl-s = "actions:stage"
-# Not ctrl-r: that reloads the source in every other channel, and `git restore`
-# is not undoable.
+# Not ctrl-r: that reloads the source everywhere else, and this is not undoable.
 f5 = "actions:restore"
 
 [actions.stage]

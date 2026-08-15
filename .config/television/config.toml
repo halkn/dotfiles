@@ -1,8 +1,5 @@
-# [dotfiles] symlinks ~/.config to this repository, so `tv update-channels` and
-# `tv migrate-config` write into the checkout: use the channels shipped with the
-# binary and keep custom ones under cable/ in git instead.
-
-# Bare `tv` opens the channel list, whose enter launches the chosen channel.
+# ~/.config is a symlink to this repository, so `tv update-channels` and
+# `tv migrate-config` would write into the checkout.
 default_channel = "channels"
 
 [ui]
@@ -11,11 +8,9 @@ layout = "landscape"
 [ui.preview_panel]
 size = 60
 
-# Emacs-style editing while filtering, matching the insert-mode maps in
-# .config/nvim: the cursor and deletion keys win over tv's panel toggles. The
-# displaced toggles avoid alt-, which herdr claims for pane focus (alt+h/j/k/l)
-# before tv sees it. An unknown action name here is ignored silently, so names
-# are the ones in tv's actions reference; f1-f3 are channel shortcuts.
+# Emacs editing keys as in .config/nvim, so they win over tv's panel toggles.
+# The toggles avoid alt-, which herdr takes for pane focus, and f1-f3, which are
+# channel shortcuts. An unknown action name here is ignored silently.
 [keybindings]
 ctrl-h = "delete_prev_char"
 ctrl-b = "go_to_prev_char"
@@ -25,15 +20,13 @@ ctrl-u = "scroll_preview_half_page_up"
 ctrl-g = "toggle_help"
 f4 = "cycle_previews"
 
-# Which channel ctrl-t completes from, per command. This table replaces tv's
-# defaults rather than extending them, so every command that should complete has
-# to be listed here.
+# Replaces tv's default table rather than extending it.
 [shell_integration.channel_triggers]
 "dirs" = ["cd", "ls", "rmdir"]
 "files" = ["cat", "less", "head", "tail", "bat", "cp", "mv", "rm", "touch", "chmod", "ln", "tar", "zip", "unzip", "nvim", "v"]
 "env" = ["export", "unset"]
-# Only the commands that take a local branch name: the output template strips
-# `origin/`, which `git merge` / `git rebase` would need to keep.
+# Commands taking a local branch name: the channel strips `origin/`, which
+# `git merge` / `git rebase` would need to keep.
 "git-branch" = ["git checkout", "git switch", "git branch", "git br"]
 "git-stage" = ["git add", "git restore"]
 "git-log" = ["git log", "git show"]

@@ -117,11 +117,10 @@ if command -v uv >/dev/null 2>&1; then
 fi
 
 # ── television ───────────────────────────────────────
-# Only the shell-wide bits: the widgets and the completion. Workflows built on
-# tv live under workflows/, its look in $XDG_CONFIG_HOME/television.
-# The script calls compdef, so it has to come after compinit above.
+# Ctrl-R, Ctrl-T and the tv completion; its look and channels live in
+# $XDG_CONFIG_HOME/television. The script calls compdef, so it has to come after
+# compinit above.
 if command -v tv >/dev/null 2>&1 && [[ -t 0 ]]; then
-  # Provides the widgets: Ctrl-R (history) and Ctrl-T (completion of the buffer).
   source <(tv init zsh)
 fi
 
