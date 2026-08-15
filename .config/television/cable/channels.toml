@@ -1,0 +1,12 @@
+[metadata]
+name = "channels"
+description = "Select one of the available channels"
+requirements = ["tv"]
+
+[source]
+command = "tv list-channels"
+
+[ui]
+# There is nothing to preview about a name; the list is the whole channel.
+[ui.preview_panel]
+hidden = true
