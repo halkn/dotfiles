@@ -31,7 +31,6 @@ rename_exe = "emmylua_check"
 "~/.claude/CLAUDE.md" = { source = "claude/CLAUDE.md" }
 "~/.claude/settings.json" = { source = "claude/settings.json" }
 "~/.claude/statusline-command.sh" = { source = "claude/statusline-command.sh" }
-"~/.claude/file-suggestion.sh" = { source = "claude/file-suggestion.sh" }
 "~/.claude/hooks/*" = { source = "claude/hooks/*" }
 
 # apt entries apply on Linux and are skipped elsewhere. git and curl are already installed by

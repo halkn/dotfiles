@@ -7,7 +7,7 @@
 # must not touch the current shell state. For the same reason it never returns
 # early on a missing dependency: the picker would lose `_repo_pick` silently.
 
-# Own path, so fzf preview commands (which run in a fresh shell without these
+# Own path, so tv preview commands (which run in a fresh shell without these
 # functions) can re-source it. `%x` expands to the file being sourced.
 _REPO_LIB=${${(%):-%x}:A}
 
@@ -26,10 +26,10 @@ _repo_git_available() {
   }
 }
 
-# Picking, on the other hand, has nothing to offer without fzf and a root.
-_repo_fzf_available() {
-  command -v fzf >/dev/null 2>&1 || {
-    print 'repo: fzf is not installed' >&2
+# Picking, on the other hand, has nothing to offer without tv and a root.
+_repo_picker_available() {
+  command -v tv >/dev/null 2>&1 || {
+    print 'repo: tv is not installed' >&2
     return 1
   }
   local root
@@ -63,17 +63,18 @@ _repo_preview() {
 }
 
 # Print the path of an interactively selected repository. $1 is an initial query.
-# Returns non-zero when the picker is cancelled, so `--accept-nth` prints the
-# path instead of piping fzf into awk, whose status would mask the cancel.
+# The output template keeps anything from running downstream of tv and masking
+# its status when the picker is cancelled. The preview runs under $SHELL, which
+# is not necessarily zsh, hence the explicit `zsh -c`.
 _repo_pick() {
   local rows
   rows=$(_repo_rows)
   [[ -n $rows ]] || return 1
   print -r -- "$rows" \
-    | fzf --delimiter '\t' --with-nth 1 --accept-nth 2 \
-      --query="${1:-}" \
-      --prompt 'repo> ' \
-      --preview "source ${_REPO_LIB}; _repo_preview {2}"
+    | tv --source-display '{split:\t:0}' --source-output '{split:\t:1}' \
+      --input "${1:-}" \
+      --input-prompt 'repo> ' \
+      --preview-command "zsh -c 'source ${_REPO_LIB}; _repo_preview \"{split:\t:1}\"'"
 }
 
 # Fold the forge-specific spellings of one repository onto a single host/path.
@@ -153,14 +154,14 @@ _repo_get() {
 
 _repo_go() {
   local dir
-  _repo_fzf_available || return 1
+  _repo_picker_available || return 1
   dir=$(_repo_pick "$*") || return 1
   [[ -n $dir ]] || return 1
   cd -- "$dir"
 }
 
-# repo               : pick a repository with fzf and cd into it
-# repo <words...>    : same, with the words as the initial fzf query
+# repo               : pick a repository with tv and cd into it
+# repo <words...>    : same, with the words as the initial picker query
 # repo get <repo>    : clone into the root and cd into it (owner/repo or URL)
 #
 # `get` and the help flags are the only reserved words; anything else is a

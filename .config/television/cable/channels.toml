@@ -1,0 +1,19 @@
+[metadata]
+name = "channels"
+description = "Select one of the available channels"
+requirements = ["tv"]
+
+[source]
+command = "tv list-channels"
+
+[ui]
+[ui.preview_panel]
+hidden = true
+
+[keybindings]
+enter = "actions:open"
+
+[actions.open]
+description = "Open the selected channel"
+command = "tv '{}'"
+mode = "execute"

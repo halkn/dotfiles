@@ -12,8 +12,8 @@ fail() {
   ((failures++))
 }
 
-# A PATH holding only what the guards themselves need, so fzf / fd / gh / az /
-# jq / herdr are guaranteed to be absent no matter what the machine has.
+# A PATH holding only what the guards themselves need, so tv / gh / az / jq /
+# herdr are guaranteed to be absent no matter what the machine has.
 stub_bin=$(mktemp -d "${TMPDIR:-/tmp}/zsh-workflows-test.XXXXXX") || exit 1
 scratch=$(mktemp -d "${TMPDIR:-/tmp}/zsh-workflows-repo.XXXXXX") || exit 1
 trap 'rm -rf -- "$stub_bin" "$scratch"' EXIT
@@ -28,7 +28,7 @@ workflows_dir=${0:A:h}/../workflows
 
 PATH=$stub_bin
 hash -r
-for cmd in fzf fd gh az jq herdr; do
+for cmd in tv gh az jq herdr; do
   command -v "$cmd" >/dev/null 2>&1 && fail "$cmd is still reachable; the stub PATH is not isolating the test"
 done
 
@@ -38,7 +38,7 @@ for f in "$workflows_dir"/*.zsh; do
 done
 
 # 2. Every entry point is defined even though its dependencies are missing.
-for fn in wt repo dot fcd frm fgb fga fgl; do
+for fn in wt repo dot; do
   whence -w "$fn" >/dev/null 2>&1 || fail "$fn is not defined"
 done
 
@@ -54,18 +54,12 @@ expect_guard() {
 }
 
 cd -- "$scratch" || exit 1
-expect_guard fcd 'fcd: fzf is not installed'
-expect_guard frm 'frm: fzf is not installed'
-expect_guard fgb 'fgb: fzf is not installed'
-expect_guard fga 'fga: fzf is not installed'
-expect_guard fgl 'fgl: fzf is not installed'
-expect_guard wt 'wt: fzf is not installed'
-expect_guard repo 'repo: fzf is not installed'
+expect_guard wt 'wt: tv is not installed'
+expect_guard repo 'repo: tv is not installed'
 
-# 4. The repository guards fire outside a work tree instead of the fzf ones.
+# 4. The repository guard fires outside a work tree instead of the tv one.
 cd -- "$stub_bin" || exit 1
 expect_guard wt 'wt: not inside a git repository'
-expect_guard fgb 'fgb: fzf is not installed'
 
 # 5. Reaching this line at all is the assertion that none of the above exited
 # the shell.

@@ -10,7 +10,7 @@
 # The `_forge_*` section at the end is the GitHub / Azure DevOps boundary, kept
 # here because `wt pr` is its only caller.
 
-# Own path, so fzf preview commands (which run in a fresh shell without these
+# Own path, so tv preview commands (which run in a fresh shell without these
 # functions) can re-source it. `%x` expands to the file being sourced.
 _WT_LIB=${${(%):-%x}:A}
 
@@ -153,10 +153,9 @@ _wt_flags() {
   fi
 }
 
-# Display line<TAB>flags<TAB>path for fzf. Flags get a column of their own so
-# that filters match them as a field instead of anywhere in the text: a branch
-# named fix/main-nav must not read as the `main` marker.
-# `--with-nth 1,2` shows the label and the flags and hides the path.
+# Display line<TAB>flags<TAB>path. Flags get a column of their own so that
+# filters match them as a field instead of anywhere in the text: a branch named
+# fix/main-nav must not read as the `main` marker.
 _wt_rows() {
   local base wt_path branch flags main_root cur_root
   base=$(_wt_base_ref 2>/dev/null)
@@ -336,11 +335,16 @@ _wt_remove_external() {
   (cd "${${common%/}:h}" && _wt_remove_one "$wt_path" "$force")
 }
 
-_wt_fzf_available() {
-  command -v fzf >/dev/null 2>&1 || {
-    print 'wt: fzf is not installed' >&2
+_wt_tv_available() {
+  command -v tv >/dev/null 2>&1 || {
+    print 'wt: tv is not installed' >&2
     return 1
   }
+}
+
+# The preview runs under $SHELL, which is not necessarily zsh.
+_wt_preview_command() {
+  print -r -- "zsh -c 'source ${_WT_LIB}; _wt_preview \"{split:\t:2}\"'"
 }
 
 _wt_pick() {
@@ -348,16 +352,14 @@ _wt_pick() {
   rows=$(_wt_rows)
   [[ -n $rows ]] || return 1
   print -r -- "$rows" \
-    | fzf --delimiter '\t' --with-nth 1,2 \
-      --prompt 'worktree> ' \
-      --header 'Enter: open' \
-      --preview "source ${_WT_LIB}; _wt_preview {3}" \
-    | awk -F'\t' '{print $3}'
+    | tv --source-display '{split:\t:0}  {split:\t:1}' --source-output '{split:\t:2}' \
+      --input-prompt 'worktree> ' \
+      --preview-command "$(_wt_preview_command)"
 }
 
 _wt_go() {
   local wt_path
-  _wt_fzf_available || return 1
+  _wt_tv_available || return 1
   wt_path=$(_wt_pick) || return 1
   [[ -n $wt_path ]] || return 1
   _wt_open_path "$wt_path"
@@ -457,7 +459,7 @@ _wt_pr_fork() {
 _wt_pr() {
   local number=${1:-} rows head fork
   if [[ -z $number ]]; then
-    _wt_fzf_available || return 1
+    _wt_tv_available || return 1
     rows=$(_forge_pr_rows) || return 1
     [[ -n $rows ]] || {
       print 'wt: no open pull requests' >&2
@@ -465,11 +467,10 @@ _wt_pr() {
     }
     number=$(
       print -r -- "$rows" \
-        | fzf --delimiter '\t' --with-nth 2 --accept-nth 1 \
-          --height=100% \
-          --prompt 'pr> ' \
-          --preview "source ${_WT_LIB}; _forge_pr_preview {1}" \
-          --preview-window 'down:60%:wrap'
+        | tv --source-display '{split:\t:1}' --source-output '{split:\t:0}' \
+          --input-prompt 'pr> ' \
+          --layout portrait --preview-size 60 --preview-word-wrap \
+          --preview-command "zsh -c 'source ${_WT_LIB}; _forge_pr_preview \"{split:\t:0}\"'"
     ) || return 1
   fi
   [[ -n $number ]] || return 1
@@ -488,42 +489,11 @@ _wt_pr() {
   _wt_track_and_open "$head"
 }
 
-# Interactive removal. $1 = "clean" restricts the list to reclaimable worktrees
-# and preselects them.
-_wt_rm() {
-  local mode=${1:-rm} rows line wt_path tmp
-  local -a targets opts
-  _wt_fzf_available || return 1
-
-  rows=$(_wt_rows)
-  opts=(--prompt 'remove> ')
-  if [[ $mode == clean ]]; then
-    # Reclaimable = merged or upstream gone, and not the main / current / dirty
-    # checkout. Everything shown is preselected; deselect what should stay.
-    # `agent` checkouts are excluded: Claude Code's own sweep reclaims them, and
-    # one may be locked and in use by a running agent.
-    rows=$(print -r -- "$rows" | awk -F'\t' '
-      $2 ~ /(^|,)(merged|gone)(,|$)/ && $2 !~ /(^|,)(main|current|dirty|agent)(,|$)/
-    ')
-    [[ -n $rows ]] || {
-      print 'wt: nothing to reclaim' >&2
-      return 0
-    }
-    opts=(--prompt 'reclaim> ' --bind 'start:select-all')
-  fi
-
-  tmp=$(mktemp "${TMPDIR:-/tmp}/wt-rm.XXXXXX") || return 1
-  print -r -- "$rows" \
-    | fzf --multi --delimiter '\t' --with-nth 1,2 \
-      "${opts[@]}" \
-      --header 'Tab: toggle / Enter: remove selected' \
-      --preview "source ${_WT_LIB}; _wt_preview {3}" >|"$tmp"
-
-  while IFS= read -r line; do
-    [[ -n $line ]] || continue
-    targets+=("${line##*$'\t'}")
-  done <"$tmp"
-  rm -f -- "$tmp"
+# Confirm a set of worktrees and remove them. A dirty checkout is asked about on
+# its own: uncommitted work is what no later step can give back.
+_wt_remove_targets() {
+  local wt_path
+  local -a targets=("$@")
   ((${#targets} == 0)) && return 0
 
   print -r -- "${(F)targets}"
@@ -548,6 +518,56 @@ _wt_rm() {
       _wt_remove_one "$wt_path" 0
     fi
   done
+}
+
+# Pick worktrees to remove.
+_wt_rm() {
+  local rows line tmp
+  local -a targets
+  _wt_tv_available || return 1
+
+  rows=$(_wt_rows)
+  [[ -n $rows ]] || return 0
+
+  # Buffer through a temp file: a picker inside <(...) is not in the foreground
+  # process group, so it blocks on /dev/tty (SIGTTIN) and wt hangs.
+  tmp=$(mktemp "${TMPDIR:-/tmp}/wt-rm.XXXXXX") || return 1
+  print -r -- "$rows" \
+    | tv --source-display '{split:\t:0}  {split:\t:1}' --source-output '{split:\t:2}' \
+      --input-prompt 'remove> ' \
+      --input-header 'Tab: toggle / Enter: remove selected' \
+      --preview-command "$(_wt_preview_command)" >|"$tmp"
+
+  while IFS= read -r line; do
+    [[ -n $line ]] || continue
+    targets+=("$line")
+  done <"$tmp"
+  rm -f -- "$tmp"
+  _wt_remove_targets "${targets[@]}"
+}
+
+# Remove every reclaimable worktree. Confirmed as a whole rather than
+# preselected in a picker, which tv cannot do; `wt rm` chooses individually.
+_wt_clean() {
+  local rows line
+  local -a targets
+
+  # Reclaimable = merged or upstream gone, and not the main / current / dirty
+  # checkout. `agent` checkouts are excluded: Claude Code's own sweep reclaims
+  # them, and one may be locked and in use by a running agent.
+  rows=$(_wt_rows | awk -F'\t' '
+    $2 ~ /(^|,)(merged|gone)(,|$)/ && $2 !~ /(^|,)(main|current|dirty|agent)(,|$)/
+  ')
+  [[ -n $rows ]] || {
+    print 'wt: nothing to reclaim' >&2
+    return 0
+  }
+
+  while IFS= read -r line; do
+    [[ -n $line ]] || continue
+    targets+=("${line##*$'\t'}")
+  done <<<"$rows"
+  _wt_remove_targets "${targets[@]}"
 }
 
 # wt              : pick a worktree and open it (herdr workspace, or cd)
@@ -575,11 +595,11 @@ wt() {
       ;;
     rm)
       shift
-      _wt_rm rm
+      _wt_rm
       ;;
     clean)
       shift
-      _wt_rm clean
+      _wt_clean
       ;;
     -h | --help | help)
       print 'usage: wt [new <branch> [base] | pr [<number>] | rm | clean]'

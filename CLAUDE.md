@@ -21,7 +21,7 @@
 
 ## Conventions
 
-- macOS に GNU `timeout` は無い。timeout が要る script は `timeout` / `gtimeout` / 直接実行の順にフォールバックする（`claude/file-suggestion.sh` の `run_with_timeout` を踏襲する）
+- macOS に GNU `timeout` は無い。timeout が要る script は `timeout` / `gtimeout` / 直接実行の順にフォールバックする
 - 整形は `mise run fmt` に任せる（`shuck`・`stylua`・`rumdl`）
 - コードコメントは英語で書く。識別子・コマンド名と同じ語彙で書けるため。ユーザーに表示される文字列（hook の拒否メッセージ、`mise` の task description）は日本語のまま
 - 情報の置き場所は「いつ読む必要があるか」で決める。判断基準は `.claude/rules/*.md`（path 一致で常時ロード・各 40 行以内）、手順と実測記録は `.claude/skills/*/`（呼ばれたときだけロード）、変更の経緯は commit と PR。コード側には、その実装でなければならない理由と、どちらにも無い実装固有の制約だけを残す
