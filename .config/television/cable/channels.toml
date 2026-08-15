@@ -10,3 +10,13 @@ command = "tv list-channels"
 # There is nothing to preview about a name; the list is the whole channel.
 [ui.preview_panel]
 hidden = true
+
+[keybindings]
+enter = "actions:open"
+
+[actions.open]
+description = "Open the selected channel"
+# `execute` replaces this tv with the chosen one, so the picker does not stay
+# behind on the stack while the channel is in use.
+command = "tv '{}'"
+mode = "execute"

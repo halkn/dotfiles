@@ -2,6 +2,9 @@
 # `tv migrate-config` write into the checkout: use the channels shipped with the
 # binary and keep custom ones under cable/ in git instead.
 
+# Bare `tv` opens the channel list, whose enter launches the chosen channel.
+default_channel = "channels"
+
 [ui]
 layout = "landscape"
 
@@ -26,7 +29,6 @@ f4 = "cycle_previews"
 # defaults rather than extending them, so every command that should complete has
 # to be listed here.
 [shell_integration.channel_triggers]
-"channels" = ["tv"]
 "dirs" = ["cd", "ls", "rmdir"]
 "files" = ["cat", "less", "head", "tail", "bat", "cp", "mv", "rm", "touch", "chmod", "ln", "tar", "zip", "unzip", "nvim", "v"]
 "env" = ["export", "unset"]
