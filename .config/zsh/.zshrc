@@ -123,15 +123,6 @@ fi
 if command -v tv >/dev/null 2>&1 && [[ -t 0 ]]; then
   # Provides the widgets: Ctrl-R (history) and Ctrl-T (completion of the buffer).
   source <(tv init zsh)
-
-  # The generated completion leaves the channel argument to file names, which is
-  # the one thing `tv` never takes there.
-  _tv_channels() {
-    local -a channels
-    channels=(${(f)"$(tv list-channels 2>/dev/null)"})
-    _describe -t channels 'channel' channels
-  }
-  compdef _tv_channels tv
 fi
 
 # ── eza ──────────────────────────────────────────────
