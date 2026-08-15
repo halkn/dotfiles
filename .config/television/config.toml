@@ -13,11 +13,11 @@ size = 60
 # displaced toggles avoid alt-, which herdr claims for pane focus (alt+h/j/k/l)
 # before tv sees it. An unknown action name here is ignored silently, so names
 # are the ones in tv's actions reference; f1-f3 are channel shortcuts.
-# Preview scrolling stays on PageUp / PageDown.
 [keybindings]
 ctrl-h = "delete_prev_char"
-ctrl-d = "delete_next_char"
 ctrl-b = "go_to_prev_char"
 ctrl-f = "go_to_next_char"
+ctrl-d = "scroll_preview_half_page_down"
+ctrl-u = "scroll_preview_half_page_up"
 ctrl-g = "toggle_help"
 f4 = "cycle_previews"
