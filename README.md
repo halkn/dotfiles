@@ -41,20 +41,11 @@ itself is installed in the bootstrap below.
    mise run setup
    ```
 
-`mise run setup` (= `mise bootstrap --yes --update`) is idempotent and does
-the following, all declared in `mise.toml`:
-
-- Refreshes the package-manager metadata, then installs the OS packages in
-  `[bootstrap.packages]` (`git`, `curl`, `zsh`, `unzip`, `bubblewrap`,
-  `socat`). The current declarations are apt-only, so this step is skipped
-  on macOS; other prefixes such as `brew:` are supported when needed.
-- Clones the zsh plugin repos in `[bootstrap.repos]`
-  (`zsh-autosuggestions`, `fast-syntax-highlighting`) under
-  `$XDG_DATA_HOME/zsh/plugins`.
-- Links the dotfiles declared in `[dotfiles]`.
-- Sets the login shell from `[bootstrap.user]`: registers `/bin/zsh` in
-  `/etc/shells` and runs `chsh`.
-- Installs the mise tools, then Claude Code.
+`mise run setup` (= `mise bootstrap --yes --update`) is idempotent. Every
+machine-state declaration it converges lives in `mise.toml`: OS packages
+(`[bootstrap.packages]`, currently apt-only, so skipped on macOS), zsh plugin
+repos (`[bootstrap.repos]`), symlinks (`[dotfiles]`), the login shell
+(`[bootstrap.user]`), and the mise tools. Claude Code is installed afterwards.
 
 It may prompt for sudo when refreshing apt metadata or installing packages,
 and for your password during `chsh`.
@@ -99,29 +90,25 @@ split into a portable core and workflows named after what they do:
 
 | Location | Holds |
 | --- | --- |
-| `.zshrc` | The portable core (history, options, completion, keybindings, aliases) plus lightweight tool setup guarded by `command -v` — the Television widgets, `eza` for `ls`, `nvim` for `vim`, the `herdr` auto-start on the last line |
-| `workflows/*.zsh` | Own commands, grouped by the task rather than by the tool: `repo` (`repo`, `dot`), `worktree` (`wt`). `.zshrc` sources the directory as a glob, so a new file needs no registration |
+| `.zshrc` | The portable core (history, options, completion, keybindings, aliases) plus lightweight tool setup guarded by `command -v`, so a machine without those tools still gets a working shell |
+| `workflows/*.zsh` | Own commands, grouped by the task rather than by the tool: `repo` (`repo`, `dot`), `worktree` (`wt`) |
+
+Splitting by task rather than by tool keeps a backend swap out of the file
+layout. The workflow files also carry no dependency guard at file level: they
+define their functions unconditionally and check inside them, because
+`.config/herdr/*.sh` sources them by absolute path and a function that never got
+defined would fail silently there.
 
 Interactive selection goes through [Television](https://github.com/alexpasmantier/television)
 (`tv`). A workflow only owns the picking when it also owns the decision that
 follows it — where to cd, what is safe to remove. Everything that is selection
 plus one command is a channel instead: `Ctrl-T` completes the current buffer
-from the channel that matches the command (`cd`, `rm`, `git switch`, `git add`,
-…), `Ctrl-R` searches the history, and `tv git-log` / `tv git-stage` /
-`tv git-branch` can be called directly. The configuration and the channels this
-repository adds are in `.config/television`; the trigger table there replaces
-tv's defaults rather than extending them.
+from the channel matching the command, `Ctrl-R` searches the history, and
+channels such as `tv git-log` can be called directly. The configuration and the
+channels this repository adds are in `.config/television`.
 
-Workflow files always define their functions and check dependencies inside
-them, so a machine without `tv` or `gh` reports what is missing instead of
-losing the command. `worktree.zsh` and `repo.zsh` are also sourced by absolute
-path from `.config/herdr/*.sh`; moving or renaming them breaks those callers.
-
-zsh history is stored under `$XDG_STATE_HOME/zsh`, while completion and
-generated shell-completion files are cached under `$XDG_CACHE_HOME/zsh`.
-
-Put machine-local shell settings in `.config/zsh/.zshenv.local` (environment)
-or `.config/zsh/.zshrc.local` (interactive); both are gitignored.
+Machine-local shell settings go in the gitignored `.config/zsh/.zshenv.local`
+(environment) and `.zshrc.local` (interactive).
 
 ## Git worktree workflow
 
@@ -139,49 +126,21 @@ wt clean               # remove every merged / upstream-gone worktree
 
 `wt new` without a base tracks an existing `origin/<branch>` instead of
 branching off the default integration branch, so a branch that only exists on
-the remote is picked up rather than silently recreated (remote refs are read as
-they are; `git fetch` first to see branches added since). `wt pr` uses `gh`, or
+the remote is picked up rather than silently recreated. `wt pr` uses `gh`, or
 `az repos pr` when origin is on Azure DevOps; Azure fork heads are not fetchable
 from origin, so those are reported instead of checked out.
 
 Checkouts are placed under `[worktrees] directory` in
-`.config/herdr/config.toml` (`~/.local/share/herdr/worktrees`, i.e.
-`$XDG_DATA_HOME`), so they stay out of the `$REPO_ROOT` tree that `repo`
-browses.
-`herdr` itself can also create one with `alt+g`. The `alt+s` picker cycles
-workspaces, agents and worktrees with `ctrl-s`; on a worktree, `ctrl-x` removes
-it and `ctrl-r` refreshes the list afterwards. Creation is `wt new` / `wt pr`
-only.
+`.config/herdr/config.toml` (`~/.local/share/herdr/worktrees`, following XDG),
+so they stay out of the `$REPO_ROOT` tree that `repo` browses. herdr can create
+one itself with `alt+g` and lists them in its `alt+s` picker.
 
-## Repositories and herdr workspaces
-
-`repo` (`.config/zsh/workflows/repo.zsh`) picks a repository under `$REPO_ROOT`
-(`~/repos`) and cd's into it; `repo get <owner/repo|url>` clones one
-and cd's into the clone.
-
-Clones are placed at `$REPO_ROOT/<host>/<path>`. A bare `owner/repo` is taken
-as GitHub, and Azure DevOps is normalized: the `_git` segment is dropped and its
-SSH form (`git@ssh.dev.azure.com:v3/org/proj/repo`) resolves to the same
-directory as the HTTPS URL, i.e. `dev.azure.com/org/proj/repo`. The listing is
-a depth-bounded glob over that layout, so a repository placed at another depth
-is not picked up.
-
-The same listing backs `alt+w`, which picks a repository and creates a herdr
-workspace with that repository as its cwd, replacing the "create a workspace,
-then run `repo` inside it" pair of steps. Plain "new workspace in the current
-directory" moved to `alt+shift+w`.
-
-Outside a herdr session everything degrades to plain `git worktree` plus `cd`.
-
-Removal never discards work: `wt rm` skips the main checkout and the worktree
-you are standing in, asks again when a worktree is dirty, and deletes the local
-branch only with `git branch -d` (merged branches only), the same rule as the
-`git pm` alias.
-
-Pull requests from a fork are fetched read-only as `pr-<number>`; run
-`gh pr checkout <number>` inside that worktree when you need to push back. Fork
-code is not pre-trusted for mise (same-repository branches are), so treat that
-worktree as untrusted: inspect it before running its tasks or an agent in it.
+`wt rm` never removes the main checkout or the worktree you are standing in,
+asks a second time when a worktree is dirty, and deletes the local branch with
+`git branch -d` only, the same rule as the `git pm` alias. Pull requests from a
+GitHub fork are fetched read-only as `pr-<number>` and are not pre-trusted for
+mise, unlike same-repository branches, so treat such a worktree as untrusted
+before running its tasks or an agent in it.
 
 Claude Code creates worktrees of its own, so the two kinds are kept apart:
 
@@ -195,6 +154,23 @@ Claude Code creates worktrees of its own, so the two kinds are kept apart:
 `wt` marks the second kind with an `agent` flag and leaves it out of
 `wt clean`, so reclaiming merged worktrees never races a running agent; it stays
 listed in `wt` and `wt rm` for the times a sweep leaves one behind.
+
+## Repositories and herdr workspaces
+
+`repo` (`.config/zsh/workflows/repo.zsh`) picks a repository under `$REPO_ROOT`
+(`~/repos`) and cd's into it; `repo get <owner/repo|url>` clones one
+and cd's into the clone.
+
+Clones are placed at `$REPO_ROOT/<host>/<path>`, with the forge-specific
+spellings of one repository folded onto a single directory (`repo.zsh` holds the
+normalization rules). The listing is a depth-bounded glob over that layout, so a
+repository placed at another depth is not picked up.
+
+The same listing backs herdr's `alt+w`, which picks a repository and creates a
+workspace with it as the cwd in one step; `alt+shift+w` is the plain "new
+workspace in the current directory".
+
+Outside a herdr session everything degrades to plain `git worktree` plus `cd`.
 
 ## Tool Manager
 
@@ -218,9 +194,8 @@ so commit that too.
 
 mise shell activation uses PATH mode rather than shims. Keep shell aliases and
 functions in zsh; use mise's `[env]` only for project-specific environments.
-For machine-local global mise overrides, create the gitignored
-`.config/mise/config.local.toml`. For a repository-local override, use that
-repository's gitignored `mise.local.toml`. These files may override `[env]`,
+Machine-local overrides go in the gitignored `.config/mise/config.local.toml`
+(global) or a repository's own `mise.local.toml`, which may override `[env]`,
 `[tools]`, and settings without changing the shared configuration.
 
 Task automation uses [mise tasks](https://mise.jdx.dev/tasks/), defined in the
@@ -235,43 +210,19 @@ not by the commands they happen to run:
 | `sync` | this repo changed (here or on another machine) and the machine should follow | no — tools come from the lockfiles | yes, the same set, by converging on the new declarations |
 | `update` | a tool or external component should move to a newer version | yes — that is its purpose | yes, but only versions of what is already declared |
 
-- `setup` (= `mise bootstrap --yes --update`) refreshes the package-manager
-  metadata first, because a fresh machine has never fetched it, and then
-  converges every declaration as listed under [Bootstrap](#bootstrap).
-- `sync` (= `git pull --ff-only` + `mise bootstrap --yes`) runs the same
-  convergence without the metadata refresh. It uses the full bootstrap rather
-  than `mise install` alone because a pulled commit can change any declaration
-  — a new symlink in `[dotfiles]`, an OS package, a zsh plugin repo — and
-  installing tools alone would leave the rest of the machine on the previous
-  declaration.
-- `update` updates mise itself, the tools in both configuration roots (which
-  rewrites both lockfiles), the installed OS packages, the zsh plugin repos,
-  and Claude Code. It never pulls this repo: run `sync` first if you want the
-  current declarations, then `update`, then commit the lockfile diffs.
+`setup` and `sync` both run the full `mise bootstrap` rather than `mise install`
+alone, because any declaration can have changed — a symlink in `[dotfiles]`, an
+OS package, a zsh plugin repo — and installing tools alone would leave the rest
+of the machine on the previous declaration. Both converge, so re-running them
+changes nothing once the machine matches.
 
-`setup` and `sync` converge, so re-running them changes nothing once the
-machine matches the declarations.
+`update` never pulls this repo: run `sync` first if you want the current
+declarations, then `update`, then commit the lockfile diffs. Its steps are
+independent — a failing step is reported, the rest still run, and the task exits
+non-zero listing every failure.
 
-Each `update` step is independent: a component that is not installed is
-skipped, a step that fails is reported and the remaining steps still run, and
-the task exits non-zero listing every step that failed.
-
-Narrower entry points into the same declarations, useful for previewing:
-
-```sh
-mise bootstrap status            # Show what `mise bootstrap` would change
-mise bootstrap --dry-run         # Same, as the diff each step would apply
-mise bootstrap packages upgrade  # Upgrade only the declared OS packages
-```
-
-Repository quality tasks are separate from all of the above and touch no
-machine state:
-
-```sh
-mise run fmt       # Format Markdown, zsh files, and Neovim Lua files
-mise run fmt-check # Check formatting without writing files
-mise run lint      # Full repository verification (fmt-check + zsh/shell/Lua checks)
-```
+Repository quality tasks (`fmt`, `lint`) touch no machine state and are separate
+from all of the above; `mise tasks` lists them.
 
 ## Neovim plugins
 

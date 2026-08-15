@@ -12,8 +12,9 @@
 
 ## Verification
 
-- 変更後は `mise run lint`。Neovim Lua を触った場合は先に `mise run fmt`
+- 変更後は `mise run fmt` → `mise run lint`。`lint` は整形チェック・各言語の検査・テストを全て含む（内訳は `mise.toml` の `depends`）
 - 既存警告が多い場合は対象ファイルに絞る（`rumdl check <file>`、`shuck format --check <file>`）
+- ツールが無い場合は先に `mise install`（lockfile 固定のまま導入される）
 - `shuck` は lint・整形ともリポジトリ全体（`.`）が対象。シェルスクリプトを足すと登録なしで検査対象になるため、追加時に `mise.toml` は変更しない
 - 更新系（`mise run setup` / `sync` / `update`）はユーザーが手動実行する
 - `mise bootstrap --force-dotfiles` は競合ファイルをバックアップなしで上書きする。提案する前に `mise bootstrap --dry-run` で差分を示す
@@ -24,7 +25,7 @@
 - macOS に GNU `timeout` は無い。timeout が要る script は `timeout` / `gtimeout` / 直接実行の順にフォールバックする
 - 整形は `mise run fmt` に任せる（`shuck`・`stylua`・`rumdl`）
 - コードコメントは英語で書く。識別子・コマンド名と同じ語彙で書けるため。ユーザーに表示される文字列（hook の拒否メッセージ、`mise` の task description）は日本語のまま
-- 情報の置き場所は「いつ読む必要があるか」で決める。判断基準は `.claude/rules/*.md`（path 一致で常時ロード・各 40 行以内）、手順と実測記録は `.claude/skills/*/`（呼ばれたときだけロード）、変更の経緯は commit と PR。コード側には、その実装でなければならない理由と、どちらにも無い実装固有の制約だけを残す
+- 情報の置き場所は「いつ読む必要があるか」で決める。判断基準は `.claude/rules/*.md`（path 一致で常時ロード・各 40 行以内、`mise run lint` が検査する）、手順と実測記録は `.claude/skills/*/`（呼ばれたときだけロード）、変更の経緯は commit と PR。コード側には、その実装でなければならない理由と、どちらにも無い実装固有の制約だけを残す
 - commit: 小文字 conventional prefix（`fix:` `add:` `feat:` `refactor:`）+ 短い英語要約。1 コミット 1 ツール・1 テーマ（例: `fix: python lsp settings.`）
 - PR: 本文は `.github/pull_request_template.md` の節構成に沿う。`gh pr create --body` はテンプレートを適用しないので、本文を書く前にテンプレートを読む
 
