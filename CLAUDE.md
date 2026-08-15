@@ -12,12 +12,13 @@
 
 ## Verification
 
-- 変更後は `mise run lint`。Neovim Lua を触った場合は先に `mise run fmt`
+- 変更後は `mise run fmt` → `mise run lint`。`lint` は `zsh -n` / `shuck` / `stylua --check` / `emmylua_check` / `rumdl` に加えて `.config/zsh/test/*_test.zsh` と `.config/nvim/test/smoke.lua` を走らせる
 - 既存警告が多い場合は対象ファイルに絞る（`rumdl check <file>`、`shuck format --check <file>`）
+- ツールが無い場合は先に `mise install`（lockfile 固定のまま導入される）
 - `shuck` は lint・整形ともリポジトリ全体（`.`）が対象。シェルスクリプトを足すと登録なしで検査対象になるため、追加時に `mise.toml` は変更しない
 - 更新系（`mise run setup` / `sync` / `update`）はユーザーが手動実行する
 - `mise bootstrap --force-dotfiles` は競合ファイルをバックアップなしで上書きする。提案する前に `mise bootstrap --dry-run` で差分を示す
-- 対話操作でしか確認できない変更は、PR に手動確認の内容を 1 行添える
+- 対話操作でしか確認できない変更（`tv` の widget、herdr の picker と自動起動）は実端末で新規シェルを開いて確認し、PR にその内容を 1 行添える
 
 ## Conventions
 
