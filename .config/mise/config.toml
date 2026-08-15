@@ -34,5 +34,6 @@ tree-sitter = "latest"
 
 # LSP / Linter / Formatter
 "pipx:ryl" = "latest"
+"pipx:shuck-cli" = "latest"
 rumdl = "latest"
 # No yaml language server here: ryl covers both lint and format.

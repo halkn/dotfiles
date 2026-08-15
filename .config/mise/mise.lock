@@ -409,6 +409,10 @@ url = "https://nodejs.org/dist/v26.7.0/node-v26.7.0-win-x64.zip"
 version = "0.21.0"
 backend = "pipx:ryl"
 
+[[tools."pipx:shuck-cli"]]
+version = "0.1.1"
+backend = "pipx:shuck-cli"
+
 [[tools.ripgrep]]
 version = "15.2.0"
 backend = "aqua:BurntSushi/ripgrep"

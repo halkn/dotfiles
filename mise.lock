@@ -111,10 +111,6 @@ checksum = "sha256:1a1708b91ba8cef8a152c85d1f1deda416092a05a80166469967d75fc2348
 url = "https://github.com/EmmyLuaLs/emmylua-analyzer-rust/releases/download/0.24.0/luafmt-darwin-arm64.tar.gz"
 url_api = "https://api.github.com/repos/EmmyLuaLs/emmylua-analyzer-rust/releases/assets/472470124"
 
-[[tools."pipx:shuck-cli"]]
-version = "0.1.1"
-backend = "pipx:shuck-cli"
-
 [[tools.stylua]]
 version = "2.5.2"
 backend = "aqua:JohnnyMorganz/StyLua"
