@@ -116,12 +116,88 @@ if command -v uv >/dev/null 2>&1; then
   unset _uv_comp
 fi
 
-# ── television ───────────────────────────────────────
-# Ctrl-R, Ctrl-T and the tv completion; its look and channels live in
-# $XDG_CONFIG_HOME/television. The script calls compdef, so it has to come after
-# compinit above.
-if command -v tv >/dev/null 2>&1 && [[ -t 0 ]]; then
-  source <(tv init zsh)
+# ── fzf ──────────────────────────────────────────────
+# The shell-wide bits: the widgets, the look, and the per-command completion
+# sources. Workflows built on fzf live under workflows/. The integration script
+# calls compdef, so it has to come after compinit above.
+if command -v fzf >/dev/null 2>&1 && [[ -t 0 ]]; then
+  export FZF_DEFAULT_OPTS="
+    --height 60%
+    --layout=reverse
+    --border
+    --info=inline
+    --preview-window=right:60%:wrap
+    --bind ctrl-u:preview-half-page-up,ctrl-d:preview-half-page-down
+    --bind ctrl-/:toggle-preview
+  "
+
+  # Provides the widgets: Ctrl-R (history), Ctrl-T (paste paths), Alt-C (cd).
+  source <(fzf --zsh)
+
+  # `<command> **<TAB>` is where selecting plus one command lives, so those need
+  # no function of their own: the source and the preview follow the command
+  # being completed.
+
+  # Preview for the completions whose source is the default path walker.
+  _fzf_comprun() {
+    local cmd=$1
+    shift
+    case $cmd in
+      cd | rmdir)
+        fzf --preview 'ls -la {}' "$@"
+        ;;
+      # bat is not installed here, hence cat.
+      cat | less | head | tail | cp | mv | rm | touch | chmod | ln | tar | zip | unzip | nvim | v)
+        fzf --preview 'cat {}' "$@"
+        ;;
+      *)
+        fzf "$@"
+        ;;
+    esac
+  }
+
+  # `$1` is the whole command line; `$prefix` is the word being completed and is
+  # set by the caller in shell/completion.zsh.
+  _fzf_complete_git() {
+    local -a tokens
+    local token sub
+    tokens=(${(z)1})
+    # The subcommand is the first word that is not git itself or an option, so
+    # that `git -C <dir> switch` still completes as `switch`.
+    for token in ${tokens[2,-1]}; do
+      [[ $token == -* ]] && continue
+      sub=$token
+      break
+    done
+
+    case $sub in
+      switch | checkout | branch | br)
+        # `%(refname:short)` renders the remote HEAD symref as a bare `origin`.
+        # The second field drops the `origin/` prefix: `git switch <name>` tracks
+        # the remote branch, while `git switch origin/<name>` detaches HEAD.
+        _fzf_complete --delimiter '\t' --with-nth 1 --accept-nth 2 \
+          --preview 'git log --oneline --graph --color=always {1} -- | head -200' \
+          -- "$@" < <(
+            git branch --all --sort=-committerdate --format='%(refname:short)' 2>/dev/null \
+              | grep -vx origin \
+              | while IFS= read -r ref; do printf '%s\t%s\n' "$ref" "${ref#origin/}"; done
+          )
+        ;;
+      add | restore)
+        _fzf_complete --multi \
+          --preview "source ${_GIT_LIB}; _git_stage_preview {}" \
+          -- "$@" < <(_git_stage_rows)
+        ;;
+      log | show)
+        _fzf_complete --ansi --no-sort --accept-nth 1 \
+          --preview 'git show --color=always {1}' \
+          -- "$@" < <(git log --color=always --format='%C(auto)%h %s %C(dim)%cr' 2>/dev/null)
+        ;;
+      *)
+        _fzf_path_completion "$prefix" "$1" # shuck: ignore=C006 # set by the caller in fzf's completion.zsh
+        ;;
+    esac
+  }
 fi
 
 # ── eza ──────────────────────────────────────────────

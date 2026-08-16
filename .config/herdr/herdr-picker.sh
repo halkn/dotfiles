@@ -47,13 +47,13 @@ preview_workspace() {
   fi
 }
 
-# Internal entry point, called by the tv preview.
+# Internal entry point, called by the fzf preview.
 if [[ ${1:-} == --preview ]]; then
   entry=${2:-}
   [[ -n $entry ]] || exit 0
   case ${entry%%:*} in
     agent)
-      herdr agent read "${entry#*:}" --source recent --lines 40 --format ansi 2>/dev/null
+      herdr agent read "${entry#*:}" --source recent --lines "${FZF_PREVIEW_LINES:-40}" --format ansi 2>/dev/null
       ;;
     worktree)
       whence _wt_preview >/dev/null && _wt_preview "${entry#*:}"
@@ -79,13 +79,54 @@ list_for_mode() {
   esac
 }
 
-# Internal entry point, called by the channel to list one mode.
+prompt_for_mode() {
+  case $1 in
+    workspace)
+      print -r -- 'workspaces> '
+      ;;
+    agent)
+      print -r -- 'agents> '
+      ;;
+    worktree)
+      print -r -- 'worktrees> '
+      ;;
+  esac
+}
+
+next_mode() {
+  case $1 in
+    workspace)
+      print -r -- worktree
+      ;;
+    worktree)
+      print -r -- agent
+      ;;
+    agent)
+      print -r -- workspace
+      ;;
+  esac
+}
+
+self=${0:A}
+default_mode=workspace
+
+# Internal entry point, called by reload() to re-list one mode.
 if [[ ${1:-} == --list ]]; then
   list_for_mode "$2"
   exit 0
 fi
 
-# Internal entry point, called by the ctrl-x action. No confirmation prompt is
+# Internal entry point, called by tab:transform(). The mode lives in a file
+# because each transform runs in its own process.
+if [[ ${1:-} == --cycle ]]; then
+  current=$(<"$HERDR_PICKER_STATE")
+  next=$(next_mode "$current")
+  print -r -- "$next" >"$HERDR_PICKER_STATE"
+  printf 'reload(%s --list %s)+change-prompt(%s)+first\n' "$self" "$next" "$(prompt_for_mode "$next")"
+  exit 0
+fi
+
+# Internal entry point, called by the ctrl-x binding. No confirmation prompt is
 # needed: `git worktree remove` refuses a checkout that still holds uncommitted
 # work. The key is live in every mode, so other rows are ignored here.
 if [[ ${1:-} == --remove ]]; then
@@ -94,20 +135,41 @@ if [[ ${1:-} == --remove ]]; then
   target=${entry#worktree:}
   [[ -n $target ]] || exit 0
   if ! whence _wt_remove_external >/dev/null; then
-    print -u2 'herdr-picker: worktree.zsh not found'
+    printf 'change-header(worktree.zsh not found)\n'
     exit 0
   fi
-  _wt_remove_external "$target" 0 || true
+  if message=$(_wt_remove_external "$target" 0 2>&1); then
+    printf 'reload(%s --list worktree)+change-header(removed %s)\n' "$self" "${target:t}"
+  else
+    # Parentheses would end the action's argument list.
+    printf 'change-header(%s)\n' "${message//[()]/ }"
+  fi
   exit 0
 fi
 
-command -v tv >/dev/null 2>&1 || {
-  print -u2 'herdr-picker: tv is not installed'
+command -v fzf >/dev/null 2>&1 || {
+  print -u2 'herdr-picker: fzf is not installed'
   exit 1
 }
 
-# The channel prints `<mode>:<target>`: focusing means something else per mode.
-selected=$(tv herdr) || exit 0
+state_file=$(mktemp "${TMPDIR:-/tmp}/herdr-picker.XXXXXX")
+trap 'rm -f "$state_file"' EXIT
+print -r -- "$default_mode" >"$state_file"
+export HERDR_PICKER_STATE=$state_file
+
+# Every row carries `<mode>:<target>` in its second field: focusing means
+# something else per mode.
+selected=$(
+  list_for_mode "$default_mode" \
+    | fzf --delimiter '\t' --with-nth 1 --accept-nth 2 --ansi \
+      --height=100% \
+      --style=full --border-label=" herdr " --prompt="$(prompt_for_mode "$default_mode")" \
+      --header 'Tab: switch workspaces / worktrees / agents | worktrees: ctrl-x remove' \
+      --preview "$self --preview {2}" \
+      --preview-window 'down:60%:wrap' \
+      --bind "tab:transform:$self --cycle" \
+      --bind "ctrl-x:transform:$self --remove {2}"
+) || exit 0
 [[ -n $selected ]] || exit 0
 mode=${selected%%:*}
 target=${selected#*:}

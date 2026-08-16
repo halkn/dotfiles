@@ -10,7 +10,7 @@
 # The `_forge_*` section at the end is the GitHub / Azure DevOps boundary, kept
 # here because `wt pr` is its only caller.
 
-# Own path, so tv preview commands (which run in a fresh shell without these
+# Own path, so fzf preview commands (which run in a fresh shell without these
 # functions) can re-source it. `%x` expands to the file being sourced.
 _WT_LIB=${${(%):-%x}:A}
 
@@ -335,16 +335,11 @@ _wt_remove_external() {
   (cd "${${common%/}:h}" && _wt_remove_one "$wt_path" "$force")
 }
 
-_wt_tv_available() {
-  command -v tv >/dev/null 2>&1 || {
-    print 'wt: tv is not installed' >&2
+_wt_fzf_available() {
+  command -v fzf >/dev/null 2>&1 || {
+    print 'wt: fzf is not installed' >&2
     return 1
   }
-}
-
-# The preview runs under $SHELL, which is not necessarily zsh.
-_wt_preview_command() {
-  print -r -- "zsh -c 'source ${_WT_LIB}; _wt_preview \"{split:\t:2}\"'"
 }
 
 _wt_pick() {
@@ -352,14 +347,15 @@ _wt_pick() {
   rows=$(_wt_rows)
   [[ -n $rows ]] || return 1
   print -r -- "$rows" \
-    | tv --source-display '{split:\t:0}  {split:\t:1}' --source-output '{split:\t:2}' \
-      --input-prompt 'worktree> ' \
-      --preview-command "$(_wt_preview_command)"
+    | fzf --delimiter '\t' --with-nth 1,2 --accept-nth 3 \
+      --prompt 'worktree> ' \
+      --header 'Enter: open' \
+      --preview "source ${_WT_LIB}; _wt_preview {3}"
 }
 
 _wt_go() {
   local wt_path
-  _wt_tv_available || return 1
+  _wt_fzf_available || return 1
   wt_path=$(_wt_pick) || return 1
   [[ -n $wt_path ]] || return 1
   _wt_open_path "$wt_path"
@@ -459,7 +455,7 @@ _wt_pr_fork() {
 _wt_pr() {
   local number=${1:-} rows head fork
   if [[ -z $number ]]; then
-    _wt_tv_available || return 1
+    _wt_fzf_available || return 1
     rows=$(_forge_pr_rows) || return 1
     [[ -n $rows ]] || {
       print 'wt: no open pull requests' >&2
@@ -467,10 +463,11 @@ _wt_pr() {
     }
     number=$(
       print -r -- "$rows" \
-        | tv --source-display '{split:\t:1}' --source-output '{split:\t:0}' \
-          --input-prompt 'pr> ' \
-          --layout portrait --preview-size 60 --preview-word-wrap \
-          --preview-command "zsh -c 'source ${_WT_LIB}; _forge_pr_preview \"{split:\t:0}\"'"
+        | fzf --delimiter '\t' --with-nth 2 --accept-nth 1 \
+          --prompt 'pr> ' \
+          --height=100% \
+          --preview "source ${_WT_LIB}; _forge_pr_preview {1}" \
+          --preview-window 'down:60%:wrap'
     ) || return 1
   fi
   [[ -n $number ]] || return 1
@@ -524,7 +521,7 @@ _wt_remove_targets() {
 _wt_rm() {
   local rows line tmp
   local -a targets
-  _wt_tv_available || return 1
+  _wt_fzf_available || return 1
 
   rows=$(_wt_rows)
   [[ -n $rows ]] || return 0
@@ -533,10 +530,10 @@ _wt_rm() {
   # process group, so it blocks on /dev/tty (SIGTTIN) and wt hangs.
   tmp=$(mktemp "${TMPDIR:-/tmp}/wt-rm.XXXXXX") || return 1
   print -r -- "$rows" \
-    | tv --source-display '{split:\t:0}  {split:\t:1}' --source-output '{split:\t:2}' \
-      --input-prompt 'remove> ' \
-      --input-header 'Tab: toggle / Enter: remove selected' \
-      --preview-command "$(_wt_preview_command)" >|"$tmp"
+    | fzf --multi --delimiter '\t' --with-nth 1,2 --accept-nth 3 \
+      --prompt 'remove> ' \
+      --header 'Tab: toggle / Enter: remove selected' \
+      --preview "source ${_WT_LIB}; _wt_preview {3}" >|"$tmp"
 
   while IFS= read -r line; do
     [[ -n $line ]] || continue
@@ -546,8 +543,8 @@ _wt_rm() {
   _wt_remove_targets "${targets[@]}"
 }
 
-# Remove every reclaimable worktree. Confirmed as a whole rather than
-# preselected in a picker, which tv cannot do; `wt rm` chooses individually.
+# Remove every reclaimable worktree. Confirmed as a whole; `wt rm` is the path
+# for choosing individually.
 _wt_clean() {
   local rows line
   local -a targets
