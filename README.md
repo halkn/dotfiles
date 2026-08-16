@@ -91,7 +91,7 @@ split into a portable core and workflows named after what they do:
 | Location | Holds |
 | --- | --- |
 | `.zshrc` | The portable core (history, options, completion, keybindings, aliases) plus lightweight tool setup guarded by `command -v`, so a machine without those tools still gets a working shell |
-| `workflows/*.zsh` | Own commands, grouped by the task rather than by the tool: `repo` (`repo`, `dot`), `worktree` (`wt`) |
+| `workflows/*.zsh` | Own commands, grouped by the task rather than by the tool: `repo` (`repo`, `dot`), `worktree` (`wt`), `git` (`gst`) |
 
 Splitting by task rather than by tool keeps a backend swap out of the file
 layout. The workflow files also carry no dependency guard at file level: they
@@ -99,13 +99,14 @@ define their functions unconditionally and check inside them, because
 `.config/herdr/*.sh` sources them by absolute path and a function that never got
 defined would fail silently there.
 
-Interactive selection goes through [Television](https://github.com/alexpasmantier/television)
-(`tv`). A workflow only owns the picking when it also owns the decision that
-follows it — where to cd, what is safe to remove. Everything that is selection
-plus one command is a channel instead: `Ctrl-T` completes the current buffer
-from the channel matching the command, `Ctrl-R` searches the history, and
-channels such as `tv git-log` can be called directly. The configuration and the
-channels this repository adds are in `.config/television`.
+Interactive selection goes through [fzf](https://github.com/junegunn/fzf).
+A workflow only owns the picking when it also owns the decision that follows it
+— where to cd, what is safe to remove, what to stage. Everything that is
+selection plus one command is a completion instead: `<command> **<TAB>` picks
+the candidates for that command (`git switch`, `git add`, `git log` and paths),
+while `Ctrl-R`, `Ctrl-T` and `Alt-C` are fzf's own widgets. The shared options
+live in `FZF_DEFAULT_OPTS` and the per-command sources in the `fzf` section of
+`.zshrc`.
 
 Machine-local shell settings go in the gitignored `.config/zsh/.zshenv.local`
 (environment) and `.zshrc.local` (interactive).
