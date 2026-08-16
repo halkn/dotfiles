@@ -156,8 +156,8 @@ if command -v fzf >/dev/null 2>&1 && [[ -t 0 ]]; then
     esac
   }
 
-  # `$1` is the whole command line; `$prefix` is the word being completed and is
-  # set by the caller in shell/completion.zsh.
+  # `$1` is the whole command line; `prefix` is the word being completed and is
+  # set by the caller in fzf's completion.zsh, hence the `-` default here.
   _fzf_complete_git() {
     local -a tokens
     local token sub
@@ -194,7 +194,7 @@ if command -v fzf >/dev/null 2>&1 && [[ -t 0 ]]; then
           -- "$@" < <(git log --color=always --format='%C(auto)%h %s %C(dim)%cr' 2>/dev/null)
         ;;
       *)
-        _fzf_path_completion "$prefix" "$1" # shuck: ignore=C006 # set by the caller in fzf's completion.zsh
+        _fzf_path_completion "${prefix-}" "$1"
         ;;
     esac
   }
