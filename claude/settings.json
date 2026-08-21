@@ -297,6 +297,7 @@
       "gh *"
     ]
   },
+  "outputStyle": "Concise",
   "tui": "fullscreen",
   "theme": "dark",
   "editorMode": "vim",
