@@ -114,9 +114,74 @@ check 'an empty key survives resolution' \
   $'ws-a\tworkspace:1' \
   "$(rows $'workspace\t\t1\tws-a' | _wt_nav_resolve | _wt_nav_merge)"
 
+# A workspace is recognised by the directory its panes are in, which can be
+# anywhere below the checkout. Folding still has to happen on the checkout, or
+# the repository row would come back as soon as a pane cd'd into a subdirectory.
+git -C "$scratch/real" init --quiet
+mkdir -p "$scratch/real/sub"
+
+check 'a directory below a checkout folds onto the checkout' \
+  $'ws-a\tworkspace:1' \
+  "$(rows \
+    "workspace	$scratch/real/sub	1	ws-a" \
+    "repo	$scratch/real	$scratch/real	repo-a" | _wt_nav_resolve | _wt_nav_merge)"
+
 check 'an empty trailing field survives resolution' \
   $'worktree\t/nope/a\twt-a\t' \
   "$(rows $'worktree\t/nope/a\twt-a\t' | _wt_nav_resolve)"
+
+# The herdr answers as they come back from the socket (herdr 0.8.2): a workspace
+# made from a worktree, one opened on a plain directory, and the worktree list
+# that holds the branch of the first.
+ws_json='{"result":{"workspaces":[
+  {"number":1,"label":"dotfiles","workspace_id":"w14","worktree":{"checkout_path":"/w/dotfiles","repo_name":"dotfiles"}},
+  {"number":2,"label":"it-cert-study","workspace_id":"w17","worktree":null}
+]}}'
+pane_json='{"result":{"panes":[
+  {"pane_id":"p1","workspace_id":"w17","cwd":"/w/it-cert-study","focused":false},
+  {"pane_id":"p2","workspace_id":"w17","cwd":"/w/it-cert-study/docs","focused":true}
+]}}'
+wt_json='{"result":{"worktrees":[
+  {"path":"/w/dotfiles","branch":"main","label":"dotfiles","open_workspace_id":"w14"},
+  {"path":"/w/wt/topic","branch":"topic","label":"dotfiles","open_workspace_id":null}
+]}}'
+
+# A workspace with no worktree takes the cwd of its focused pane, which is what
+# gives every row a directory to be recognised by.
+check 'workspace rows carry a directory and a branch' \
+  "$(rows \
+    $'workspace\t/w/dotfiles\tw14\t[1] dotfiles\tmain\t/w/dotfiles' \
+    $'workspace\t/w/it-cert-study/docs\tw17\t[2] it-cert-study\t\t/w/it-cert-study/docs')" \
+  "$(print -r -- "$ws_json" | _wt_nav_workspace_filter "$pane_json" "$wt_json")"
+
+# Without the pane and worktree answers the rows still have to be usable.
+check 'workspace rows survive missing pane and worktree answers' \
+  "$(rows \
+    $'workspace\t/w/dotfiles\tw14\t[1] dotfiles\t\t/w/dotfiles' \
+    $'workspace\t\tw17\t[2] it-cert-study\t\t')" \
+  "$(print -r -- "$ws_json" | _wt_nav_workspace_filter null null)"
+
+check 'worktree rows' \
+  "$(rows \
+    $'worktree\t/w/dotfiles\t/w/dotfiles\tdotfiles\tmain\t/w/dotfiles' \
+    $'worktree\t/w/wt/topic\t/w/wt/topic\tdotfiles\ttopic\t/w/wt/topic')" \
+  "$(print -r -- "$wt_json" | _wt_nav_worktree_filter)"
+
+# End to end: the worktree behind a workspace and the repository behind a plain
+# workspace both fold away, and both workspaces keep their directory.
+check 'the herdr answers fold into one row per place' \
+  "$(rows \
+    $'ws   [1] dotfiles                       main                       /w/dotfiles\tworkspace:w14' \
+    $'ws   [2] it-cert-study                  -                          /w/it-cert-study\tworkspace:w17' \
+    $'wt   dotfiles                           topic                      /w/wt/topic\tworktree:/w/wt/topic')" \
+  "$(
+    {
+      print -r -- "$ws_json" \
+        | _wt_nav_workspace_filter "${pane_json//\/docs/}" "$wt_json"
+      print -r -- "$wt_json" | _wt_nav_worktree_filter
+      printf 'repo\t/w/it-cert-study\t/w/it-cert-study\thalkn/it-cert-study\t\t/w/it-cert-study\n'
+    } | _wt_nav_format | _wt_nav_merge
+  )"
 
 if ((failures > 0)); then
   print -u2 "worktree_test: $failures assertion(s) failed"

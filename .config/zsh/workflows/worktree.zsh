@@ -391,24 +391,61 @@ _wt_fzf_available() {
 # `set -euo pipefail`, where a source that has nothing to say (no server, no
 # repository) would otherwise take the whole listing down with it.
 
+# `herdr workspace list` on stdin, `herdr pane list` as $1 and
+# `herdr worktree list --json` as $2, so that the shape of the three answers can
+# be pinned down by a test instead of only in a live session (herdr 0.8.2).
+#
+# A workspace reports neither a directory nor a branch of its own: a WorkspaceInfo
+# carries a checkout_path only when it was made from a worktree, the branch sits
+# on the WorktreeInfo that points back at it, and a workspace opened on a plain
+# directory only shows that directory as the cwd of its panes. All three are
+# needed - the directory is what the row is recognised by, and it is also what
+# folds the repository row behind it away.
+_wt_nav_workspace_filter() {
+  jq -r --argjson panes "${1:-null}" --argjson worktrees "${2:-null}" '
+    (($panes.result.panes?) // []) as $p
+    | (($worktrees.result.worktrees?) // []) as $w
+    | .result.workspaces[]?
+    | .workspace_id as $id
+    | ([$w[] | select(.open_workspace_id == $id)] | first) as $wt
+    | (
+        .worktree.checkout_path
+        // ([$p[] | select(.workspace_id == $id)]
+            | (map(select(.focused == true)) + .)
+            | first
+            | (.cwd // .foreground_cwd))
+        // ""
+      ) as $path
+    | ["workspace", $path, $id, "[\(.number)] \(.label)", (($wt.branch) // ""), $path]
+    | @tsv
+  ' 2>/dev/null
+  return 0
+}
+
 _wt_nav_workspace_rows() {
-  herdr workspace list 2>/dev/null \
-    | jq -r '
-      .result.workspaces[]?
-      | (.worktree.checkout_path // .cwd // "") as $p
-      | ["workspace", $p, .workspace_id, "[\(.number)] \(.label)", (.worktree.branch // ""), $p]
-      | @tsv
-    ' 2>/dev/null
+  local workspaces panes worktrees
+  workspaces=$(herdr workspace list 2>/dev/null) || return 0
+  [[ -n $workspaces ]] || return 0
+  panes=$(herdr pane list 2>/dev/null) || panes=''
+  worktrees=$(herdr worktree list --json 2>/dev/null) || worktrees=''
+  print -r -- "$workspaces" | _wt_nav_workspace_filter "${panes:-null}" "${worktrees:-null}"
+  return 0
+}
+
+# `herdr worktree list --json` on stdin. A worktree that is open as a workspace
+# is listed all the same and folded away by `_wt_nav_merge`, which keeps this
+# filter independent of which workspaces happen to be open.
+_wt_nav_worktree_filter() {
+  jq -r '
+    .result.worktrees[]?
+    | ["worktree", .path, .path, (.label // (.path | split("/") | last)), (.branch // ""), .path]
+    | @tsv
+  ' 2>/dev/null
   return 0
 }
 
 _wt_nav_worktree_rows() {
-  herdr worktree list --json 2>/dev/null \
-    | jq -r '
-      .result.worktrees[]?
-      | ["worktree", .path, .path, (.label // (.path | split("/") | last)), (.branch // ""), .path]
-      | @tsv
-    ' 2>/dev/null
+  herdr worktree list --json 2>/dev/null | _wt_nav_worktree_filter
   return 0
 }
 
@@ -444,18 +481,29 @@ _wt_nav_format() {
 # Resolve the fold key of every row. git reports paths with the symlinks taken
 # out (/private/tmp rather than /tmp) while the repository glob does not, and
 # two spellings of one checkout would not fold onto a single row.
+# Resolve every fold key to the checkout it belongs to: symlinks taken out,
+# because git reports paths that way and the repository glob does not, and
+# directories mapped onto their work tree root, because a workspace is
+# recognised by the directory its panes sit in and that can be anywhere below
+# the checkout.
+#
 # The fields are cut by hand rather than by `IFS=$'\t' read`: tab counts as IFS
 # whitespace in zsh, so a run of them reads as one delimiter and a workspace
 # with no checkout - an empty key - would lose the field and shift its target
 # into it.
 _wt_nav_resolve() {
-  local line kind key rest
+  local line kind key rest root
   while IFS= read -r line; do
     kind=${line%%$'\t'*}
     rest=${line#*$'\t'}
     key=${rest%%$'\t'*}
     rest=${rest#*$'\t'}
-    printf '%s\t%s\t%s\n' "$kind" "${key:+${key:A}}" "$rest"
+    if [[ -n $key ]]; then
+      key=${key:A}
+      root=$(git -C "$key" rev-parse --path-format=absolute --show-toplevel 2>/dev/null) &&
+        key=${root:A}
+    fi
+    printf '%s\t%s\t%s\n' "$kind" "$key" "$rest"
   done
   return 0
 }
