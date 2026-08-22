@@ -418,16 +418,6 @@ _wt_nav_workspace_filter() {
   return 0
 }
 
-_wt_nav_workspace_rows() {
-  local workspaces panes worktrees
-  workspaces=$(herdr workspace list 2>/dev/null) || return 0
-  [[ -n $workspaces ]] || return 0
-  panes=$(herdr pane list 2>/dev/null) || panes=''
-  worktrees=$(herdr worktree list --json 2>/dev/null) || worktrees=''
-  print -r -- "$workspaces" | _wt_nav_workspace_filter "${panes:-null}" "${worktrees:-null}"
-  return 0
-}
-
 # `herdr worktree list --json` on stdin. A worktree that is open as a workspace
 # is listed all the same and folded away by `_wt_nav_merge`, which keeps this
 # filter independent of which workspaces happen to be open.
@@ -440,8 +430,20 @@ _wt_nav_worktree_filter() {
   return 0
 }
 
-_wt_nav_worktree_rows() {
-  herdr worktree list --json 2>/dev/null | _wt_nav_worktree_filter
+# Everything herdr knows, asked for once: the worktree list answers both the
+# worktree rows and the branch of every workspace made from a worktree, so a
+# listing that fetched it per kind would ask the same question twice.
+_wt_nav_herdr_rows() {
+  local workspaces panes worktrees
+  workspaces=$(herdr workspace list 2>/dev/null) || workspaces=''
+  panes=$(herdr pane list 2>/dev/null) || panes=''
+  worktrees=$(herdr worktree list --json 2>/dev/null) || worktrees=''
+  if [[ -n $workspaces ]]; then
+    print -r -- "$workspaces" | _wt_nav_workspace_filter "${panes:-null}" "${worktrees:-null}"
+  fi
+  if [[ -n $worktrees ]]; then
+    print -r -- "$worktrees" | _wt_nav_worktree_filter
+  fi
   return 0
 }
 
@@ -474,9 +476,6 @@ _wt_nav_format() {
   }'
 }
 
-# Resolve the fold key of every row. git reports paths with the symlinks taken
-# out (/private/tmp rather than /tmp) while the repository glob does not, and
-# two spellings of one checkout would not fold onto a single row.
 # Ask git about the directory behind each row: which checkout it belongs to,
 # and which branch that checkout is on. Both are needed because the answers the
 # rows come from are uneven - herdr reports a branch for a worktree but not for
@@ -563,10 +562,7 @@ _wt_nav_merge() {
 _wt_nav_rows() {
   local herdr_rows=''
   if _wt_use_herdr; then
-    herdr_rows=$(
-      _wt_nav_workspace_rows
-      _wt_nav_worktree_rows
-    ) || herdr_rows=''
+    herdr_rows=$(_wt_nav_herdr_rows) || herdr_rows=''
   fi
   {
     # An unreachable server (or a missing jq) leaves the listing empty; the git
@@ -578,24 +574,6 @@ _wt_nav_rows() {
     fi
     _wt_nav_repo_rows
   } | _wt_nav_resolve | _wt_nav_format | _wt_nav_merge
-}
-
-# Checkout path behind one row, empty when it has none. A worktree carries its
-# path as the target; a workspace has to be asked about, since folding the two
-# kinds together is what put open worktrees behind a workspace row.
-_wt_nav_checkout_path() {
-  local entry=${1:-} target=${1#*:}
-  case ${entry%%:*} in
-    worktree | repo)
-      print -r -- "$target"
-      ;;
-    workspace)
-      _wt_use_herdr || return 0
-      herdr workspace list 2>/dev/null \
-        | jq -r --arg w "$target" \
-          '.result.workspaces[]? | select(.workspace_id == $w) | .worktree.checkout_path // empty' 2>/dev/null
-      ;;
-  esac
 }
 
 # Preview for one row: its `<kind>:<target>` and the checkout the listing
