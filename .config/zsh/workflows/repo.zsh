@@ -1,11 +1,10 @@
-# repo - navigate repositories cloned under $REPO_ROOT. The listing and preview
-# live here because herdr-repo-workspace.sh offers the same list when creating a
-# workspace.
+# repo - navigate repositories cloned under $REPO_ROOT. The listing lives here
+# because `wt` folds the same repositories into its own picker.
 #
-# This file is sourced from .zshrc and from
-# ~/.config/herdr/herdr-repo-workspace.sh, so it must only define functions and
-# must not touch the current shell state. For the same reason it never returns
-# early on a missing dependency: the picker would lose `_repo_pick` silently.
+# This file is sourced from .zshrc and from ~/.config/herdr/herdr-picker.sh, so
+# it must only define functions and must not touch the current shell state. For
+# the same reason it never returns early on a missing dependency: the picker
+# would lose `_repo_rows` silently.
 
 # Own path, so fzf preview commands (which run in a fresh shell without these
 # functions) can re-source it. `%x` expands to the file being sourced.

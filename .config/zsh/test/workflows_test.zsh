@@ -43,24 +43,30 @@ for fn in wt repo dot gst; do
 done
 
 # 3. Calling one reports the missing dependency and returns non-zero.
-# <function> <expected substring in stderr>
+# <expected substring in stderr> <command...>
 expect_guard() {
   # `status` is a read-only alias of `?` in zsh, hence `rc`.
-  local fn=$1 want=$2 err rc
-  err=$("$fn" 2>&1 >/dev/null)
+  local want=$1 err rc
+  shift
+  err=$("$@" 2>&1 >/dev/null)
   rc=$?
-  ((rc != 0)) || fail "$fn: expected a non-zero status"
-  [[ $err == *"$want"* ]] || fail "$fn: expected stderr to contain '$want', got '$err'"
+  ((rc != 0)) || fail "$*: expected a non-zero status"
+  [[ $err == *"$want"* ]] || fail "$*: expected stderr to contain '$want', got '$err'"
 }
 
 cd -- "$scratch" || exit 1
-expect_guard wt 'wt: fzf is not installed'
-expect_guard repo 'repo: fzf is not installed'
-expect_guard gst 'gst: fzf is not installed'
+expect_guard 'wt: fzf is not installed' wt
+expect_guard 'repo: fzf is not installed' repo
+expect_guard 'gst: fzf is not installed' gst
 
-# 4. The repository guard fires outside a work tree instead of the fzf one.
+# 4. `wt` spans every repository, so outside a work tree it is still the picker
+# that is missing; only the subcommands need a repository to act on.
 cd -- "$stub_bin" || exit 1
-expect_guard wt 'wt: not inside a git repository'
+expect_guard 'wt: fzf is not installed' wt
+expect_guard 'wt: not inside a git repository' wt new topic
+expect_guard 'wt: not inside a git repository' wt rm
+expect_guard 'wt: not inside a git repository' wt clean
+expect_guard 'wt: not inside a git repository' wt pr
 
 # 5. Reaching this line at all is the assertion that none of the above exited
 # the shell.

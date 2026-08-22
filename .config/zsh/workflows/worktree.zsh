@@ -1,11 +1,11 @@
-# wt - git worktree helpers. Inside a herdr session a worktree is opened as a
-# workspace (1 branch = 1 directory = 1 workspace); outside herdr it degrades to
-# plain `git worktree` + `cd`.
+# wt - git worktree helpers, and the navigator that picks where to go. Inside a
+# herdr session a worktree is opened as a workspace (1 branch = 1 directory =
+# 1 workspace); outside herdr it degrades to plain `git worktree` + `cd`.
 #
 # This file is sourced from .zshrc and from ~/.config/herdr/herdr-picker.sh, so
 # it must only define functions and must not touch the current shell state. For
 # the same reason it never returns early on a missing dependency: the picker
-# would lose `_wt_preview` and `_wt_remove_external` silently.
+# would lose the `_wt_nav_*` layer and `_wt_remove_external` silently.
 #
 # The `_forge_*` section at the end is the GitHub / Azure DevOps boundary, kept
 # here because `wt pr` is its only caller.
@@ -22,9 +22,11 @@ _wt_in_repo() {
 }
 
 # The herdr worktree/workspace API is served over the session socket, so it is
-# only usable from inside a herdr session.
+# only usable from inside a herdr session. The default value keeps the check
+# usable from the herdr picker, which runs under `set -u` where a bare
+# $HERDR_ENV would abort the script instead of answering the question.
 _wt_use_herdr() {
-  [[ -n $HERDR_ENV ]] && command -v herdr >/dev/null 2>&1
+  [[ -n ${HERDR_ENV:-} ]] && command -v herdr >/dev/null 2>&1
 }
 
 # herdr's `[worktrees] directory` is the single source of truth for placement;
@@ -180,6 +182,36 @@ _wt_preview() {
   git -C "$wt_path" -c color.ui=always status --short --branch 2>/dev/null
   print
   git -C "$wt_path" log --oneline --decorate --color=always -15 2>/dev/null
+}
+
+# Body of the workspace preview: what the workspace holds, then the checkout it
+# was made from.
+_wt_workspace_preview() {
+  local id=$1 workspaces checkout
+  _wt_use_herdr || return 0
+  workspaces=$(herdr workspace list 2>/dev/null) || return 0
+  print -r -- "$workspaces" \
+    | jq -r --arg w "$id" '
+      .result.workspaces[] | select(.workspace_id == $w)
+      | "[\(.number)] \(.label)",
+        "agent: \(.agent_status // "-")   tabs: \(.tab_count)   panes: \(.pane_count)"
+    '
+  print
+  print -r -- 'agents:'
+  herdr agent list 2>/dev/null \
+    | jq -r --arg w "$id" '
+      .result.agents[] | select(.workspace_id == $w)
+      | "  \(.agent_status)  \(.name // .display_agent // .agent // "agent")  \(.terminal_title_stripped // "")"
+    '
+  checkout=$(
+    print -r -- "$workspaces" \
+      | jq -r --arg w "$id" \
+        '.result.workspaces[] | select(.workspace_id == $w) | .worktree.checkout_path // empty'
+  )
+  if [[ -n $checkout ]]; then
+    print
+    _wt_preview "$checkout"
+  fi
 }
 
 # open_workspace_id of the worktree at $1, empty when it is not open in herdr.
@@ -342,23 +374,225 @@ _wt_fzf_available() {
   }
 }
 
-_wt_pick() {
-  local rows
-  rows=$(_wt_rows)
-  [[ -n $rows ]] || return 1
-  print -r -- "$rows" \
-    | fzf --delimiter '\t' --with-nth 1,2 --accept-nth 3 \
-      --prompt 'worktree> ' \
-      --header 'Enter: open' \
-      --preview "source ${_WT_LIB}; _wt_preview {3}"
+# ── navigator ────────────────────────────────────────
+# One list of everywhere there is to go: open workspaces, worktrees that are not
+# open, and the repositories under $REPO_ROOT. Shared with the herdr picker, so
+# that both offer the same rows, preview and jump.
+
+# Rows carry `<kind>:<target>` in their second field because what a jump means
+# differs per kind: a workspace is focused, a worktree is opened, a repository
+# becomes a new workspace.
+#
+# Producers below emit six fields - `<kind> <key> <target> <name> <branch>
+# <path>` - where `key` is the checkout path the row folds onto (empty when the
+# row has none) and `target` is what the jump acts on.
+#
+# Every one of them ends on `return 0`: the herdr picker runs under
+# `set -euo pipefail`, where a source that has nothing to say (no server, no
+# repository) would otherwise take the whole listing down with it.
+
+_wt_nav_workspace_rows() {
+  herdr workspace list 2>/dev/null \
+    | jq -r '
+      .result.workspaces[]?
+      | (.worktree.checkout_path // .cwd // "") as $p
+      | ["workspace", $p, .workspace_id, "[\(.number)] \(.label)", (.worktree.branch // ""), $p]
+      | @tsv
+    ' 2>/dev/null
+  return 0
 }
 
-_wt_go() {
-  local wt_path
+_wt_nav_worktree_rows() {
+  herdr worktree list --json 2>/dev/null \
+    | jq -r '
+      .result.worktrees[]?
+      | ["worktree", .path, .path, (.label // (.path | split("/") | last)), (.branch // ""), .path]
+      | @tsv
+    ' 2>/dev/null
+  return 0
+}
+
+# Fallback listing: the worktrees of the repository the shell is standing in.
+# Nothing wider is reachable without herdr, since only it knows every checkout.
+_wt_nav_git_rows() {
+  git rev-parse --is-inside-work-tree >/dev/null 2>&1 || return 0
+  _wt_entries | awk -F'\t' '{
+    name = $1
+    sub(/.*\//, "", name)
+    printf "worktree\t%s\t%s\t%s\t%s\t%s\n", $1, $1, name, $2, $1
+  }'
+  return 0
+}
+
+# `_repo_rows` lives in repo.zsh. Workflows do not source each other, so the
+# repositories are simply left out when only worktree.zsh has been loaded.
+_wt_nav_repo_rows() {
+  whence _repo_rows >/dev/null 2>&1 || return 0
+  _repo_rows | awk -F'\t' '{ printf "repo\t%s\t%s\t%s\t\t%s\n", $2, $2, $1, $2 }'
+  return 0
+}
+
+# Six fields in, the two `_wt_nav_merge` reads out. The kind is spelled out in
+# the label so that typing `repo` in the picker narrows to repositories.
+_wt_nav_format() {
+  awk -F'\t' '{
+    kind = ($1 == "workspace") ? "ws" : ($1 == "worktree") ? "wt" : $1
+    printf "%s\t%s\t%s\t%-4s %-34s %-26s %s\n", $1, $2, $3, kind, $4, ($5 == "" ? "-" : $5), $6
+  }'
+}
+
+# Resolve the fold key of every row. git reports paths with the symlinks taken
+# out (/private/tmp rather than /tmp) while the repository glob does not, and
+# two spellings of one checkout would not fold onto a single row.
+_wt_nav_resolve() {
+  local kind key rest
+  while IFS=$'\t' read -r kind key rest; do
+    printf '%s\t%s\t%s\n' "$kind" "${key:+${key:A}}" "$rest"
+  done
+  return 0
+}
+
+# Fold the sources onto one row per checkout: a worktree that is open as a
+# workspace is a workspace row, and a repository whose checkout is already
+# listed is dropped. Rows keep the order workspaces, worktrees, repositories.
+# Pure text in, pure text out, so .config/zsh/test/worktree_test.zsh can pin it.
+_wt_nav_merge() {
+  awk -F'\t' '
+    {
+      n++
+      kind[n] = $1
+      key[n] = $2
+      target[n] = $3
+      label[n] = $4
+      rank[n] = ($1 == "workspace") ? 1 : ($1 == "worktree") ? 2 : 3
+      if ($1 == "" || $3 == "") next
+      # Rows without a checkout have nothing to fold onto, so each keeps a key
+      # of its own. A tab cannot occur in a path, which makes it a safe prefix.
+      k = ($2 == "") ? "\t" n : $2
+      if (!(k in win) || rank[n] < rank[win[k]]) win[k] = n
+    }
+    END {
+      for (r = 1; r <= 3; r++) {
+        for (i = 1; i <= n; i++) {
+          if (rank[i] != r) continue
+          k = (key[i] == "") ? "\t" i : key[i]
+          if (win[k] == i) printf "%s\t%s:%s\n", label[i], kind[i], target[i]
+        }
+      }
+    }
+  '
+}
+
+_wt_nav_rows() {
+  local herdr_rows=''
+  if _wt_use_herdr; then
+    herdr_rows=$(
+      _wt_nav_workspace_rows
+      _wt_nav_worktree_rows
+    ) || herdr_rows=''
+  fi
+  {
+    # An unreachable server (or a missing jq) leaves the listing empty; the git
+    # view is worth more here than an empty picker.
+    if [[ -n $herdr_rows ]]; then
+      print -r -- "$herdr_rows"
+    else
+      _wt_nav_git_rows
+    fi
+    _wt_nav_repo_rows
+  } | _wt_nav_format | _wt_nav_resolve | _wt_nav_merge
+}
+
+# Checkout path behind one row, empty when it has none. A worktree carries its
+# path as the target; a workspace has to be asked about, since folding the two
+# kinds together is what put open worktrees behind a workspace row.
+_wt_nav_checkout_path() {
+  local entry=${1:-} target=${1#*:}
+  case ${entry%%:*} in
+    worktree | repo)
+      print -r -- "$target"
+      ;;
+    workspace)
+      _wt_use_herdr || return 0
+      herdr workspace list 2>/dev/null \
+        | jq -r --arg w "$target" \
+          '.result.workspaces[]? | select(.workspace_id == $w) | .worktree.checkout_path // empty' 2>/dev/null
+      ;;
+  esac
+}
+
+# Preview for one `<kind>:<target>` row.
+_wt_nav_preview() {
+  local entry=${1:-}
+  [[ -n $entry ]] || return 0
+  case ${entry%%:*} in
+    workspace)
+      _wt_workspace_preview "${entry#*:}"
+      ;;
+    worktree | repo)
+      _wt_preview "${entry#*:}"
+      ;;
+  esac
+}
+
+# Make a repository the cwd: a workspace of its own inside herdr, a cd outside.
+# Reached only for repositories that are not open yet - an open one is folded
+# into its workspace row by _wt_nav_merge.
+_wt_nav_open_dir() {
+  local dir=$1
+  [[ -d $dir ]] || {
+    print "wt: no such directory: $dir" >&2
+    return 1
+  }
+  if _wt_use_herdr; then
+    # --focus is not the default (herdr 0.8.2).
+    herdr workspace create --cwd "$dir" --label "${dir:t}" --focus >/dev/null 2>&1 && return 0
+    print 'wt: herdr could not create the workspace; falling back to cd' >&2
+  fi
+  cd -- "$dir"
+}
+
+_wt_nav_open() {
+  local entry=${1:-} target
+  [[ -n $entry ]] || return 1
+  target=${entry#*:}
+  case ${entry%%:*} in
+    workspace)
+      _wt_use_herdr || {
+        print 'wt: workspaces can only be focused inside herdr' >&2
+        return 1
+      }
+      herdr workspace focus "$target" >/dev/null
+      ;;
+    worktree)
+      _wt_open_path "$target"
+      ;;
+    repo)
+      _wt_nav_open_dir "$target"
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
+_wt_nav_go() {
+  local rows entry
   _wt_fzf_available || return 1
-  wt_path=$(_wt_pick) || return 1
-  [[ -n $wt_path ]] || return 1
-  _wt_open_path "$wt_path"
+  rows=$(_wt_nav_rows)
+  [[ -n $rows ]] || {
+    print 'wt: nothing to open' >&2
+    return 1
+  }
+  entry=$(
+    print -r -- "$rows" \
+      | fzf --delimiter '\t' --with-nth 1 --accept-nth 2 \
+        --prompt 'go> ' \
+        --header 'Enter: open' \
+        --preview "source ${_WT_LIB}; _wt_nav_preview {2}"
+  ) || return 1
+  [[ -n $entry ]] || return 1
+  _wt_nav_open "$entry"
 }
 
 _wt_new() {
@@ -567,7 +801,7 @@ _wt_clean() {
   _wt_remove_targets "${targets[@]}"
 }
 
-# wt              : pick a worktree and open it (herdr workspace, or cd)
+# wt              : pick a workspace, worktree or repository and go there
 # wt new <branch> [base] : create a branch + worktree and open it. Without a
 #                          base, an existing origin/<branch> is tracked instead
 #                          of branching off the default integration branch.
@@ -575,27 +809,32 @@ _wt_clean() {
 #                          Uses gh, or az repos when origin is on Azure DevOps.
 # wt rm                  : pick worktrees to remove
 # wt clean               : remove merged / upstream-gone worktrees
+#
+# The bare form spans every repository, so only the subcommands - which act on
+# the repository they are called from - require standing in one.
 wt() {
-  _wt_in_repo || return 1
-
   case ${1:-} in
     '')
-      _wt_go
+      _wt_nav_go
       ;;
     new)
       shift
+      _wt_in_repo || return 1
       _wt_new "$@"
       ;;
     pr)
       shift
+      _wt_in_repo || return 1
       _wt_pr "${1:-}"
       ;;
     rm)
       shift
+      _wt_in_repo || return 1
       _wt_rm
       ;;
     clean)
       shift
+      _wt_in_repo || return 1
       _wt_clean
       ;;
     -h | --help | help)
