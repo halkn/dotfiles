@@ -1,3 +1,4 @@
 theme = "tokyo-night"
 navigator_position = "top"
 auto_open = false
+default_scope = "branch"
