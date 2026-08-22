@@ -107,6 +107,17 @@ check 'unresolvable keys are kept' \
   $'wt-a\tworktree:/nope/a' \
   "$(rows $'worktree\t/nope/a\t/nope/a\twt-a' | _wt_nav_resolve | _wt_nav_merge)"
 
+# A workspace with no checkout has an empty key, and tab is IFS whitespace in
+# zsh: splitting on it would fold the empty field away and shift the target
+# into it, which is what dropped such workspaces from the picker.
+check 'an empty key survives resolution' \
+  $'ws-a\tworkspace:1' \
+  "$(rows $'workspace\t\t1\tws-a' | _wt_nav_resolve | _wt_nav_merge)"
+
+check 'an empty trailing field survives resolution' \
+  $'worktree\t/nope/a\twt-a\t' \
+  "$(rows $'worktree\t/nope/a\twt-a\t' | _wt_nav_resolve)"
+
 if ((failures > 0)); then
   print -u2 "worktree_test: $failures assertion(s) failed"
   exit 1

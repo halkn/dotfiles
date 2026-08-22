@@ -444,9 +444,17 @@ _wt_nav_format() {
 # Resolve the fold key of every row. git reports paths with the symlinks taken
 # out (/private/tmp rather than /tmp) while the repository glob does not, and
 # two spellings of one checkout would not fold onto a single row.
+# The fields are cut by hand rather than by `IFS=$'\t' read`: tab counts as IFS
+# whitespace in zsh, so a run of them reads as one delimiter and a workspace
+# with no checkout - an empty key - would lose the field and shift its target
+# into it.
 _wt_nav_resolve() {
-  local kind key rest
-  while IFS=$'\t' read -r kind key rest; do
+  local line kind key rest
+  while IFS= read -r line; do
+    kind=${line%%$'\t'*}
+    rest=${line#*$'\t'}
+    key=${rest%%$'\t'*}
+    rest=${rest#*$'\t'}
     printf '%s\t%s\t%s\n' "$kind" "${key:+${key:A}}" "$rest"
   done
   return 0
