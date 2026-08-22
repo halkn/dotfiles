@@ -454,29 +454,40 @@ _wt_nav_resolve() {
 
 # Fold the sources onto one row per checkout: a worktree that is open as a
 # workspace is a workspace row, and a repository whose checkout is already
-# listed is dropped. Rows keep the order workspaces, worktrees, repositories.
-# Pure text in, pure text out, so .config/zsh/test/worktree_test.zsh can pin it.
+# listed is dropped. Workspaces are never folded into each other - two of them
+# on one repository are two places to go, which is what parallel work looks
+# like; only the worktree and repository rows behind them are removed.
+# Rows keep the order workspaces, worktrees, repositories. Pure text in, pure
+# text out, so .config/zsh/test/worktree_test.zsh can pin it down.
 _wt_nav_merge() {
   awk -F'\t' '
     {
+      if ($1 == "" || $3 == "") next
       n++
       kind[n] = $1
       key[n] = $2
       target[n] = $3
       label[n] = $4
       rank[n] = ($1 == "workspace") ? 1 : ($1 == "worktree") ? 2 : 3
-      if ($1 == "" || $3 == "") next
-      # Rows without a checkout have nothing to fold onto, so each keeps a key
-      # of its own. A tab cannot occur in a path, which makes it a safe prefix.
-      k = ($2 == "") ? "\t" n : $2
-      if (!(k in win) || rank[n] < rank[win[k]]) win[k] = n
+      if ($2 == "") next
+      # The kind that claims a checkout decides which rows behind it disappear,
+      # and the claim is by kind rather than by input order so that the listing
+      # does not change with the order the sources answered in.
+      if (!(($2) in claimed) || rank[n] < claimed[$2]) claimed[$2] = rank[n]
+      if (!((rank[n] SUBSEP $2) in first)) first[rank[n] SUBSEP $2] = n
     }
     END {
       for (r = 1; r <= 3; r++) {
         for (i = 1; i <= n; i++) {
           if (rank[i] != r) continue
-          k = (key[i] == "") ? "\t" i : key[i]
-          if (win[k] == i) printf "%s\t%s:%s\n", label[i], kind[i], target[i]
+          # A checkout-less row has nothing to fold onto, and a workspace is
+          # never folded away; everything else survives only as the first row
+          # of the kind that claimed its checkout.
+          if (key[i] != "" && r != 1) {
+            if (claimed[key[i]] != r) continue
+            if (first[r SUBSEP key[i]] != i) continue
+          }
+          printf "%s\t%s:%s\n", label[i], kind[i], target[i]
         }
       }
     }

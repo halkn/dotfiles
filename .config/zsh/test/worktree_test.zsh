@@ -59,6 +59,16 @@ check 'ordered by kind, stable within a kind' \
     $'workspace\t/w/a\t1\tws-a' \
     $'workspace\t/w/b\t2\tws-b' | _wt_nav_merge)"
 
+# Two workspaces on one checkout are two places to go - a second workspace on
+# the same repository is exactly what parallel work looks like - so folding only
+# ever removes the worktree and repository rows behind them.
+check 'workspaces on the same checkout are all kept' \
+  $'ws-a\tworkspace:1\nws-b\tworkspace:2' \
+  "$(rows \
+    $'workspace\t/w/a\t1\tws-a' \
+    $'workspace\t/w/a\t2\tws-b' \
+    $'repo\t/w/a\t/w/a\trepo-a' | _wt_nav_merge)"
+
 # A workspace with no checkout (created from an arbitrary cwd, or none at all)
 # has nothing to fold onto, so every one of them survives.
 check 'path-less workspaces are all kept' \
