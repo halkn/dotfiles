@@ -13,11 +13,7 @@ new_cwd = "follow"
 
 # ── Theme ────────────────────────────────────────────
 [theme]
-name = "kanagawa"
-
-[theme.custom]
-# The default is too faint to separate spaces from agents in the sidebar.
-surface_dim = "#54546d"
+name = "terminal"
 
 # ── UI ───────────────────────────────────────────────
 [ui]
