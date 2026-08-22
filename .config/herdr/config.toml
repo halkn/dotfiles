@@ -50,9 +50,9 @@ resume_agents_on_restore = true
 # ── Keybindings ──────────────────────────────────────
 [keys]
 prefix = "ctrl+space"
-# alt+w is given to the popup below, which picks a repository first; the built-in that
-# creates a workspace straight from the current cwd moves to alt+shift+w.
-new_workspace = "alt+shift+w"
+# The default is the chord prefix+shift+n (herdr 0.8.2); alt+w keeps "a workspace on
+# the current directory" one key away, next to alt+s which goes to an existing one.
+new_workspace = "alt+w"
 new_worktree = "alt+g"
 split_vertical = "alt+;"
 split_horizontal = "alt+minus"
@@ -87,17 +87,10 @@ type = "shell"
 command = "herdr pane split --direction right --ratio 0.3 --focus"
 
 [[keys.command]]
-key = "alt+w"
-type = "popup"
-command = "~/.config/herdr/herdr-repo-workspace.sh"
-description = "new workspace from a repository"
-width = "90%"
-height = "90%"
-
-[[keys.command]]
 key = "alt+s"
 type = "popup"
 command = "~/.config/herdr/herdr-picker.sh"
+description = "go to a workspace, worktree, repository or agent"
 width = "90%"
 height = "90%"
 
