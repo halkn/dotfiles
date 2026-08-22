@@ -115,10 +115,12 @@ Machine-local shell settings go in the gitignored `.config/zsh/.zshenv.local`
 
 Parallel work (reviewing several pull requests while developing) uses one
 worktree per branch, and inside [herdr](https://herdr.dev) each worktree is a
-workspace. The `wt` function in `.config/zsh/workflows/worktree.zsh` is the entry point:
+workspace. The `wt` function in `.config/zsh/workflows/worktree.zsh` is the entry point.
+Bare `wt` spans every repository; the subcommands act on the repository you are
+standing in:
 
 ```sh
-wt                     # pick a worktree and open it (focus its workspace, or cd)
+wt                     # pick where to go: workspace, worktree or repository
 wt new <branch> [base] # create a branch + worktree and open it
 wt pr [<number>]       # pick a pull request and open its head as a worktree
 wt rm                  # pick worktrees to remove
@@ -167,11 +169,23 @@ spellings of one repository folded onto a single directory (`repo.zsh` holds the
 normalization rules). The listing is a depth-bounded glob over that layout, so a
 repository placed at another depth is not picked up.
 
-The same listing backs herdr's `alt+w`, which picks a repository and creates a
-workspace with it as the cwd in one step; `alt+shift+w` is the plain "new
-workspace in the current directory".
+The same listing is folded into the navigator described below, which is where a
+repository becomes a workspace of its own.
 
-Outside a herdr session everything degrades to plain `git worktree` plus `cd`.
+### One list of places
+
+Open workspaces, worktrees and repositories are all somewhere to go, and the
+same checkout used to appear in several lists at once. `wt` (bare) and herdr's
+`alt+s` popup share one listing instead, built by `_wt_nav_rows` in
+`worktree.zsh` and deduplicated by checkout path: an open workspace hides the
+worktree it was made from, and a worktree hides its repository row. Going to a
+workspace focuses it, to a worktree opens it, and to a repository creates a
+workspace with it as the cwd (`cd` outside herdr). `alt+s` keeps agents on a
+second `Tab` mode, and removes the worktree under the cursor with `ctrl-x`.
+
+Outside a herdr session everything degrades to plain `git worktree` plus `cd`,
+and the listing narrows to the current repository plus every repository under
+`$REPO_ROOT` — only herdr knows about checkouts beyond those.
 
 ## Tool Manager
 

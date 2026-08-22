@@ -22,7 +22,8 @@ paths:
 
 - `.zshrc` が glob で source するので登録は不要。読み込み順に依存させない（相互 source をしない）
 - **ファイル冒頭で `return 0` しない。** function は常に定義し、依存判定は各エントリポイントの内部で行って `<コマンド名>: <tool> is not installed` を stderr に出し非 0 で返す。file-level guard だと function 自体が消えて `command not found` になり、herdr から単独 source されるファイルでは沈黙して壊れる
-- `workflows/worktree.zsh`（`wt`）は `.config/herdr/herdr-picker.sh`、`workflows/repo.zsh`（`repo`）は `.config/herdr/herdr-repo-workspace.sh` から絶対パスで source される。worktree の一覧・削除、リポジトリの一覧・preview のロジックはここに集約し、呼び出し側で再実装しない。パスが外部との契約なので、移動・改名は herdr 側の参照と同時に直す
+- `.config/herdr/herdr-picker.sh` は `workflows/repo.zsh` と `workflows/worktree.zsh` を絶対パスで source する。移動先の一覧（`_wt_nav_rows`）・preview・移動・削除のロジックはここに集約し、picker 側で再実装しない。picker が持つのは agent の一覧とモード切替だけ。パスが外部との契約なので、移動・改名は herdr 側の参照と同時に直す
+- workspace / worktree / repo は 1 本の一覧に畳む（`_wt_nav_merge` がチェックアウトパスで重複排除する）。新しい移動先を足すときは `<kind>:<target>` のタグ付き行を出す producer を `worktree.zsh` に足し、`_wt_nav_open` に分岐を 1 つ加える
 - forge（GitHub / Azure DevOps）の差異は `worktree.zsh` 末尾の `_forge_*` 節に集約する。`wt` 本体と `repo` は `gh` / `az` の癖を持たない。`repo` の URL 正規化は例外で `repo.zsh` に残す（origin ではなく引数から host を決めるため入口が違う）
 - `.claude/worktrees/` 配下の lifecycle は Claude Code が持つ。`wt` の一覧には出しつつ、`wt clean` の削除対象からは外す
 - OS 固有処理は必要箇所に局所化する。workflow に macOS / WSL の分岐を持ち込まない
