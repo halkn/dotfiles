@@ -24,7 +24,7 @@ if [[ ${1:-} == --preview ]]; then
       herdr agent read "${entry#*:}" --source recent --lines "${FZF_PREVIEW_LINES:-40}" --format ansi 2>/dev/null
       ;;
     *)
-      whence _wt_nav_preview >/dev/null && _wt_nav_preview "$entry"
+      whence _wt_nav_preview >/dev/null && _wt_nav_preview "$entry" "${3:-}"
       ;;
   esac
   exit 0
@@ -127,7 +127,7 @@ selected=$(
       --height=100% \
       --style=full --border-label=" herdr " --prompt="$(prompt_for_mode "$default_mode")" \
       --header 'Tab: switch places / agents | places: ctrl-x remove a worktree' \
-      --preview "$self --preview {2}" \
+      --preview "$self --preview {2} {3}" \
       --preview-window 'down:60%:wrap' \
       --bind "tab:transform:$self --cycle" \
       --bind "ctrl-x:transform:$self --remove {2}"

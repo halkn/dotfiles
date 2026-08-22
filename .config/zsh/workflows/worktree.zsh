@@ -185,12 +185,13 @@ _wt_preview() {
 }
 
 # Body of the workspace preview: what the workspace holds, then the checkout it
-# was made from.
+# is standing on. The checkout comes from the row rather than from herdr,
+# because a workspace opened on a plain directory does not report one and the
+# listing has already worked out where it is.
 _wt_workspace_preview() {
-  local id=$1 workspaces checkout
+  local id=$1 checkout=${2:-}
   _wt_use_herdr || return 0
-  workspaces=$(herdr workspace list 2>/dev/null) || return 0
-  print -r -- "$workspaces" \
+  herdr workspace list 2>/dev/null \
     | jq -r --arg w "$id" '
       .result.workspaces[] | select(.workspace_id == $w)
       | "[\(.number)] \(.label)",
@@ -203,11 +204,6 @@ _wt_workspace_preview() {
       .result.agents[] | select(.workspace_id == $w)
       | "  \(.agent_status)  \(.name // .display_agent // .agent // "agent")  \(.terminal_title_stripped // "")"
     '
-  checkout=$(
-    print -r -- "$workspaces" \
-      | jq -r --arg w "$id" \
-        '.result.workspaces[] | select(.workspace_id == $w) | .worktree.checkout_path // empty'
-  )
   if [[ -n $checkout ]]; then
     print
     _wt_preview "$checkout"
@@ -481,29 +477,41 @@ _wt_nav_format() {
 # Resolve the fold key of every row. git reports paths with the symlinks taken
 # out (/private/tmp rather than /tmp) while the repository glob does not, and
 # two spellings of one checkout would not fold onto a single row.
-# Resolve every fold key to the checkout it belongs to: symlinks taken out,
-# because git reports paths that way and the repository glob does not, and
-# directories mapped onto their work tree root, because a workspace is
-# recognised by the directory its panes sit in and that can be anywhere below
-# the checkout.
+# Ask git about the directory behind each row: which checkout it belongs to,
+# and which branch that checkout is on. Both are needed because the answers the
+# rows come from are uneven - herdr reports a branch for a worktree but not for
+# a workspace, a repository row has neither, and a workspace is recognised by
+# the directory its panes sit in, which can be anywhere below the checkout.
+# Filling them in here is what makes every row read the same.
 #
-# The fields are cut by hand rather than by `IFS=$'\t' read`: tab counts as IFS
-# whitespace in zsh, so a run of them reads as one delimiter and a workspace
-# with no checkout - an empty key - would lose the field and shift its target
-# into it.
+# Symlinks are taken out on the way, since git reports paths that way and the
+# repository glob does not, and two spellings of one checkout would not fold.
+#
+# The fields are split with `(@ps:\t:)` rather than by `IFS=$'\t' read`: tab
+# counts as IFS whitespace in zsh, so a run of them reads as one delimiter and a
+# workspace with no checkout - an empty key - would lose the field and shift its
+# target into it.
 _wt_nav_resolve() {
-  local line kind key rest root
+  local line kind key target name branch wt_path root
+  local -a f
   while IFS= read -r line; do
-    kind=${line%%$'\t'*}
-    rest=${line#*$'\t'}
-    key=${rest%%$'\t'*}
-    rest=${rest#*$'\t'}
+    f=("${(@ps:\t:)line}")
+    kind=${f[1]-} key=${f[2]-} target=${f[3]-}
+    name=${f[4]-} branch=${f[5]-} wt_path=${f[6]-}
     if [[ -n $key ]]; then
       key=${key:A}
-      root=$(git -C "$key" rev-parse --path-format=absolute --show-toplevel 2>/dev/null) &&
+      if root=$(git -C "$key" rev-parse --path-format=absolute --show-toplevel 2>/dev/null); then
         key=${root:A}
+        wt_path=$key
+        # `branch --show-current` rather than `rev-parse --abbrev-ref HEAD`:
+        # the latter fails on a repository whose first commit is still missing.
+        if [[ -z $branch ]]; then
+          branch=$(git -C "$key" branch --show-current 2>/dev/null)
+          branch=${branch:-(detached)}
+        fi
+      fi
     fi
-    printf '%s\t%s\t%s\n' "$kind" "$key" "$rest"
+    printf '%s\t%s\t%s\t%s\t%s\t%s\n' "$kind" "$key" "$target" "$name" "$branch" "$wt_path"
   done
   return 0
 }
@@ -543,7 +551,9 @@ _wt_nav_merge() {
             if (claimed[key[i]] != r) continue
             if (first[r SUBSEP key[i]] != i) continue
           }
-          printf "%s\t%s:%s\n", label[i], kind[i], target[i]
+          # The checkout travels with the row so that the preview does not have
+          # to ask herdr a second time what a workspace is standing on.
+          printf "%s\t%s:%s\t%s\n", label[i], kind[i], target[i], key[i]
         }
       }
     }
@@ -567,7 +577,7 @@ _wt_nav_rows() {
       _wt_nav_git_rows
     fi
     _wt_nav_repo_rows
-  } | _wt_nav_format | _wt_nav_resolve | _wt_nav_merge
+  } | _wt_nav_resolve | _wt_nav_format | _wt_nav_merge
 }
 
 # Checkout path behind one row, empty when it has none. A worktree carries its
@@ -588,16 +598,18 @@ _wt_nav_checkout_path() {
   esac
 }
 
-# Preview for one `<kind>:<target>` row.
+# Preview for one row: its `<kind>:<target>` and the checkout the listing
+# resolved for it. Every row that has a checkout shows the same git body, so
+# that the window does not change shape between kinds.
 _wt_nav_preview() {
-  local entry=${1:-}
+  local entry=${1:-} checkout=${2:-}
   [[ -n $entry ]] || return 0
   case ${entry%%:*} in
     workspace)
-      _wt_workspace_preview "${entry#*:}"
+      _wt_workspace_preview "${entry#*:}" "$checkout"
       ;;
     worktree | repo)
-      _wt_preview "${entry#*:}"
+      _wt_preview "${checkout:-${entry#*:}}"
       ;;
   esac
 }
@@ -656,7 +668,7 @@ _wt_nav_go() {
       | fzf --delimiter '\t' --with-nth 1 --accept-nth 2 \
         --prompt 'go> ' \
         --header 'Enter: open' \
-        --preview "source ${_WT_LIB}; _wt_nav_preview {2}"
+        --preview "source ${_WT_LIB}; _wt_nav_preview {2} {3}"
   ) || return 1
   [[ -n $entry ]] || return 1
   _wt_nav_open "$entry"
