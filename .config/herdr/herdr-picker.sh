@@ -90,16 +90,16 @@ fi
 # work. The key is live in every mode, so other rows are ignored here.
 if [[ ${1:-} == --remove ]]; then
   entry=${2:-}
-  # The checkout comes from the row, which is also what lets ctrl-x reach an
-  # open worktree hiding behind its workspace row. A repository row is a main
-  # checkout, which `wt` refuses to remove anyway, so it is dropped here rather
-  # than answered with an error.
-  target=${3:-}
-  [[ -n $entry && -n $target && $entry != repo:* ]] || exit 0
+  [[ -n $entry ]] || exit 0
   if ! whence _wt_remove_external >/dev/null; then
     printf 'change-header(worktree.zsh not found)\n'
     exit 0
   fi
+  # `wt` decides what a row allows to be removed: a worktree, or the checkout a
+  # workspace was made from. Rows with nothing removable behind them - a
+  # repository, a workspace on a plain directory - are left alone silently.
+  target=$(_wt_nav_removable_path "$entry")
+  [[ -n $target ]] || exit 0
   if message=$(_wt_remove_external "$target" 0 2>&1); then
     printf 'reload(%s --list place)+change-header(removed %s)\n' "$self" "${target:t}"
   else
@@ -130,7 +130,7 @@ selected=$(
       --preview "$self --preview {2} {3}" \
       --preview-window 'down:60%:wrap' \
       --bind "tab:transform:$self --cycle" \
-      --bind "ctrl-x:transform:$self --remove {2} {3}"
+      --bind "ctrl-x:transform:$self --remove {2}"
 ) || exit 0
 [[ -n $selected ]] || exit 0
 

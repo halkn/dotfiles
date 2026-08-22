@@ -182,32 +182,47 @@ _wt_preview() {
   git -C "$wt_path" -c color.ui=always status --short --branch 2>/dev/null
   print
   git -C "$wt_path" log --oneline --decorate --color=always -15 2>/dev/null
+  # A directory git refuses (no repository yet, or a broken checkout) must not
+  # end the preview process, which runs under `set -e` in the herdr picker.
+  return 0
 }
 
 # Body of the workspace preview: what the workspace holds, then the checkout it
 # is standing on. The checkout comes from the row rather than from herdr,
 # because a workspace opened on a plain directory does not report one and the
 # listing has already worked out where it is.
+# Each answer is captured before it is printed rather than piped straight to the
+# screen: the picker runs the preview under `set -euo pipefail`, where one
+# unreachable call would end the process and leave the whole pane blank instead
+# of only the section it could not fill.
 _wt_workspace_preview() {
-  local id=$1 checkout=${2:-}
-  _wt_use_herdr || return 0
-  herdr workspace list 2>/dev/null \
-    | jq -r --arg w "$id" '
-      .result.workspaces[] | select(.workspace_id == $w)
-      | "[\(.number)] \(.label)",
-        "agent: \(.agent_status // "-")   tabs: \(.tab_count)   panes: \(.pane_count)"
-    '
-  print
-  print -r -- 'agents:'
-  herdr agent list 2>/dev/null \
-    | jq -r --arg w "$id" '
-      .result.agents[] | select(.workspace_id == $w)
-      | "  \(.agent_status)  \(.name // .display_agent // .agent // "agent")  \(.terminal_title_stripped // "")"
-    '
+  local id=$1 checkout=${2:-} head agents
+  if _wt_use_herdr; then
+    head=$(
+      herdr workspace list 2>/dev/null \
+        | jq -r --arg w "$id" '
+                .result.workspaces[] | select(.workspace_id == $w)
+                | "[\(.number)] \(.label)",
+                  "agent: \(.agent_status // "-")   tabs: \(.tab_count)   panes: \(.pane_count)"
+              ' 2>/dev/null
+    ) || head=''
+    agents=$(
+      herdr agent list 2>/dev/null \
+        | jq -r --arg w "$id" '
+                .result.agents[] | select(.workspace_id == $w)
+                | "  \(.agent_status)  \(.name // .display_agent // .agent // "agent")  \(.terminal_title_stripped // "")"
+              ' 2>/dev/null
+    ) || agents=''
+    print -r -- "${head:-$id}"
+    print
+    print -r -- 'agents:'
+    print -r -- "${agents:-  -}"
+  fi
   if [[ -n $checkout ]]; then
     print
     _wt_preview "$checkout"
   fi
+  return 0
 }
 
 # open_workspace_id of the worktree at $1, empty when it is not open in herdr.
@@ -447,8 +462,9 @@ _wt_nav_herdr_rows() {
   return 0
 }
 
-# Fallback listing: the worktrees of the repository the shell is standing in.
-# Nothing wider is reachable without herdr, since only it knows every checkout.
+# The worktrees of the repository the shell is standing in, whether or not
+# herdr knows about them. Nothing wider is reachable from git alone, since only
+# herdr knows which checkouts exist outside this repository.
 _wt_nav_git_rows() {
   git rev-parse --is-inside-work-tree >/dev/null 2>&1 || return 0
   _wt_entries | awk -F'\t' '{
@@ -476,6 +492,26 @@ _wt_nav_format() {
   }'
 }
 
+# Branch a .git/HEAD file points at, or `(detached)` when it holds a commit
+# instead of a ref. Reading the file is only correct for a main checkout, where
+# .git is a directory; a linked worktree keeps its HEAD elsewhere.
+_wt_head_branch() {
+  local head
+  # Checked before opening: zsh reports a failed redirection itself, and the
+  # picker would show that on the row instead of a branch.
+  [[ -r $1 ]] || return 0
+  read -r head <"$1" || return 0
+  case $head in
+    'ref: refs/heads/'*)
+      print -r -- "${head#ref: refs/heads/}"
+      ;;
+    *)
+      print -r -- '(detached)'
+      ;;
+  esac
+  return 0
+}
+
 # Ask git about the directory behind each row: which checkout it belongs to,
 # and which branch that checkout is on. Both are needed because the answers the
 # rows come from are uneven - herdr reports a branch for a worktree but not for
@@ -499,7 +535,13 @@ _wt_nav_resolve() {
     name=${f[4]-} branch=${f[5]-} wt_path=${f[6]-}
     if [[ -n $key ]]; then
       key=${key:A}
-      if root=$(git -C "$key" rev-parse --path-format=absolute --show-toplevel 2>/dev/null); then
+      if [[ -d $key/.git ]]; then
+        # A directory that holds a .git directory is a work tree root already,
+        # and its HEAD is a file. Reading it is what keeps a listing of dozens
+        # of repositories from paying a git process or two for every row.
+        wt_path=$key
+        [[ -n $branch ]] || branch=$(_wt_head_branch "$key/.git/HEAD")
+      elif root=$(git -C "$key" rev-parse --path-format=absolute --show-toplevel 2>/dev/null); then
         key=${root:A}
         wt_path=$key
         # `branch --show-current` rather than `rev-parse --abbrev-ref HEAD`:
@@ -565,15 +607,40 @@ _wt_nav_rows() {
     herdr_rows=$(_wt_nav_herdr_rows) || herdr_rows=''
   fi
   {
-    # An unreachable server (or a missing jq) leaves the listing empty; the git
-    # view is worth more here than an empty picker.
+    # An unreachable server (or a missing jq) leaves the herdr rows empty; the
+    # git view alone is worth more here than an empty picker.
     if [[ -n $herdr_rows ]]; then
       print -r -- "$herdr_rows"
-    else
-      _wt_nav_git_rows
     fi
+    # Always asked as well: herdr lists the worktrees it manages, so a checkout
+    # it never opened - one under .claude/worktrees, or one the `git worktree
+    # add` fallback created - is only reachable through git. The overlap folds
+    # away in _wt_nav_merge, which keeps herdr's own spelling of the path.
+    _wt_nav_git_rows
     _wt_nav_repo_rows
   } | _wt_nav_resolve | _wt_nav_format | _wt_nav_merge
+}
+
+# The checkout that may be removed for one row, empty when there is none.
+#
+# Deliberately not the checkout the listing resolved for the row: that one is
+# where the workspace's focused pane happens to be standing, which is a live
+# value and can be a checkout of another repository entirely. Removal is
+# destructive, so it asks herdr what the workspace was made from instead.
+_wt_nav_removable_path() {
+  local entry=${1:-}
+  case ${entry%%:*} in
+    worktree)
+      print -r -- "${entry#*:}"
+      ;;
+    workspace)
+      _wt_use_herdr || return 0
+      herdr workspace list 2>/dev/null \
+        | jq -r --arg w "${entry#*:}" \
+          '.result.workspaces[]? | select(.workspace_id == $w) | .worktree.checkout_path // empty' 2>/dev/null
+      ;;
+  esac
+  return 0
 }
 
 # Preview for one row: its `<kind>:<target>` and the checkout the listing
@@ -593,8 +660,10 @@ _wt_nav_preview() {
 }
 
 # Make a repository the cwd: a workspace of its own inside herdr, a cd outside.
-# Reached only for repositories that are not open yet - an open one is folded
-# into its workspace row by _wt_nav_merge.
+# A repository that is already open is normally folded into its workspace row,
+# but that fold rests on where the workspace's panes are standing, so a second
+# workspace on one repository stays possible - and is a legitimate thing to
+# want, which is why this does not try to prevent it.
 _wt_nav_open_dir() {
   local dir=$1
   [[ -d $dir ]] || {

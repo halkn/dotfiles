@@ -86,6 +86,15 @@ check 'checkout-less workspaces are all kept' \
 
 check 'empty input' '' "$(printf '' | _wt_nav_merge)"
 
+# herdr and git both answer for a worktree herdr has open, and the listing asks
+# both so that a checkout herdr does not manage still shows up. The row that
+# survives is herdr's, whose target it can act on.
+check 'the same worktree from both sources folds onto herdr' \
+  $'wt-herdr\tworktree:/w/a\t/w/a' \
+  "$(rows \
+    $'worktree\t/w/a\t/w/a\twt-herdr' \
+    $'worktree\t/w/a\t/w/a\twt-git' | _wt_nav_merge)"
+
 # A row without a target cannot be opened, so it is dropped instead of being
 # offered as an unusable choice.
 check 'rows without a target are dropped' \
@@ -112,6 +121,14 @@ git -C "$scratch/real" -c user.email=t@e -c user.name=t commit --quiet --allow-e
 check 'a directory below a checkout resolves to the checkout' \
   "$(rows "workspace	${scratch:A}/real	1	ws-a	topic	${scratch:A}/real")" \
   "$(rows "workspace	$scratch/link/sub	1	ws-a		" | _wt_nav_resolve)"
+
+# A main checkout answers both questions without a git process: it is a work
+# tree root by definition, and its branch is the ref in .git/HEAD.
+check '_wt_head_branch reads a ref' topic "$(_wt_head_branch "$scratch/real/.git/HEAD")"
+check '_wt_head_branch on a detached HEAD' '(detached)' \
+  "$(print -r -- 'aa53f4c69f0b3e0dcb2a4e21ba4dfd9b6d51e30f' >"$scratch/HEAD-detached" &&
+    _wt_head_branch "$scratch/HEAD-detached")"
+check '_wt_head_branch on a missing file' '' "$(_wt_head_branch "$scratch/nope/HEAD")"
 
 # The branch is only asked for when the answer that produced the row had none:
 # herdr already reports it for a worktree, and asking again would be a second
