@@ -133,17 +133,23 @@ the remote is picked up rather than silently recreated. `wt pr` uses `gh`, or
 `az repos pr` when origin is on Azure DevOps; Azure fork heads are not fetchable
 from origin, so those are reported instead of checked out.
 
-Checkouts are placed under `[worktrees] directory` in
-`.config/herdr/config.toml` (`~/.local/share/herdr/worktrees`, following XDG),
-so they stay out of the `$REPO_ROOT` tree that `repo` browses. herdr can create
-one itself with `alt+g` and lists them in its `alt+s` picker.
+Which checkouts exist, where a new one belongs, what state each is in and
+whether removing one would lose work are all [trepo](https://github.com/halkn/trepo),
+configured through `trepo.*` in `.config/git/config` and the global git config.
+Checkouts are placed under `trepo.worktreeRoot`
+(`~/.local/share/trepo/worktrees`, following XDG), so they stay out of the
+`$REPO_ROOT` tree that `repo` browses. The zsh side owns the picker, the row
+layout, `cd` and the herdr workspace that follows; it never recomputes a
+judgement trepo already makes.
 
-`wt rm` never removes the main checkout or the worktree you are standing in,
-asks a second time when a worktree is dirty, and deletes the local branch with
-`git branch -d` only, the same rule as the `git pm` alias. Pull requests from a
-GitHub fork are fetched read-only as `pr-<number>` and are not pre-trusted for
-mise, unlike same-repository branches, so treat such a worktree as untrusted
-before running its tasks or an agent in it.
+`wt rm` never removes the main checkout, the worktree you are standing in or a
+locked one, and holds back anything whose removal needs a decision — uncommitted
+changes, ignored files, unpushed commits, a checkout another tool manages —
+naming the reason and asking once before it goes ahead. A merged branch is
+deleted with `git branch -d` only, the same rule as the `git pm` alias. Pull
+requests from a GitHub fork are fetched read-only as `pr-<number>` and are not
+pre-trusted for mise, unlike same-repository branches, so treat such a worktree
+as untrusted before running its tasks or an agent in it.
 
 Claude Code creates worktrees of its own, so the two kinds are kept apart:
 
@@ -151,24 +157,28 @@ Claude Code creates worktrees of its own, so the two kinds are kept apart:
 | --- | --- | --- |
 | For | branch, pull request and multi-session work a human returns to | isolating a session or a subagent while it runs |
 | Created by | `wt new`, `wt pr`, herdr `alt+g` | `--worktree`, `EnterWorktree`, `isolation: worktree` |
-| Placed in | `~/.local/share/herdr/worktrees/` | `<repo>/.claude/worktrees/` (gitignored) |
+| Placed in | `~/.local/share/trepo/worktrees/` | `<repo>/.claude/worktrees/` (gitignored) |
 | Removed by | you — `wt rm`, `wt clean`, `ctrl-x` in the `alt+s` picker | Claude Code, on exit or by its periodic sweep |
 
-`wt` marks the second kind with an `agent` flag and leaves it out of
-`wt clean`, so reclaiming merged worktrees never races a running agent; it stays
-listed in `wt` and `wt rm` for the times a sweep leaves one behind.
+`trepo.protected` in `.config/git/config` covers `.claude/worktrees`, so the
+second kind carries a `protected` flag and `wt clean` never reclaims one: a
+sweep is Claude Code's to run, and a locked checkout may still have an agent in
+it. It stays listed in `wt` and `wt rm`, which ask before removing it, for the
+times a sweep leaves one behind.
 
 ## Repositories and herdr workspaces
 
 `repo` opens the navigator below with the repositories under `$REPO_ROOT`
 (`~/repos`) queried for — `repo <words>` narrows it further, and clearing the
 query brings the other places back. `repo get <owner/repo|url>` clones one and
-cd's into the clone. The layout rules live in `.config/zsh/workflows/repo.zsh`.
+cd's into the clone.
 
-Clones are placed at `$REPO_ROOT/<host>/<path>`, with the forge-specific
-spellings of one repository folded onto a single directory (`repo.zsh` holds the
-normalization rules). The listing is a depth-bounded glob over that layout, so a
-repository placed at another depth is not picked up.
+Clones are placed at `trepo.root/<host>/<path>` (`$REPO_ROOT`, `~/repos`), with
+the forge-specific spellings of one repository folded onto a single directory.
+Only the two layouts trepo creates are searched — `host/owner/repo` and the
+`host/org/project/repo` Azure DevOps needs — so a repository placed at another
+depth, or a vendored dependency that ships a `.git`, is not picked up.
+`.config/zsh/workflows/repo.zsh` is left with the `cd` that follows.
 
 ### One list of places
 
@@ -176,15 +186,19 @@ Open workspaces, worktrees and repositories are all somewhere to go, and the
 same checkout used to appear in several lists at once. `wt` (bare), `repo` and
 herdr's `alt+s` popup are one picker instead — `_nav_go` in
 `.config/zsh/workflows/nav.zsh` — differing only in the initial query and in the
-fzf chrome each needs. Rows are deduplicated by checkout path: an open workspace
-hides the worktree it was made from, and a worktree hides its repository row.
-Going to a workspace focuses it, to a worktree opens it, and to a repository
-creates a workspace with it as the cwd (`cd` outside herdr). `Tab` switches to
-the running agents, and `ctrl-x` removes the worktree under the cursor.
+fzf chrome each needs. The candidates are `trepo list` plus the workspaces herdr
+has open, and rows are deduplicated by checkout path: an open workspace hides
+the checkout it is standing on. A repository's main checkout is a row like any
+other — it is where the default branch is checked out — and the checkouts keep
+trepo's own order, so a repository and its worktrees stay together and the
+cursor lands in the same place on every run. Going to a workspace focuses it, to
+a worktree opens it, and to a main checkout creates a workspace with it as the
+cwd (`cd` outside herdr). `Tab` switches to the running agents, and `ctrl-x`
+removes the worktree under the cursor, or shows why trepo kept it.
 
-Outside a herdr session everything degrades to plain `git worktree` plus `cd`,
-and the listing narrows to the current repository plus every repository under
-`$REPO_ROOT` — only herdr knows about checkouts beyond those.
+Outside a herdr session the workspace and agent rows fall away and everything
+degrades to `cd`; the checkouts are unaffected, since trepo reads them from git
+rather than from a session.
 
 ## Tool Manager
 
