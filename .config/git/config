@@ -47,6 +47,11 @@
   defaultBranch = main
 [safe]
   bareRepository = explicit
+[trepo]
+  ; Claude Code owns the lifecycle of the checkouts it creates, so trepo lists
+  ; them but never reclaims one on its own. Matched as a run of path segments,
+  ; which also covers a session started inside a worktree.
+  protected = .claude/worktrees
 [url "git@github.com:"]
   pushInsteadOf = https://github.com/
 [delta]
