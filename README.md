@@ -115,12 +115,12 @@ Machine-local shell settings go in the gitignored `.config/zsh/.zshenv.local`
 
 Parallel work (reviewing several pull requests while developing) uses one
 worktree per branch, and inside [herdr](https://herdr.dev) each worktree is a
-workspace. The `wt` function in `.config/zsh/workflows/worktree.zsh` is the entry point.
-Bare `wt` spans every repository; the subcommands act on the repository you are
-standing in:
+workspace. The `wt` command lives in `.config/zsh/workflows/nav.zsh`, its
+subcommands in `worktree.zsh`. Bare `wt` spans every repository; the subcommands
+act on the repository you are standing in:
 
 ```sh
-wt                     # pick where to go: workspace, worktree or repository
+wt                     # pick where to go: workspace, worktree, repository or agent
 wt new <branch> [base] # create a branch + worktree and open it
 wt pr [<number>]       # pick a pull request and open its head as a worktree
 wt rm                  # pick worktrees to remove
@@ -160,28 +160,27 @@ listed in `wt` and `wt rm` for the times a sweep leaves one behind.
 
 ## Repositories and herdr workspaces
 
-`repo` (`.config/zsh/workflows/repo.zsh`) picks a repository under `$REPO_ROOT`
-(`~/repos`) and cd's into it; `repo get <owner/repo|url>` clones one
-and cd's into the clone.
+`repo` opens the navigator below with the repositories under `$REPO_ROOT`
+(`~/repos`) queried for — `repo <words>` narrows it further, and clearing the
+query brings the other places back. `repo get <owner/repo|url>` clones one and
+cd's into the clone. The layout rules live in `.config/zsh/workflows/repo.zsh`.
 
 Clones are placed at `$REPO_ROOT/<host>/<path>`, with the forge-specific
 spellings of one repository folded onto a single directory (`repo.zsh` holds the
 normalization rules). The listing is a depth-bounded glob over that layout, so a
 repository placed at another depth is not picked up.
 
-The same listing is folded into the navigator described below, which is where a
-repository becomes a workspace of its own.
-
 ### One list of places
 
 Open workspaces, worktrees and repositories are all somewhere to go, and the
-same checkout used to appear in several lists at once. `wt` (bare) and herdr's
-`alt+s` popup share one listing instead, built by `_wt_nav_rows` in
-`worktree.zsh` and deduplicated by checkout path: an open workspace hides the
-worktree it was made from, and a worktree hides its repository row. Going to a
-workspace focuses it, to a worktree opens it, and to a repository creates a
-workspace with it as the cwd (`cd` outside herdr). `alt+s` keeps agents on a
-second `Tab` mode, and removes the worktree under the cursor with `ctrl-x`.
+same checkout used to appear in several lists at once. `wt` (bare), `repo` and
+herdr's `alt+s` popup are one picker instead — `_nav_go` in
+`.config/zsh/workflows/nav.zsh` — differing only in the initial query and in the
+fzf chrome each needs. Rows are deduplicated by checkout path: an open workspace
+hides the worktree it was made from, and a worktree hides its repository row.
+Going to a workspace focuses it, to a worktree opens it, and to a repository
+creates a workspace with it as the cwd (`cd` outside herdr). `Tab` switches to
+the running agents, and `ctrl-x` removes the worktree under the cursor.
 
 Outside a herdr session everything degrades to plain `git worktree` plus `cd`,
 and the listing narrows to the current repository plus every repository under
