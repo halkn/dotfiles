@@ -1,14 +1,12 @@
-# repo - navigate repositories cloned under $REPO_ROOT. The listing lives here
-# because `wt` folds the same repositories into its own picker.
+# repo - where a clone lands under $REPO_ROOT, and how a URL maps onto that
+# layout. Cloning is the only thing this file does on its own: navigating to a
+# repository is nav.zsh's picker, which folds `_repo_rows` into one listing with
+# the workspaces and worktrees, and which also defines the `repo` command.
 #
 # This file is sourced from .zshrc and from ~/.config/herdr/herdr-picker.sh, so
 # it must only define functions and must not touch the current shell state. For
 # the same reason it never returns early on a missing dependency: the picker
 # would lose `_repo_rows` silently.
-
-# Own path, so fzf preview commands (which run in a fresh shell without these
-# functions) can re-source it. `%x` expands to the file being sourced.
-_REPO_LIB=${${(%):-%x}:A}
 
 _repo_root() {
   local root=${REPO_ROOT:-$HOME/repos}
@@ -21,20 +19,6 @@ _repo_root() {
 _repo_git_available() {
   command -v git >/dev/null 2>&1 || {
     print 'repo: git is not installed or not in PATH' >&2
-    return 1
-  }
-}
-
-# Picking, on the other hand, has nothing to offer without fzf and a root.
-_repo_picker_available() {
-  command -v fzf >/dev/null 2>&1 || {
-    print 'repo: fzf is not installed' >&2
-    return 1
-  }
-  local root
-  root=$(_repo_root)
-  [[ -d $root ]] || {
-    print "repo: $root does not exist (set REPO_ROOT)" >&2
     return 1
   }
 }
@@ -53,26 +37,6 @@ _repo_rows() {
     rel=${${marker:h}#$root/}
     printf '%s\t%s\n' "${rel#*/}" "${marker:h}"
   done
-}
-
-# Preview body for a repository, shared by `repo` and the herdr picker.
-_repo_preview() {
-  local dir=$1
-  eza --tree --level=1 --icons "$dir" 2>/dev/null || ls -la "$dir"
-}
-
-# Print the path of an interactively selected repository. $1 is an initial query.
-# `--accept-nth` rather than a downstream `awk`, which would run even when the
-# picker is cancelled and mask its status.
-_repo_pick() {
-  local rows
-  rows=$(_repo_rows)
-  [[ -n $rows ]] || return 1
-  print -r -- "$rows" \
-    | fzf --delimiter '\t' --with-nth 1 --accept-nth 2 \
-      --query "${1:-}" \
-      --prompt 'repo> ' \
-      --preview "source ${_REPO_LIB}; _repo_preview {2}"
 }
 
 # Fold the forge-specific spellings of one repository onto a single host/path.
@@ -148,35 +112,6 @@ _repo_get() {
     git clone "$reply[3]" "$dir" || return 1
   fi
   cd -- "$dir"
-}
-
-_repo_go() {
-  local dir
-  _repo_picker_available || return 1
-  dir=$(_repo_pick "$*") || return 1
-  [[ -n $dir ]] || return 1
-  cd -- "$dir"
-}
-
-# repo               : pick a repository with fzf and cd into it
-# repo <words...>    : same, with the words as the initial picker query
-# repo get <repo>    : clone into the root and cd into it (owner/repo or URL)
-#
-# `get` and the help flags are the only reserved words; anything else is a
-# query, so `repo dotfiles` narrows the picker instead of failing.
-repo() {
-  case ${1:-} in
-    get)
-      shift
-      _repo_get "$@"
-      ;;
-    -h | --help | help)
-      print 'usage: repo [<query>... | get <owner/repo|url>]'
-      ;;
-    *)
-      _repo_go "$@"
-      ;;
-  esac
 }
 
 # dot - jump to this dotfiles checkout, which lives under the same root.
