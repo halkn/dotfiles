@@ -1,7 +1,11 @@
-# nav - one list of everywhere there is to go: open workspaces, worktrees that
-# are not open, the repositories under $REPO_ROOT, and the running agents. One
-# picker serves all of them, so `wt`, `repo` and the herdr popup cannot drift
-# apart in what they offer.
+# nav - one list of everywhere there is to go: open workspaces, the checkouts
+# trepo knows about, and the running agents. One picker serves all of them, so
+# `wt`, `repo` and the herdr popup cannot drift apart in what they offer.
+#
+# Which checkouts exist, which repository each belongs to, what state it is in
+# and whether it may be removed are all answered by `trepo list` and `trepo rm`.
+# What is decided here is only what a row looks like, which of two rows for the
+# same directory survives, and what pressing Enter does to it.
 #
 # The entry points `wt` and `repo` live here because their bare form is this
 # picker; their subcommands are implemented in worktree.zsh and repo.zsh. The
@@ -32,11 +36,48 @@ _nav_source_cmd() {
 #
 # The producers below emit six fields - `<kind> <key> <target> <name> <branch>
 # <path>` - where `key` is the checkout path the row folds onto (empty when the
-# row has none) and `target` is what the jump acts on.
+# row has none) and `target` is what the jump acts on. A producer that already
+# knows the checkout fills `path` in; leaving it empty is what asks
+# `_nav_resolve` to work out which checkout a directory belongs to.
 #
 # Every one of them ends on `return 0`: the herdr picker runs under
 # `set -euo pipefail`, where a source that has nothing to say (no server, no
 # repository) would otherwise take the whole listing down with it.
+
+# `trepo list --json` on stdin. Kept apart from the call below so that the shape
+# of the answer can be pinned down by a test instead of only in a live session
+# (trepo v0.5.0).
+#
+# The repository slug is the label because it is what tells two checkouts apart
+# across the list; the branch has a column of its own. The path is already
+# resolved and the branch already known, so the sixth field is filled in and
+# `_nav_resolve` leaves the row alone.
+_nav_checkout_filter() {
+  jq -r '
+    .[]?
+    | [(if .kind == "repo" then "repo" else "worktree" end),
+       .path, .path, .repo, (.branch // ""), .path]
+    | @tsv
+  ' 2>/dev/null
+  return 0
+}
+
+# Every checkout trepo manages: a repository's main checkout and each of its
+# worktrees, in trepo's own order (by repository, main checkout first, then
+# branch).
+#
+# --json rather than the plain output, because `kind` is the one thing the text
+# form does not carry, and a main checkout has to open as a new workspace where
+# a worktree opens as itself.
+_nav_checkout_rows() {
+  local out
+  command -v trepo >/dev/null 2>&1 || return 0
+  command -v jq >/dev/null 2>&1 || return 0
+  out=$(trepo list --json 2>/dev/null) || return 0
+  [[ -n $out ]] || return 0
+  print -r -- "$out" | _nav_checkout_filter
+  return 0
+}
 
 # `herdr workspace list` on stdin, `herdr pane list` as $1 and
 # `herdr worktree list --json` as $2, so that the shape of the three answers can
@@ -47,7 +88,11 @@ _nav_source_cmd() {
 # on the WorktreeInfo that points back at it, and a workspace opened on a plain
 # directory only shows that directory as the cwd of its panes. All three are
 # needed - the directory is what the row is recognised by, and it is also what
-# folds the repository row behind it away.
+# folds the checkout row behind it away.
+#
+# The sixth field is left empty even when the directory is known, because a
+# pane's cwd can be anywhere below the checkout and only `_nav_resolve` can say
+# which checkout that is.
 _nav_workspace_filter() {
   jq -r --argjson panes "${1:-null}" --argjson worktrees "${2:-null}" '
     (($panes.result.panes?) // []) as $p
@@ -63,60 +108,23 @@ _nav_workspace_filter() {
             | (.cwd // .foreground_cwd))
         // ""
       ) as $path
-    | ["workspace", $path, $id, "[\(.number)] \(.label)", (($wt.branch) // ""), $path]
+    | ["workspace", $path, $id, "[\(.number)] \(.label)", (($wt.branch) // ""), ""]
     | @tsv
   ' 2>/dev/null
   return 0
 }
 
-# `herdr worktree list --json` on stdin. A worktree that is open as a workspace
-# is listed all the same and folded away by `_nav_merge`, which keeps this
-# filter independent of which workspaces happen to be open.
-_nav_worktree_filter() {
-  jq -r '
-    .result.worktrees[]?
-    | ["worktree", .path, .path, (.label // (.path | split("/") | last)), (.branch // ""), .path]
-    | @tsv
-  ' 2>/dev/null
-  return 0
-}
-
-# Everything herdr knows, asked for once: the worktree list answers both the
-# worktree rows and the branch of every workspace made from a worktree, so a
-# listing that fetched it per kind would ask the same question twice.
+# The workspaces herdr has open. Its worktree list is asked for as well, but
+# only for the branch of a workspace made from one: which checkouts exist is
+# trepo's answer, and asking herdr for a second inventory is how two lists come
+# to disagree about the same directory.
 _nav_herdr_rows() {
   local workspaces panes worktrees
   workspaces=$(herdr workspace list 2>/dev/null) || workspaces=''
+  [[ -n $workspaces ]] || return 0
   panes=$(herdr pane list 2>/dev/null) || panes=''
   worktrees=$(herdr worktree list --json 2>/dev/null) || worktrees=''
-  if [[ -n $workspaces ]]; then
-    print -r -- "$workspaces" | _nav_workspace_filter "${panes:-null}" "${worktrees:-null}"
-  fi
-  if [[ -n $worktrees ]]; then
-    print -r -- "$worktrees" | _nav_worktree_filter
-  fi
-  return 0
-}
-
-# The worktrees of the repository the shell is standing in, whether or not
-# herdr knows about them. Nothing wider is reachable from git alone, since only
-# herdr knows which checkouts exist outside this repository.
-_nav_git_rows() {
-  whence _wt_entries >/dev/null 2>&1 || return 0
-  git rev-parse --is-inside-work-tree >/dev/null 2>&1 || return 0
-  _wt_entries | awk -F'\t' '{
-    name = $1
-    sub(/.*\//, "", name)
-    printf "worktree\t%s\t%s\t%s\t%s\t%s\n", $1, $1, name, $2, $1
-  }'
-  return 0
-}
-
-# `_repo_rows` lives in repo.zsh. Workflows do not source each other, so the
-# repositories are simply left out when it has not been loaded.
-_nav_repo_rows() {
-  whence _repo_rows >/dev/null 2>&1 || return 0
-  _repo_rows | awk -F'\t' '{ printf "repo\t%s\t%s\t%s\t\t%s\n", $2, $2, $1, $2 }'
+  print -r -- "$workspaces" | _nav_workspace_filter "${panes:-null}" "${worktrees:-null}"
   return 0
 }
 
@@ -129,35 +137,15 @@ _nav_format() {
   }'
 }
 
-# Branch a .git/HEAD file points at, or `(detached)` when it holds a commit
-# instead of a ref. Reading the file is only correct for a main checkout, where
-# .git is a directory; a linked worktree keeps its HEAD elsewhere.
-_nav_head_branch() {
-  local head
-  # Checked before opening: zsh reports a failed redirection itself, and the
-  # picker would show that on the row instead of a branch.
-  [[ -r $1 ]] || return 0
-  read -r head <"$1" || return 0
-  case $head in
-    'ref: refs/heads/'*)
-      print -r -- "${head#ref: refs/heads/}"
-      ;;
-    *)
-      print -r -- '(detached)'
-      ;;
-  esac
-  return 0
-}
-
-# Ask git about the directory behind each row: which checkout it belongs to,
-# and which branch that checkout is on. Both are needed because the answers the
-# rows come from are uneven - herdr reports a branch for a worktree but not for
-# a workspace, a repository row has neither, and a workspace is recognised by
-# the directory its panes sit in, which can be anywhere below the checkout.
-# Filling them in here is what makes every row read the same.
+# Work out which checkout a row's directory belongs to, for the rows that do not
+# already know. Only a workspace is in that position: it is recognised by the
+# cwd of its panes, which can be anywhere below the checkout, and herdr reports
+# a branch for it only when it was made from a worktree. Every other row comes
+# from trepo with the checkout and the branch already resolved, and re-asking
+# git for them would cost a process per row.
 #
-# Symlinks are taken out on the way, since git reports paths that way and the
-# repository glob does not, and two spellings of one checkout would not fold.
+# Symlinks are taken out on the way, since git reports paths that way and so
+# does trepo; two spellings of one checkout would not fold.
 #
 # The fields are split with `(@ps:\t:)` rather than by `IFS=$'\t' read`: tab
 # counts as IFS whitespace in zsh, so a run of them reads as one delimiter and a
@@ -170,17 +158,10 @@ _nav_resolve() {
     f=("${(@ps:\t:)line}")
     kind=${f[1]-} key=${f[2]-} target=${f[3]-}
     name=${f[4]-} branch=${f[5]-} wt_path=${f[6]-}
-    if [[ -n $key ]]; then
+    if [[ -z $wt_path && -n $key ]]; then
       key=${key:A}
-      if [[ -d $key/.git ]]; then
-        # A directory that holds a .git directory is a work tree root already,
-        # and its HEAD is a file. Reading it is what keeps a listing of dozens
-        # of repositories from paying a git process or two for every row.
-        wt_path=$key
-        [[ -n $branch ]] || branch=$(_nav_head_branch "$key/.git/HEAD")
-      elif root=$(git -C "$key" rev-parse --path-format=absolute --show-toplevel 2>/dev/null); then
+      if root=$(git -C "$key" rev-parse --path-format=absolute --show-toplevel 2>/dev/null); then
         key=${root:A}
-        wt_path=$key
         # `branch --show-current` rather than `rev-parse --abbrev-ref HEAD`:
         # the latter fails on a repository whose first commit is still missing.
         if [[ -z $branch ]]; then
@@ -188,19 +169,24 @@ _nav_resolve() {
           branch=${branch:-(detached)}
         fi
       fi
+      # A directory git will not answer for is kept as it is, which leaves the
+      # row usable: `_wt_preview` reports a missing checkout.
+      wt_path=$key
     fi
     printf '%s\t%s\t%s\t%s\t%s\t%s\n' "$kind" "$key" "$target" "$name" "$branch" "$wt_path"
   done
   return 0
 }
 
-# Fold the sources onto one row per checkout: a worktree that is open as a
-# workspace is a workspace row, and a repository whose checkout is already
-# listed is dropped. Workspaces are never folded into each other - two of them
-# on one repository are two places to go, which is what parallel work looks
-# like; only the worktree and repository rows behind them are removed.
-# Rows keep the order workspaces, worktrees, repositories. Pure text in, pure
-# text out, so .config/zsh/test/nav_test.zsh can pin it down.
+# Fold the sources onto one row per checkout: a checkout that is open as a
+# workspace is a workspace row. Workspaces are never folded into each other -
+# two of them on one repository are two places to go, which is what parallel
+# work looks like; only the checkout row behind them is removed.
+#
+# Below the workspaces the checkouts keep the order trepo listed them in, which
+# is a fixed one (by repository, main checkout first, then branch), so the
+# cursor lands in the same place on every run.
+# Pure text in, pure text out, so .config/zsh/test/nav_test.zsh can pin it down.
 _nav_merge() {
   awk -F'\t' '
     {
@@ -210,7 +196,7 @@ _nav_merge() {
       key[n] = $2
       target[n] = $3
       label[n] = $4
-      rank[n] = ($1 == "workspace") ? 1 : ($1 == "worktree") ? 2 : 3
+      rank[n] = ($1 == "workspace") ? 1 : 2
       if ($2 == "") next
       # The kind that claims a checkout decides which rows behind it disappear,
       # and the claim is by kind rather than by input order so that the listing
@@ -219,7 +205,7 @@ _nav_merge() {
       if (!((rank[n] SUBSEP $2) in first)) first[rank[n] SUBSEP $2] = n
     }
     END {
-      for (r = 1; r <= 3; r++) {
+      for (r = 1; r <= 2; r++) {
         for (i = 1; i <= n; i++) {
           if (rank[i] != r) continue
           # A checkout-less row has nothing to fold onto, and a workspace is
@@ -245,16 +231,11 @@ _nav_place_rows() {
   fi
   {
     # An unreachable server (or a missing jq) leaves the herdr rows empty; the
-    # git view alone is worth more here than an empty picker.
+    # checkouts alone are worth more here than an empty picker.
     if [[ -n $herdr_rows ]]; then
       print -r -- "$herdr_rows"
     fi
-    # Always asked as well: herdr lists the worktrees it manages, so a checkout
-    # it never opened - one under .claude/worktrees, or one the `git worktree
-    # add` fallback created - is only reachable through git. The overlap folds
-    # away in _nav_merge, which keeps herdr's own spelling of the path.
-    _nav_git_rows
-    _nav_repo_rows
+    _nav_checkout_rows
   } | _nav_resolve | _nav_format | _nav_merge
 }
 
@@ -267,12 +248,12 @@ _nav_agent_rows() {
   rows=$(
     print -r -- "$agents" \
       | jq -r '
-              .result.agents[]?
-              | ["\(.agent_status)  \(.name // .display_agent // .agent // "agent")  \(.cwd // "-")",
-                 "agent:\(.terminal_id)",
-                 (.cwd // "")]
-              | @tsv
-            ' 2>/dev/null
+                  .result.agents[]?
+                  | ["\(.agent_status)  \(.name // .display_agent // .agent // "agent")  \(.cwd // "-")",
+                     "agent:\(.terminal_id)",
+                     (.cwd // "")]
+                  | @tsv
+                ' 2>/dev/null
   ) || return 0
   [[ -n $rows ]] && print -r -- "$rows"
   return 0
@@ -294,17 +275,17 @@ _nav_workspace_preview() {
     head=$(
       herdr workspace list 2>/dev/null \
         | jq -r --arg w "$id" '
-                                  .result.workspaces[] | select(.workspace_id == $w)
-                                  | "[\(.number)] \(.label)",
-                                    "agent: \(.agent_status // "-")   tabs: \(.tab_count)   panes: \(.pane_count)"
-                                ' 2>/dev/null
+                                        .result.workspaces[] | select(.workspace_id == $w)
+                                        | "[\(.number)] \(.label)",
+                                          "agent: \(.agent_status // "-")   tabs: \(.tab_count)   panes: \(.pane_count)"
+                                      ' 2>/dev/null
     ) || head=''
     agents=$(
       herdr agent list 2>/dev/null \
         | jq -r --arg w "$id" '
-                                  .result.agents[] | select(.workspace_id == $w)
-                                  | "  \(.agent_status)  \(.name // .display_agent // .agent // "agent")  \(.terminal_title_stripped // "")"
-                                ' 2>/dev/null
+                                        .result.agents[] | select(.workspace_id == $w)
+                                        | "  \(.agent_status)  \(.name // .display_agent // .agent // "agent")  \(.terminal_title_stripped // "")"
+                                      ' 2>/dev/null
     ) || agents=''
     print -r -- "${head:-$id}"
     print
@@ -393,10 +374,14 @@ _nav_open() {
 
 # The checkout that may be removed for one row, empty when there is none.
 #
-# Deliberately not the checkout the listing resolved for the row: that one is
-# where the workspace's focused pane happens to be standing, which is a live
-# value and can be a checkout of another repository entirely. Removal is
-# destructive, so it asks herdr what the workspace was made from instead.
+# A `repo` row is left out on purpose even though it names a checkout: it is a
+# repository's main checkout, which trepo refuses to remove, and offering it
+# would only turn the key into a refusal message.
+#
+# For a workspace this is deliberately not the checkout the listing resolved:
+# that one is where the workspace's focused pane happens to be standing, which
+# is a live value and can be a checkout of another repository entirely. Removal
+# is destructive, so it asks herdr what the workspace was made from instead.
 _nav_removable_path() {
   local entry=${1:-} workspaces
   case ${entry%%:*} in
@@ -459,21 +444,26 @@ _nav_transform_cycle() {
     "'$(_nav_source_cmd); _nav_list $next'" "$(_nav_prompt "$next")"
 }
 
-# Called by the ctrl-x binding. No confirmation prompt is needed: `git worktree
-# remove` refuses a checkout that still holds uncommitted work. The key is live
-# in every mode, so rows with nothing removable behind them - a repository, an
-# agent, a workspace on a plain directory - are left alone silently.
+# Called by the ctrl-x binding. No confirmation prompt is needed here: a removal
+# that would lose work is one trepo declines, and the reason it gives is what
+# lands in the header. Reaching for it again with --force is `wt rm`, which has
+# a terminal to ask in. The key is live in every mode, so rows with nothing
+# removable behind them - a repository, an agent, a workspace on a plain
+# directory - are left alone silently.
+#
+# trepo's messages are one line and carry no parentheses, so they go into
+# `change-header` as they are; a newline or a bracket would end the action's
+# argument list.
 _nav_transform_remove() {
   local entry=${1:-} target message
   [[ -n $entry ]] || return 0
   target=$(_nav_removable_path "$entry")
   [[ -n $target ]] || return 0
-  if message=$(_wt_remove_external "$target" 0 2>&1); then
+  if message=$(_wt_remove_path "$target" 0 2>&1); then
     printf 'reload(zsh -c %s)+change-header(removed %s)\n' \
       "'$(_nav_source_cmd); _nav_list place'" "${target:t}"
   else
-    # Parentheses would end the action's argument list.
-    printf 'change-header(%s)\n' "${message//[()]/ }"
+    printf 'change-header(%s)\n' "$message"
   fi
   return 0
 }
@@ -520,7 +510,7 @@ _nav_go() {
 
 # ── commands ─────────────────────────────────────────
 
-# wt              : pick a workspace, worktree, repository or agent and go there
+# wt              : pick a workspace, checkout or agent and go there
 # wt new <branch> [base] : create a branch + worktree and open it. Without a
 #                          base, an existing origin/<branch> is tracked instead
 #                          of branching off the default integration branch.
@@ -568,7 +558,7 @@ wt() {
 
 # repo               : the same picker, opened on the repositories
 # repo <words...>    : same, with the words narrowing the listing further
-# repo get <repo>    : clone into the root and cd into it (owner/repo or URL)
+# repo get <repo>    : clone into the trepo root and cd into it (owner/repo or URL)
 #
 # The listing is not filtered down to repositories, it is only queried for them:
 # a repository that is already open is shown as its workspace, and clearing the
