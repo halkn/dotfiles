@@ -28,7 +28,7 @@ workflows_dir=${0:A:h}/../workflows
 
 PATH=$stub_bin
 hash -r
-for cmd in fzf gh az jq herdr trepo; do
+for cmd in fzf gh az jq herdr; do
   command -v "$cmd" >/dev/null 2>&1 && fail "$cmd is still reachable; the stub PATH is not isolating the test"
 done
 
@@ -59,20 +59,12 @@ expect_guard 'wt: fzf is not installed' wt
 expect_guard 'repo: fzf is not installed' repo
 expect_guard 'gst: fzf is not installed' gst
 
-# The subcommands that resolve rather than pick name trepo instead, since that
-# is the dependency they cannot do without.
-expect_guard 'wt: trepo is not installed' wt new topic
-expect_guard 'wt: trepo is not installed' wt clean
-expect_guard 'repo: trepo is not installed' repo get owner/repo
-
 # 4. `wt` spans every repository, so outside a work tree it is still the picker
 # that is missing; only the subcommands need a repository to act on.
 cd -- "$stub_bin" || exit 1
 expect_guard 'wt: fzf is not installed' wt
 expect_guard 'wt: not inside a git repository' wt new topic
 expect_guard 'wt: not inside a git repository' wt rm
-expect_guard 'wt: not inside a git repository' wt clean
-expect_guard 'wt: not inside a git repository' wt pr
 
 # 5. Reaching this line at all is the assertion that none of the above exited
 # the shell.

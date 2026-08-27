@@ -1,8 +1,7 @@
 #!/usr/bin/env zsh
-# Tests for the pure part of `wt`: laying the trepo answer out as picker rows.
-# Everything else the file does - deciding which checkouts exist, what state
-# each is in and whether one may be removed - is trepo's, and is covered by
-# trepo's own tests. Run with `mise run test:zsh`.
+# Tests for the parts of `wt` that decide where a checkout goes and how a
+# picker row reads. Everything else is git's own answer. Run with
+# `mise run test:zsh`.
 
 set -uo pipefail
 
@@ -20,35 +19,45 @@ check() {
   fi
 }
 
-# As `trepo list --worktrees --here` returns it (trepo v0.5.0): four tab
-# separated fields, with the first two padded out to 28 columns.
+check '_wt_root' /w/wt "$(WT_ROOT=/w/wt _wt_root)"
+check '_wt_root (trailing slash)' /w/wt "$(WT_ROOT=/w/wt/ _wt_root)"
+check '_wt_root (unset)' "${XDG_DATA_HOME:-$HOME/.local/share}/worktrees" \
+  "$(unset WT_ROOT && _wt_root)"
+
+# A branch name becomes one path segment, so the separator has to go.
+check '_wt_slug' 'feature-a' "$(_wt_slug 'feature/a')"
+check '_wt_slug (nested)' 'a-b-c' "$(_wt_slug 'a/b/c')"
+check '_wt_slug (plain)' 'topic' "$(_wt_slug topic)"
+
+# The listing is a glob over <root>/<owner>/<repo>/<branch>, so the row is built
+# from the path alone - no git call per row.
+scratch=$(mktemp -d "${TMPDIR:-/tmp}/wt-rows.XXXXXX") || exit 1
+trap 'rm -rf -- "$scratch"' EXIT
+mkdir -p "$scratch/halkn/dotfiles/topic" "$scratch/halkn/other/feature-a"
+
+check '_wt_checkout_rows' \
+  "$(printf 'wt   %-30s %s\tworktree:%s\t%s\n' \
+    'halkn/dotfiles' 'topic' "$scratch/halkn/dotfiles/topic" "$scratch/halkn/dotfiles/topic"
+  printf 'wt   %-30s %s\tworktree:%s\t%s' \
+    'halkn/other' 'feature-a' "$scratch/halkn/other/feature-a" "$scratch/halkn/other/feature-a")" \
+  "$(WT_ROOT=$scratch _wt_checkout_rows)"
+
+# An empty root is an empty listing rather than a glob error.
+check '_wt_checkout_rows (empty root)' '' "$(WT_ROOT=$scratch/nowhere _wt_checkout_rows)"
+
+# The main checkout is `git worktree list`'s first entry and is never offered
+# for removal.
 rows=$(
-  printf '%-28s\t%-28s\t%s\t%s\n' 'halkn/repo1' 'topic1' 'no-upstream' '/w/wt/topic1'
-  printf '%-28s\t%-28s\t%s\t%s\n' 'halkn/repo1' 'feature/a-branch-name-past-trepos-own-width' 'dirty,merged' '/w/wt/long'
-  printf '%-28s\t%-28s\t%s\t%s\n' 'halkn/repo1' '-' 'detached' '/w/wt/loose'
+  printf 'worktree /w/repo\nHEAD abc\nbranch refs/heads/main\n\n'
+  printf 'worktree /w/wt/topic\nHEAD def\nbranch refs/heads/feature/a\n\n'
+  printf 'worktree /w/wt/loose\nHEAD 012\ndetached\n\n'
 )
-
-# The display column is one field and the path is the next, so fzf can show the
-# first and hand back the second. The slug is dropped: --here makes it the same
-# on every row.
-check 'a padded row becomes a display column and a path' \
-  "$(printf '%-34s %-26s\t%s' 'topic1' 'no-upstream' '/w/wt/topic1')" \
-  "$(print -r -- "$rows" | _wt_format_rows | sed -n 1p)"
-
-# trepo pads to 28 and this picker lays out to 34, so a branch longer than
-# trepo's width would push the flags out of line if the padding were kept.
-# Taking it off again is what keeps the columns straight at any branch length.
-check 'a branch past trepos width does not shift the flags' \
-  "$(printf '%-34s %-26s\t%s' 'feature/a-branch-name-past-trepos-own-width' 'dirty,merged' '/w/wt/long')" \
-  "$(print -r -- "$rows" | _wt_format_rows | sed -n 2p)"
-
-# A detached checkout has no branch, and trepo says so with a dash rather than
-# an empty field, which is what keeps the column count the same on every row.
-check 'a detached checkout keeps its columns' \
-  "$(printf '%-34s %-26s\t%s' '-' 'detached' '/w/wt/loose')" \
-  "$(print -r -- "$rows" | _wt_format_rows | sed -n 3p)"
-
-check 'no worktrees is no rows' '' "$(printf '' | _wt_format_rows)"
+check '_wt_repo_rows' \
+  "$(
+    printf '%-40s %s\t%s\n' 'feature/a' '/w/wt/topic' '/w/wt/topic'
+    printf '%-40s %s\t%s' '(detached)' '/w/wt/loose' '/w/wt/loose'
+  )" \
+  "$(print -r -- "$rows" | _wt_repo_rows_filter)"
 
 if ((failures > 0)); then
   print -u2 "worktree_test: $failures assertion(s) failed"
