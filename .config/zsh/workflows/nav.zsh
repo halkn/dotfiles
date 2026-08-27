@@ -248,12 +248,12 @@ _nav_agent_rows() {
   rows=$(
     print -r -- "$agents" \
       | jq -r '
-                  .result.agents[]?
-                  | ["\(.agent_status)  \(.name // .display_agent // .agent // "agent")  \(.cwd // "-")",
-                     "agent:\(.terminal_id)",
-                     (.cwd // "")]
-                  | @tsv
-                ' 2>/dev/null
+                    .result.agents[]?
+                    | ["\(.agent_status)  \(.name // .display_agent // .agent // "agent")  \(.cwd // "-")",
+                       "agent:\(.terminal_id)",
+                       (.cwd // "")]
+                    | @tsv
+                  ' 2>/dev/null
   ) || return 0
   [[ -n $rows ]] && print -r -- "$rows"
   return 0
@@ -275,17 +275,17 @@ _nav_workspace_preview() {
     head=$(
       herdr workspace list 2>/dev/null \
         | jq -r --arg w "$id" '
-                                        .result.workspaces[] | select(.workspace_id == $w)
-                                        | "[\(.number)] \(.label)",
-                                          "agent: \(.agent_status // "-")   tabs: \(.tab_count)   panes: \(.pane_count)"
-                                      ' 2>/dev/null
+                                            .result.workspaces[] | select(.workspace_id == $w)
+                                            | "[\(.number)] \(.label)",
+                                              "agent: \(.agent_status // "-")   tabs: \(.tab_count)   panes: \(.pane_count)"
+                                          ' 2>/dev/null
     ) || head=''
     agents=$(
       herdr agent list 2>/dev/null \
         | jq -r --arg w "$id" '
-                                        .result.agents[] | select(.workspace_id == $w)
-                                        | "  \(.agent_status)  \(.name // .display_agent // .agent // "agent")  \(.terminal_title_stripped // "")"
-                                      ' 2>/dev/null
+                                            .result.agents[] | select(.workspace_id == $w)
+                                            | "  \(.agent_status)  \(.name // .display_agent // .agent // "agent")  \(.terminal_title_stripped // "")"
+                                          ' 2>/dev/null
     ) || agents=''
     print -r -- "${head:-$id}"
     print
