@@ -93,6 +93,10 @@ alias df='df -h'
 alias ..='cd ..'
 alias zs='exec zsh'
 alias :q='exit'
+# A fixed destination, so it skips the picker `repo` would open. The body is
+# evaluated when the alias runs, which is why `_repo_root` (workflows/repo.zsh,
+# sourced further down) is already there by then.
+alias dot='cd -- "$(_repo_root)/github.com/halkn/dotfiles"'
 
 # ── plugins (git clone) ───────────────────────────────
 zsh_plugins_dir=$zsh_data_dir/plugins

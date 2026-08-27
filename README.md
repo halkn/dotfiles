@@ -91,7 +91,7 @@ split into a portable core and workflows named after what they do:
 | Location | Holds |
 | --- | --- |
 | `.zshrc` | The portable core (history, options, completion, keybindings, aliases) plus lightweight tool setup guarded by `command -v`, so a machine without those tools still gets a working shell |
-| `workflows/*.zsh` | Own commands, grouped by the task rather than by the tool: `repo` (`repo`, `dot`), `worktree` (`wt`), `git` (`gst`) |
+| `workflows/*.zsh` | Own commands, grouped by the task rather than by the tool: `repo` (`repo`), `worktree` (`wt`), `git` (`gst`) |
 
 Splitting by task rather than by tool keeps a backend swap out of the file
 layout. The workflow files also carry no dependency guard at file level: they
@@ -113,91 +113,82 @@ Machine-local shell settings go in the gitignored `.config/zsh/.zshenv.local`
 
 ## Git worktree workflow
 
-Parallel work (reviewing several pull requests while developing) uses one
-worktree per branch, and inside [herdr](https://herdr.dev) each worktree is a
-workspace. The `wt` command lives in `.config/zsh/workflows/nav.zsh`, its
-subcommands in `worktree.zsh`. Bare `wt` spans every repository; the subcommands
-act on the repository you are standing in:
+Parallel work (reviewing a branch while developing another) uses one worktree
+per branch, and inside [herdr](https://herdr.dev) each worktree is a workspace.
+`wt` lives in `.config/zsh/workflows/worktree.zsh`. Bare `wt` spans every
+repository; the subcommands act on the one you are standing in:
 
 ```sh
-wt                     # pick where to go: workspace, worktree, repository or agent
-wt new <branch> [base] # create a branch + worktree and open it
-wt pr [<number>]       # pick a pull request and open its head as a worktree
-wt rm                  # pick worktrees to remove
-wt clean               # remove every merged / upstream-gone worktree
+wt                     # pick a workspace or worktree and go there
+wt new <branch> [base] # create the worktree for a branch and open it
+wt rm                  # pick worktrees of this repository to remove
 ```
 
-`wt new` without a base tracks an existing `origin/<branch>` instead of
-branching off the default integration branch, so a branch that only exists on
-the remote is picked up rather than silently recreated. `wt pr` uses `gh`, or
-`az repos pr` when origin is on Azure DevOps; Azure fork heads are not fetchable
-from origin, so those are reported instead of checked out.
+Worktrees are placed at `$WT_ROOT/<owner>/<repo>/<branch>`
+(`~/.local/share/worktrees`, following XDG), outside the `$REPO_ROOT` tree that
+`repo` browses. That layout is what the listing is: a glob over the root, so no
+git process is spawned per row. A `/` in a branch name is folded to `-`, so two
+branches differing only in that separator would share a directory.
 
-Which checkouts exist, where a new one belongs, what state each is in and
-whether removing one would lose work are all [trepo](https://github.com/halkn/trepo),
-configured through `trepo.*` in `.config/git/config` and the global git config.
-Checkouts are placed under `trepo.worktreeRoot`
-(`~/.local/share/trepo/worktrees`, following XDG), so they stay out of the
-`$REPO_ROOT` tree that `repo` browses. The zsh side owns the picker, the row
-layout, `cd` and the herdr workspace that follows; it never recomputes a
-judgement trepo already makes.
+`wt new` picks a branch up where it already is — locally first, then on
+`origin` — and only creates one when there is nothing to pick up, so a branch
+that exists only on the remote is tracked rather than silently forked. A base
+given as the second argument always means a new branch. A new checkout is
+pre-trusted for mise, since it holds code from a repository you already work in.
 
-`wt rm` never removes the main checkout, the worktree you are standing in or a
-locked one, and holds back anything whose removal needs a decision — uncommitted
-changes, ignored files, unpushed commits, a checkout another tool manages —
-naming the reason and asking once before it goes ahead. A merged branch is
-deleted with `git branch -d` only, the same rule as the `git pm` alias. Pull
-requests from a GitHub fork are fetched read-only as `pr-<number>` and are not
-pre-trusted for mise, unlike same-repository branches, so treat such a worktree
-as untrusted before running its tasks or an agent in it.
+`wt rm` leaves the decision to git: a worktree with local changes is refused,
+and the refusal is shown before it asks whether to force it. Unpushed commits do
+not stop a removal, and the branch itself is left behind — delete it with
+`git branch -d` (the same rule as the `git pm` alias) when you are done with it.
+
+Three worktrees are not offered at all, because `git worktree remove` takes each
+of them without complaint: the repository's main checkout, the worktree you are
+standing in (removing it would leave the shell in a directory that is gone) and
+anything under `.claude/worktrees`.
 
 Claude Code creates worktrees of its own, so the two kinds are kept apart:
 
 | | `wt` / herdr | Claude Code |
 | --- | --- | --- |
-| For | branch, pull request and multi-session work a human returns to | isolating a session or a subagent while it runs |
-| Created by | `wt new`, `wt pr`, herdr `alt+g` | `--worktree`, `EnterWorktree`, `isolation: worktree` |
-| Placed in | `~/.local/share/trepo/worktrees/` | `<repo>/.claude/worktrees/` (gitignored) |
-| Removed by | you — `wt rm`, `wt clean`, `ctrl-x` in the `alt+s` picker | Claude Code, on exit or by its periodic sweep |
+| For | branch and multi-session work a human returns to | isolating a session or a subagent while it runs |
+| Created by | `wt new`, herdr `alt+g` | `--worktree`, `EnterWorktree`, `isolation: worktree` |
+| Placed in | `~/.local/share/worktrees/` | `<repo>/.claude/worktrees/` (gitignored) |
+| Removed by | you — `wt rm` | Claude Code, on exit or by its periodic sweep |
 
-`trepo.protected` in `.config/git/config` covers `.claude/worktrees`, so the
-second kind carries a `protected` flag and `wt clean` never reclaims one: a
-sweep is Claude Code's to run, and a locked checkout may still have an agent in
-it. It stays listed in `wt` and `wt rm`, which ask before removing it, for the
-times a sweep leaves one behind.
+Claude Code's are inside the repository and so outside `$WT_ROOT`: they do not
+appear in the `wt` listing, and `wt rm` excludes them by path, so sweeping them
+stays Claude Code's job — one of them may still have an agent running in it.
 
-## Repositories and herdr workspaces
+## Repositories
 
-`repo` opens the navigator below with the repositories under `$REPO_ROOT`
-(`~/repos`) queried for — `repo <words>` narrows it further, and clearing the
-query brings the other places back. `repo get <owner/repo|url>` clones one and
-cd's into the clone.
+`repo` picks a repository under `$REPO_ROOT` (`~/repos`) and cd's into it;
+`repo <words>` opens the picker with those words as the query. `repo get
+<owner/repo|url>` clones one and cd's into the clone, and is a no-op followed by
+a `cd` when the clone is already there. `dot` — an alias in `.zshrc`, since it
+is a fixed destination rather than a picker — jumps straight to this checkout.
 
-Clones are placed at `trepo.root/<host>/<path>` (`$REPO_ROOT`, `~/repos`), with
-the forge-specific spellings of one repository folded onto a single directory.
-Only the two layouts trepo creates are searched — `host/owner/repo` and the
-`host/org/project/repo` Azure DevOps needs — so a repository placed at another
-depth, or a vendored dependency that ships a `.git`, is not picked up.
-`.config/zsh/workflows/repo.zsh` is left with the `cd` that follows.
+Clones land at `$REPO_ROOT/<host>/<owner>/<repo>`, and only that layout plus the
+`<host>/<org>/<project>/<repo>` Azure DevOps needs is searched — a repository
+placed at another depth, or a vendored dependency that ships a `.git`, is not
+picked up.
 
-### One list of places
+### The `wt` listing and herdr
 
-Open workspaces, worktrees and repositories are all somewhere to go, and the
-same checkout used to appear in several lists at once. `wt` (bare), `repo` and
-herdr's `alt+s` popup are one picker instead — `_nav_go` in
-`.config/zsh/workflows/nav.zsh` — differing only in the initial query and in the
-fzf chrome each needs. The candidates are `trepo list` plus the workspaces herdr
-has open, and rows are deduplicated by checkout path: an open workspace hides
-the checkout it is standing on. A repository's main checkout is a row like any
-other — it is where the default branch is checked out — and the checkouts keep
-trepo's own order, so a repository and its worktrees stay together and the
-cursor lands in the same place on every run. Going to a workspace focuses it, to
-a worktree opens it, and to a main checkout creates a workspace with it as the
-cwd (`cd` outside herdr). `Tab` switches to the running agents, and `ctrl-x`
-removes the worktree under the cursor, or shows why trepo kept it.
+`wt` (bare) and herdr's `alt+s` popup are the same picker — `_wt_pick` in
+`.config/zsh/workflows/worktree.zsh`, called with no arguments from both.
+`.config/herdr/herdr-picker.sh` exists only because a herdr popup runs a command
+rather than a shell, so the functions have to be sourced first. The look is the
+picker's own (`_WT_FZF_CHROME`: full screen, preview under the list, shared with
+`wt rm`) rather than `FZF_DEFAULT_OPTS`, which sizes the completions that pop up
+under the cursor.
 
-Outside a herdr session the workspace and agent rows fall away and everything
-degrades to `cd`; the checkouts are unaffected, since trepo reads them from git
+The listing puts the open herdr workspaces first, then every worktree under
+`$WT_ROOT`; the two are not deduplicated, so a worktree that is open appears
+both as its workspace and as itself. Going to a workspace focuses it, going to a
+worktree opens it as a workspace, or focuses the one it already has.
+
+Outside a herdr session the workspace rows fall away and everything degrades to
+`cd`; the worktrees are unaffected, since they are read off the filesystem
 rather than from a session.
 
 ## Tool Manager

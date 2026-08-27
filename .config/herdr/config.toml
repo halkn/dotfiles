@@ -90,7 +90,7 @@ command = "herdr pane split --direction right --ratio 0.3 --focus"
 key = "alt+s"
 type = "popup"
 command = "~/.config/herdr/herdr-picker.sh"
-description = "go to a workspace, worktree, repository or agent"
+description = "go to a workspace or a worktree"
 width = "90%"
 height = "90%"
 

@@ -27,7 +27,6 @@ yq = "latest"
 # vcs
 gh = "latest"
 delta = "latest"
-"github:halkn/trepo" = { version = "latest", minimum_release_age = "0s" }
 
 # editor
 neovim = "stable"
