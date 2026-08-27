@@ -41,6 +41,23 @@ check '_repo_dest (https, .git)' /r/github.com/halkn/dotfiles "$(dest https://gi
 check '_repo_dest (azure)' /r/dev.azure.com/org/project/repo \
   "$(dest https://dev.azure.com/org/project/_git/repo)"
 
+check '_repo_dest (host shorthand)' /r/github.com/halkn/dotfiles \
+  "$(dest github.com/halkn/dotfiles)"
+
+check '_repo_url (owner/repo)' https://github.com/halkn/dotfiles \
+  "$(_repo_url halkn/dotfiles)"
+check '_repo_url (host shorthand)' https://github.com/halkn/dotfiles \
+  "$(_repo_url github.com/halkn/dotfiles)"
+check '_repo_url (azure shorthand)' https://dev.azure.com/org/project/_git/repo \
+  "$(_repo_url dev.azure.com/org/project/_git/repo)"
+
+# A spec git can already read is handed over untouched, so an ssh remote stays
+# ssh instead of being rewritten to https.
+check '_repo_url (ssh)' git@github.com:halkn/dotfiles.git \
+  "$(_repo_url git@github.com:halkn/dotfiles.git)"
+check '_repo_url (https)' https://github.com/halkn/dotfiles.git \
+  "$(_repo_url https://github.com/halkn/dotfiles.git)"
+
 if ((failures > 0)); then
   print -u2 "repo_test: $failures assertion(s) failed"
   exit 1

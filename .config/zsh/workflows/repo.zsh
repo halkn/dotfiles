@@ -49,15 +49,93 @@ _repo_rows() {
   return 0
 }
 
-_repo_get() {
-  local dest
-  (($# == 1)) || {
-    print 'usage: repo get <owner/repo|url>' >&2
+# What git is handed to clone from. A spec carrying a `:` already names a host
+# the way git reads it - a scheme or the scp-like `git@host:path` - and is passed
+# through; a bare path is https, with the first segment read as a host when it
+# looks like one and as a GitHub owner when it does not.
+_repo_url() {
+  local spec=${1:-}
+  case $spec in
+    *:*)
+      print -r -- "$spec"
+      ;;
+    */*)
+      if [[ ${spec%%/*} == *.* ]]; then
+        print -r -- "https://$spec"
+      else
+        print -r -- "https://github.com/$spec"
+      fi
+      ;;
+    *)
+      print -r -- "$spec"
+      ;;
+  esac
+}
+
+# The listing is what is on GitHub, so the clones already under the root are
+# marked rather than dropped: picking one is still a way to go to it. The mark
+# is a path test, which keeps the list free of a process per row.
+_repo_gh_rows() {
+  local root nwo
+  root=$(_repo_root)
+  for nwo in "$@"; do
+    if [[ -d $root/github.com/$nwo ]]; then
+      printf '✓ %s\t%s\n' "$nwo" "$nwo"
+    else
+      printf '  %s\t%s\n' "$nwo" "$nwo"
+    fi
+  done
+  return 0
+}
+
+_repo_gh_pick() {
+  local spec out
+  local -a repos
+  command -v gh >/dev/null 2>&1 || {
+    print 'repo: gh is not installed' >&2
     return 1
   }
-  dest=$(_repo_dest "$1") || return 1
+  command -v fzf >/dev/null 2>&1 || {
+    print 'repo: fzf is not installed' >&2
+    return 1
+  }
+  # gh's own failure - not logged in, offline, rate limited - is what has to be
+  # read, so the list is fetched before the picker opens rather than through a
+  # pipe fzf would paint over.
+  out=$(gh repo list --limit 200 --json nameWithOwner --jq '.[].nameWithOwner') || return 1
+  repos=(${(f)out})
+  ((${#repos})) || {
+    print 'repo: gh listed no repositories' >&2
+    return 1
+  }
+  spec=$(
+    _repo_gh_rows "${repos[@]}" \
+      | fzf --delimiter '\t' --with-nth 1 --accept-nth 2 --ansi \
+        --prompt 'repo get> ' \
+        --header '✓: already cloned' \
+        --preview 'gh repo view {2}'
+  )
+  [[ -n $spec ]] || return 1
+  print -r -- "$spec"
+}
+
+_repo_get() {
+  local spec dest
+  case $# in
+    0)
+      spec=$(_repo_gh_pick) || return 1
+      ;;
+    1)
+      spec=$1
+      ;;
+    *)
+      print 'usage: repo get [<owner/repo|url>]' >&2
+      return 1
+      ;;
+  esac
+  dest=$(_repo_dest "$spec") || return 1
   if [[ ! -d $dest ]]; then
-    git clone "$1" "$dest" || return 1
+    git clone "$(_repo_url "$spec")" "$dest" || return 1
   fi
   cd -- "$dest"
 }
@@ -92,6 +170,7 @@ _repo_preview() {
 
 # repo [<query>...] : pick a repository and cd into it
 # repo get <spec>   : clone into the root and cd into the clone
+# repo get          : pick one of your GitHub repositories to clone
 repo() {
   case ${1:-} in
     get)
@@ -99,7 +178,7 @@ repo() {
       _repo_get "$@"
       ;;
     -h | --help | help)
-      print 'usage: repo [<query>... | get <owner/repo|url>]'
+      print 'usage: repo [<query>... | get [<owner/repo|url>]]'
       ;;
     *)
       _repo_pick "$@"
