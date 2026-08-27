@@ -56,6 +56,7 @@ expect_guard() {
 
 cd -- "$scratch" || exit 1
 expect_guard 'wt: fzf is not installed' wt
+expect_guard 'wt: gh is not installed' wt pr
 expect_guard 'repo: fzf is not installed' repo
 expect_guard 'gst: fzf is not installed' gst
 expect_guard 'ws: fzf is not installed' ws
@@ -85,6 +86,7 @@ rows=$(
 cd -- "$stub_bin" || exit 1
 expect_guard 'wt: fzf is not installed' wt
 expect_guard 'wt: not inside a git repository' wt new topic
+expect_guard 'wt: not inside a git repository' wt pr
 expect_guard 'wt: not inside a git repository' wt rm
 
 # 5. Reaching this line at all is the assertion that none of the above exited

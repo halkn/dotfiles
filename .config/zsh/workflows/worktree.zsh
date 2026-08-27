@@ -40,6 +40,13 @@ _wt_fzf_available() {
   }
 }
 
+_wt_gh_available() {
+  command -v gh >/dev/null 2>&1 || {
+    print 'wt: gh is not installed' >&2
+    return 1
+  }
+}
+
 # The herdr workspace API is served over the session socket, so it only answers
 # from inside a session. The default keeps this usable from the herdr picker,
 # which runs under `set -u`.
@@ -235,6 +242,71 @@ _wt_new() {
   _wt_open_path "$wt_path"
 }
 
+# ── from a pull request ──────────────────────────────
+
+# Rows are `<display>\t<number>`. Fetched before the picker opens rather than
+# from inside it, so a gh failure is reported instead of showing an empty list.
+_wt_pr_rows() {
+  gh pr list --limit 100 \
+    --json number,title,headRefName,author \
+    --template '{{range .}}{{printf "#%-5v %-50.50v %v (@%v)\t%v\n" .number .title .headRefName .author.login .number}}{{end}}'
+}
+
+_wt_pr_pick() {
+  local rows
+  _wt_fzf_available || return 1
+  rows=$(_wt_pr_rows) || return 1
+  [[ -n $rows ]] || {
+    print 'wt: no open pull requests' >&2
+    return 1
+  }
+  print -r -- "$rows" \
+    | fzf "${_WT_FZF_CHROME[@]}" \
+      --delimiter '\t' --with-nth 1 --accept-nth 2 \
+      --prompt 'pr> ' \
+      --preview 'gh pr view {2}'
+}
+
+# Create the worktree for a pull request and open it. The checkout itself is
+# left to `gh pr checkout`, which is the only thing that gets a fork's head
+# right (it fetches refs/pull/<n>/head and sets the push remote), so the
+# worktree is added detached and gh is run inside it.
+#
+# The directory is named after the head branch, as `wt new` does. A fork's
+# branch name is not qualified by its owner, so two pull requests proposing the
+# same branch name collide the way two branches differing only in a `/` do.
+_wt_pr() {
+  local number=${1:-} branch wt_path slug
+  _wt_gh_available || return 1
+  slug=$(_wt_repo_slug) || return 1
+  if [[ -z $number ]]; then
+    number=$(_wt_pr_pick) || return 1
+    [[ -n $number ]] || return 1
+  fi
+  number=${number#\#}
+
+  branch=$(gh pr view "$number" --json headRefName --jq '.headRefName') || return 1
+  [[ -n $branch ]] || {
+    print "wt: could not resolve the head branch of #$number" >&2
+    return 1
+  }
+
+  wt_path=$(_wt_root)/$slug/$(_wt_slug "$branch")
+  if [[ -d $wt_path ]]; then
+    _wt_open_path "$wt_path"
+    return
+  fi
+
+  git worktree add --detach "$wt_path" HEAD >/dev/null || return 1
+  if ! (cd -- "$wt_path" && gh pr checkout "$number"); then
+    git worktree remove --force -- "$wt_path"
+    return 1
+  fi
+
+  _wt_trust_mise "$wt_path"
+  _wt_open_path "$wt_path"
+}
+
 # ── removing ─────────────────────────────────────────
 
 # `git worktree list --porcelain` on stdin, laid out for the picker. Three kinds
@@ -353,6 +425,7 @@ _wt_rm() {
 
 # wt                     : pick a workspace or worktree and go there
 # wt new <branch> [base] : create the worktree for a branch and open it
+# wt pr [<number>]       : create the worktree for a pull request and open it
 # wt rm                  : pick worktrees of this repository to remove
 #
 # The bare form spans every repository; the subcommands act on the one you are
@@ -367,13 +440,18 @@ wt() {
       _wt_in_repo || return 1
       _wt_new "$@"
       ;;
+    pr)
+      shift
+      _wt_in_repo || return 1
+      _wt_pr "$@"
+      ;;
     rm)
       shift
       _wt_in_repo || return 1
       _wt_rm
       ;;
     -h | --help | help)
-      print 'usage: wt [new <branch> [base] | rm]'
+      print 'usage: wt [new <branch> [base] | pr [<number>] | rm]'
       ;;
     *)
       print "wt: unknown subcommand: $1" >&2

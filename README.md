@@ -121,6 +121,7 @@ repository; the subcommands act on the one you are standing in:
 ```sh
 wt                     # pick a workspace or worktree and go there
 wt new <branch> [base] # create the worktree for a branch and open it
+wt pr [<number>]       # create the worktree for a pull request and open it
 wt rm                  # pick worktrees of this repository to remove
 ```
 
@@ -135,6 +136,12 @@ branches differing only in that separator would share a directory.
 that exists only on the remote is tracked rather than silently forked. A base
 given as the second argument always means a new branch. A new checkout is
 pre-trusted for mise, since it holds code from a repository you already work in.
+
+`wt pr` without a number picks from the open pull requests. The checkout is left
+to `gh pr checkout` inside a detached worktree, since that is what gets a fork's
+head right — the branch is named after the pull request's head branch, so two
+pull requests proposing the same branch name from different forks collide the
+same way the `/` folding does.
 
 `wt rm` leaves the decision to git: a worktree with local changes is refused,
 and the refusal is shown before it asks whether to force it. Unpushed commits do
