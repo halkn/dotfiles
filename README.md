@@ -164,8 +164,13 @@ stays Claude Code's job — one of them may still have an agent running in it.
 `repo` picks a repository under `$REPO_ROOT` (`~/repos`) and cd's into it;
 `repo <words>` opens the picker with those words as the query. `repo get
 <owner/repo|url>` clones one and cd's into the clone, and is a no-op followed by
-a `cd` when the clone is already there. `dot` — an alias in `.zshrc`, since it
-is a fixed destination rather than a picker — jumps straight to this checkout.
+a `cd` when the clone is already there. The spec may drop the scheme: `owner/repo`
+and `github.com/owner/repo` are both cloned over https, and a first segment that
+looks like a host (`dev.azure.com/...`) is used as one. `repo get` with no
+argument lists your GitHub repositories through `gh` and clones the one picked;
+the ones already under the root are marked rather than hidden. `dot` — an alias
+in `.zshrc`, since it is a fixed destination rather than a picker — jumps
+straight to this checkout.
 
 Clones land at `$REPO_ROOT/<host>/<owner>/<repo>`, and only that layout plus the
 `<host>/<org>/<project>/<repo>` Azure DevOps needs is searched — a repository
