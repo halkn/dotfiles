@@ -1,20 +1,16 @@
 #!/bin/zsh
-# alt+s in herdr. Everything the picker does - listing the places and the
-# agents, previewing, going there, removing a worktree - is `nav` (see
-# .config/zsh/workflows/nav.zsh), the same code `wt` and `repo` run. Only the
-# chrome differs, because this one opens in a herdr popup rather than in a
-# terminal that already has a shell in it.
+# alt+s in herdr. The listing, the preview and the jump are `wt` (see
+# .config/zsh/workflows/worktree.zsh); only the chrome differs, because this one
+# opens in a popup rather than in a terminal that already has a shell in it.
 set -euo pipefail
 
 zsh_workflows=${XDG_CONFIG_HOME:-$HOME/.config}/zsh/workflows
-for lib in repo.zsh worktree.zsh nav.zsh; do
-  if [[ -r $zsh_workflows/$lib ]]; then
-    source "$zsh_workflows/$lib"
-  fi
-done
+if [[ -r $zsh_workflows/worktree.zsh ]]; then
+  source "$zsh_workflows/worktree.zsh"
+fi
 
-whence _nav_go >/dev/null || {
-  print -u2 "herdr-picker: $zsh_workflows/nav.zsh not found"
+whence _wt_pick >/dev/null || {
+  print -u2 "herdr-picker: $zsh_workflows/worktree.zsh not found"
   exit 1
 }
 
@@ -24,7 +20,7 @@ whence _nav_go >/dev/null || {
 #
 # A cancelled picker is not a failure, and `set -e` would otherwise make the
 # popup close on a non-zero status.
-_nav_go herdr-picker '' \
+_wt_pick herdr-picker \
   --height=100% \
   --style=full \
   --border-label=' herdr ' \
