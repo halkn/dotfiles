@@ -32,6 +32,10 @@ _ws_place_rows() {
   # The default is for the `set -u` the herdr popup runs with: an unset variable
   # would otherwise end the listing.
   for dir in ${(s.:.)${WS_PLACES:-}}; do
+    # A `~` written by hand is expanded the way repo.zsh expands $REPO_ROOT:
+    # unexpanded, it would be dropped below as a path this machine does not
+    # have, which is indistinguishable from the drop that is meant.
+    dir=${dir/#\~/$HOME}
     [[ -d $dir ]] || continue
     printf 'dir  %s\t%s\n' "${dir/#$HOME/~}" "${dir:A}"
   done

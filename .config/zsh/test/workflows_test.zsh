@@ -61,20 +61,24 @@ expect_guard 'gst: fzf is not installed' gst
 expect_guard 'ws: fzf is not installed' ws
 
 # The places listing is shared by every machine, so a path that is not on this
-# one is dropped rather than offered as a row that cannot be opened.
-export WS_PLACES="$scratch:$scratch/absent"
+# one is dropped rather than offered as a row that cannot be opened. A `~`
+# written by hand is expanded first, since an unexpanded one would be dropped by
+# that same test with no way to tell the two apart. The tab pins the assertions
+# to the path column, which is what the picker acts on.
+export WS_PLACES="$scratch:$scratch/absent:~"
 places=$(_ws_place_rows)
-[[ $places == *"$scratch"* ]] || fail "_ws_place_rows: expected $scratch in the listing"
+[[ $places == *$'\t'"${scratch:A}"* ]] || fail "_ws_place_rows: expected ${scratch:A} in the listing"
 [[ $places != *"$scratch/absent"* ]] || fail '_ws_place_rows: listed a directory that does not exist'
+[[ $places == *$'\t'"${HOME:A}"* ]] || fail '_ws_place_rows: dropped a ~ entry instead of expanding it'
 
-# ws lists the repositories through repo.zsh, and both files are loaded above:
-# the listing has to survive the other order too, which is what the herdr popup
-# gets when it sources workspace.zsh alone.
+# ws lists the repositories through repo.zsh, which workflow files do not source
+# for each other. The herdr popup loads both, but a caller that loads
+# workspace.zsh alone has to get the places rather than an error.
 rows=$(
   unset -f _repo_rows
   _ws_rows
 ) || fail '_ws_rows: failed without repo.zsh'
-[[ $rows == *"$scratch"* ]] || fail '_ws_rows: dropped the places when repo.zsh was absent'
+[[ $rows == *$'\t'"${scratch:A}"* ]] || fail '_ws_rows: dropped the places when repo.zsh was absent'
 
 # 4. `wt` spans every repository, so outside a work tree it is still the picker
 # that is missing; only the subcommands need a repository to act on.
