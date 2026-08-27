@@ -8,6 +8,17 @@
 
 _WT_LIB=${${(%):-%x}:A}
 
+# The pickers below take the whole screen with the preview under the list.
+# FZF_DEFAULT_OPTS is sized for a completion popped up under the cursor, which
+# is not what these are: they are the window while they are open, and the herdr
+# popup they also run in is too narrow for a preview beside the list.
+typeset -ga _WT_FZF_CHROME=(
+  --height=100%
+  --style=full
+  --border-label=' wt '
+  --preview-window 'down:60%:wrap'
+)
+
 # All worktrees live at <root>/<owner>/<repo>/<branch-slug>, which is what lets
 # the listing be a glob instead of a git call per repository.
 _wt_root() {
@@ -24,7 +35,7 @@ _wt_in_repo() {
 
 _wt_fzf_available() {
   command -v fzf >/dev/null 2>&1 || {
-    print "${1:-wt}: fzf is not installed" >&2
+    print 'wt: fzf is not installed' >&2
     return 1
   }
 }
@@ -174,21 +185,16 @@ _wt_open() {
   esac
 }
 
-# Pick a place and go there. $1 names the calling command so its guard message
-# reads as that command; the rest is fzf chrome, which is the only thing `wt`
-# and the herdr popup do not share.
+# Pick a place and go there.
 _wt_pick() {
-  local name=${1:-wt} entry
-  if (($# > 0)); then
-    shift
-  fi
-  _wt_fzf_available "$name" || return 1
+  local entry
+  _wt_fzf_available || return 1
   entry=$(
     _wt_rows \
-      | fzf --delimiter '\t' --with-nth 1 --accept-nth 2 --ansi \
+      | fzf "${_WT_FZF_CHROME[@]}" \
+        --delimiter '\t' --with-nth 1 --accept-nth 2 --ansi \
         --prompt 'go> ' \
-        --preview "source ${_WT_LIB}; _wt_preview {2} {3}" \
-        "$@"
+        --preview "source ${_WT_LIB}; _wt_preview {2} {3}"
   )
   [[ -n $entry ]] || return 1
   _wt_open "$entry"
@@ -296,7 +302,8 @@ _wt_rm() {
   # process group, so it blocks on /dev/tty (SIGTTIN) and wt hangs.
   tmp=$(mktemp "${TMPDIR:-/tmp}/wt-rm.XXXXXX") || return 1
   print -r -- "$rows" \
-    | fzf --multi --delimiter '\t' --with-nth 1 --accept-nth 2 \
+    | fzf "${_WT_FZF_CHROME[@]}" \
+      --multi --delimiter '\t' --with-nth 1 --accept-nth 2 \
       --prompt 'remove> ' \
       --header 'Tab: toggle / Enter: remove selected' \
       --preview "source ${_WT_LIB}; _wt_preview worktree:{2} {2}" >|"$tmp"
@@ -326,7 +333,7 @@ _wt_rm() {
 wt() {
   case ${1:-} in
     '')
-      _wt_pick wt
+      _wt_pick
       ;;
     new)
       shift

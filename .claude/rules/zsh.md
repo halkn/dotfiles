@@ -23,7 +23,8 @@ paths:
 
 - `.zshrc` が glob で source するので登録は不要。読み込み順に依存させない（相互 source をしない）
 - **ファイル冒頭で `return 0` しない。** function は常に定義し、依存判定は各エントリポイントの内部で行って `<コマンド名>: <tool> is not installed` を stderr に出し非 0 で返す。file-level guard だと function 自体が消えて `command not found` になり、herdr から単独 source されるファイルでは沈黙して壊れる
-- ピッカーはコマンドごとに 1 本持つ（`wt` は `_wt_pick`、`repo` は `_repo_pick`）。行の意味も遷移先も違うものを 1 本に畳まない。`.config/herdr/herdr-picker.sh` は `_wt_pick` に chrome だけを渡す。picker script は `worktree.zsh` を絶対パスで source するので、移動・改名は herdr 側の参照と同時に直す
+- ピッカーはコマンドごとに 1 本持つ（`wt` は `_wt_pick`、`repo` は `_repo_pick`）。行の意味も遷移先も違うものを 1 本に畳まない
+- 全画面で開くピッカーの見た目は呼び出し側ではなく workflow が持つ（`worktree.zsh` の `_WT_FZF_CHROME`）。`.config/herdr/herdr-picker.sh` は source して関数を呼ぶだけにする。`FZF_DEFAULT_OPTS` はカーソル下に出る補完用の寸法なので、そこへ寄せない。picker script は `worktree.zsh` を絶対パスで source するので、移動・改名は herdr 側の参照と同時に直す
 - `worktree.zsh` の関数は `set -euo pipefail` 下（herdr picker・fzf の preview）で走る。herdr や jq を呼ぶ箇所は結果を変数に受けてから出力し、途中の失敗で一覧や preview 全体が消えないようにする
 - `.claude/worktrees/` の lifecycle は Claude Code が持つ。`$WT_ROOT` の外にあるので `wt` の一覧には出ない
 - OS 固有処理は必要箇所に局所化する。workflow に macOS / WSL の分岐を持ち込まない

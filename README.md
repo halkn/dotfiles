@@ -168,8 +168,14 @@ picked up.
 ### The `wt` listing and herdr
 
 `wt` (bare) and herdr's `alt+s` popup are the same picker — `_wt_pick` in
-`.config/zsh/workflows/worktree.zsh` — differing only in the fzf chrome each
-needs. It lists the open herdr workspaces first, then every worktree under
+`.config/zsh/workflows/worktree.zsh`, called with no arguments from both.
+`.config/herdr/herdr-picker.sh` exists only because a herdr popup runs a command
+rather than a shell, so the functions have to be sourced first. The look is the
+picker's own (`_WT_FZF_CHROME`: full screen, preview under the list, shared with
+`wt rm`) rather than `FZF_DEFAULT_OPTS`, which sizes the completions that pop up
+under the cursor.
+
+The listing puts the open herdr workspaces first, then every worktree under
 `$WT_ROOT`; the two are not deduplicated, so a worktree that is open appears
 both as its workspace and as itself. Going to a workspace focuses it, going to a
 worktree opens it as a workspace, or focuses the one it already has.
