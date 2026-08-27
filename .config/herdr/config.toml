@@ -95,6 +95,14 @@ width = "90%"
 height = "90%"
 
 [[keys.command]]
+key = "alt+n"
+type = "popup"
+command = "~/.config/herdr/herdr-open.sh"
+description = "open a workspace on a repository or a place"
+width = "90%"
+height = "90%"
+
+[[keys.command]]
 key = "alt+t"
 type = "popup"
 command = "exec \"${SHELL:-sh}\""
