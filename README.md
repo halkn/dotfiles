@@ -91,7 +91,7 @@ split into a portable core and workflows named after what they do:
 | Location | Holds |
 | --- | --- |
 | `.zshrc` | The portable core (history, options, completion, keybindings, aliases) plus lightweight tool setup guarded by `command -v`, so a machine without those tools still gets a working shell |
-| `workflows/*.zsh` | Own commands, grouped by the task rather than by the tool: `repo` (`repo`), `worktree` (`wt`), `git` (`gst`) |
+| `workflows/*.zsh` | Own commands, grouped by the task rather than by the tool: `repo` (`repo`), `worktree` (`wt`), `workspace` (`ws`), `git` (`gst`) |
 
 Splitting by task rather than by tool keeps a backend swap out of the file
 layout. The workflow files also carry no dependency guard at file level: they
@@ -176,6 +176,23 @@ Clones land at `$REPO_ROOT/<host>/<owner>/<repo>`, and only that layout plus the
 `<host>/<org>/<project>/<repo>` Azure DevOps needs is searched — a repository
 placed at another depth, or a vendored dependency that ships a `.git`, is not
 picked up.
+
+### Starting somewhere: `ws`
+
+`ws` (`.config/zsh/workflows/workspace.zsh`, herdr's `alt+n`) picks where to
+start working: the repositories `repo` lists, plus the directories that are not
+repositories but are worked in anyway — `$HOME` and the temp dir by default,
+held in `$WS_PLACES` (`:`-separated, like PATH). Inside herdr the choice becomes
+a new workspace; outside it degrades to `cd`.
+
+A path this machine does not have is dropped from the listing, so a WSL `/mnt/c`
+is added with `WS_PLACES=$WS_PLACES:/mnt/c` in `.zshenv.local` and the OS stays
+out of the workflow. The repository rows come from `repo`'s own listing:
+workflow files do not source each other, so `ws` calls it when it is loaded and
+falls back to the places alone when it is not.
+
+`ws` only opens. Going to something that is already open — a worktree, a
+workspace — is `wt`'s listing below.
 
 ### The `wt` listing and herdr
 
