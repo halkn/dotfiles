@@ -17,6 +17,12 @@ export XDG_CONFIG_HOME XDG_CACHE_HOME XDG_DATA_HOME XDG_BIN_HOME XDG_STATE_HOME
 : "${REPO_ROOT:=$HOME/repos}"
 export REPO_ROOT
 
+# Directories outside $REPO_ROOT that `ws` also offers, `:`-separated the way
+# PATH is. A machine adds its own with `WS_PLACES=$WS_PLACES:/mnt/c` in
+# .zshenv.local, which keeps the OS out of the workflow.
+: "${WS_PLACES:=$HOME:${TMPDIR:-/tmp}}"
+export WS_PLACES
+
 # zsh
 skip_global_compinit=1
 
