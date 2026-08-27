@@ -106,8 +106,3 @@ repo() {
       ;;
   esac
 }
-
-# dot - jump to this dotfiles checkout.
-dot() {
-  cd -- "$(_repo_root)/github.com/halkn/dotfiles"
-}

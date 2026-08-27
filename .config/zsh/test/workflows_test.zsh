@@ -38,7 +38,7 @@ for f in "$workflows_dir"/*.zsh; do
 done
 
 # 2. Every entry point is defined even though its dependencies are missing.
-for fn in wt repo dot gst; do
+for fn in wt repo gst; do
   whence -w "$fn" >/dev/null 2>&1 || fail "$fn is not defined"
 done
 
