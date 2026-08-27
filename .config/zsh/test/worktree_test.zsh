@@ -52,12 +52,31 @@ rows=$(
   printf 'worktree /w/wt/topic\nHEAD def\nbranch refs/heads/feature/a\n\n'
   printf 'worktree /w/wt/loose\nHEAD 012\ndetached\n\n'
 )
-check '_wt_repo_rows' \
+check '_wt_repo_rows_filter' \
   "$(
     printf '%-40s %s\t%s\n' 'feature/a' '/w/wt/topic' '/w/wt/topic'
     printf '%-40s %s\t%s' '(detached)' '/w/wt/loose' '/w/wt/loose'
   )" \
-  "$(print -r -- "$rows" | _wt_repo_rows_filter)"
+  "$(print -r -- "$rows" | _wt_repo_rows_filter /elsewhere)"
+
+# `git worktree remove` takes the worktree you are standing in without
+# complaint, leaving the shell in a directory that is gone, so it is not offered.
+check '_wt_repo_rows_filter (standing in one)' \
+  "$(printf '%-40s %s\t%s' '(detached)' '/w/wt/loose' '/w/wt/loose')" \
+  "$(print -r -- "$rows" | _wt_repo_rows_filter /w/wt/topic)"
+
+check '_wt_repo_rows_filter (standing below one)' \
+  "$(printf '%-40s %s\t%s' '(detached)' '/w/wt/loose' '/w/wt/loose')" \
+  "$(print -r -- "$rows" | _wt_repo_rows_filter /w/wt/topic/src/deep)"
+
+# Claude Code owns the lifecycle of its own checkouts, and one of them may still
+# have an agent running in it.
+protected=$(
+  printf 'worktree /w/repo\nHEAD abc\nbranch refs/heads/main\n\n'
+  printf 'worktree /w/repo/.claude/worktrees/session\nHEAD def\nbranch refs/heads/agent\n\n'
+)
+check '_wt_repo_rows_filter (claude worktree)' '' \
+  "$(print -r -- "$protected" | _wt_repo_rows_filter /elsewhere)"
 
 if ((failures > 0)); then
   print -u2 "worktree_test: $failures assertion(s) failed"

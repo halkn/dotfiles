@@ -237,13 +237,28 @@ _wt_new() {
 
 # ── removing ─────────────────────────────────────────
 
-# `git worktree list --porcelain` on stdin, main checkout excluded: git puts it
-# first. Kept apart from the call below so a test can pin the columns down.
+# `git worktree list --porcelain` on stdin, laid out for the picker. Three kinds
+# of row are withheld, because `git worktree remove` takes all three without
+# complaint and each one costs something that cannot be undone by hand:
+#
+#   - the main checkout, which git lists first
+#   - the worktree $1 is standing in: removing it leaves the shell in a
+#     directory that no longer exists
+#   - anything under .claude/worktrees, whose lifecycle is Claude Code's and
+#     which may still have an agent running in it
+#
+# Kept apart from the call below so a test can pin the columns and the
+# exclusions down.
 _wt_repo_rows_filter() {
-  awk '
+  awk -v cwd="${1:-}" '
+    function keep(p) {
+      if (p == cwd || index(cwd, p "/") == 1) return 0
+      if (index(p, "/.claude/worktrees/") > 0) return 0
+      return 1
+    }
     function flush() {
       if (wt == "") return
-      if (++n > 1) printf "%-40s %s\t%s\n", br, wt, wt
+      if (++n > 1 && keep(wt)) printf "%-40s %s\t%s\n", br, wt, wt
       wt = ""; br = ""
     }
     /^worktree / { flush(); wt = substr($0, 10); next }
@@ -253,9 +268,10 @@ _wt_repo_rows_filter() {
   '
 }
 
-# The worktrees of this repository.
+# The worktrees of this repository. git reports resolved paths, so the working
+# directory is resolved too or the two spellings would not compare.
 _wt_repo_rows() {
-  git worktree list --porcelain 2>/dev/null | _wt_repo_rows_filter
+  git worktree list --porcelain 2>/dev/null | _wt_repo_rows_filter "${PWD:A}"
 }
 
 _wt_confirm() {
@@ -270,8 +286,15 @@ _wt_confirm() {
 
 # Whether a worktree may go is git's own answer: it refuses one with local
 # changes. Asking again with --force is the caller taking that decision.
+#
+# The one thing git does not refuse is the worktree the caller is standing in,
+# which it removes out from under the shell, so that is refused here.
 _wt_remove_path() {
-  local wt_path=${1:A} ws message rc
+  local wt_path=${1:A} root ws message rc
+  if [[ ${PWD:A} == "$wt_path" || ${PWD:A} == "$wt_path"/* ]]; then
+    print "wt: cannot remove the worktree you are standing in: $wt_path" >&2
+    return 1
+  fi
   ws=$(_wt_workspace_id "$wt_path")
   message=$(git worktree remove -- "$wt_path" 2>&1)
   rc=$?
@@ -280,7 +303,11 @@ _wt_remove_path() {
     _wt_confirm "remove ${wt_path:t} anyway?" || return 1
     git worktree remove --force -- "$wt_path" || return 1
   fi
-  rmdir -- "${wt_path:h}" 2>/dev/null || true
+  # Only inside the root this file lays out: elsewhere the parent belongs to
+  # whoever put the worktree there. Resolved on both sides, since $wt_path is
+  # and a root reached through a symlink would not compare otherwise.
+  root=$(_wt_root)
+  [[ $wt_path == "${root:A}"/* ]] && rmdir -- "${wt_path:h}" 2>/dev/null
   if [[ -n $ws ]]; then
     herdr workspace close "$ws" >/dev/null 2>&1 || true
   fi

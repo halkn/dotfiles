@@ -141,6 +141,11 @@ and the refusal is shown before it asks whether to force it. Unpushed commits do
 not stop a removal, and the branch itself is left behind — delete it with
 `git branch -d` (the same rule as the `git pm` alias) when you are done with it.
 
+Three worktrees are not offered at all, because `git worktree remove` takes each
+of them without complaint: the repository's main checkout, the worktree you are
+standing in (removing it would leave the shell in a directory that is gone) and
+anything under `.claude/worktrees`.
+
 Claude Code creates worktrees of its own, so the two kinds are kept apart:
 
 | | `wt` / herdr | Claude Code |
@@ -150,8 +155,9 @@ Claude Code creates worktrees of its own, so the two kinds are kept apart:
 | Placed in | `~/.local/share/worktrees/` | `<repo>/.claude/worktrees/` (gitignored) |
 | Removed by | you — `wt rm` | Claude Code, on exit or by its periodic sweep |
 
-Claude Code's are inside the repository and so outside `$WT_ROOT`: they never
-appear in the `wt` listing, and sweeping them stays Claude Code's job.
+Claude Code's are inside the repository and so outside `$WT_ROOT`: they do not
+appear in the `wt` listing, and `wt rm` excludes them by path, so sweeping them
+stays Claude Code's job — one of them may still have an agent running in it.
 
 ## Repositories
 
