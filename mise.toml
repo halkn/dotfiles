@@ -103,6 +103,10 @@ set -uo pipefail
 
 failed=()
 
+# The machines this repository is deployed on: Apple Silicon macOS and WSL. Locking only these
+# keeps the lockfiles reviewable, at the cost of a re-resolve on any other platform.
+PLATFORMS="macos-arm64,linux-x64"
+
 step() {
   local name=$1
   shift
@@ -121,6 +125,11 @@ optional_step() {
 
 step "mise self-update" mise self-update --yes
 step "mise upgrade" mise upgrade
+# `mise upgrade` only writes lockfile entries for the platform it runs on, so the other
+# platform's URLs and checksums would stay on the previous version. Both config roots are
+# locked because each keeps its own lockfile.
+step "lockfile platforms" mise lock --platform "$PLATFORMS"
+step "lockfile platforms (global)" mise lock --global --platform "$PLATFORMS"
 step "bootstrap packages" mise bootstrap packages upgrade
 step "bootstrap repos" mise bootstrap repos update --yes
 # herdr has no `plugin update`; reinstalling replaces the managed checkout and keeps plugin

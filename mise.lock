@@ -7,40 +7,15 @@ backend = "github:EmmyLuaLs/emmylua-analyzer-rust"
 [tools.emmylua_check.options]
 matching = "emmylua_check"
 
-[tools.emmylua_check."platforms.linux-arm64"]
-checksum = "sha256:62a9a56d3ff5d0e108909332cb91582a0c1a4ebbfdce1a4422e7ae74d4a7f8b1"
-url = "https://github.com/EmmyLuaLs/emmylua-analyzer-rust/releases/download/0.25.1/emmylua_check-linux-aarch64-glibc.2.17.tar.gz"
-url_api = "https://api.github.com/repos/EmmyLuaLs/emmylua-analyzer-rust/releases/assets/514398175"
-
-[tools.emmylua_check."platforms.linux-arm64-musl"]
-checksum = "sha256:62a9a56d3ff5d0e108909332cb91582a0c1a4ebbfdce1a4422e7ae74d4a7f8b1"
-url = "https://github.com/EmmyLuaLs/emmylua-analyzer-rust/releases/download/0.25.1/emmylua_check-linux-aarch64-glibc.2.17.tar.gz"
-url_api = "https://api.github.com/repos/EmmyLuaLs/emmylua-analyzer-rust/releases/assets/514398175"
-
 [tools.emmylua_check."platforms.linux-x64"]
 checksum = "sha256:e4a700af4921e2d908e2f7299eaa86e3e1b3b265e27225ab33c7eb03ebc2187d"
 url = "https://github.com/EmmyLuaLs/emmylua-analyzer-rust/releases/download/0.25.1/emmylua_check-linux-x64-glibc.2.17.tar.gz"
 url_api = "https://api.github.com/repos/EmmyLuaLs/emmylua-analyzer-rust/releases/assets/514398186"
 
-[tools.emmylua_check."platforms.linux-x64-musl"]
-checksum = "sha256:6ce2e19d0a82ed901c2c67a18567b340447682f843c7a0a82098e50e8d2f107e"
-url = "https://github.com/EmmyLuaLs/emmylua-analyzer-rust/releases/download/0.25.1/emmylua_check-linux-x64.tar.gz"
-url_api = "https://api.github.com/repos/EmmyLuaLs/emmylua-analyzer-rust/releases/assets/514398182"
-
 [tools.emmylua_check."platforms.macos-arm64"]
 checksum = "sha256:eeaad59d173cb8d7cb0fe778936d7b584fe114a3eb46587ef3e4aec24b605af4"
 url = "https://github.com/EmmyLuaLs/emmylua-analyzer-rust/releases/download/0.25.1/emmylua_check-darwin-arm64.tar.gz"
 url_api = "https://api.github.com/repos/EmmyLuaLs/emmylua-analyzer-rust/releases/assets/514398192"
-
-[tools.emmylua_check."platforms.macos-x64"]
-checksum = "sha256:e91fe82c361d8dece8e2ce9aeb2313b8809b4714f72bbbeab5a27e754d8de2c6"
-url = "https://github.com/EmmyLuaLs/emmylua-analyzer-rust/releases/download/0.25.1/emmylua_check-darwin-x64.tar.gz"
-url_api = "https://api.github.com/repos/EmmyLuaLs/emmylua-analyzer-rust/releases/assets/514398193"
-
-[tools.emmylua_check."platforms.windows-x64"]
-checksum = "sha256:577982e68d925972d8ae35f54b5f384ad77a84a2e31e340bd663d1efd2ef5983"
-url = "https://github.com/EmmyLuaLs/emmylua-analyzer-rust/releases/download/0.25.1/emmylua_check-win32-x64.zip"
-url_api = "https://api.github.com/repos/EmmyLuaLs/emmylua-analyzer-rust/releases/assets/514398153"
 
 [[tools.emmylua_ls]]
 version = "0.25.1"
@@ -49,61 +24,21 @@ backend = "github:EmmyLuaLs/emmylua-analyzer-rust"
 [tools.emmylua_ls.options]
 matching = "emmylua_ls"
 
-[tools.emmylua_ls."platforms.linux-arm64"]
-checksum = "sha256:210535be13c31ceefcdd0f8451eb4c0d3d430887fc2c382eaf82484a9187220d"
-url = "https://github.com/EmmyLuaLs/emmylua-analyzer-rust/releases/download/0.25.1/emmylua_ls-linux-aarch64-glibc.2.17.tar.gz"
-url_api = "https://api.github.com/repos/EmmyLuaLs/emmylua-analyzer-rust/releases/assets/514398173"
-
-[tools.emmylua_ls."platforms.linux-arm64-musl"]
-checksum = "sha256:210535be13c31ceefcdd0f8451eb4c0d3d430887fc2c382eaf82484a9187220d"
-url = "https://github.com/EmmyLuaLs/emmylua-analyzer-rust/releases/download/0.25.1/emmylua_ls-linux-aarch64-glibc.2.17.tar.gz"
-url_api = "https://api.github.com/repos/EmmyLuaLs/emmylua-analyzer-rust/releases/assets/514398173"
-
 [tools.emmylua_ls."platforms.linux-x64"]
 checksum = "sha256:9731ec340b1b40916555dcb31c1c539beee9fa184997962c9af250c42b316950"
 url = "https://github.com/EmmyLuaLs/emmylua-analyzer-rust/releases/download/0.25.1/emmylua_ls-linux-x64-glibc.2.17.tar.gz"
 url_api = "https://api.github.com/repos/EmmyLuaLs/emmylua-analyzer-rust/releases/assets/514398180"
-
-[tools.emmylua_ls."platforms.linux-x64-musl"]
-checksum = "sha256:8f4096468da37654049169dc2e1283e7685348e5215cc144a27f9988befac590"
-url = "https://github.com/EmmyLuaLs/emmylua-analyzer-rust/releases/download/0.25.1/emmylua_ls-linux-x64.tar.gz"
-url_api = "https://api.github.com/repos/EmmyLuaLs/emmylua-analyzer-rust/releases/assets/514398174"
 
 [tools.emmylua_ls."platforms.macos-arm64"]
 checksum = "sha256:335023043cbc9ad683a13b24eb79f709a370215daf53673276b9a9663df96504"
 url = "https://github.com/EmmyLuaLs/emmylua-analyzer-rust/releases/download/0.25.1/emmylua_ls-darwin-arm64.tar.gz"
 url_api = "https://api.github.com/repos/EmmyLuaLs/emmylua-analyzer-rust/releases/assets/514398161"
 
-[tools.emmylua_ls."platforms.macos-x64"]
-checksum = "sha256:abc9cbe2e8d28624e0d441fa55055b1196f73251b034356d717b0e58b562f182"
-url = "https://github.com/EmmyLuaLs/emmylua-analyzer-rust/releases/download/0.25.1/emmylua_ls-darwin-x64.tar.gz"
-url_api = "https://api.github.com/repos/EmmyLuaLs/emmylua-analyzer-rust/releases/assets/514398163"
-
-[tools.emmylua_ls."platforms.windows-x64"]
-checksum = "sha256:82efa133287f67be09e1a624d8efecd8063832ec2b9bf9279c37afc5f42118bd"
-url = "https://github.com/EmmyLuaLs/emmylua-analyzer-rust/releases/download/0.25.1/emmylua_ls-win32-x64.zip"
-url_api = "https://api.github.com/repos/EmmyLuaLs/emmylua-analyzer-rust/releases/assets/514398152"
-
 [[tools.stylua]]
 version = "2.5.2"
 backend = "aqua:JohnnyMorganz/StyLua"
 
-[tools.stylua."platforms.linux-arm64"]
-checksum = "sha256:0ef2ebf0b7e5a652b65c4cb96c6d9ffb3981a98547de3c764465bbf54a8d761a"
-url = "https://github.com/JohnnyMorganz/StyLua/releases/download/v2.5.2/stylua-linux-aarch64.zip"
-url_api = "https://api.github.com/repos/JohnnyMorganz/StyLua/releases/assets/421900973"
-
-[tools.stylua."platforms.linux-arm64-musl"]
-checksum = "sha256:b948df6b4bae41af9a70948174372f96a3c14d44e3e017288701539f3db8fb75"
-url = "https://github.com/JohnnyMorganz/StyLua/releases/download/v2.5.2/stylua-linux-aarch64-musl.zip"
-url_api = "https://api.github.com/repos/JohnnyMorganz/StyLua/releases/assets/421900982"
-
 [tools.stylua."platforms.linux-x64"]
-checksum = "sha256:ca6f1cf52eaf69e6632b81acef9c197aa24b85eb30d2455a35e7dbe28ae77c72"
-url = "https://github.com/JohnnyMorganz/StyLua/releases/download/v2.5.2/stylua-linux-x86_64-musl.zip"
-url_api = "https://api.github.com/repos/JohnnyMorganz/StyLua/releases/assets/421901066"
-
-[tools.stylua."platforms.linux-x64-musl"]
 checksum = "sha256:ca6f1cf52eaf69e6632b81acef9c197aa24b85eb30d2455a35e7dbe28ae77c72"
 url = "https://github.com/JohnnyMorganz/StyLua/releases/download/v2.5.2/stylua-linux-x86_64-musl.zip"
 url_api = "https://api.github.com/repos/JohnnyMorganz/StyLua/releases/assets/421901066"
@@ -113,12 +48,3 @@ checksum = "sha256:92ff0889e16324801bc072692974bb67f8161e62010fc90f96c62a17f81f3
 url = "https://github.com/JohnnyMorganz/StyLua/releases/download/v2.5.2/stylua-macos-aarch64.zip"
 url_api = "https://api.github.com/repos/JohnnyMorganz/StyLua/releases/assets/421901102"
 
-[tools.stylua."platforms.macos-x64"]
-checksum = "sha256:53c50a1605d0a6345d160a1a5a21db40bcf2bf9cd23c17f7c277a63a1bff3a7f"
-url = "https://github.com/JohnnyMorganz/StyLua/releases/download/v2.5.2/stylua-macos-x86_64.zip"
-url_api = "https://api.github.com/repos/JohnnyMorganz/StyLua/releases/assets/421901085"
-
-[tools.stylua."platforms.windows-x64"]
-checksum = "sha256:e77d0ea1226b8b389b43f702240091249a96eea25857281f90ea24d0eb9eb969"
-url = "https://github.com/JohnnyMorganz/StyLua/releases/download/v2.5.2/stylua-windows-x86_64.zip"
-url_api = "https://api.github.com/repos/JohnnyMorganz/StyLua/releases/assets/421902292"
