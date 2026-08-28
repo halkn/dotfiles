@@ -6,6 +6,9 @@ lockfile = true
 # can be yanked upstream before any machine picks it up. Tools published from this account opt
 # out per tool below, because their releases are made here and need no such window.
 minimum_release_age = "3d"
+# The machines this repository is deployed on: Apple Silicon macOS and WSL. Without this, locking
+# targets every common platform, so the lockfiles carry entries no machine here ever installs.
+lockfile_platforms = ["macos-arm64", "linux-x64"]
 
 [tools]
 # dev

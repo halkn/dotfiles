@@ -238,9 +238,9 @@ committed, and only `mise run update` is allowed to move the versions in them
 — `mise run setup` and `mise run sync` install what the lockfiles already pin.
 A lockfile diff after `update` is the update itself; commit it. A lockfile diff
 after `setup` or `sync` means a newly declared tool had no locked version yet,
-so commit that too. Both lockfiles cover `macos-arm64` and `linux-x64` only, which `mise run
-update` re-locks explicitly because an upgrade records just the platform it ran
-on. Versions only move to releases older than
+so commit that too. Both lockfiles cover the platforms named in the `lockfile_platforms` setting
+(`macos-arm64` and `linux-x64`), and `mise run update` runs `mise lock` for
+both config roots because an upgrade only records the platform it ran on. Versions only move to releases older than
 `minimum_release_age` (3 days), so a just-published release is not selectable
 yet; tools published from this account opt out with a per-tool
 `minimum_release_age = "0s"`.
