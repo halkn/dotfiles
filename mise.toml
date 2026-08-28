@@ -152,6 +152,7 @@ depends = [
   "lint:shell",
   "lint:nvim",
   "lint:rules",
+  "lint:dotfiles",
   "test:zsh",
 ]
 dir = "{{config_root}}"
@@ -185,6 +186,30 @@ for f in .claude/rules/*.md(N); do
   n=$(wc -l < "$f")
   if ((n > 40)); then
     print "$f: $n lines exceeds the 40-line budget; move procedures and measurements to a skill" >&2
+    rc=1
+  fi
+done
+exit $rc
+"""
+
+# `claude/` is linked file by file, so an undeclared file is not deployed and nothing fails
+# loudly. Other [dotfiles] entries link a whole directory and cover their new files on their own.
+[tasks."lint:dotfiles"]
+hide = true
+dir = "{{config_root}}"
+run = """
+#!/usr/bin/env zsh
+set -uo pipefail
+typeset -A declared
+for src in ${(f)"$(yq -p toml -o json '.dotfiles' mise.toml | jq -r '.[].source')"}; do
+  for f in ${~src}(N.D) ${~src}/**/*(N.D); do
+    declared[$f]=1
+  done
+done
+rc=0
+for f in ${(f)"$(git ls-files claude)"}; do
+  if [[ -z ${declared[$f]:-} ]]; then
+    print "$f: not declared in [dotfiles]; mise bootstrap will not link it" >&2
     rc=1
   fi
 done
