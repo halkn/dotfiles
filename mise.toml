@@ -31,8 +31,8 @@ rename_exe = "emmylua_check"
 "~/.zshenv" = { source = ".zshenv" }
 "~/.claude/*" = { source = "claude/*" }
 
-# apt entries apply on Linux and are skipped elsewhere. git and curl are already installed by
-# the manual steps in README before the clone, but stay declared here because it is idempotent.
+# git and curl are already installed by the manual steps in README before the clone, but stay
+# declared here because it is idempotent.
 # macOS needs none of the rest: zsh ships with the OS, and the Claude Code sandbox uses
 # Seatbelt rather than bubblewrap and socat.
 [bootstrap.packages]
@@ -53,10 +53,8 @@ login_shell = "/bin/zsh"
 
 # `--update` refreshes the package manager metadata, which a fresh machine has never fetched;
 # it also fast-forwards [bootstrap.repos], harmless on a first run because they are being cloned.
-# `mise run sync` is the same convergence without either, for machines that are already set up.
 [tasks.setup]
 description = "初回セットアップ（パッケージ索引更新 → 宣言状態へ収束）"
-dir = "{{config_root}}"
 run = "mise bootstrap --yes --update"
 
 # ── Maintenance ──────────────────────────────────────
@@ -67,7 +65,6 @@ run = "mise bootstrap --yes --update"
 # versions only move where the lockfile moved.
 [tasks.sync]
 description = "リポジトリの更新を取り込み、宣言状態へ収束"
-dir = "{{config_root}}"
 run = ["git pull --ff-only", "mise bootstrap --yes"]
 
 # ── Quality ──────────────────────────────────────────
@@ -82,17 +79,14 @@ depends = [
   "lint:rules",
   "test:zsh",
 ]
-dir = "{{config_root}}"
 run = "git diff --check"
 
 [tasks.fmt]
 description = "ファイル整形"
-dir = "{{config_root}}"
 run = ["mise fmt", "rumdl fmt .", "shuck format .", "stylua .config/nvim"]
 
 [tasks.fmt-check]
 description = "整形チェック（書き換えなし）"
-dir = "{{config_root}}"
 run = [
   "mise fmt --check",
   "rumdl check .",
@@ -103,17 +97,14 @@ run = [
 # A task file that lost its executable bit disappears from `mise tasks ls` without an error.
 [tasks."lint:tasks"]
 hide = true
-dir = "{{config_root}}"
 run = "mise tasks validate"
 
 [tasks."lint:shell"]
 hide = true
-dir = "{{config_root}}"
 run = "shuck check ."
 
 [tasks."lint:nvim"]
 description = "Neovim Lua の診断と起動確認"
-dir = "{{config_root}}"
 run = [
   """
 VIMRUNTIME="$(NVIM_LOG_FILE=/dev/null nvim --clean --headless -c 'lua io.write(vim.env.VIMRUNTIME)' +q 2>/dev/null)" \\
