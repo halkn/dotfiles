@@ -307,40 +307,6 @@ checksum = "sha256:ab50262c8190cd7aa9056d249d255c08c328c3e8716de9cfa29db4f131b8e
 url = "https://github.com/herdrdev/herdr/releases/download/v0.8.2/herdr-macos-x86_64"
 url_api = "https://api.github.com/repos/herdrdev/herdr/releases/assets/521169110"
 
-[[tools.hyperfine]]
-version = "1.20.0"
-backend = "aqua:sharkdp/hyperfine"
-
-[tools.hyperfine."platforms.linux-arm64"]
-checksum = "sha256:90875cb1db7a1d797c311174d061728361e58fc70e3b62262a00635ac3b1997c"
-url = "https://github.com/sharkdp/hyperfine/releases/download/v1.20.0/hyperfine-v1.20.0-aarch64-unknown-linux-gnu.tar.gz"
-url_api = "https://api.github.com/repos/sharkdp/hyperfine/releases/assets/317832112"
-
-[tools.hyperfine."platforms.linux-x64"]
-checksum = "sha256:3285ec7959285288137043dd81dce0dde056227018a8277532d9a364b4f03c2b"
-url = "https://github.com/sharkdp/hyperfine/releases/download/v1.20.0/hyperfine-v1.20.0-x86_64-unknown-linux-musl.tar.gz"
-url_api = "https://api.github.com/repos/sharkdp/hyperfine/releases/assets/317832008"
-
-[tools.hyperfine."platforms.linux-x64-musl"]
-checksum = "sha256:3285ec7959285288137043dd81dce0dde056227018a8277532d9a364b4f03c2b"
-url = "https://github.com/sharkdp/hyperfine/releases/download/v1.20.0/hyperfine-v1.20.0-x86_64-unknown-linux-musl.tar.gz"
-url_api = "https://api.github.com/repos/sharkdp/hyperfine/releases/assets/317832008"
-
-[tools.hyperfine."platforms.macos-arm64"]
-checksum = "sha256:f58d0b90993fadfa122a351428c469ce24afef3865f027f0e6e86f0830d088f1"
-url = "https://github.com/sharkdp/hyperfine/releases/download/v1.20.0/hyperfine-v1.20.0-x86_64-apple-darwin.tar.gz"
-url_api = "https://api.github.com/repos/sharkdp/hyperfine/releases/assets/317832526"
-
-[tools.hyperfine."platforms.macos-x64"]
-checksum = "sha256:f58d0b90993fadfa122a351428c469ce24afef3865f027f0e6e86f0830d088f1"
-url = "https://github.com/sharkdp/hyperfine/releases/download/v1.20.0/hyperfine-v1.20.0-x86_64-apple-darwin.tar.gz"
-url_api = "https://api.github.com/repos/sharkdp/hyperfine/releases/assets/317832526"
-
-[tools.hyperfine."platforms.windows-x64"]
-checksum = "sha256:2508c549b049b1d4342d08edc1cb42bfac169082b6e3069431b5bab9822dbb32"
-url = "https://github.com/sharkdp/hyperfine/releases/download/v1.20.0/hyperfine-v1.20.0-x86_64-pc-windows-msvc.zip"
-url_api = "https://api.github.com/repos/sharkdp/hyperfine/releases/assets/317832313"
-
 [[tools.jq]]
 version = "1.8.2"
 backend = "aqua:jqlang/jq"
@@ -575,40 +541,6 @@ url_api = "https://api.github.com/repos/starship/starship/releases/assets/460374
 checksum = "sha256:690021e22f2bf2c57d5867dc0fababe5e55e714c26942bd909ffddb6c5df42f2"
 url = "https://github.com/starship/starship/releases/download/v1.26.0/starship-x86_64-pc-windows-msvc.zip"
 url_api = "https://api.github.com/repos/starship/starship/releases/assets/460374615"
-
-[[tools.television]]
-version = "0.15.9"
-backend = "aqua:alexpasmantier/television"
-
-[tools.television."platforms.linux-arm64"]
-checksum = "sha256:78a246170c9d83bea0f0c4a3fa8c9bc5cee80bbe66d34946d06fdc5a17a2cd1a"
-url = "https://github.com/alexpasmantier/television/releases/download/0.15.9/tv-0.15.9-aarch64-unknown-linux-gnu.tar.gz"
-url_api = "https://api.github.com/repos/alexpasmantier/television/releases/assets/447569994"
-
-[tools.television."platforms.linux-x64"]
-checksum = "sha256:3410e34132f4e44fd439c711f08c15b3a21f51630657cb03f248b2c7aef3e29a"
-url = "https://github.com/alexpasmantier/television/releases/download/0.15.9/tv-0.15.9-x86_64-unknown-linux-musl.tar.gz"
-url_api = "https://api.github.com/repos/alexpasmantier/television/releases/assets/447569675"
-
-[tools.television."platforms.linux-x64-musl"]
-checksum = "sha256:3410e34132f4e44fd439c711f08c15b3a21f51630657cb03f248b2c7aef3e29a"
-url = "https://github.com/alexpasmantier/television/releases/download/0.15.9/tv-0.15.9-x86_64-unknown-linux-musl.tar.gz"
-url_api = "https://api.github.com/repos/alexpasmantier/television/releases/assets/447569675"
-
-[tools.television."platforms.macos-arm64"]
-checksum = "sha256:94ae7177d499f74e7544243ffe9c82371183ca11a6363f198a4b3d0e29f82732"
-url = "https://github.com/alexpasmantier/television/releases/download/0.15.9/tv-0.15.9-aarch64-apple-darwin.tar.gz"
-url_api = "https://api.github.com/repos/alexpasmantier/television/releases/assets/447568866"
-
-[tools.television."platforms.macos-x64"]
-checksum = "sha256:0c6029ced92ddcf8218a8ce9a9d605d232898e2df021ae212d38c66f6c3abaad"
-url = "https://github.com/alexpasmantier/television/releases/download/0.15.9/tv-0.15.9-x86_64-apple-darwin.tar.gz"
-url_api = "https://api.github.com/repos/alexpasmantier/television/releases/assets/447570866"
-
-[tools.television."platforms.windows-x64"]
-checksum = "sha256:b6ecb3bf2587d8068a50c855671b2b693acaf172fcddb6542b6f80db1e38b681"
-url = "https://github.com/alexpasmantier/television/releases/download/0.15.9/tv-0.15.9-x86_64-pc-windows-msvc.tar.gz"
-url_api = "https://api.github.com/repos/alexpasmantier/television/releases/assets/447571006"
 
 [[tools.tree-sitter]]
 version = "0.26.13"
