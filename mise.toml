@@ -23,17 +23,16 @@ rename_exe = "emmylua_check"
 
 # ── Setup（mise bootstrap） ──────────────────────────
 
-# source is relative to the directory holding mise.toml; mode = "symlink" is the default.
+# `~/.claude` cannot be linked as a whole directory because Claude Code writes its own state
+# there, so the glob links each entry of `claude/` instead. `claude/**/*` cannot replace it:
+# it matches both `hooks` and `hooks/*` and fails with a conflicting-declaration error.
 [dotfiles]
 "~/.config" = { source = ".config" }
 "~/.zshenv" = { source = ".zshenv" }
-"~/.claude/CLAUDE.md" = { source = "claude/CLAUDE.md" }
-"~/.claude/settings.json" = { source = "claude/settings.json" }
-"~/.claude/statusline-command.sh" = { source = "claude/statusline-command.sh" }
-"~/.claude/hooks/*" = { source = "claude/hooks/*" }
+"~/.claude/*" = { source = "claude/*" }
 
-# apt entries apply on Linux and are skipped elsewhere. git and curl are already installed by
-# the manual steps in README before the clone, but stay declared here because it is idempotent.
+# git and curl are already installed by the manual steps in README before the clone, but stay
+# declared here because it is idempotent.
 # macOS needs none of the rest: zsh ships with the OS, and the Claude Code sandbox uses
 # Seatbelt rather than bubblewrap and socat.
 [bootstrap.packages]
@@ -54,30 +53,9 @@ login_shell = "/bin/zsh"
 
 # `--update` refreshes the package manager metadata, which a fresh machine has never fetched;
 # it also fast-forwards [bootstrap.repos], harmless on a first run because they are being cloned.
-# `mise run sync` is the same convergence without either, for machines that are already set up.
 [tasks.setup]
 description = "初回セットアップ（パッケージ索引更新 → 宣言状態へ収束）"
-dir = "{{config_root}}"
 run = "mise bootstrap --yes --update"
-
-# Runs as the last step of `mise bootstrap`, so it has to stay idempotent. The herdr plugin
-# itself is fetched by herdr and gitignored, which is why it is declared here, not in [dotfiles].
-# Hidden: this is a step of `mise bootstrap`, not an entry point to run on its own.
-[tasks.bootstrap]
-hide = true
-description = "Claude Code と herdr プラグインをインストール（未導入時のみ）"
-run = """
-#!/usr/bin/env bash
-set -euo pipefail
-command -v claude >/dev/null || curl -fsSL https://claude.ai/install.sh | bash
-# `herdr plugin list` exits 0 even when the plugin is missing (herdr 0.8.0), so check output.
-# `--yes` has to follow the positional argument: despite the `[OPTIONS] <OWNER/REPO>` help text,
-# herdr 0.8.0 rejects a leading flag with a usage error.
-if command -v herdr >/dev/null; then
-  herdr plugin list --plugin persiyanov.reviewr 2>/dev/null | grep -q persiyanov.reviewr ||
-    herdr plugin install persiyanov/herdr-reviewr --yes
-fi
-"""
 
 # ── Maintenance ──────────────────────────────────────
 
@@ -87,57 +65,7 @@ fi
 # versions only move where the lockfile moved.
 [tasks.sync]
 description = "リポジトリの更新を取り込み、宣言状態へ収束"
-dir = "{{config_root}}"
 run = ["git pull --ff-only", "mise bootstrap --yes"]
-
-# No `set -e`: every step is independent, so one failure must not skip the rest. Failures are
-# collected and surfaced in the exit code instead, and a component that is not installed is
-# skipped rather than counted as a failure.
-# `{% raw %}`: mise renders `run` through Tera, and bash's `${#arr[@]}` opens a Tera comment.
-[tasks.update]
-description = "mise 本体・ツール・lockfile・OS パッケージ・zsh プラグイン・Claude Code を更新"
-dir = "{{config_root}}"
-run = """
-{% raw %}#!/usr/bin/env bash
-set -uo pipefail
-
-failed=()
-
-step() {
-  local name=$1
-  shift
-  "$@" || failed+=("$name")
-}
-
-optional_step() {
-  local name=$1
-  shift
-  if command -v "$1" >/dev/null; then
-    step "$name" "$@"
-  else
-    echo "skip: $1 is not installed"
-  fi
-}
-
-step "mise self-update" mise self-update --yes
-step "mise upgrade" mise upgrade
-# The step above leaves the platform this machine is not on the previous version.
-step "lockfile platforms" mise lock
-step "lockfile platforms (global)" mise lock --global
-step "bootstrap packages" mise bootstrap packages upgrade
-step "bootstrap repos" mise bootstrap repos update --yes
-# herdr has no `plugin update`; reinstalling replaces the managed checkout and keeps plugin
-# config and state (herdr 0.8.0). The herdr binary itself is a mise tool, so `mise upgrade`
-# already covers it and `herdr update` must not be added here. `--yes` follows the positional
-# argument because herdr 0.8.0 rejects a leading flag.
-optional_step "herdr plugin" herdr plugin install persiyanov/herdr-reviewr --yes
-optional_step "claude update" claude update
-
-if ((${#failed[@]} > 0)); then
-  printf 'failed: %s\\n' "${failed[@]}" >&2
-  exit 1
-fi
-{% endraw %}"""
 
 # ── Quality ──────────────────────────────────────────
 
@@ -145,24 +73,20 @@ fi
 description = "リポジトリ検証（整形チェックを含む）"
 depends = [
   "fmt-check",
-  "lint:zsh",
+  "lint:tasks",
   "lint:shell",
   "lint:nvim",
   "lint:rules",
-  "lint:dotfiles",
   "test:zsh",
 ]
-dir = "{{config_root}}"
 run = "git diff --check"
 
 [tasks.fmt]
 description = "ファイル整形"
-dir = "{{config_root}}"
 run = ["mise fmt", "rumdl fmt .", "shuck format .", "stylua .config/nvim"]
 
 [tasks.fmt-check]
 description = "整形チェック（書き換えなし）"
-dir = "{{config_root}}"
 run = [
   "mise fmt --check",
   "rumdl check .",
@@ -170,94 +94,17 @@ run = [
   "stylua --check .config/nvim",
 ]
 
-# A rules file is loaded in full whenever its `paths:` match, so its length is a context cost
-# paid on every matching session rather than a style preference.
-[tasks."lint:rules"]
+# A task file that lost its executable bit disappears from `mise tasks ls` without an error.
+[tasks."lint:tasks"]
 hide = true
-dir = "{{config_root}}"
-run = """
-#!/usr/bin/env zsh
-set -uo pipefail
-rc=0
-for f in .claude/rules/*.md(N); do
-  n=$(wc -l < "$f")
-  if ((n > 40)); then
-    print "$f: $n lines exceeds the 40-line budget; move procedures and measurements to a skill" >&2
-    rc=1
-  fi
-done
-exit $rc
-"""
+run = "mise tasks validate"
 
-# `claude/` is linked file by file, so an undeclared file is not deployed and nothing fails
-# loudly. Other [dotfiles] entries link a whole directory and cover their new files on their own.
-[tasks."lint:dotfiles"]
-hide = true
-dir = "{{config_root}}"
-run = """
-#!/usr/bin/env zsh
-set -uo pipefail
-sources=(${(f)"$(yq -p toml -o json '.dotfiles' mise.toml | jq -r '.[].source')"})
-# Without this, a missing yq or jq reads zero sources and reports every file as undeclared.
-if (($#sources == 0)); then
-  print "no [dotfiles] sources read from mise.toml" >&2
-  exit 1
-fi
-typeset -A declared
-for src in $sources; do
-  for f in ${~src}(N.D) ${~src}/**/*(N.D); do
-    declared[$f]=1
-  done
-done
-rc=0
-for f in ${(0)"$(git ls-files -z claude)"}; do
-  if [[ -z ${declared[$f]:-} ]]; then
-    print "$f: not declared in [dotfiles]; mise bootstrap will not link it" >&2
-    rc=1
-  fi
-done
-exit $rc
-"""
-
-# Kept apart from lint:shell to catch zsh-only syntax (glob qualifiers and the like) that the
-# zsh dialect of `shuck check` does not fully parse. Untracked `*.local` files are excluded
-# because they produce false positives.
-[tasks."lint:zsh"]
-hide = true
-dir = "{{config_root}}"
-run = """
-#!/usr/bin/env zsh
-# `zsh -n a b` parses only a and treats the rest as positional arguments, so pass one at a time.
-set -uo pipefail
-rc=0
-for f in .zshenv .config/zsh/.zshenv .config/zsh/.zshrc .config/zsh/**/*.zsh(N); do
-  zsh -n "$f" || rc=1
-done
-exit $rc
-"""
-
-[tasks."test:zsh"]
-description = "zsh workflow のテスト"
-dir = "{{config_root}}"
-run = """
-#!/usr/bin/env zsh
-set -uo pipefail
-rc=0
-for f in .config/zsh/test/*_test.zsh; do
-  zsh "$f" || rc=1
-done
-exit $rc
-"""
-
-# Given a directory, shuck also picks up extensionless files such as `.zshrc` (shuck 0.1.1).
 [tasks."lint:shell"]
 hide = true
-dir = "{{config_root}}"
 run = "shuck check ."
 
 [tasks."lint:nvim"]
 description = "Neovim Lua の診断と起動確認"
-dir = "{{config_root}}"
 run = [
   """
 VIMRUNTIME="$(NVIM_LOG_FILE=/dev/null nvim --clean --headless -c 'lua io.write(vim.env.VIMRUNTIME)' +q 2>/dev/null)" \\

@@ -1,0 +1,15 @@
+#!/usr/bin/env zsh
+#MISE hide=true
+# A rules file is loaded in full whenever its `paths:` match, so its length is a context cost
+# paid on every matching session rather than a style preference.
+set -uo pipefail
+
+rc=0
+for f in .claude/rules/*.md(N); do
+  n=$(wc -l <"$f")
+  if ((n > 40)); then
+    print "$f: $n lines exceeds the 40-line budget; move procedures and measurements to a skill" >&2
+    rc=1
+  fi
+done
+exit $rc
