@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+#MISE description="mise 本体・ツール・lockfile・OS パッケージ・zsh プラグイン・Claude Code を更新"
+# No `set -e`: every step is independent, so one failure must not skip the rest. Failures are
+# collected and surfaced in the exit code instead, and a component that is not installed is
+# skipped rather than counted as a failure.
+set -uo pipefail
+
+failed=()
+
+step() {
+  local name=$1
+  shift
+  "$@" || failed+=("$name")
+}
+
+optional_step() {
+  local name=$1
+  shift
+  if command -v "$1" >/dev/null; then
+    step "$name" "$@"
+  else
+    echo "skip: $1 is not installed"
+  fi
+}
+
+step "mise self-update" mise self-update --yes
+step "mise upgrade" mise upgrade
+# The step above leaves the platform this machine is not on the previous version.
+step "lockfile platforms" mise lock
+step "lockfile platforms (global)" mise lock --global
+step "bootstrap packages" mise bootstrap packages upgrade
+step "bootstrap repos" mise bootstrap repos update --yes
+# herdr has no `plugin update`; reinstalling replaces the managed checkout and keeps plugin
+# config and state (herdr 0.8.0). The herdr binary itself is a mise tool, so `mise upgrade`
+# already covers it and `herdr update` must not be added here. `--yes` follows the positional
+# argument because herdr 0.8.0 rejects a leading flag.
+optional_step "herdr plugin" herdr plugin install persiyanov/herdr-reviewr --yes
+optional_step "claude update" claude update
+
+if ((${#failed[@]} > 0)); then
+  printf 'failed: %s\n' "${failed[@]}" >&2
+  exit 1
+fi

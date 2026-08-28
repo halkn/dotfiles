@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+#MISE description="Claude Code と herdr プラグインをインストール（未導入時のみ）"
+#MISE hide=true
+# Runs as the last step of `mise bootstrap`, so it has to stay idempotent. The herdr plugin
+# itself is fetched by herdr and gitignored, which is why it is installed here rather than
+# declared in [dotfiles].
+# Hidden: this is a step of `mise bootstrap`, not an entry point to run on its own.
+set -euo pipefail
+
+# Claude Code is in the mise registry, but it self-updates in place and would drift from the
+# lockfile, so it stays on its own installer.
+command -v claude >/dev/null || curl -fsSL https://claude.ai/install.sh | bash
+
+# `herdr plugin list` exits 0 even when the plugin is missing (herdr 0.8.0), so check output.
+# `--yes` has to follow the positional argument: despite the `[OPTIONS] <OWNER/REPO>` help text,
+# herdr 0.8.0 rejects a leading flag with a usage error.
+if command -v herdr >/dev/null; then
+  herdr plugin list --plugin persiyanov.reviewr 2>/dev/null | grep -q persiyanov.reviewr ||
+    herdr plugin install persiyanov/herdr-reviewr --yes
+fi

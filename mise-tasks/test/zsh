@@ -1,0 +1,10 @@
+#!/usr/bin/env zsh
+#MISE description="zsh workflow のテスト"
+# Not a `run` array: that stops at the first failure, and every test file is independent.
+set -uo pipefail
+
+rc=0
+for f in .config/zsh/test/*_test.zsh; do
+  zsh "$f" || rc=1
+done
+exit $rc
