@@ -106,9 +106,6 @@ hide = true
 dir = "{{config_root}}"
 run = "mise tasks validate"
 
-# Given a directory, shuck picks up extensionless files such as `.zshrc`, and its zsh dialect
-# reports parse errors and handles glob qualifiers, so `.` covers every shell file here
-# (shuck 0.1.3).
 [tasks."lint:shell"]
 hide = true
 dir = "{{config_root}}"
