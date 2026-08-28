@@ -251,8 +251,10 @@ Machine-local overrides go in the gitignored `.config/mise/config.local.toml`
 (global) or a repository's own `mise.local.toml`, which may override `[env]`,
 `[tools]`, and settings without changing the shared configuration.
 
-Task automation uses [mise tasks](https://mise.jdx.dev/tasks/), defined in the
-repo's `mise.toml` and run with `mise run` (`mise tasks` lists them).
+Task automation uses [mise tasks](https://mise.jdx.dev/tasks/), run with
+`mise run` (`mise tasks` lists them). A task whose body is a single command is
+declared in `mise.toml`; anything longer is a file task under `mise-tasks/`,
+where it keeps a real shebang and is covered by `shuck`.
 
 The three machine-state tasks are separated by the state transition they make,
 not by the commands they happen to run:
