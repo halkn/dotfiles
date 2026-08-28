@@ -121,6 +121,9 @@ optional_step() {
 
 step "mise self-update" mise self-update --yes
 step "mise upgrade" mise upgrade
+# The step above leaves the platform this machine is not on the previous version.
+step "lockfile platforms" mise lock
+step "lockfile platforms (global)" mise lock --global
 step "bootstrap packages" mise bootstrap packages upgrade
 step "bootstrap repos" mise bootstrap repos update --yes
 # herdr has no `plugin update`; reinstalling replaces the managed checkout and keeps plugin
@@ -146,6 +149,7 @@ depends = [
   "lint:shell",
   "lint:nvim",
   "lint:rules",
+  "lint:dotfiles",
   "test:zsh",
 ]
 dir = "{{config_root}}"
@@ -179,6 +183,36 @@ for f in .claude/rules/*.md(N); do
   n=$(wc -l < "$f")
   if ((n > 40)); then
     print "$f: $n lines exceeds the 40-line budget; move procedures and measurements to a skill" >&2
+    rc=1
+  fi
+done
+exit $rc
+"""
+
+# `claude/` is linked file by file, so an undeclared file is not deployed and nothing fails
+# loudly. Other [dotfiles] entries link a whole directory and cover their new files on their own.
+[tasks."lint:dotfiles"]
+hide = true
+dir = "{{config_root}}"
+run = """
+#!/usr/bin/env zsh
+set -uo pipefail
+sources=(${(f)"$(yq -p toml -o json '.dotfiles' mise.toml | jq -r '.[].source')"})
+# Without this, a missing yq or jq reads zero sources and reports every file as undeclared.
+if (($#sources == 0)); then
+  print "no [dotfiles] sources read from mise.toml" >&2
+  exit 1
+fi
+typeset -A declared
+for src in $sources; do
+  for f in ${~src}(N.D) ${~src}/**/*(N.D); do
+    declared[$f]=1
+  done
+done
+rc=0
+for f in ${(0)"$(git ls-files -z claude)"}; do
+  if [[ -z ${declared[$f]:-} ]]; then
+    print "$f: not declared in [dotfiles]; mise bootstrap will not link it" >&2
     rc=1
   fi
 done

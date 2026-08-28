@@ -2,6 +2,11 @@
 # [dotfiles] symlinks this file to ~/.config/mise/config.toml, so everything here applies to
 # every project on the machine, not just this repository.
 lockfile = true
+# Long enough for a compromised release to be yanked upstream first; tools published from this
+# account opt out per tool below.
+minimum_release_age = "3d"
+# Apple Silicon macOS and WSL are the machines this repository is deployed on.
+lockfile_platforms = ["macos-arm64", "linux-x64"]
 
 [tools]
 # dev
