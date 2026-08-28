@@ -121,10 +121,7 @@ optional_step() {
 
 step "mise self-update" mise self-update --yes
 step "mise upgrade" mise upgrade
-# `mise upgrade` writes lockfile entries for the platform it runs on, so the platform this
-# machine is not would stay on the previous version. `mise lock` refreshes the rest, scoped by
-# the `lockfile_platforms` setting. Both config roots are locked because each keeps its own
-# lockfile and `mise lock` only targets the active one.
+# The step above leaves the platform this machine is not on the previous version.
 step "lockfile platforms" mise lock
 step "lockfile platforms (global)" mise lock --global
 step "bootstrap packages" mise bootstrap packages upgrade
@@ -200,14 +197,20 @@ dir = "{{config_root}}"
 run = """
 #!/usr/bin/env zsh
 set -uo pipefail
+sources=(${(f)"$(yq -p toml -o json '.dotfiles' mise.toml | jq -r '.[].source')"})
+# Without this, a missing yq or jq reads zero sources and reports every file as undeclared.
+if (($#sources == 0)); then
+  print "no [dotfiles] sources read from mise.toml" >&2
+  exit 1
+fi
 typeset -A declared
-for src in ${(f)"$(yq -p toml -o json '.dotfiles' mise.toml | jq -r '.[].source')"}; do
+for src in $sources; do
   for f in ${~src}(N.D) ${~src}/**/*(N.D); do
     declared[$f]=1
   done
 done
 rc=0
-for f in ${(f)"$(git ls-files claude)"}; do
+for f in ${(0)"$(git ls-files -z claude)"}; do
   if [[ -z ${declared[$f]:-} ]]; then
     print "$f: not declared in [dotfiles]; mise bootstrap will not link it" >&2
     rc=1
