@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
 #MISE description="Claude Code と herdr プラグインをインストール（未導入時のみ）"
 #MISE hide=true
-# Runs as the last step of `mise bootstrap`, so it has to stay idempotent. The herdr plugin
-# itself is fetched by herdr and gitignored, which is why it is installed here rather than
-# declared in [dotfiles].
-# Hidden: this is a step of `mise bootstrap`, not an entry point to run on its own.
+# `mise bootstrap` runs this as its last step, so it has to stay idempotent. The herdr plugin
+# is fetched by herdr itself and gitignored, so [dotfiles] cannot carry it.
 set -euo pipefail
 
 # Claude Code is in the mise registry, but it self-updates in place and would drift from the

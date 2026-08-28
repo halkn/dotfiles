@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 #MISE description="mise 本体・ツール・lockfile・OS パッケージ・zsh プラグイン・Claude Code を更新"
-# No `set -e`: every step is independent, so one failure must not skip the rest. Failures are
-# collected and surfaced in the exit code instead, and a component that is not installed is
-# skipped rather than counted as a failure.
+# No `set -e`: every step is independent, so one failure must not skip the rest.
 set -uo pipefail
 
 failed=()

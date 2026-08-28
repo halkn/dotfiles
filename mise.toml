@@ -23,11 +23,9 @@ rename_exe = "emmylua_check"
 
 # ── Setup（mise bootstrap） ──────────────────────────
 
-# source is relative to the directory holding mise.toml; mode = "symlink" is the default.
 # `~/.claude` cannot be linked as a whole directory because Claude Code writes its own state
-# there, so the glob links each entry of `claude/` instead. It expands on every run and covers
-# new files, hidden files and new subdirectories. `claude/**/*` would instead match both
-# `hooks` and `hooks/*` and fail with a conflicting-declaration error.
+# there, so the glob links each entry of `claude/` instead. `claude/**/*` cannot replace it:
+# it matches both `hooks` and `hooks/*` and fails with a conflicting-declaration error.
 [dotfiles]
 "~/.config" = { source = ".config" }
 "~/.zshenv" = { source = ".zshenv" }
@@ -52,10 +50,6 @@ login_shell = "/bin/zsh"
 [bootstrap.repos]
 "~/.local/share/zsh/plugins/zsh-autosuggestions" = { url = "https://github.com/zsh-users/zsh-autosuggestions" }
 "~/.local/share/zsh/plugins/fast-syntax-highlighting" = { url = "https://github.com/zdharma-continuum/fast-syntax-highlighting" }
-
-# Tasks whose body is more than a single command live in `mise-tasks/`, where they keep a real
-# shebang, are covered by `shuck check .`, and are not rendered through Tera. What stays here is
-# the declarations plus the one-line entry points.
 
 # `--update` refreshes the package manager metadata, which a fresh machine has never fetched;
 # it also fast-forwards [bootstrap.repos], harmless on a first run because they are being cloned.
@@ -106,16 +100,15 @@ run = [
   "stylua --check .config/nvim",
 ]
 
-# A task file that lost its executable bit disappears from `mise tasks ls` without an error,
-# which this catches.
+# A task file that lost its executable bit disappears from `mise tasks ls` without an error.
 [tasks."lint:tasks"]
 hide = true
 dir = "{{config_root}}"
 run = "mise tasks validate"
 
-# Given a directory, shuck also picks up extensionless files such as `.zshrc`, and its zsh
-# dialect reports parse errors and handles glob qualifiers, so no separate `zsh -n` pass is
-# needed (shuck 0.1.3).
+# Given a directory, shuck picks up extensionless files such as `.zshrc`, and its zsh dialect
+# reports parse errors and handles glob qualifiers, so `.` covers every shell file here
+# (shuck 0.1.3).
 [tasks."lint:shell"]
 hide = true
 dir = "{{config_root}}"

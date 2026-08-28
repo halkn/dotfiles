@@ -1,5 +1,4 @@
 #!/usr/bin/env zsh
-#MISE description="rules ファイルの行数予算を検査"
 #MISE hide=true
 # A rules file is loaded in full whenever its `paths:` match, so its length is a context cost
 # paid on every matching session rather than a style preference.
