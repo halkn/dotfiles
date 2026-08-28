@@ -275,7 +275,7 @@ url_api = "https://api.github.com/repos/halkn/mdvu/releases/assets/513664164"
 
 [[tools.herdr]]
 version = "0.8.2"
-backend = "aqua:ogulcancelik/herdr"
+backend = "aqua:herdrdev/herdr"
 
 [tools.herdr."platforms.linux-arm64"]
 checksum = "sha256:f55610658e1c2e0d2aaef730b4b2ab885f7f8ba00285ab372bfb14f2e3d5b40d"
