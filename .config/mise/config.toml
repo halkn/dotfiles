@@ -2,6 +2,10 @@
 # [dotfiles] symlinks this file to ~/.config/mise/config.toml, so everything here applies to
 # every project on the machine, not just this repository.
 lockfile = true
+# Releases younger than this are not selectable, leaving a window in which a compromised release
+# can be yanked upstream before any machine picks it up. Tools published from this account opt
+# out per tool below, because their releases are made here and need no such window.
+minimum_release_age = "3d"
 
 [tools]
 # dev

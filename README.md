@@ -238,7 +238,10 @@ committed, and only `mise run update` is allowed to move the versions in them
 — `mise run setup` and `mise run sync` install what the lockfiles already pin.
 A lockfile diff after `update` is the update itself; commit it. A lockfile diff
 after `setup` or `sync` means a newly declared tool had no locked version yet,
-so commit that too.
+so commit that too. Versions only move to releases older than
+`minimum_release_age` (3 days), so a just-published release is not selectable
+yet; tools published from this account opt out with a per-tool
+`minimum_release_age = "0s"`.
 
 mise shell activation uses PATH mode rather than shims. Keep shell aliases and
 functions in zsh; use mise's `[env]` only for project-specific environments.
