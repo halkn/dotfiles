@@ -4,7 +4,7 @@
 
 ## Non-obvious layout
 
-- `claude/` が Claude Code 設定の実体。`~/.claude/` へはディレクトリ単位ではなく `mise.toml` の `[dotfiles]` によるファイル単位の symlink なので、`claude/` に新規ファイルを足しても宣言しない限り配置されない。`.claude/` はこのリポジトリ自身のプロジェクト設定で別物
+- `claude/` が Claude Code 設定の実体。`~/.claude/` は Claude Code 自身が状態を書くのでディレクトリ単位では symlink できず、`mise.toml` の `[dotfiles]` が `claude/*` を 1 エントリずつ張る。glob は毎回展開されるので新規ファイル・サブディレクトリの追加に宣言の変更は要らない。`.claude/` はこのリポジトリ自身のプロジェクト設定で別物
 - `.config/mise/config.toml` は `~/.config/mise/config.toml` としても読まれる。ここへの変更はリポジトリ外の全プロジェクトに影響する
 - `.config/zsh/` は `.zshenv` / `.zshrc`（portable な shell core）と `workflows/`（操作単位の独自機能）の 2 層。置き場所の基準と制約は `.claude/rules/zsh.md`
 - `.claude/skills/` と `.claude/rules/` はこのリポジトリ自身の設定で symlink されない（`claude/` 配下と違い `mise.toml` への宣言は不要）。新規ファイルはそのまま次のセッションで読まれる

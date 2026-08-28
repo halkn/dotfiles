@@ -24,13 +24,14 @@ rename_exe = "emmylua_check"
 # ── Setup（mise bootstrap） ──────────────────────────
 
 # source is relative to the directory holding mise.toml; mode = "symlink" is the default.
+# `~/.claude` cannot be linked as a whole directory because Claude Code writes its own state
+# there, so the glob links each entry of `claude/` instead. It expands on every run and covers
+# new files, hidden files and new subdirectories. `claude/**/*` would instead match both
+# `hooks` and `hooks/*` and fail with a conflicting-declaration error.
 [dotfiles]
 "~/.config" = { source = ".config" }
 "~/.zshenv" = { source = ".zshenv" }
-"~/.claude/CLAUDE.md" = { source = "claude/CLAUDE.md" }
-"~/.claude/settings.json" = { source = "claude/settings.json" }
-"~/.claude/statusline-command.sh" = { source = "claude/statusline-command.sh" }
-"~/.claude/hooks/*" = { source = "claude/hooks/*" }
+"~/.claude/*" = { source = "claude/*" }
 
 # apt entries apply on Linux and are skipped elsewhere. git and curl are already installed by
 # the manual steps in README before the clone, but stay declared here because it is idempotent.
@@ -149,7 +150,6 @@ depends = [
   "lint:shell",
   "lint:nvim",
   "lint:rules",
-  "lint:dotfiles",
   "test:zsh",
 ]
 dir = "{{config_root}}"
@@ -183,36 +183,6 @@ for f in .claude/rules/*.md(N); do
   n=$(wc -l < "$f")
   if ((n > 40)); then
     print "$f: $n lines exceeds the 40-line budget; move procedures and measurements to a skill" >&2
-    rc=1
-  fi
-done
-exit $rc
-"""
-
-# `claude/` is linked file by file, so an undeclared file is not deployed and nothing fails
-# loudly. Other [dotfiles] entries link a whole directory and cover their new files on their own.
-[tasks."lint:dotfiles"]
-hide = true
-dir = "{{config_root}}"
-run = """
-#!/usr/bin/env zsh
-set -uo pipefail
-sources=(${(f)"$(yq -p toml -o json '.dotfiles' mise.toml | jq -r '.[].source')"})
-# Without this, a missing yq or jq reads zero sources and reports every file as undeclared.
-if (($#sources == 0)); then
-  print "no [dotfiles] sources read from mise.toml" >&2
-  exit 1
-fi
-typeset -A declared
-for src in $sources; do
-  for f in ${~src}(N.D) ${~src}/**/*(N.D); do
-    declared[$f]=1
-  done
-done
-rc=0
-for f in ${(0)"$(git ls-files -z claude)"}; do
-  if [[ -z ${declared[$f]:-} ]]; then
-    print "$f: not declared in [dotfiles]; mise bootstrap will not link it" >&2
     rc=1
   fi
 done
