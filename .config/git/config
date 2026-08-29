@@ -5,6 +5,11 @@
   colorMoved = default
   mnemonicPrefix = true
   renames = true
+  tool = hunk
+[difftool]
+  prompt = false
+[difftool "hunk"]
+  cmd = hunk difftool \"$LOCAL\" \"$REMOTE\" \"$MERGED\"
 [merge]
   conflictstyle = zdiff3
 [mergetool]
