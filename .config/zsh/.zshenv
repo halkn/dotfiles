@@ -17,10 +17,10 @@ export XDG_CONFIG_HOME XDG_CACHE_HOME XDG_DATA_HOME XDG_BIN_HOME XDG_STATE_HOME
 : "${REPO_ROOT:=$HOME/repos}"
 export REPO_ROOT
 
-# Worktrees (<owner>/<repo>/<branch> under this root). Set to herdr's own
-# `[worktrees] directory`, so a worktree herdr creates and one `wk new` creates
-# land in the same tree: the two must be changed together.
-: "${WT_ROOT:=$XDG_DATA_HOME/herdr/worktrees}"
+# Worktrees (<owner>/<repo>/<branch> under this root). herdr's `[worktrees]
+# directory` holds the same path, so a worktree herdr creates and one `wk new`
+# creates land in the same tree: the two must be changed together.
+: "${WT_ROOT:=$XDG_DATA_HOME/worktrees}"
 export WT_ROOT
 
 # Directories outside $REPO_ROOT that `wk open` also offers, `:`-separated the

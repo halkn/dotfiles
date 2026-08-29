@@ -81,7 +81,7 @@ _ck_place_rows() {
 # creates and one `wk new` creates land in the same tree and appear in the same
 # listing.
 _ck_wt_root() {
-  local root=${WT_ROOT:-${XDG_DATA_HOME:-$HOME/.local/share}/herdr/worktrees}
+  local root=${WT_ROOT:-${XDG_DATA_HOME:-$HOME/.local/share}/worktrees}
   root=${root/#\~/$HOME}
   print -r -- "${root%/}"
 }

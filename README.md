@@ -164,10 +164,9 @@ of the workflow. Going to something that is already open is bare `wk` below.
 
 Parallel work (reviewing a branch while developing another) uses one worktree
 per branch. Worktrees are placed at `$WT_ROOT/<owner>/<repo>/<branch>`, outside
-the `$REPO_ROOT` tree `wk open` browses. `$WT_ROOT` (`.zshenv`) is set to the
-same path as herdr's own `[worktrees] directory`
-(`~/.local/share/herdr/worktrees`), so both put worktrees in one tree and the
-two values move together. That layout is what the listing is: a glob over the
+the `$REPO_ROOT` tree `wk open` browses. `$WT_ROOT` (`.zshenv`) and herdr's own
+`[worktrees] directory` hold the same path (`~/.local/share/worktrees`), so both
+put worktrees in one tree and the two values move together. That layout is what the listing is: a glob over the
 root, so no git process is spawned per row. A `/` in a branch name is folded to
 `-`, so two branches differing only in that separator would share a directory.
 
@@ -202,7 +201,7 @@ Claude Code creates worktrees of its own, so the two kinds are kept apart:
 | --- | --- | --- |
 | For | branch and multi-session work a human returns to | isolating a session or a subagent while it runs |
 | Created by | `wk new`, herdr `alt+g` | `--worktree`, `EnterWorktree`, `isolation: worktree` |
-| Placed in | `~/.local/share/herdr/worktrees/` | `<repo>/.claude/worktrees/` (gitignored) |
+| Placed in | `~/.local/share/worktrees/` | `<repo>/.claude/worktrees/` (gitignored) |
 | Removed by | you — `wk rm` | Claude Code, on exit or by its periodic sweep |
 
 Claude Code's are inside the repository and so outside `$WT_ROOT`: they do not
