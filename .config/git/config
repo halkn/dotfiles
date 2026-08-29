@@ -2,20 +2,9 @@
   showUntrackedFiles = all
 [diff]
   algorithm = "histogram"
-  colorMoved = default
   mnemonicPrefix = true
-  renames = true
-  tool = hunk
-[difftool]
-  prompt = false
-[difftool "hunk"]
-  cmd = hunk difftool \"$LOCAL\" \"$REMOTE\" \"$MERGED\"
 [merge]
   conflictstyle = zdiff3
-[mergetool]
-  prompt = false
-[color]
-  ui = true
 [fetch]
   prune = true
   pruneTags = true
@@ -23,7 +12,6 @@
 [pull]
   ff = only
 [push]
-  default = simple
   autoSetupRemote = true
 [include]
   path = config.local
@@ -33,17 +21,12 @@
   ba = branch -av
   sw = switch
   sm = "!git switch main && git pull && git pm"
-  df = difftool
-  diff-narrow = -c delta.side-by-side=false diff
+  diff-narrow = -c core.pager=\"hunk pager --mode stack\" diff
   prdiff = "!f() { git diff --no-color \"$(git merge-base \"${1:-origin/main}\" HEAD)\" | hunk patch -; }; f"
-  hdiff = -c core.pager=\"hunk pager\" diff
-  hshow = -c core.pager=\"hunk pager\" show
   pm = "!f() { base=\"${1:-origin/main}\"; current=$(git branch --show-current); git for-each-ref --format='%(refname:short)' --merged=\"$base\" refs/heads | while IFS= read -r branch; do [ -n \"$branch\" ] || continue; [ \"$branch\" = \"$current\" ] && continue; [ \"$branch\" = \"main\" ] && continue; git branch -d \"$branch\"; done; }; f"
 [core]
-  pager = delta
+  pager = hunk pager
   hooksPath = ~/.config/git/hooks
-[interactive]
-  diffFilter = delta --color-only
 [rerere]
   enabled = true
   autoupdate = true
@@ -57,13 +40,3 @@
   bareRepository = explicit
 [url "git@github.com:"]
   pushInsteadOf = https://github.com/
-[delta]
-  hunk-header-decoration-style = omit
-  navigate = true
-  line-numbers = true
-  side-by-side = true
-  word-diff-regex = \\S+
-  file-style = bold yellow ul
-  file-decoration-style = none
-  blame-code-style = syntax
-  hyperlinks = true
