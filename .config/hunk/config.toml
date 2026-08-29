@@ -1,6 +1,8 @@
-# "Save view preferences?" rewrites this file, which the ~/.config symlink turns
-# into a change to the repository. A repository-local .hunk/config.toml wins over
-# it and is where that state belongs.
+# Saving view preferences rewrites this file, which the ~/.config symlink turns into a
+# change to the repository.
+prompt_save_view_preferences = false
+
 theme = "kanagawa-wave"
 vcs = "git"
 mode = "auto"
+agent_notes = true

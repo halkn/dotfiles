@@ -294,7 +294,8 @@
       "git remote update*",
       "git remote prune*",
       "git submodule *",
-      "gh *"
+      "gh *",
+      "hunk session *"
     ]
   },
   "outputStyle": "Concise",

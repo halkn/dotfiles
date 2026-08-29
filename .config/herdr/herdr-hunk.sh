@@ -23,4 +23,4 @@ pane=$(herdr pane split --pane "$active" --direction right --ratio 0.5 \
 # A detached keybinding has nowhere to report a failed split.
 [[ -n $pane && $pane != null ]] || exit 1
 herdr pane rename "$pane" hunk
-herdr pane run "$pane" "hunk diff"
+herdr pane run "$pane" "hunk diff --watch"
