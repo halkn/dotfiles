@@ -79,20 +79,64 @@ check '_ck_wt_slug' 'feature-a' "$(_ck_wt_slug 'feature/a')"
 check '_ck_wt_slug (nested)' 'a-b-c' "$(_ck_wt_slug 'a/b/c')"
 check '_ck_wt_slug (plain)' 'topic' "$(_ck_wt_slug topic)"
 
-# The listing is a glob over <root>/<owner>/<repo>/<branch>, so the row is built
-# from the path alone - no git call per row. Rows are
-# `<display>\t<target>\t<path>`, the shape every picker consumes.
+# The listing is a glob over <root>/<owner>/<repo>/<branch>, so it costs no git
+# call per row. What a row reads as is the caller's, so only the paths are
+# served here.
 mkdir -p "$scratch/halkn/dotfiles/topic" "$scratch/halkn/other/feature-a"
 
-check '_ck_wt_rows' \
-  "$(printf 'wt   %-30s %s\t%s\t%s\n' \
-    'halkn/dotfiles' 'topic' "$scratch/halkn/dotfiles/topic" "$scratch/halkn/dotfiles/topic"
-  printf 'wt   %-30s %s\t%s\t%s' \
-    'halkn/other' 'feature-a' "$scratch/halkn/other/feature-a" "$scratch/halkn/other/feature-a")" \
-  "$(WT_ROOT=$scratch _ck_wt_rows)"
+check '_ck_wt_paths' \
+  "$scratch/halkn/dotfiles/topic
+$scratch/halkn/other/feature-a" \
+  "$(WT_ROOT=$scratch _ck_wt_paths)"
 
 # An empty root is an empty listing rather than a glob error.
-check '_ck_wt_rows (empty root)' '' "$(WT_ROOT=$scratch/nowhere _ck_wt_rows)"
+check '_ck_wt_paths (empty root)' '' "$(WT_ROOT=$scratch/nowhere _ck_wt_paths)"
+
+# ── labels ───────────────────────────────────────────
+
+# A clone is recognised by the .git it carries, so these run against real
+# directories rather than made-up paths.
+mkdir -p "$scratch/repos/github.com/halkn/dotfiles/.git" \
+  "$scratch/repos/github.com/halkn/dotfiles/.config/zsh" \
+  "$scratch/repos/dev.azure.com/org/project/repo/.git"
+
+describe() { WT_ROOT=$scratch REPO_ROOT=$scratch/repos _ck_describe "$1"; }
+
+# Only the worktree layout spells a branch out; the tab is the empty branch of
+# the rows that do not.
+check '_ck_describe (worktree)' "$(printf 'halkn/dotfiles\ttopic')" \
+  "$(describe "$scratch/halkn/dotfiles/topic")"
+check '_ck_describe (clone)' "$(printf 'halkn/dotfiles\t')" \
+  "$(describe "$scratch/repos/github.com/halkn/dotfiles")"
+
+# Azure DevOps puts a project between the owner and the repository, and the
+# repository is still the last two segments.
+check '_ck_describe (azure clone)' "$(printf 'project/repo\t')" \
+  "$(describe "$scratch/repos/dev.azure.com/org/project/repo")"
+
+# A path inside a checkout has the same shape as a checkout, and naming it after
+# the two directories it happens to sit in would sort it away from the
+# repository it belongs to. The worktree layout is pinned by its depth; a clone
+# is pinned by its .git.
+check '_ck_describe (below a worktree)' \
+  "$(printf '%s\t' "${scratch:A}/halkn/dotfiles/topic/src")" \
+  "$(describe "$scratch/halkn/dotfiles/topic/src")"
+check '_ck_describe (below a clone)' \
+  "$(printf '%s\t' "${scratch:A}/repos/github.com/halkn/dotfiles/.config/zsh")" \
+  "$(describe "$scratch/repos/github.com/halkn/dotfiles/.config/zsh")"
+
+# git and herdr report a resolved path, so a root spelled through a symlink has
+# to compare against one.
+ln -sfn "$scratch" "$scratch/../${scratch:t}-link"
+link=${scratch:h}/${scratch:t}-link
+check '_ck_describe (symlinked root)' "$(printf 'halkn/dotfiles\ttopic')" \
+  "$(WT_ROOT=$link REPO_ROOT=$link/repos _ck_describe "$scratch/halkn/dotfiles/topic")"
+rm -f -- "$link"
+
+check '_ck_describe (outside both roots)' "$(printf '~\t')" "$(describe "$HOME")"
+check '_ck_describe (empty)' '' "$(describe '')"
+check '_ck_describe (trailing slash)' "$(printf 'halkn/dotfiles\ttopic')" \
+  "$(describe "$scratch/halkn/dotfiles/topic/")"
 
 # The main checkout is `git worktree list`'s first entry and is never offered
 # for removal.

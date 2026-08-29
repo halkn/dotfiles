@@ -64,14 +64,72 @@ _wk_goto() {
 
 # ── go: bare `wk` ────────────────────────────────────
 
+# One row of the go listing: `<display>\t<target>\t<path>`, with the repository
+# first so that ordering the rows on the display column groups everything
+# belonging to one repository together, whichever layer it came from.
+_wk_go_row() {
+  printf '%-24s %-24s %s\t%s\t%s\n' "$1" "$2" "$3" "$4" "$5"
+}
+
 # Everything already open or already checked out, across every repository: the
-# workspaces first, then the worktrees under $WT_ROOT. The two are not
-# deduplicated - a worktree that is open appears as both - because the rows
-# answer different questions and the workspace row is the one that carries the
-# label.
+# workspaces herdr holds, then the worktrees under $WT_ROOT that none of them is
+# on, interleaved and ordered by repository and branch.
+#
+# A worktree that is open is one row, not two: both rows would land in the same
+# workspace anyway, since _sess_open_worktree focuses the one a checkout is
+# already open in, and the workspace row is the one that also carries herdr's
+# number and label.
+#
+# Sorted in C order so that the grouping does not depend on the locale of the
+# shell the picker happens to run in, and on the display column alone: a row is
+# placed by what it reads as, not by where its checkout is.
+#
+# Both kinds of row are named through _ck_describe rather than from what herdr
+# reports, because `herdr workspace list` (0.8.2) carries the checkout path but
+# no branch, and one listing has to read one way.
 _wk_go_rows() {
-  _sess_workspace_rows
-  _ck_wt_rows
+  local workspaces
+  # Read before the block below rather than piped into it, so that the paths
+  # collected while laying out the workspace rows are still there when the
+  # worktree rows are laid out: a pipeline would put the loop in a subshell.
+  workspaces=$(_sess_workspace_rows)
+  {
+    local line id number label wt_path repo branch
+    local -A open
+    local -a fields
+    # Split rather than `read`: a tab is IFS whitespace in zsh, so `read` folds
+    # two of them into one and an empty field - a workspace herdr has not
+    # labelled, or one on no checkout - would shift every column after it.
+    for line in ${(f)workspaces}; do
+      fields=("${(@ps:\t:)line}")
+      id=${fields[1]-}
+      [[ -n $id ]] || continue
+      number=${fields[2]-}
+      label=${fields[3]-}
+      wt_path=${fields[4]-}
+      if [[ -n $wt_path ]]; then
+        open[${wt_path:A}]=1
+      fi
+      IFS=$'\t' read -r repo branch <<<"$(_ck_describe "$wt_path")"
+      if [[ -n $repo ]]; then
+        _wk_go_row "$repo" "$branch" "ws [$number] $label" "workspace:$id" "$wt_path"
+      else
+        # A workspace on no checkout has nothing to group by; herdr's own label
+        # is the only name it has, and it takes the place of the repository so
+        # that the column the rows are ordered on is never empty.
+        _wk_go_row "$label" '' "ws [$number]" "workspace:$id" "$wt_path"
+      fi
+    done
+    for wt_path in ${(f)"$(_ck_wt_paths)"}; do
+      # An empty listing reads back as one empty field.
+      [[ -n $wt_path ]] || continue
+      if [[ -n ${open[${wt_path:A}]-} ]]; then
+        continue
+      fi
+      IFS=$'\t' read -r repo branch <<<"$(_ck_describe "$wt_path")"
+      _wk_go_row "$repo" "$branch" 'wt' "$wt_path" "$wt_path"
+    done
+  } | LC_ALL=C sort -t$'\t' -k1,1
 }
 
 _wk_go_pick() {

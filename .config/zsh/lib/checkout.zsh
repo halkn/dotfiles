@@ -6,10 +6,15 @@
 # per row. git is asked at the preview and at the moment of acting, not to build
 # a list.
 #
-# Every row here is `<display>\t<target>\t<path>`, the shape the pickers in
+# A row here is `<display>\t<target>\t<path>`, the shape the pickers in
 # workflows/ consume. The target is what Enter acts on and the path is what the
 # preview reads; they differ only for a row that is not a directory of its own,
 # which is why the column is kept separate.
+#
+# A listing whose rows are interleaved with another layer's - the worktrees,
+# which the pickers show next to herdr's workspaces - is served as bare paths
+# plus _ck_describe instead, so that the one caller that sees both lays both out
+# the same way.
 
 # ── clones ───────────────────────────────────────────
 
@@ -112,14 +117,57 @@ _ck_wt_path() {
   print -r -- "$(_ck_wt_root)/$slug/$(_ck_wt_slug "$branch")"
 }
 
-_ck_wt_rows() {
+_ck_wt_paths() {
   local wt_path root
   root=$(_ck_wt_root)
   for wt_path in "$root"/*/*/*(N/); do
-    printf 'wt   %-30s %s\t%s\t%s\n' \
-      "${${wt_path:h:h}:t}/${wt_path:h:t}" "${wt_path:t}" "$wt_path" "$wt_path"
+    print -r -- "$wt_path"
   done
   return 0
+}
+
+# ── labels ───────────────────────────────────────────
+
+# `<repo>\t<branch>` for a checkout path: what a picker row is named and sorted
+# by. Read off the layout alone, so a listing still costs no git process per
+# row. Only $WT_ROOT spells a branch out; a clone answers with the repository
+# and an empty branch, and a path under neither root is named by itself.
+#
+# The branch of a worktree is the directory name, which _ck_wt_slug folded `/`
+# out of, so a nested branch reads back with `-` where it was created with `/`.
+# Both roots and the path are resolved before they are compared: a root reached
+# through a symlink is spelled one way in $WT_ROOT and another in what git and
+# herdr report, and the two would not match.
+_ck_describe() {
+  local dir=${1:-} root
+  local -a parts
+  [[ -n $dir ]] || return 0
+  dir=${${dir%/}:A}
+
+  root=${${:-$(_ck_wt_root)}:A}
+  if [[ $dir == "$root"/* ]]; then
+    parts=(${(s:/:)${dir#"$root"/}})
+    if ((${#parts} == 3)); then
+      printf '%s/%s\t%s\n' "$parts[1]" "$parts[2]" "$parts[3]"
+      return 0
+    fi
+  fi
+
+  # <host>/<owner>/<repo>, and the <host>/<org>/<project>/<repo> that Azure
+  # DevOps needs: the repository is the last two segments either way. Unlike the
+  # worktree layout above, the depth does not say where the checkout ends - a
+  # directory inside one has the same shape - so the .git the clone itself
+  # carries is what does.
+  root=${${:-$(_ck_repo_root)}:A}
+  if [[ $dir == "$root"/* && -e $dir/.git ]]; then
+    parts=(${(s:/:)${dir#"$root"/}})
+    if ((${#parts} == 3 || ${#parts} == 4)); then
+      printf '%s/%s\t\n' "$parts[-2]" "$parts[-1]"
+      return 0
+    fi
+  fi
+
+  printf '%s\t\n' "${dir/#$HOME/~}"
 }
 
 # `git worktree list --porcelain` on stdin, laid out for the removal picker.

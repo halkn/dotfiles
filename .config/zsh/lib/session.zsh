@@ -12,9 +12,13 @@ _sess_available() {
   [[ -n ${HERDR_ENV:-} ]] && command -v herdr >/dev/null 2>&1
 }
 
-# `<display>\t<target>\t<path>` for every open workspace, the same shape as
-# checkout.zsh's rows. The target is namespaced because a workspace is focused
-# rather than opened, and its path may be empty (a workspace on no checkout).
+# `<workspace_id>\t<number>\t<label>\t<checkout_path>` for every open workspace.
+# What the picker shows is left to the caller: a workspace row is laid out next
+# to checkout.zsh's worktree rows, and only the caller sees both.
+#
+# A field may be empty: a workspace does not have to sit on a checkout, and
+# herdr does not have to have labelled it. The caller splits on the tab itself
+# rather than with `read`, which folds two adjacent tabs into one.
 #
 # Empty outside a session, and empty rather than failing when the server does
 # not answer: the herdr picker runs the listing under `set -euo pipefail`.
@@ -26,8 +30,9 @@ _sess_workspace_rows() {
   [[ -n $workspaces ]] || return 0
   print -r -- "$workspaces" | jq -r '
     .result.workspaces[]?
-    | ["ws   [\(.number)] \(.label)",
-       "workspace:\(.workspace_id)",
+    | [.workspace_id,
+       (.number | tostring),
+       .label,
        (.worktree.checkout_path // "")]
     | @tsv
   ' 2>/dev/null
