@@ -5,6 +5,19 @@
   mnemonicPrefix = true
 [merge]
   conflictstyle = zdiff3
+[column]
+  ui = auto
+[branch]
+  sort = -committerdate
+# Lexicographic refname order puts v1.10 before v1.9.
+[tag]
+  sort = version:refname
+[commit]
+  verbose = true
+# Aborts on malformed objects and on the .gitmodules / .GIT injections fsck knows about.
+[transfer]
+  fsckObjects = true
+  credentialsInUrl = die
 [fetch]
   prune = true
   pruneTags = true
@@ -34,6 +47,8 @@
   autoSquash = true
   autoStash = true
   updateRefs = true
+  # Deleting a todo line silently drops the commit under the default "ignore".
+  missingCommitsCheck = error
 [init]
   defaultBranch = main
 [safe]
