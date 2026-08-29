@@ -30,5 +30,8 @@ mise.*.local.toml
 .config/herdr/release-notes.json
 .config/herdr/.plugins.lock
 .config/herdr/plugins.json
-.config/herdr/plugins/*
-!.config/herdr/plugins/config/
+.config/herdr/plugins/
+
+# hunk runtime files
+.config/hunk/state.json
+.config/hunk/extensions/

@@ -25,7 +25,7 @@ paths:
 - `.zshrc` は `workflows/*.zsh` だけを glob で source する。lib の登録は要らず、読み込み順にも依存しない
 - **ファイル冒頭で `return 0` しない。** function は常に定義し、依存判定は各エントリポイントの内部で `_ui_require <tool> <コマンド名>` を呼んで行う。file-level guard だと function 自体が消えて `command not found` になり、herdr から単独 source されるファイルでは沈黙して壊れる
 - ピッカーは操作ごとに 1 本持つ（`_wk_go_pick`・`_wk_open_pick`・`_wk_rm`）。行の意味も遷移先も違うものを 1 本に畳まない。行は `<display>\t<target>\t<path>` で揃え、preview は path 列だけを見る
-- 全画面で開くピッカーの見た目は `_UI_FZF_CHROME` が持つ。`.config/herdr/*.sh` は workflow を 1 本 source して関数を呼ぶだけにする。`FZF_DEFAULT_OPTS` はカーソル下に出る補完用の寸法なので、そこへ寄せない。herdr の script は絶対パスで source するので、移動・改名は herdr 側の参照と同時に直す
+- 全画面で開くピッカーの見た目は `_UI_FZF_CHROME` が持つ。`.config/herdr/*.sh` はピッカーを開くなら workflow を 1 本 source して関数を呼ぶだけにし、herdr の CLI だけで完結するものは zsh 側に function を作らずその script に閉じる。`FZF_DEFAULT_OPTS` はカーソル下に出る補完用の寸法なので、そこへ寄せない。herdr の script は絶対パスで source するので、移動・改名は herdr 側の参照と同時に直す
 - herdr から source される関数は `set -euo pipefail` 下（herdr picker・fzf の preview）で走る。herdr や jq を呼ぶ箇所は結果を変数に受けてから出力し、途中の失敗で一覧や preview 全体が消えないようにする
 - worktree の置き場所は `.zshenv` の `$WT_ROOT` と herdr の `[worktrees] directory` を一致させる。片方だけ変えない
 - `.claude/worktrees/` の lifecycle は Claude Code が持つ。`$WT_ROOT` の外なので `wk` の一覧には出ず、`wk rm` の候補からは path で除外する
