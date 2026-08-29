@@ -93,10 +93,10 @@ alias df='df -h'
 alias ..='cd ..'
 alias zs='exec zsh'
 alias :q='exit'
-# A fixed destination, so it skips the picker `repo` would open. The body is
-# evaluated when the alias runs, which is why `_repo_root` (workflows/repo.zsh,
+# A fixed destination, so it skips the picker `wk open` would show. The body is
+# evaluated when the alias runs, which is why `_ck_repo_root` (lib/checkout.zsh,
 # sourced further down) is already there by then.
-alias dot='cd -- "$(_repo_root)/github.com/halkn/dotfiles"'
+alias dot='cd -- "$(_ck_repo_root)/github.com/halkn/dotfiles"'
 
 # ── plugins (git clone) ───────────────────────────────
 zsh_plugins_dir=$zsh_data_dir/plugins
@@ -230,6 +230,8 @@ fi
 # ── workflows ────────────────────────────────────────
 # Each file defines its functions unconditionally and checks its dependencies
 # inside them, so no conditions belong here and the load order does not matter.
+# lib/ is not globbed: a workflow sources the parts it needs itself, which is
+# what lets ~/.config/herdr/*.sh get a whole workflow from one file.
 for _zsh_part in "$ZDOTDIR"/workflows/*.zsh(N); do
   source "$_zsh_part"
 done

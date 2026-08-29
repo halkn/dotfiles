@@ -38,10 +38,11 @@ delay_seconds = 3
 
 # ── Worktrees ────────────────────────────────────────
 # Moved out of the default ~/.herdr/worktrees to follow XDG. A worktree can hold uncommitted
-# work, so it belongs under data rather than cache or state. `wt` reads this value to decide
-# its own fallback path, which makes this line the single source of truth for the location.
+# work, so it belongs under data rather than cache or state, and it outlives herdr, so it is
+# not under a herdr-owned directory. `$WT_ROOT` (.config/zsh/.zshenv) holds the same path:
+# herdr and `wk` place worktrees in one tree, so the two move together.
 [worktrees]
-directory = "~/.local/share/herdr/worktrees"
+directory = "~/.local/share/worktrees"
 
 # ── Session ──────────────────────────────────────────
 [session]
@@ -53,7 +54,6 @@ prefix = "ctrl+space"
 # The default is the chord prefix+shift+n (herdr 0.8.2); alt+w keeps "a workspace on
 # the current directory" one key away, next to alt+s which goes to an existing one.
 new_workspace = "alt+w"
-new_worktree = "alt+g"
 split_vertical = "alt+;"
 split_horizontal = "alt+minus"
 focus_pane_left = "alt+h"
@@ -101,6 +101,17 @@ command = "~/.config/herdr/herdr-open.sh"
 description = "open a workspace on a repository or a place"
 width = "90%"
 height = "90%"
+
+# `wk new` rather than herdr's own new_worktree, which is left on its default chord: the
+# branch has to be picked up where it already is (locally, then on origin) before a new one
+# is created, and that decision lives in .config/zsh/workflows/wk.zsh.
+[[keys.command]]
+key = "alt+g"
+type = "popup"
+command = "~/.config/herdr/herdr-new.sh"
+description = "create the worktree for a branch and open it"
+width = "60%"
+height = "20%"
 
 [[keys.command]]
 key = "alt+t"
