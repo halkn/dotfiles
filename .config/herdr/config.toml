@@ -133,5 +133,5 @@ description = "toggle a hunk pane on the right"
 [[keys.command]]
 key = "alt+d"
 type = "pane"
-command = "hunk diff --mode split"
+command = "hunk diff --mode split --watch"
 description = "review the working tree side by side"
