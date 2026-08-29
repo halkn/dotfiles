@@ -23,6 +23,8 @@
 - `git` はネットワーク／認証を要するサブコマンド（`push`・`fetch`・`pull`・`clone`・`ls-remote`・`remote update|prune`・`submodule`）だけを除外する。`git *` 全体を除外すると `filesystem.denyRead: ["~/"]` が git 経由で素通しになる。除外していない現在は `git hash-object <denyRead 配下>` が EPERM になることを確認済み（v2.1.226）。docs は linked worktree の共有 `.git` への書き込みを明示的に許可しており、ローカル操作はサンドボックス内で動く前提
 - push は `.config/git/config` の `pushInsteadOf` により SSH。HTTPS 化しても credential helper が Seatbelt 下で通らず、`allowUnsandboxedCommands: false` のため即ハードエラーになるので、ネットワーク系 git は除外に残す
 - 引数なし形（`git push` 等）とワイルドカード形を併記する。除外に追加する前に、そのサブコマンドがサンドボックス内で実際に失敗することを確認する
+- `hunk session *` の除外は**維持する**。hunk の session daemon は loopback の websocket broker（既定 `127.0.0.1:47657`）で、sandbox 内からは connect() の時点で拒否される（`curl` が exit 7 / `connect=0.000000`、`--noproxy '*'` でも同じ。v2.1.251・macOS・hunk 0.20.0）。`sandbox.network` に outbound loopback を許可するキーは無い（`allowLocalBinding` は bind 側）。到達性の判定に `hunk session list` の出力を使わない: 存在しないポート（`HUNK_MCP_PORT`）を指しても同じ「No active Hunk sessions.」を返し、接続失敗と 0 件を区別しない。session id・files・comments が実データで返ることで判定する
+- `hunk session` に `permissions.allow` は要らない。auto モードの classifier が承認する（allow に無い `hunk session comment rm` がプロンプトなしで通ることを確認済み。v2.1.251）
 
 ## Auto モードの前提
 
