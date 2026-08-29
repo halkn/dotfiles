@@ -222,9 +222,9 @@ if command -v nvim >/dev/null 2>&1; then
   alias vimdiff='nvim -d'
 fi
 
-# ── reviewr ──────────────────────────────────────────
-if command -v herdr-reviewr >/dev/null 2>&1; then
-  alias gd='herdr-reviewr'
+# ── hunk ─────────────────────────────────────────────
+if command -v hunk >/dev/null 2>&1; then
+  alias gd='hunk diff'
 fi
 
 # ── workflows ────────────────────────────────────────

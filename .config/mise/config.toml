@@ -32,6 +32,7 @@ yq = "latest"
 # vcs
 gh = "latest"
 delta = "latest"
+hunk = "latest"
 
 # editor
 neovim = "stable"
