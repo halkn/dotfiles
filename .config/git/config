@@ -7,6 +7,9 @@
   conflictstyle = zdiff3
 [column]
   ui = auto
+# Branch listings page by default, which puts a full-screen hunk over a few lines of text.
+[pager]
+  branch = false
 [branch]
   sort = -committerdate
 # Lexicographic refname order puts v1.10 before v1.9.
