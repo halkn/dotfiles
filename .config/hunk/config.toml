@@ -6,3 +6,4 @@ theme = "kanagawa-wave"
 vcs = "git"
 mode = "auto"
 agent_notes = true
+color_moved = true
