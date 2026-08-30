@@ -6,7 +6,7 @@
 
 - `claude/` が Claude Code 設定の実体。`~/.claude/` は Claude Code 自身が状態を書くのでディレクトリ単位では symlink できず、`mise.toml` の `[dotfiles]` が `claude/*` を 1 エントリずつ張る。glob は毎回展開されるので新規ファイル・サブディレクトリの追加に宣言の変更は要らない。`.claude/` はこのリポジトリ自身のプロジェクト設定で別物
 - `.config/mise/config.toml` は `~/.config/mise/config.toml` としても読まれる。ここへの変更はリポジトリ外の全プロジェクトに影響する
-- `.config/zsh/` は `.zshenv` / `.zshrc`（portable な shell core）、`workflows/`（ユーザーが打つコマンド）、`lib/`（扱う情報ごとの層）の 3 層。置き場所の基準と制約は `.claude/rules/zsh.md`
+- `.config/zsh/` は `.zshenv` / `.zshrc`（portable な shell core）、`workflows/`（ユーザーが打つコマンド）、`lib/`（扱う情報ごとの層）の 3 層に、`test/` が付く。3 層の置き場所の基準と制約は `.claude/rules/zsh.md`、`test/` の扱いは下記 Verification
 - `.claude/skills/` と `.claude/rules/` はこのリポジトリ自身の設定で symlink されない。新規ファイルはそのまま次のセッションで読まれる
 - `mise` タスクは 2 箇所に分かれる。1 コマンドで終わるものは `mise.toml`、複数行のロジックは `mise-tasks/` 配下のファイルタスク（サブディレクトリが `lint:` などの名前空間になる。実行ビットが必要で、落ちるとエラーなくタスクが消える）
 - `.claude/rules/` の path-scoped ルールを `~/.claude/rules/` へ移さない。`paths:`/`globs:` 指定が user-level では読み込まれない（anthropics/claude-code#19377, #21858）。全プロジェクト共通のルールは `claude/CLAUDE.md` に直接書く
@@ -14,6 +14,7 @@
 ## Verification
 
 - 変更後は `mise run fmt` → `mise run lint`。`lint` は整形チェック・各言語の検査・テストを全て含む（内訳は `mise.toml` の `depends`）
+- zsh の関数を足す・振る舞いを変えたら `.config/zsh/test/` に検査を足す（`mise run test:zsh` で単体実行）。各テストが何を対象に何を見るかはファイル冒頭のコメントにある
 - 既存警告が多い場合は対象ファイルに絞る（`rumdl check <file>`、`shuck format --check <file>`）
 - ツールが無い場合は先に `mise install`（lockfile 固定のまま導入される）
 - `shuck` は lint・整形ともリポジトリ全体（`.`）が対象。シェルスクリプトを足すと登録なしで検査対象になるため、追加時に `mise.toml` は変更しない
