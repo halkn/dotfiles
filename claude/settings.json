@@ -103,6 +103,9 @@
       "Bash(git remote add*)",
       "Bash(git remote set-url*)",
       "Bash(git reset --hard*)",
+      "Bash(git checkout -- *)",
+      "Bash(git checkout .*)",
+      "Bash(git checkout -f*)",
       "Bash(git clean -*f*)",
       "Bash(git branch -D*)",
       "Bash(git worktree remove*)",
@@ -170,9 +173,6 @@
         "*.dev.azure.com",
         "*.vssps.visualstudio.com",
         "login.microsoftonline.com"
-      ],
-      "deniedDomains": [
-        "gist.github.com"
       ]
     },
     "filesystem": {
@@ -306,8 +306,7 @@
     ],
     "hard_deny": [
       "$defaults",
-      "Cross-Context Transfer: This machine serves two separate contexts — personal work under github.com/halkn, and employer business work in separate remotes. Never push, mirror, copy, or paste content that originated in one context's repository, working directory, or credential store into a remote, pull request, issue, or file belonging to the other, and never add or repoint a remote that crosses the two. Infer the current context from the repository remote and the working directory. Both contexts are trusted on their own, so neither the destination being private nor the user asking for it clears this: the boundary is between them, not around them.",
-      "Cross-Context Transfer applies in both directions and is not cleared by explicit user intent. If the user asks for a transfer across the boundary, refuse the transfer itself and tell them to move the content by hand."
+      "Cross-Context Transfer: This machine serves two separate contexts — personal work under github.com/halkn, and employer business work in separate remotes. Never push or mirror content that originated in one context's repository into a remote, pull request, or issue belonging to the other, and never add or repoint a remote that crosses the two. Infer the current context from the repository remote and the working directory. This applies in both directions. Both contexts are trusted on their own, so neither the destination being private nor the user asking for it clears this: the boundary is between them, not around them. Refuse the outbound operation itself and tell the user to move the content by hand. Copying a configuration snippet into a local file is not covered by this rule — it is judged by the shipped provenance and publication rules."
     ],
     "classifyAllShell": true
   }
