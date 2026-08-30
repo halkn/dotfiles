@@ -8,7 +8,8 @@
     "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
     "BASH_DEFAULT_TIMEOUT_MS": "30000",
     "CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR": "1",
-    "DISABLE_AUTOUPDATER": "1"
+    "DISABLE_AUTOUPDATER": "1",
+    "FORCE_AUTOUPDATE_PLUGINS": "1"
   },
   "attribution": {
     "commit": "",
@@ -37,19 +38,14 @@
       "Bash(gh run view*)",
       "Bash(gh repo view*)",
       "Bash(gh search *)",
-      "Bash(uv run pytest *)",
-      "Bash(uv run ruff *)",
       "Bash(uv run pyright *)",
       "Bash(uv tree *)",
       "Bash(uv lock --check *)",
       "Bash(uv audit *)",
-      "Bash(uv export *)",
       "Bash(mise tasks*)",
       "Bash(mise task info*)",
       "Bash(eza *)",
       "Bash(tree *)",
-      "Bash(jq *)",
-      "Bash(yq *)",
       "Bash(az repos list *)",
       "Bash(az repos show *)",
       "Bash(az repos pr list *)",
@@ -82,17 +78,11 @@
       "Read(//**/id_ed25519*)",
       "Read(//**/id_ecdsa*)",
       "Read(//**/.ssh/**)",
-      "Bash(dd*)",
-      "Bash(shred*)",
-      "Bash(truncate*)",
-      "Bash(chmod -R*)",
-      "Bash(chown -R*)",
       "Bash(crontab*)",
       "Bash(sudo*)",
       "Bash(nc *)",
       "Bash(ssh*)",
       "Bash(scp*)",
-      "Bash(git checkout*)",
       "Bash(git reflog expire*)",
       "Bash(git gc --prune*)",
       "Bash(git push --force*)",
@@ -103,14 +93,7 @@
       "Bash(git push * -f*)",
       "Bash(git config *alias.*)",
       "Bash(uv publish*)",
-      "Bash(az devops invoke *--http-method post*)",
-      "Bash(az devops invoke *--http-method POST*)",
-      "Bash(az devops invoke *--http-method patch*)",
-      "Bash(az devops invoke *--http-method PATCH*)",
-      "Bash(az devops invoke *--http-method put*)",
-      "Bash(az devops invoke *--http-method PUT*)",
-      "Bash(az devops invoke *--http-method delete*)",
-      "Bash(az devops invoke *--http-method DELETE*)",
+      "Bash(az devops invoke *--http-method *)",
       "Bash(az devops invoke *--http-method=*)"
     ],
     "ask": [
@@ -187,6 +170,9 @@
         "*.dev.azure.com",
         "*.vssps.visualstudio.com",
         "login.microsoftonline.com"
+      ],
+      "deniedDomains": [
+        "gist.github.com"
       ]
     },
     "filesystem": {
@@ -313,6 +299,15 @@
       "Secrets management: credentials live in the OS keychain and in CLI token caches, never in tracked files. Machine-local secrets live in untracked *.local files. None of these belong in a commit, PR, or issue.",
       "Sensitive data locations & audiences: SSH and GPG key directories, cloud and CLI credential stores, Claude Code session transcripts, and any .env or *.local file. Contents of these locations must not be copied into commits, pull requests, issues, or any outbound request.",
       "Network posture: untrusted network. Assume no network-level trust boundary protects this machine."
+    ],
+    "soft_deny": [
+      "$defaults",
+      "Snowflake Destructive DDL [named+specifics — **must name:** the exact object]: `DROP`, `TRUNCATE TABLE`, `CREATE OR REPLACE` against an existing table, view, stage, schema, or database, or any statement that discards a Snowflake object the agent did not create in this session. A Snowflake object is addressed by database and schema name, with no host or namespace marker, so the Sensitive remote targets heuristic does not reach it: treat every database and schema as shared unless the user named it as scratch in this session. Also covers `COPY INTO` an external stage or cloud storage location, which moves table contents outside Snowflake."
+    ],
+    "hard_deny": [
+      "$defaults",
+      "Cross-Context Transfer: This machine serves two separate contexts — personal work under github.com/halkn, and employer business work in separate remotes. Never push, mirror, copy, or paste content that originated in one context's repository, working directory, or credential store into a remote, pull request, issue, or file belonging to the other, and never add or repoint a remote that crosses the two. Infer the current context from the repository remote and the working directory. Both contexts are trusted on their own, so neither the destination being private nor the user asking for it clears this: the boundary is between them, not around them.",
+      "Cross-Context Transfer applies in both directions and is not cleared by explicit user intent. If the user asks for a transfer across the boundary, refuse the transfer itself and tell them to move the content by hand."
     ],
     "classifyAllShell": true
   }
