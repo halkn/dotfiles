@@ -5,8 +5,10 @@
   mnemonicPrefix = true
 [merge]
   conflictstyle = zdiff3
+# Only tags: branch listings bury the `*` marker mid-line, and untracked paths are easier to
+# read and copy one per line.
 [column]
-  ui = auto
+  tag = auto
 # Branch listings page by default, which puts a full-screen hunk over a few lines of text.
 [pager]
   branch = false
