@@ -2,20 +2,25 @@
   showUntrackedFiles = all
 [diff]
   algorithm = "histogram"
-  colorMoved = default
   mnemonicPrefix = true
-  renames = true
-  tool = hunk
-[difftool]
-  prompt = false
-[difftool "hunk"]
-  cmd = hunk difftool \"$LOCAL\" \"$REMOTE\" \"$MERGED\"
 [merge]
   conflictstyle = zdiff3
-[mergetool]
-  prompt = false
-[color]
-  ui = true
+# Tags only: columns bury the `*` marker in branch listings and split untracked paths.
+[column]
+  tag = auto
+# git pages branch listings by default, giving hunk a full screen for a few lines.
+[pager]
+  branch = false
+[branch]
+  sort = -committerdate
+# Refname order puts v1.10 before v1.9.
+[tag]
+  sort = version:refname
+[commit]
+  verbose = true
+[transfer]
+  fsckObjects = true
+  credentialsInUrl = die
 [fetch]
   prune = true
   pruneTags = true
@@ -23,7 +28,6 @@
 [pull]
   ff = only
 [push]
-  default = simple
   autoSetupRemote = true
 [include]
   path = config.local
@@ -33,17 +37,12 @@
   ba = branch -av
   sw = switch
   sm = "!git switch main && git pull && git pm"
-  df = difftool
-  diff-narrow = -c delta.side-by-side=false diff
+  diff-narrow = -c core.pager=\"hunk pager --mode stack\" diff
   prdiff = "!f() { git diff --no-color \"$(git merge-base \"${1:-origin/main}\" HEAD)\" | hunk patch -; }; f"
-  hdiff = -c core.pager=\"hunk pager\" diff
-  hshow = -c core.pager=\"hunk pager\" show
   pm = "!f() { base=\"${1:-origin/main}\"; current=$(git branch --show-current); git for-each-ref --format='%(refname:short)' --merged=\"$base\" refs/heads | while IFS= read -r branch; do [ -n \"$branch\" ] || continue; [ \"$branch\" = \"$current\" ] && continue; [ \"$branch\" = \"main\" ] && continue; git branch -d \"$branch\"; done; }; f"
 [core]
-  pager = delta
+  pager = hunk pager
   hooksPath = ~/.config/git/hooks
-[interactive]
-  diffFilter = delta --color-only
 [rerere]
   enabled = true
   autoupdate = true
@@ -51,19 +50,11 @@
   autoSquash = true
   autoStash = true
   updateRefs = true
+  # The default "ignore" drops commits deleted from the todo without a word.
+  missingCommitsCheck = error
 [init]
   defaultBranch = main
 [safe]
   bareRepository = explicit
 [url "git@github.com:"]
   pushInsteadOf = https://github.com/
-[delta]
-  hunk-header-decoration-style = omit
-  navigate = true
-  line-numbers = true
-  side-by-side = true
-  word-diff-regex = \\S+
-  file-style = bold yellow ul
-  file-decoration-style = none
-  blame-code-style = syntax
-  hyperlinks = true
