@@ -5,21 +5,19 @@
   mnemonicPrefix = true
 [merge]
   conflictstyle = zdiff3
-# Only tags: branch listings bury the `*` marker mid-line, and untracked paths are easier to
-# read and copy one per line.
+# Tags only: columns bury the `*` marker in branch listings and split untracked paths.
 [column]
   tag = auto
-# Branch listings page by default, which puts a full-screen hunk over a few lines of text.
+# git pages branch listings by default, giving hunk a full screen for a few lines.
 [pager]
   branch = false
 [branch]
   sort = -committerdate
-# Lexicographic refname order puts v1.10 before v1.9.
+# Refname order puts v1.10 before v1.9.
 [tag]
   sort = version:refname
 [commit]
   verbose = true
-# Aborts on malformed objects and on the .gitmodules / .GIT injections fsck knows about.
 [transfer]
   fsckObjects = true
   credentialsInUrl = die
@@ -52,7 +50,7 @@
   autoSquash = true
   autoStash = true
   updateRefs = true
-  # Deleting a todo line silently drops the commit under the default "ignore".
+  # The default "ignore" drops commits deleted from the todo without a word.
   missingCommitsCheck = error
 [init]
   defaultBranch = main

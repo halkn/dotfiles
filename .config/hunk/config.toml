@@ -1,5 +1,4 @@
-# Saving view preferences rewrites this file, which the ~/.config symlink turns into a
-# change to the repository.
+# Saving view preferences rewrites this file, which the ~/.config symlink makes a repo change.
 prompt_save_view_preferences = false
 
 theme = "kanagawa-wave"
