@@ -14,7 +14,7 @@
 ## Verification
 
 - 変更後は `mise run fmt` → `mise run lint`。`lint` は整形チェック・各言語の検査・テストを全て含む（内訳は `mise.toml` の `depends`）
-- zsh の関数を足す・振る舞いを変えたら `.config/zsh/test/` に検査を足す（`mise run test:zsh` で単体実行）。`<名前>_test.zsh` は `lib/` か `workflows/` の 1 ファイルに対応する。`workflows_test.zsh` だけは横断で、全ファイルが単独で source できるか・オプショナルなツールが無い環境でエントリポイントが残り呼び出しがメッセージ付きで失敗するかを見る
+- zsh の関数を足す・振る舞いを変えたら `.config/zsh/test/` に検査を足す（`mise run test:zsh` で単体実行）。各テストが何を対象に何を見るかはファイル冒頭のコメントにある
 - 既存警告が多い場合は対象ファイルに絞る（`rumdl check <file>`、`shuck format --check <file>`）
 - ツールが無い場合は先に `mise install`（lockfile 固定のまま導入される）
 - `shuck` は lint・整形ともリポジトリ全体（`.`）が対象。シェルスクリプトを足すと登録なしで検査対象になるため、追加時に `mise.toml` は変更しない
