@@ -8,6 +8,10 @@
 - allow の内側の deny は効く（v2.1.226・macOS/Seatbelt で実測。`allowRead` した親の中の 1 ファイル・1 ディレクトリを deny すると、そこだけ EPERM になる）。ただし判定は**解決後のパス**で行われるので、symlink 経由の表記で書いた deny は実体に一致せず失効する。deny を足したら新規セッションで実際に読めなくなることを確認する
 - `~/.config` は `~/repos/github.com/halkn/dotfiles/.config` への symlink。そのため `~/.config/<name>` 表記の deny は dir 単位でも file 単位でも効かず（実体は `allowRead: "."` の内側にある repo 配下）、逆に `~/.config` を allowRead から外して `~/.config/mise` だけを列挙する形も効かない（symlink 本体が `~/` の denyRead 側に残り辿れない）。**閉じたいものは実体パスで書く**: `~/repos/github.com/halkn/dotfiles/.config/gh` を deny すると symlink 経由の read も EPERM になる（v2.1.226 で実測）。symlink でない環境のために `~/.config/gh` 表記も併記する
 - Claude Code の自己保護が届くのは、ロード元のパス（cwd とその上位の `.claude/**`・`.mcp.json`、`~/.claude/**`）と、そこに張られた symlink の先だけ。`claude/hooks/*.sh`・`claude/statusline-command.sh` は Claude Code が実行するが symlink 先保護の対象外で、`mise.toml` と同様に Bash から書けた（v2.1.229・macOS で実測）。実体を repo 側に持つ設定・スクリプトは `filesystem.denyWrite` に実体パスで列挙する。副作用として、`claude/` 配下を変更する `git merge` / `git switch` は sandbox 内で `unable to unlink old` になる（docs の Troubleshooting 記載）。`mise.toml` は日常的に編集するので deny に置かず、classifier に委ねる
+- `~/.claude` は `filesystem.allowRead` に書かなくても読める（組み込みの allow に入る。v2.1.259・macOS で実測）。`~/.claude/skills` のような配下の個別指定は要らない
+- `~/.cache`（`XDG_CACHE_HOME`）を丸ごと allow して例外を `denyWrite` で列挙する形は**採用しない**。`~/.cache` 配下には**ログインシェルが起動時に実行するキャッシュ**があり（`.zshrc` が `$XDG_CACHE_HOME/zsh/uv_completion.zsh` を source、`compinit -C` が `.zcompdump` を検査なしで読む、fast-syntax-highlighting が `~/.cache/fsh/*.zsh` を読む）、そこへの書込はサンドボックス外・classifier 外で次のシェル起動時に実行される。丸ごと allow は fail-open で、新しいツールのキャッシュが同じ性質を持っていても無言で書込可になる。ツール別の allowlist（fail-closed）なら、増えるのは追記の手間だけで事故は起きない
+- ツール別列挙の「保守が増える」という反論は成り立たない。実測で `~/.cache` にあるツールのキャッシュは `uv` / `mise` / `rumdl` / `shuck` の 4 つだけで、`~/.local/share/{uv,mise}` は mise が管理ツールを全て配下に収めるため増えない（v2.1.259・macOS）。守りを弱める対価に見合う手間ではない
+- `~/.cache/gh` は allowlist に入れないだけで read / write とも EPERM になる（v2.1.259 で実測）。`credentials.files` や `denyWrite` に重ねて書く必要は無い
 - repo に追跡されている公開設定（`.config/snowflake/config.toml` 等）は deny しない。守る対象が無いうえ、repo 内の追跡ファイルを Bash から読めなくするだけになる。閉じる対象は「追跡外で認証情報を持つもの」に限る
 - `permissions.deny` の `Read(...)` は sandbox の read deny にも降りるが、降りるのは**ファイル名パターンだけ**。`//**/.env`・`//**/*.pem`・`//**/id_rsa*` は書込可能なディレクトリの中でも EPERM になる一方、subtree 形（`//**/.ssh/**`・`//**/secrets/**`・`//**/credentials/**`）は Read tool にしか効かず、Bash からは配下のファイルが読める（v2.1.226 実測。`.ssh/id_rsa` が止まるのは `id_rsa*` の側にマッチするため）。Bash からも塞ぐなら `sandbox.credentials.files` か `sandbox.filesystem.denyRead` に書く
 - `mise bootstrap` は `--dry-run` / `status` でも `[bootstrap.repos]` の clone 先（`~/.local/share/zsh/plugins/`）を読むので、そこが allowRead に無いと repos ステップが `Operation not permitted (os error 1)`（`src/system/repos.rs`）で落ちる。permission が通っていても起きるので、permission と sandbox のどちらで止まったかは切り分けてから直す（v2.1.226・mise 2026.8.3 で実測）
@@ -23,6 +27,8 @@
 - `git` はネットワーク／認証を要するサブコマンド（`push`・`fetch`・`pull`・`clone`・`ls-remote`・`remote update|prune`・`submodule`）だけを除外する。`git *` 全体を除外すると `filesystem.denyRead: ["~/"]` が git 経由で素通しになる。除外していない現在は `git hash-object <denyRead 配下>` が EPERM になることを確認済み（v2.1.226）。docs は linked worktree の共有 `.git` への書き込みを明示的に許可しており、ローカル操作はサンドボックス内で動く前提
 - push は `.config/git/config` の `pushInsteadOf` により SSH。HTTPS 化しても credential helper が Seatbelt 下で通らず、`allowUnsandboxedCommands: false` のため即ハードエラーになるので、ネットワーク系 git は除外に残す
 - 引数なし形（`git push` 等）とワイルドカード形を併記する。除外に追加する前に、そのサブコマンドがサンドボックス内で実際に失敗することを確認する
+- `az *` は除外**しない**。`az rest --url <任意の URL> --method post --body ... --skip-authorization-header` は汎用 HTTP クライアントで、`az extension add --source <URL>` と `--pip-extra-index-urls` / `--pip-proxy` は任意の wheel を取得して実行する。サンドボックス内に置く限りこれらは network allowlist が塞ぐが、除外すると `strictAllowlist` を迂回する egress と任意コード実行の経路になる。docs も「`allowWrite` でパスを開けるのが推奨で、ツールごと除外するのではない」と書き、`excludedCommands` の例外が反対側の制限を無効化していないか確認せよと警告している。除外の判断材料は「利便性」ではなく「サンドボックス内で実際に壊れること」で、`gh`（Go の TLS 検証 + keyring）や `docker` のような docs 記載の非互換だけが該当する。az は Python + certifi なのでこの類型に入らない
+- `az login` のブラウザ認証は Apple Events がサンドボックスで塞がれるため失敗する（docs: エラー `-600`）。これを通すために `az *` を除外しない。ログインはユーザーが Claude Code の外のターミナルで済ませ、Claude 側は `~/.azure` のトークンキャッシュを使う
 - `hunk session *` の除外は**維持する**。hunk の session daemon は loopback の websocket broker（既定 `127.0.0.1:47657`）で、sandbox 内からは connect() の時点で拒否される（`curl` が exit 7 / `connect=0.000000`、`--noproxy '*'` でも同じ。v2.1.251・macOS・hunk 0.20.0）。`sandbox.network` に outbound loopback を許可するキーは無い（`allowLocalBinding` は bind 側）。到達性の判定に `hunk session list` の出力を使わない: 存在しないポート（`HUNK_MCP_PORT`）を指しても同じ「No active Hunk sessions.」を返し、接続失敗と 0 件を区別しない。session id・files・comments が実データで返ることで判定する
 - `hunk session` に `permissions.allow` は要らない。auto モードの classifier が承認する（allow に無い `hunk session comment rm` がプロンプトなしで通ることを確認済み。v2.1.251）
 
@@ -41,6 +47,9 @@
 - ask / deny のパターンは、実際に打たれる形を `mise.toml` や `README.md` で確認してから書く。`mise bootstrap` のようにサブコマンド・フラグの形が一定しないものは、`*` 無しの完全一致では実際の呼び出しを 1 つも捕捉できない
 - deny のパターンはオプションの等号形も併記する。`--http-method post` だけを書くと `--http-method=POST` がすり抜ける
 - 既定の classifier ルールは `claude auto-mode defaults` で読める。ここの allow / soft_deny を先に読んでから hook を足す・消すを判断する
+- soft_deny の `Irreversible Local Destruction` は `git reset --hard` / `git checkout -- .` / `git restore .` / `git clean -fd` / `git stash drop|clear` / `git worktree remove --force` を、`Remote Repoint` は `git remote add|set-url` を、`Unauthorized Persistence` は cron 登録・git hook・shell profile への追記を名指ししている（v2.1.259 で確認）。permissions 側に同じ形を置くと、ユーザーが明示的に指示した場合でも確認が出る
+- classifier が名指ししていても、`allow` の例外や「ユーザーが指示した」判定で通る形は ask に残す。`git config alias.*` は `Unauthorized Persistence` の列挙（shell profile・cron・systemd・git hook）に含まれず、`Remote Repoint` も `remote.<name>.url` しか名指ししないので、classifier 任せにはできない
+- force push を deny に置かない。`Bash(git push --force*)` は `--force-with-lease` にもマッチするので、deny にすると安全側の形まで塞がる。soft_deny の `Git Destructive` が force push と remote ブランチ削除を拾うので、permissions 側は ask で十分
 
 ## パターンの照合規則（docs 記載）
 
