@@ -67,8 +67,6 @@
       "Bash(scp*)",
       "Bash(git reflog expire*)",
       "Bash(git gc --prune*)",
-      "Bash(git push --delete*)",
-      "Bash(git push * --delete*)",
       "Bash(uv publish*)",
       "Bash(az devops invoke *--http-method *)",
       "Bash(az devops invoke *--http-method=*)"
@@ -81,6 +79,9 @@
       "Bash(git push -f*)",
       "Bash(git push * --force*)",
       "Bash(git push * -f*)",
+      "Bash(git push --delete*)",
+      "Bash(git push * --delete*)",
+      "Bash(git config *alias.*)",
       "Bash(git checkout -f*)",
       "Bash(git branch -D*)",
       "Bash(git worktree remove*)",
@@ -133,7 +134,6 @@
   "enableArtifact": false,
   "syncClaudeAiSkills": false,
   "disableClaudeAiConnectors": true,
-  "plansDirectory": "~/.claude/plans",
   "sandbox": {
     "enabled": true,
     "failIfUnavailable": true,
@@ -161,6 +161,10 @@
         "~/.ssh",
         "~/.gnupg",
         "~/.cache/gh",
+        "~/.cache/zsh",
+        "~/.cache/bash",
+        "~/.cache/fsh",
+        "~/.cache/nvim",
         "~/repos/github.com/halkn/dotfiles/claude"
       ],
       "denyRead": [
