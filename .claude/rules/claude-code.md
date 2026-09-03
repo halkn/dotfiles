@@ -25,6 +25,8 @@ paths:
 - Claude Code の自己保護が効くのは、それ自身がロードする側のパス（`.claude/**`・`~/.claude/**`・`.mcp.json`）と、そこから張られた symlink の先だけ。`claude/hooks/*.sh` のように repo 側に実体を持ち Claude Code が実行するファイルは対象外なので、`sandbox.filesystem.denyWrite` に明示する
 - sandbox が既に決定論的に制御しているもの（書込先は write allowlist、送信先は network allowlist）と、git で戻せる変更（lockfile・依存）は deny に置かない
 - ask は allow より先に評価されるので、ask のパターンを広げると read-only 形まで毎回プロンプトになる
+- 指示・ツール・公開先はローカルで版管理しているものだけに絞る。claude.ai アカウント由来の skill / connector と Artifact の公開は、classifier の soft_deny ではなく設定キーで閉じる（`syncClaudeAiSkills` / `disableClaudeAiConnectors` / `enableArtifact`）
+
 ## 置き場所
 
 - そのコマンドを複数のリポジトリで打つかで決める。単一リポジトリでしか実行しないもの（`mise bootstrap` / `mise run setup|sync|update`）は `.claude/settings.json`、汎用のもの（`mise tasks` 等）は `claude/settings.json`。sandbox の allowRead / allowWrite も同じ基準で分ける
