@@ -38,27 +38,10 @@
       "Bash(gh run view*)",
       "Bash(gh repo view*)",
       "Bash(gh search *)",
-      "Bash(uv run pyright *)",
-      "Bash(uv tree *)",
-      "Bash(uv lock --check *)",
-      "Bash(uv audit *)",
       "Bash(mise tasks*)",
       "Bash(mise task info*)",
       "Bash(eza *)",
       "Bash(tree *)",
-      "Bash(az repos list *)",
-      "Bash(az repos show *)",
-      "Bash(az repos pr list *)",
-      "Bash(az repos pr show *)",
-      "Bash(az pipelines list *)",
-      "Bash(az pipelines show *)",
-      "Bash(az pipelines runs list *)",
-      "Bash(az pipelines runs show *)",
-      "Bash(az boards work-item show *)",
-      "Bash(az boards query *)",
-      "Bash(az devops project list *)",
-      "Bash(az devops project show *)",
-      "Bash(az devops configure --list*)",
       "WebFetch(domain:learn.microsoft.com)",
       "WebFetch(domain:docs.microsoft.com)",
       "WebFetch(domain:azure.microsoft.com)",
@@ -78,20 +61,14 @@
       "Read(//**/id_ed25519*)",
       "Read(//**/id_ecdsa*)",
       "Read(//**/.ssh/**)",
-      "Bash(crontab*)",
       "Bash(sudo*)",
       "Bash(nc *)",
       "Bash(ssh*)",
       "Bash(scp*)",
       "Bash(git reflog expire*)",
       "Bash(git gc --prune*)",
-      "Bash(git push --force*)",
-      "Bash(git push -f*)",
       "Bash(git push --delete*)",
       "Bash(git push * --delete*)",
-      "Bash(git push * --force*)",
-      "Bash(git push * -f*)",
-      "Bash(git config *alias.*)",
       "Bash(uv publish*)",
       "Bash(az devops invoke *--http-method *)",
       "Bash(az devops invoke *--http-method=*)"
@@ -100,22 +77,15 @@
       "Bash(git push)",
       "Bash(git push * main*)",
       "Bash(git push * master*)",
-      "Bash(git remote add*)",
-      "Bash(git remote set-url*)",
-      "Bash(git reset --hard*)",
-      "Bash(git checkout -- *)",
-      "Bash(git checkout .*)",
+      "Bash(git push --force*)",
+      "Bash(git push -f*)",
+      "Bash(git push * --force*)",
+      "Bash(git push * -f*)",
       "Bash(git checkout -f*)",
-      "Bash(git clean -*f*)",
       "Bash(git branch -D*)",
       "Bash(git worktree remove*)",
-      "Bash(git stash drop*)",
-      "Bash(uv version*)",
-      "Bash(uv self update*)",
       "Bash(uv tool uninstall*)",
-      "Bash(uv python uninstall*)",
-      "Bash(uv cache clean*)",
-      "Bash(uv cache prune*)"
+      "Bash(uv python uninstall*)"
     ],
     "defaultMode": "auto",
     "disableBypassPermissionsMode": "disable"
@@ -178,10 +148,7 @@
     "filesystem": {
       "allowWrite": [
         "~/.azure",
-        "~/.cache/uv",
-        "~/.cache/mise",
-        "~/.cache/rumdl",
-        "~/.cache/shuck",
+        "~/.cache",
         "~/.local/share/uv",
         "~/.local/share/mise",
         "~/.local/state/mise"
@@ -189,6 +156,7 @@
       "denyWrite": [
         "~/.ssh",
         "~/.gnupg",
+        "~/.cache/gh",
         "~/repos/github.com/halkn/dotfiles/claude"
       ],
       "denyRead": [
@@ -197,13 +165,9 @@
       "allowRead": [
         ".",
         "~/.azure",
-        "~/.claude/skills",
         "~/.config",
         "~/repos/github.com/halkn/dotfiles/.config",
-        "~/.cache/uv",
-        "~/.cache/mise",
-        "~/.cache/rumdl",
-        "~/.cache/shuck",
+        "~/.cache",
         "~/.local/share/uv",
         "~/.local/share/mise",
         "~/.local/state/mise",
@@ -214,6 +178,10 @@
       "files": [
         {
           "path": "~/.config/gh",
+          "mode": "deny"
+        },
+        {
+          "path": "~/.cache/gh",
           "mode": "deny"
         },
         {
