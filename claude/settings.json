@@ -152,7 +152,10 @@
     "filesystem": {
       "allowWrite": [
         "~/.azure",
-        "~/.cache",
+        "~/.cache/uv",
+        "~/.cache/mise",
+        "~/.cache/rumdl",
+        "~/.cache/shuck",
         "~/.local/share/uv",
         "~/.local/share/mise",
         "~/.local/state/mise"
@@ -160,11 +163,6 @@
       "denyWrite": [
         "~/.ssh",
         "~/.gnupg",
-        "~/.cache/gh",
-        "~/.cache/zsh",
-        "~/.cache/bash",
-        "~/.cache/fsh",
-        "~/.cache/nvim",
         "~/repos/github.com/halkn/dotfiles/claude"
       ],
       "denyRead": [
@@ -175,7 +173,10 @@
         "~/.azure",
         "~/.config",
         "~/repos/github.com/halkn/dotfiles/.config",
-        "~/.cache",
+        "~/.cache/uv",
+        "~/.cache/mise",
+        "~/.cache/rumdl",
+        "~/.cache/shuck",
         "~/.local/share/uv",
         "~/.local/share/mise",
         "~/.local/state/mise",
@@ -186,10 +187,6 @@
       "files": [
         {
           "path": "~/.config/gh",
-          "mode": "deny"
-        },
-        {
-          "path": "~/.cache/gh",
           "mode": "deny"
         },
         {
