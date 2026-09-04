@@ -91,8 +91,8 @@ split into a portable core and workflows named after what they do:
 | Location | Holds |
 | --- | --- |
 | `.zshrc` | The portable core (history, options, completion, keybindings, aliases) plus lightweight tool setup guarded by `command -v`, so a machine without those tools still gets a working shell |
-| `workflows/*.zsh` | The commands you type: `wk` (repositories, worktrees, workspaces) and `gst` (staging). One operation is one subcommand |
-| `lib/*.zsh` | One file per kind of information a command works on: `checkout` (where a checkout lives here), `forge` (what GitHub knows), `session` (herdr), `ui` (picker chrome, dependency checks, preview) |
+| `workflows/*.zsh` | The commands you type: `wk` (repositories, worktrees, workspaces), `gst` (staging) and `ghsetup` (GitHub repository settings). One operation is one subcommand |
+| `lib/*.zsh` | One file per kind of information a command works on: `checkout` (where a checkout lives here), `forge` (what GitHub knows and what a repository there should be set to), `session` (herdr), `ui` (picker chrome, dependency checks, preview) |
 
 The two layers answer different questions: a workflow owns *the operation you
 asked for*, a lib owns *one kind of information*, which is what stops the same
@@ -228,6 +228,40 @@ worktree opens it as a workspace, or focuses the one it already has.
 Outside a herdr session the workspace rows fall away and everything degrades to
 `cd`; the worktrees are unaffected, since they are read off the filesystem
 rather than from a session.
+
+## Repository settings on GitHub: `ghsetup`
+
+```zsh
+ghsetup                     # apply to the repository you stand in
+ghsetup <owner>/<repo>      # apply to another one
+ghsetup --dry-run [<repo>]  # read the current settings without writing
+```
+
+Run it once after `gh repo create`. A personal account cannot make these apply
+to repositories that do not exist yet — rulesets are scoped to a repository or
+to an organisation, and the organisation-wide target needs a paid plan — so this
+command stands in for that. It is idempotent: an existing ruleset is updated
+rather than duplicated.
+
+What it sets:
+
+- a ruleset on the default branch that requires a pull request (no approval; a
+  lone owner cannot approve their own) and blocks force pushes and deletion
+- secret scanning with push protection, which rejects a secret at push time
+  rather than reporting it after publication
+- auto-merge, branch update, delete-on-merge; wiki and projects off
+- Dependabot alerts and security updates
+
+The ruleset grants **no bypass actor**, including repository admins. An agent
+runs under the same ssh key and gh token as the person who started it, so an
+admin bypass would be a bypass for both; an exception means turning the ruleset
+off in the web UI on purpose. Since applying it takes away your own push to the
+default branch, look at `--dry-run` first.
+
+This is the server-side half. `.config/git/hooks/pre-push` refuses force pushes
+to and deletions of `main`/`master` in every repository via `core.hooksPath`,
+which covers forges without rulesets and fails before anything leaves the
+machine; the ruleset covers what a hook cannot, since a hook can be skipped.
 
 ## Tool Manager
 
