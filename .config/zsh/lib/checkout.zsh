@@ -5,7 +5,8 @@
 # process is spawned per row; git is asked at the preview and at the moment of
 # acting. A row is `<display>\t<target>\t<path>`: the target is what Enter acts
 # on, the path is what the preview reads, and they differ for a row that is not
-# a directory of its own.
+# a directory of its own. _ck_wt_paths is the exception - it serves bare paths,
+# because its caller interleaves them with herdr's rows and names both itself.
 
 # ── clones ───────────────────────────────────────────
 

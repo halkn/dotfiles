@@ -143,12 +143,15 @@ Claude Code creates worktrees of its own, so the two kinds are kept apart:
 | Placed in | `~/.local/share/worktrees/` | `<repo>/.claude/worktrees/` (gitignored) |
 | Removed by | you — `wk rm` | Claude Code, on exit or by its periodic sweep |
 
-Claude Code's are inside the repository and so outside `$WT_ROOT`: they never
-appear in the `wk` listing, because one of them may still have an agent in it.
+Claude Code's are inside the repository and so outside `$WT_ROOT`, which keeps
+them out of the `wk` listing; `wk rm` excludes them by path as well, because one
+of them may still have an agent running in it.
 
 `wk rm` leaves the decision to git, which refuses a worktree with local changes
 but not one with unpushed commits, and leaves the branch behind — delete it with
-`git branch -d` when you are done with it.
+`git branch -d` when you are done with it. Three worktrees are never offered,
+because git removes each without complaint: the main checkout, the one you are
+standing in, and anything under `.claude/worktrees`.
 
 herdr's `alt+s` / `alt+n` / `alt+g` are bare `wk` / `wk open` / `wk new`, run
 from `.config/herdr/*.sh`.

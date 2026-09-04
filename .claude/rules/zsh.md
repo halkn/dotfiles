@@ -31,3 +31,4 @@ paths:
 - `.claude/worktrees/` の lifecycle は Claude Code が持つ。`$WT_ROOT` の外なので `wk` の一覧には出ず、`wk rm` の候補からは path で除外する
 - 破壊的操作を git に委ねるときは、git が拒否しないものを先に列挙する。`git worktree remove` は「今立っている worktree」も消すので、そこは zsh 側で止める
 - OS 固有処理は必要箇所に局所化する。macOS / WSL の分岐を持ち込まない
+- zsh の `path` は PATH の配列。関数内で `local path` を宣言すると PATH が消える（`wt_path` を使う）

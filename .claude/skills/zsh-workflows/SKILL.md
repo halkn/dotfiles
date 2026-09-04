@@ -34,5 +34,4 @@ lint も test も次を見ないので、実端末で新規シェルを開いて
 ## 実測記録
 
 - `herdr workspace list`（0.8.2）は workspace id・番号・ラベル・checkout path を返すが **branch は返さない**。一覧の行名はこれではなく `_ck_describe` で path から作る
-- zsh の `path` は PATH の配列。関数内で `local path` を宣言すると PATH が消える（`wt_path` のような別名を使う）
 - zsh 固有構文には `ast-grep` の parser を確認できていない。検索・変換は `rg` と `shuck` に寄せる

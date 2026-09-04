@@ -3,6 +3,7 @@
 ## filesystem の実測
 
 - **「道具の列挙」で防御を書かない**: インタプリタ名（`python` 等）や読取コマンド名（`cat` 等）を deny / hook で列挙しても、`perl -e`・`node -e`・`bash -c`・`tr < f`・`while read` リダイレクト・一旦ファイルに書いてから実行、で回避できる（実測済み）。境界は sandbox（`filesystem` の allow/deny・`network.strictAllowlist`・`allowUnsandboxedCommands: false`）と auto モードの classifier が持つ
+- `env.CLAUDE_CODE_SUBPROCESS_ENV_SCRUB` を有効にすると Bash tool が広範に機能不全を起こし、`permissions.defaultMode: "auto"` も正しく反映されなかった（2026-07 実機確認・v2.1.220）。再検討するなら、まず狭いスコープで再現するか確かめる
 - 認証情報のパスは `filesystem.denyRead` ではなく `sandbox.credentials.files` に置く。docs は `credentials.files` の `mode: "deny"` を「`filesystem.denyRead` が適用するのと同じ制限」と書いており、パスのプレフィックス規則もスコープ間のマージも共通。`credentials` 側は「これは認証情報だ」と宣言でき、`mode` が `deny` しか無いので広げる誤用も起きない。`filesystem.denyRead` は `~/` 全体のような広域ポリシーに使う
 - allow の内側の deny は効く（v2.1.226・macOS/Seatbelt で実測。`allowRead` した親の中の 1 ファイル・1 ディレクトリを deny すると、そこだけ EPERM になる）。ただし判定は**解決後のパス**で行われるので、symlink 経由の表記で書いた deny は実体に一致せず失効する。deny を足したら新規セッションで実際に読めなくなることを確認する
 - `~/.config` は `~/repos/github.com/halkn/dotfiles/.config` への symlink。そのため `~/.config/<name>` 表記の deny は dir 単位でも file 単位でも効かず（実体は `allowRead: "."` の内側にある repo 配下）、逆に `~/.config` を allowRead から外して `~/.config/mise` だけを列挙する形も効かない（symlink 本体が `~/` の denyRead 側に残り辿れない）。**閉じたいものは実体パスで書く**: `~/repos/github.com/halkn/dotfiles/.config/gh` を deny すると symlink 経由の read も EPERM になる（v2.1.226 で実測）。symlink でない環境のために `~/.config/gh` 表記も併記する

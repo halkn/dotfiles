@@ -197,8 +197,9 @@ _wk_get() {
 
 # ── new: a worktree for a branch ─────────────────────
 
-# A branch is picked up where it already is - locally, then on origin - so one
-# that exists only on the remote is tracked instead of silently forked.
+# With no base, a branch is picked up where it already is - locally, then on
+# origin - so one that exists only on the remote is tracked instead of silently
+# forked. A base always means a new branch, and fails if it already exists.
 _wk_new() {
   local branch=${1:-} base=${2:-} wt_path
   [[ -n $branch ]] || {
