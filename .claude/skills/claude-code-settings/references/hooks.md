@@ -1,14 +1,8 @@
 # PreToolUse hook
 
-## 3 本を残す理由
+hook を足す・消すときは、標準機能（sandbox・`permissions`・auto モードの classifier）で代替できないことを先に示す。現行 3 本それぞれの根拠は `claude/hooks/*.sh` の冒頭コメントにある。
 
-hook を足す・消すときは、標準機能（sandbox・`permissions`・auto モードの classifier）で代替できないことを先に示す。現行 3 本の根拠は以下（v2.1.226・macOS で確認）。
-
-- `block-secret-read.sh`: `az` は sandbox 内で動くため `~/.azure` は allowRead に置くしかなく、sandbox では閉じられない。加えて `excludedCommands` の `gh` / ネットワーク系 git は sandbox 外で走るので `credentials.envVars` の deny も効かない。この 2 点が hook の担当範囲で、`~/.config/gh` のように sandbox で閉じられるものについては二次防御
-- `block-main-push.sh`: auto モードの既定 allow ルール `Git Push Destination` が「セッションの repo なら default branch への push も通常操作」と明示しているため、classifier は main/master を止めない。`permissions.ask` のパターンは `main` の前に空白を要求するので refspec 形（`HEAD:main`）を捕捉できない
-- `scope-gh-pr-create.sh`: classifier の `Create Public Surface` が扱うのは「別の repo / org を狙う PR」で、セッション中の repo の owner が信頼範囲かどうかは判定しない。owner は決定論的に判定できるので hook に置く
-
-main/master への直接 push は auto モードの既定では許可される（allow ルール `Git Push Destination`: 「Pushing to any branch of the session's repo is ordinary — the default branch included」。v2.1.226 で確認）。このリポジトリでは 2 層で担保する: `permissions.ask` の `Bash(git push * main*)` 等が素直な形を捕捉し、`git push origin HEAD:main` のように `main` の前に空白が無く pattern がマッチしない refspec 形式は `claude/hooks/block-main-push.sh` が解釈して `ask` する。`autoMode` 側には重複ルールを置いていない。
+classifier の既定 allow ルール `Git Push Destination` は「セッションの repo なら default branch への push も通常操作」と明示しているので、main/master は classifier では止まらない（v2.1.226 で確認）。`permissions.ask` の `Bash(git push * main*)` が素直な形を、`block-main-push.sh` が refspec 形を捕捉する 2 層で担保していて、`autoMode` 側に重複ルールは置いていない。
 
 ## 実装上の制約（実測済み）
 
