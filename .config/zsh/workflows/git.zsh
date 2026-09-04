@@ -1,6 +1,6 @@
 # git - staging the working tree interactively. Browsing branches and the log is
 # `git switch **<TAB>` / `git log **<TAB>`; worktrees live in
-# workflows/worktree.zsh as `wt`.
+# workflows/wk.zsh as `wk`.
 #
 # `gst` stages and restores from inside the picker, which is why it is a function
 # rather than a completion: the list stays open while the decision of what to
