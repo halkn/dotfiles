@@ -178,6 +178,14 @@ end)
 check('terminal', function()
   vim.cmd('terminal')
   vim.cmd('stopinsert')
+  -- Deleting the buffer while the pty job is still alive races with the next job
+  -- spawn (the picker's fd) and takes the process down. jobwait() also waits for
+  -- the on_exit handlers, so nothing is left to tear down afterwards.
+  local job_id = vim.b.terminal_job_id
+  assert(type(job_id) == 'number', 'no terminal job id')
+  vim.fn.jobstop(math.floor(job_id))
+  local status = vim.fn.jobwait({ math.floor(job_id) }, 2000)[1]
+  assert(status ~= -1, 'terminal job did not exit')
   vim.cmd('bdelete!')
 end)
 
