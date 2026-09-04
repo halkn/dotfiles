@@ -39,7 +39,7 @@ for f in "$zsh_dir"/lib/*.zsh "$zsh_dir"/workflows/*.zsh; do
 done
 
 # 2. Every entry point is defined even though its dependencies are missing.
-for fn in wk gst; do
+for fn in wk gst ghsetup; do
   whence -w "$fn" >/dev/null 2>&1 || fail "$fn is not defined"
 done
 
@@ -67,9 +67,15 @@ expect_guard 'wk: gh is not installed' wk get
 expect_guard 'wk: gh is not installed' wk pr
 expect_guard 'wk: fzf is not installed' wk rm
 expect_guard 'gst: fzf is not installed' gst
+expect_guard 'ghsetup: gh is not installed' ghsetup
 
 # An unknown subcommand is a typo, not a picker with a query.
 expect_guard 'wk: unknown subcommand' wk nope
+
+# ghsetup reads its arguments before reaching for gh, so a typo is reported as
+# one instead of as a missing dependency.
+expect_guard 'ghsetup: unknown option' ghsetup --nope
+expect_guard 'ghsetup: expected at most one repository' ghsetup halkn/one halkn/two
 
 # 4. The bare form and `open` span every repository, so outside a work tree it
 # is still the picker that is missing; only the subcommands acting on one

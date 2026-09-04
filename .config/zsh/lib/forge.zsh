@@ -1,6 +1,6 @@
 # forge - what the remote hosting knows: the URL a spec clones from, the
-# repositories of your own account, and the open pull requests of the
-# repository you stand in.
+# repositories of your own account, the open pull requests of the repository you
+# stand in, and the settings a repository is expected to carry.
 #
 # GitHub is the only forge with a listing here, because `gh` is the only one
 # that answers without being told an organisation and a project first. An Azure
@@ -66,4 +66,116 @@ _forge_pr_rows() {
 
 _forge_pr_head() {
   gh pr view "${1:-}" --json headRefName --jq '.headRefName'
+}
+
+# ── repository settings ──────────────────────────────
+
+# The ruleset guarding the default branch, as the body of
+# POST/PUT /repos/{owner}/{repo}/rulesets.
+#
+# `bypass_actors` is empty on purpose. An agent runs under the same ssh key and
+# the same gh token as the person who started it, so an admin bypass would be a
+# bypass for both; an exception has to be a deliberate visit to the ruleset in
+# the web UI. The approval count is 0 because a lone owner cannot approve their
+# own pull request - what is being enforced is that a change arrives as one.
+#
+# Not included: `required_linear_history`, which contradicts the merge commits
+# this account's repositories carry, and `required_status_checks`, which needs a
+# check to name.
+_forge_ruleset_payload() {
+  cat <<'JSON'
+{
+  "name": "main",
+  "target": "branch",
+  "enforcement": "active",
+  "bypass_actors": [],
+  "conditions": { "ref_name": { "include": ["~DEFAULT_BRANCH"], "exclude": [] } },
+  "rules": [
+    { "type": "deletion" },
+    { "type": "non_fast_forward" },
+    {
+      "type": "pull_request",
+      "parameters": {
+        "required_approving_review_count": 0,
+        "dismiss_stale_reviews_on_push": false,
+        "require_code_owner_review": false,
+        "require_last_push_approval": false,
+        "required_review_thread_resolution": false,
+        "allowed_merge_methods": ["merge", "squash", "rebase"]
+      }
+    }
+  ]
+}
+JSON
+}
+
+# The id of the ruleset named above, empty when the repository has none. The
+# list endpoint answers with names and ids only, so the rules themselves need
+# the per-ruleset endpoint.
+_forge_ruleset_id() {
+  gh api "repos/${1:-}/rulesets" --jq '.[] | select(.name == "main") | .id'
+}
+
+_forge_apply_ruleset() {
+  local nwo=${1:-} id
+  id=$(_forge_ruleset_id "$nwo") || return 1
+  if [[ -n $id ]]; then
+    _forge_ruleset_payload | gh api --silent --method PUT "repos/$nwo/rulesets/$id" --input -
+  else
+    _forge_ruleset_payload | gh api --silent --method POST "repos/$nwo/rulesets" --input -
+  fi
+}
+
+# Push protection is the one that acts before the damage: a secret in a commit
+# is rejected at push time rather than reported after it has been published.
+# Wiki and projects are turned off as surface nothing here uses.
+_forge_apply_repo_settings() {
+  gh api --silent --method PATCH "repos/${1:-}" --input - <<'JSON'
+{
+  "security_and_analysis": {
+    "secret_scanning": { "status": "enabled" },
+    "secret_scanning_push_protection": { "status": "enabled" }
+  },
+  "allow_auto_merge": true,
+  "allow_update_branch": true,
+  "delete_branch_on_merge": true,
+  "has_wiki": false,
+  "has_projects": false
+}
+JSON
+}
+
+_forge_apply_dependabot() {
+  local nwo=${1:-} rc=0
+  gh api --silent --method PUT "repos/$nwo/vulnerability-alerts" || rc=1
+  gh api --silent --method PUT "repos/$nwo/automated-security-fixes" || rc=1
+  return $rc
+}
+
+# What the settings above currently are. The ruleset it writes has no bypass
+# actor, so applying it takes away the caller's own push to the default branch:
+# the current state has to be readable before that happens.
+_forge_settings_report() {
+  local nwo=${1:-} id
+  gh api "repos/$nwo" --jq '
+    "repository:  \(.full_name) (\(if .private then "private" else "public" end))",
+    "  default branch:          \(.default_branch)",
+    "  secret scanning:         \(.security_and_analysis.secret_scanning.status // "n/a")",
+    "  push protection:         \(.security_and_analysis.secret_scanning_push_protection.status // "n/a")",
+    "  dependabot alerts:       \(.security_and_analysis.dependabot_security_updates.status // "n/a")",
+    "  allow_auto_merge:        \(.allow_auto_merge)",
+    "  allow_update_branch:     \(.allow_update_branch)",
+    "  delete_branch_on_merge:  \(.delete_branch_on_merge)",
+    "  has_wiki / has_projects: \(.has_wiki) / \(.has_projects)"
+  ' || return 1
+
+  id=$(_forge_ruleset_id "$nwo") || return 1
+  if [[ -z $id ]]; then
+    print -r -- '  ruleset "main":          (none)'
+    return 0
+  fi
+  gh api "repos/$nwo/rulesets/$id" --jq '
+    "  ruleset \"\(.name)\":          \(.enforcement), \(.bypass_actors | length) bypass actor(s)",
+    "    rules:                 \(.rules | map(.type) | join(", "))"
+  '
 }
