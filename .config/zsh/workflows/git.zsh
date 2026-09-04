@@ -1,10 +1,9 @@
 # git - staging the working tree interactively. Browsing branches and the log is
 # `git switch **<TAB>` / `git log **<TAB>`; worktrees live in
-# workflows/worktree.zsh as `wt`.
+# workflows/wk.zsh as `wk`.
 #
-# `gst` stages and restores from inside the picker, which is why it is a function
-# rather than a completion: the list stays open while the decision of what to
-# stage is made file by file.
+# `gst` is a function rather than a completion because the list stays open while
+# the decision of what to stage is made file by file.
 #
 # Functions are always defined; each entry point checks its own dependencies, so
 # a machine without fzf reports what is missing instead of `command not found`.
@@ -13,16 +12,16 @@
 # functions) can re-source it. `%x` expands to the file being sourced.
 _GIT_LIB=${${(%):-%x}:A}
 
-# Changed and untracked paths, one per line. Not `git status --porcelain`, which
-# quotes paths holding a space or a non-ASCII byte and renders a rename as
-# `old -> new`; both would be handed to the shell running the actions below.
+# Not `git status --porcelain`, which quotes paths holding a space or a
+# non-ASCII byte and renders a rename as `old -> new`; both would be handed to
+# the shell running the actions below.
 _git_stage_rows() {
   git -c core.quotePath=false diff --name-only HEAD 2>/dev/null
   git -c core.quotePath=false ls-files --others --exclude-standard 2>/dev/null
 }
 
-# `<marker> <path><TAB><path>` for the picker: the marker is what tells a staged
-# path from an unstaged one, since neither the list nor the diff preview does.
+# The marker is what tells a staged path from an unstaged one, since neither the
+# list nor the diff preview does.
 _git_stage_display_rows() {
   local file
   local -a staged
@@ -36,8 +35,8 @@ _git_stage_display_rows() {
   done
 }
 
-# Stage what is not staged and unstage what is, one path at a time: a mixed
-# selection would otherwise need a single direction picked for all of it.
+# One path at a time: a mixed selection would otherwise need a single direction
+# picked for all of it.
 _git_stage_toggle() {
   local file
   for file in "$@"; do

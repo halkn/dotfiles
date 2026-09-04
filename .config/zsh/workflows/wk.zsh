@@ -1,19 +1,16 @@
 # wk - the one entry point for getting a repository, opening it, branching off
-# it in a worktree, moving between what is open, and removing what is done. Each
-# operation is a subcommand; the information each one works on lives in lib/.
-#
+# it in a worktree, moving between what is open, and removing what is done.
 # Inside a herdr session a choice becomes a workspace; outside it degrades to
 # `cd`.
 #
-# This file is sourced from .zshrc and from ~/.config/herdr/*.sh, so it must
-# only define functions and must not return early on a missing dependency: the
-# picker would lose them silently.
+# Sourced from .zshrc and from ~/.config/herdr/*.sh, so it must only define
+# functions and must not return early on a missing dependency: a herdr popup
+# would lose them silently.
 
 _WK_LIB=${${(%):-%x}:A}
 
-# lib/ holds only function definitions and nothing that reaches back here, so
-# sourcing it twice is harmless and the load order does not matter. The herdr
-# popups source this file alone and get the whole workflow with it.
+# Sourced by absolute path so that a herdr popup gets the whole workflow from
+# this file alone. lib/ never reaches back here, so the order does not matter.
 for _wk_part in ui checkout forge session; do
   source "${${_WK_LIB:h}:h}/lib/$_wk_part.zsh"
 done
@@ -47,8 +44,6 @@ _wk_trust_mise() {
   mise trust --quiet "$wt_path" >/dev/null 2>&1 || true
 }
 
-# What Enter does differs per row, which is what the target column carries: a
-# workspace is focused, anything else is a directory to open.
 _wk_goto() {
   local target=${1:-}
   [[ -n $target ]] || return 1
@@ -64,42 +59,28 @@ _wk_goto() {
 
 # ── go: bare `wk` ────────────────────────────────────
 
-# One row of the go listing: `<display>\t<target>\t<path>`, with the repository
-# first so that ordering the rows on the display column groups everything
-# belonging to one repository together, whichever layer it came from.
+# The repository comes first so that sorting on the display column groups the
+# rows of one repository together, whichever layer they came from.
 _wk_go_row() {
   printf '%-24s %-24s %s\t%s\t%s\n' "$1" "$2" "$3" "$4" "$5"
 }
 
-# Everything already open or already checked out, across every repository: the
-# workspaces herdr holds, then the worktrees under $WT_ROOT that none of them is
-# on, interleaved and ordered by repository and branch.
-#
-# A worktree that is open is one row, not two: both rows would land in the same
-# workspace anyway, since _sess_open_worktree focuses the one a checkout is
-# already open in, and the workspace row is the one that also carries herdr's
-# number and label.
-#
-# Sorted in C order so that the grouping does not depend on the locale of the
-# shell the picker happens to run in, and on the display column alone: a row is
-# placed by what it reads as, not by where its checkout is.
-#
-# Both kinds of row are named through _ck_describe rather than from what herdr
-# reports, because `herdr workspace list` (0.8.2) carries the checkout path but
-# no branch, and one listing has to read one way.
+# herdr's workspaces, then the worktrees none of them is on. An open worktree is
+# one row, not two, since both would land in the same workspace anyway and the
+# workspace row also carries herdr's number and label. Both kinds are named
+# through _ck_describe so that one listing reads one way. Sorted in C order so
+# the grouping does not depend on the locale the picker happens to run in.
 _wk_go_rows() {
   local workspaces
-  # Read before the block below rather than piped into it, so that the paths
-  # collected while laying out the workspace rows are still there when the
-  # worktree rows are laid out: a pipeline would put the loop in a subshell.
+  # Read before the block below: a pipeline would put the loop in a subshell and
+  # lose the paths collected while laying out the workspace rows.
   workspaces=$(_sess_workspace_rows)
   {
     local line id number label wt_path repo branch
     local -A open
     local -a fields
-    # Split rather than `read`: a tab is IFS whitespace in zsh, so `read` folds
-    # two of them into one and an empty field - a workspace herdr has not
-    # labelled, or one on no checkout - would shift every column after it.
+    # Split rather than `read`: a tab is IFS whitespace in zsh, so an empty
+    # field would be folded away and shift every column after it.
     for line in ${(f)workspaces}; do
       fields=("${(@ps:\t:)line}")
       id=${fields[1]-}
@@ -114,9 +95,8 @@ _wk_go_rows() {
       if [[ -n $repo ]]; then
         _wk_go_row "$repo" "$branch" "ws [$number] $label" "workspace:$id" "$wt_path"
       else
-        # A workspace on no checkout has nothing to group by; herdr's own label
-        # is the only name it has, and it takes the place of the repository so
-        # that the column the rows are ordered on is never empty.
+        # herdr's label takes the place of the repository, so the column the
+        # rows are ordered on is never empty.
         _wk_go_row "$label" '' "ws [$number]" "workspace:$id" "$wt_path"
       fi
     done
@@ -148,9 +128,7 @@ _wk_go_pick() {
 
 # ── open: a repository or a place ────────────────────
 
-# Where to start working, as opposed to where work is already going on. The
-# repositories under $REPO_ROOT, plus the directories that are not repositories
-# but are worked in anyway.
+# Where to start working, as opposed to where work is already going on.
 _wk_open_rows() {
   _ck_place_rows
   _ck_repo_rows
@@ -219,9 +197,9 @@ _wk_get() {
 
 # ── new: a worktree for a branch ─────────────────────
 
-# A branch is picked up where it already is - locally, then on origin - and only
-# created when there is nothing to pick up, so a branch that exists only on the
-# remote is tracked instead of being silently forked from the base.
+# With no base, a branch is picked up where it already is - locally, then on
+# origin - so one that exists only on the remote is tracked instead of silently
+# forked. A base always means a new branch, and fails if it already exists.
 _wk_new() {
   local branch=${1:-} base=${2:-} wt_path
   [[ -n $branch ]] || {
@@ -269,13 +247,10 @@ _wk_pr_pick() {
       --preview 'gh pr view {2}'
 }
 
-# The checkout itself is left to `gh pr checkout`, which is the only thing that
-# gets a fork's head right (it fetches refs/pull/<n>/head and sets the push
-# remote), so the worktree is added detached and gh is run inside it.
-#
-# The directory is named after the head branch, as `wk new` does. A fork's
-# branch name is not qualified by its owner, so two pull requests proposing the
-# same branch name collide the way two branches differing only in a `/` do.
+# `gh pr checkout` is the only thing that gets a fork's head right, so the
+# worktree is added detached and gh is run inside it. The directory is named
+# after the head branch, which a fork does not qualify by owner: two pull
+# requests proposing the same branch name collide.
 _wk_pr() {
   local number=${1:-} branch wt_path
   _ui_require gh wk || return 1
@@ -309,11 +284,9 @@ _wk_pr() {
 
 # ── rm: remove a worktree ────────────────────────────
 
-# Whether a worktree may go is git's own answer: it refuses one with local
-# changes. Asking again with --force is the caller taking that decision.
-#
-# The one thing git does not refuse is the worktree the caller is standing in,
-# which it removes out from under the shell, so that is refused here.
+# Whether a worktree may go is git's answer; --force is the caller taking that
+# decision. The one thing git does not refuse is the worktree the caller stands
+# in, which it removes out from under the shell, so that is refused here.
 _wk_remove_path() {
   local wt_path=${1:A} root ws message rc
   if [[ ${PWD:A} == "$wt_path" || ${PWD:A} == "$wt_path"/* ]]; then
@@ -328,9 +301,7 @@ _wk_remove_path() {
     _wk_confirm "remove ${wt_path:t} anyway?" || return 1
     git worktree remove --force -- "$wt_path" || return 1
   fi
-  # Only inside the root lib/checkout.zsh lays out: elsewhere the parent belongs
-  # to whoever put the worktree there. Resolved on both sides, since $wt_path is
-  # and a root reached through a symlink would not compare otherwise.
+  # Only inside $WT_ROOT: elsewhere the parent belongs to whoever created it.
   root=$(_ck_wt_root)
   [[ $wt_path == "${root:A}"/* ]] && rmdir -- "${wt_path:h}" 2>/dev/null
   _sess_close_worktree "$ws"
@@ -374,15 +345,6 @@ _wk_rm() {
 
 # ── command ──────────────────────────────────────────
 
-# wk                        : go to a workspace or a worktree
-# wk open [<query>...]      : open a repository or a place as a workspace
-# wk get [<owner/repo|url>] : clone one in and open it
-# wk new <branch> [base]    : create the worktree for a branch and open it
-# wk pr [<number>]          : create the worktree for a pull request and open it
-# wk rm                     : pick worktrees of this repository to remove
-#
-# The bare form and `open` span every repository; `new`, `pr` and `rm` act on
-# the one you are standing in.
 wk() {
   case ${1:-} in
     '')

@@ -1,12 +1,9 @@
 # ghsetup - the GitHub-side settings every repository of this account is meant
-# to carry: a ruleset guarding the default branch, secret scanning with push
-# protection, and the merge behaviour. What each setting is and why lives in
-# lib/forge.zsh.
+# to carry. What each setting is and why lives in lib/forge.zsh.
 #
-# A personal account has no way to make these apply to repositories that do not
-# exist yet - rulesets are scoped to a repository or to an organisation, and the
-# organisation-wide target needs a paid plan - so this command is what stands in
-# for that, run once after `gh repo create`.
+# A personal account cannot make these apply to repositories that do not exist
+# yet - rulesets are scoped to a repository or to an organisation, and the
+# organisation-wide target needs a paid plan - so this stands in for that.
 #
 # Functions are always defined; the entry point checks its own dependencies, so
 # a machine without gh reports what is missing instead of `command not found`.

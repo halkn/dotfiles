@@ -1,7 +1,6 @@
 # session - the herdr side: what is open, and how a directory becomes a place to
-# work in. This is the only file that runs `herdr`, so the boundary between what
-# only a shell can do (`cd`) and what an external command does is a file
-# boundary.
+# work in. The only file that runs `herdr`, so the boundary between what only a
+# shell can do (`cd`) and what an external command does is a file boundary.
 #
 # Everything here degrades: outside a herdr session, or on a machine without it,
 # the caller still gets a working `cd`.
@@ -12,16 +11,9 @@ _sess_available() {
   [[ -n ${HERDR_ENV:-} ]] && command -v herdr >/dev/null 2>&1
 }
 
-# `<workspace_id>\t<number>\t<label>\t<checkout_path>` for every open workspace.
-# What the picker shows is left to the caller: a workspace row is laid out next
-# to checkout.zsh's worktree rows, and only the caller sees both.
-#
-# A field may be empty: a workspace does not have to sit on a checkout, and
-# herdr does not have to have labelled it. The caller splits on the tab itself
-# rather than with `read`, which folds two adjacent tabs into one.
-#
-# Empty outside a session, and empty rather than failing when the server does
-# not answer: the herdr picker runs the listing under `set -euo pipefail`.
+# Any field may be empty: a workspace need not sit on a checkout, and herdr need
+# not have labelled it. Empty rather than failing when the server does not
+# answer, since the herdr picker runs this under `set -euo pipefail`.
 _sess_workspace_rows() {
   local workspaces
   _sess_available || return 0
@@ -39,7 +31,6 @@ _sess_workspace_rows() {
   return 0
 }
 
-# open_workspace_id of the checkout at $1, empty when it is not open in herdr.
 _sess_workspace_id() {
   local wt_path=$1 worktrees
   _sess_available || return 0
@@ -61,8 +52,7 @@ _sess_focus() {
   herdr workspace focus "$ws" >/dev/null
 }
 
-# A directory that is not a checkout of its own: a new workspace is created on
-# it every time, since there is nothing to reopen.
+# A new workspace every time: a plain directory has nothing to reopen.
 _sess_open_dir() {
   local dir=${1:A}
   [[ -d $dir ]] || {
@@ -76,8 +66,6 @@ _sess_open_dir() {
   cd -- "$dir"
 }
 
-# A worktree: the workspace it is already open in is focused rather than opened
-# a second time.
 _sess_open_worktree() {
   local wt_path=${1:A} ws
   [[ -d $wt_path ]] || {
@@ -96,9 +84,8 @@ _sess_open_worktree() {
   cd -- "$wt_path"
 }
 
-# Called after the checkout is gone. Failure is ignored: the removal already
-# happened, and a workspace herdr no longer knows about is not an error worth
-# reporting to someone who just removed a worktree.
+# Called after the checkout is gone, so failure is ignored: the removal already
+# happened and there is nothing left to report.
 _sess_close_worktree() {
   local ws=${1:-}
   [[ -n $ws ]] || return 0

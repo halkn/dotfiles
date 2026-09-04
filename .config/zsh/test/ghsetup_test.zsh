@@ -48,8 +48,6 @@ check 'ruleset carries the name the lookup filters on' "$_FORGE_RULESET_NAME" \
 
 check 'ruleset is enforced' active "$(jq_get '.enforcement')"
 
-# An admin bypass would also be a bypass for anything running under the same
-# token, which is the case this ruleset exists for.
 check 'ruleset grants no bypass' 0 "$(jq_get '.bypass_actors | length')"
 
 check 'ruleset blocks deletion, force push and direct push' \

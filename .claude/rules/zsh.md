@@ -8,7 +8,7 @@ paths:
 
 # zsh Design Principles
 
-方針: 「`.zshenv` / `.zshrc` は portable な shell core。独自機能は操作をサブコマンドで表し、内部は扱う情報で分ける」
+方針: 「`.zshenv` / `.zshrc` は portable な shell core。独自機能は操作をサブコマンドで表し、内部は扱う情報で分ける」。検証手順と実測記録は `/zsh-workflows` skill。
 
 **置き場所:**
 
@@ -31,10 +31,4 @@ paths:
 - `.claude/worktrees/` の lifecycle は Claude Code が持つ。`$WT_ROOT` の外なので `wk` の一覧には出ず、`wk rm` の候補からは path で除外する
 - 破壊的操作を git に委ねるときは、git が拒否しないものを先に列挙する。`git worktree remove` は「今立っている worktree」も消すので、そこは zsh 側で止める
 - OS 固有処理は必要箇所に局所化する。macOS / WSL の分岐を持ち込まない
-
-**言語上の注意:**
-
-- zsh の `path` は PATH の配列。worktree のパスを入れる変数に `local path` を使うと関数内で PATH が消える（`wt_path` を使う）
-- `.zshenv.local` / `.zshrc.local` は lint 対象外。共有したい設定をここに書かない
-- zsh 固有構文の検索・変換で `ast-grep` を既定にしない。対応 parser を確認できない場合は `rg` と既存の `shuck` に寄せる
-- fzf の widget・completion と herdr の picker・自動起動は lint で確認できない。実端末で新規シェルを開いて確認する
+- zsh の `path` は PATH の配列。関数内で `local path` を宣言すると PATH が消える（`wt_path` を使う）

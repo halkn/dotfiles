@@ -1,20 +1,12 @@
-# checkout - where a checkout lives on this machine. Two roots, one layout
-# each: `$REPO_ROOT/<host>/<...>/<repo>` for the clones and
-# `$WT_ROOT/<owner>/<repo>/<branch>` for the worktrees.
+# checkout - where a checkout lives on this machine: `$REPO_ROOT/<host>/<...>/<repo>`
+# for the clones, `$WT_ROOT/<owner>/<repo>/<branch>` for the worktrees.
 #
-# The layout is the listing: a glob over the root, so no git process is spawned
-# per row. git is asked at the preview and at the moment of acting, not to build
-# a list.
-#
-# A row here is `<display>\t<target>\t<path>`, the shape the pickers in
-# workflows/ consume. The target is what Enter acts on and the path is what the
-# preview reads; they differ only for a row that is not a directory of its own,
-# which is why the column is kept separate.
-#
-# A listing whose rows are interleaved with another layer's - the worktrees,
-# which the pickers show next to herdr's workspaces - is served as bare paths
-# plus _ck_describe instead, so that the one caller that sees both lays both out
-# the same way.
+# The layout is the listing. Rows come from a glob over the root so that no git
+# process is spawned per row; git is asked at the preview and at the moment of
+# acting. A row is `<display>\t<target>\t<path>`: the target is what Enter acts
+# on, the path is what the preview reads, and they differ for a row that is not
+# a directory of its own. _ck_wt_paths is the exception - it serves bare paths,
+# because its caller interleaves them with herdr's rows and names both itself.
 
 # ── clones ───────────────────────────────────────────
 
@@ -24,14 +16,9 @@ _ck_repo_root() {
   print -r -- "${root%/}"
 }
 
-# Where a clone lands: <root>/<host>/<path>. `owner/repo` is taken as GitHub;
-# anything else is read as a clone URL, with the scheme, the ssh user, the `:`
-# separator, Azure's `_git/` segment and the `.git` suffix taken off.
 _ck_repo_dest() {
   local spec=${1:-} rest
   [[ -n $spec ]] || return 1
-  # `owner/repo` is the only form that is not a URL, so anything carrying a
-  # host - a scheme, an ssh user, a `:` - is read as one.
   case $spec in
     *:* | *@* | */*/*) ;;
     */*)
@@ -47,8 +34,7 @@ _ck_repo_dest() {
   print -r -- "$(_ck_repo_root)/${rest%/}"
 }
 
-# Two depths: <host>/<owner>/<repo>, and the <host>/<org>/<project>/<repo> that
-# Azure DevOps needs.
+# The second glob is the <host>/<org>/<project>/<repo> depth Azure DevOps needs.
 _ck_repo_rows() {
   local dir root
   root=$(_ck_repo_root)
@@ -61,18 +47,13 @@ _ck_repo_rows() {
 
 # ── places ───────────────────────────────────────────
 
-# $WS_PLACES holds the directories that are not repositories ($HOME and the temp
-# dir by default, set in .zshenv, extended per machine in .zshenv.local). The
-# listing is shared by every machine, so a path this one does not have is
-# dropped instead of offered as a row that cannot be opened.
+# $WS_PLACES is shared by every machine, so a path this one does not have is
+# dropped rather than offered as a row that cannot be opened. The default value
+# is for the `set -u` the herdr popup runs with.
 _ck_place_rows() {
   local dir
-  # The default is for the `set -u` the herdr popup runs with: an unset variable
-  # would otherwise end the listing.
   for dir in ${(s.:.)${WS_PLACES:-}}; do
-    # A `~` written by hand is expanded the way $REPO_ROOT is: unexpanded, it
-    # would be dropped below as a path this machine does not have, which is
-    # indistinguishable from the drop that is meant.
+    # Expanded here, or a hand-written `~` would be dropped as a missing path.
     dir=${dir/#\~/$HOME}
     [[ -d $dir ]] || continue
     printf 'dir  %s\t%s\t%s\n' "${dir/#$HOME/~}" "${dir:A}" "${dir:A}"
@@ -82,25 +63,21 @@ _ck_place_rows() {
 
 # ── worktrees ────────────────────────────────────────
 
-# The default is herdr's own `[worktrees] directory`, so a worktree herdr
-# creates and one `wk new` creates land in the same tree and appear in the same
-# listing.
+# The default matches herdr's own `[worktrees] directory`; change both together.
 _ck_wt_root() {
   local root=${WT_ROOT:-${XDG_DATA_HOME:-$HOME/.local/share}/worktrees}
   root=${root/#\~/$HOME}
   print -r -- "${root%/}"
 }
 
-# A branch name is a path segment here, so `/` is folded away. Two branches that
-# differ only in that separator would share a directory; the collision is
-# accepted rather than encoded.
+# A branch name is a path segment here. Two branches differing only in `/` share
+# a directory; the collision is accepted rather than encoded.
 _ck_wt_slug() {
   print -r -- "${1//\//-}"
 }
 
-# <owner>/<repo> read off the main checkout's own path rather than off the
-# remote URL, so a repository with no remote, or one placed outside $REPO_ROOT,
-# still lands somewhere predictable.
+# Read off the main checkout's path rather than the remote URL, so a repository
+# with no remote still lands somewhere predictable.
 _ck_wt_repo_slug() {
   local common main
   common=$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null) || return 1
@@ -108,8 +85,6 @@ _ck_wt_repo_slug() {
   print -r -- "${${main:h}:t}/${main:t}"
 }
 
-# Where the worktree of $1 (a branch) in the repository the caller stands in
-# goes.
 _ck_wt_path() {
   local branch=${1:-} slug
   [[ -n $branch ]] || return 1
@@ -128,16 +103,11 @@ _ck_wt_paths() {
 
 # ── labels ───────────────────────────────────────────
 
-# `<repo>\t<branch>` for a checkout path: what a picker row is named and sorted
-# by. Read off the layout alone, so a listing still costs no git process per
-# row. Only $WT_ROOT spells a branch out; a clone answers with the repository
-# and an empty branch, and a path under neither root is named by itself.
-#
-# The branch of a worktree is the directory name, which _ck_wt_slug folded `/`
-# out of, so a nested branch reads back with `-` where it was created with `/`.
-# Both roots and the path are resolved before they are compared: a root reached
-# through a symlink is spelled one way in $WT_ROOT and another in what git and
-# herdr report, and the two would not match.
+# `<repo>\t<branch>` for a checkout path, read off the layout alone so that a
+# listing still costs no git process per row. A branch reads back with `-` where
+# _ck_wt_slug folded a `/` out. Both roots and the path are resolved before they
+# are compared: a root reached through a symlink is spelled one way in $WT_ROOT
+# and another in what git and herdr report.
 _ck_describe() {
   local dir=${1:-} root
   local -a parts
@@ -153,11 +123,8 @@ _ck_describe() {
     fi
   fi
 
-  # <host>/<owner>/<repo>, and the <host>/<org>/<project>/<repo> that Azure
-  # DevOps needs: the repository is the last two segments either way. Unlike the
-  # worktree layout above, the depth does not say where the checkout ends - a
-  # directory inside one has the same shape - so the .git the clone itself
-  # carries is what does.
+  # Unlike the worktree layout above, the depth does not say where a checkout
+  # ends - a directory inside one has the same shape - so .git is what does.
   root=${${:-$(_ck_repo_root)}:A}
   if [[ $dir == "$root"/* && -e $dir/.git ]]; then
     parts=(${(s:/:)${dir#"$root"/}})
@@ -170,18 +137,11 @@ _ck_describe() {
   printf '%s\t\n' "${dir/#$HOME/~}"
 }
 
-# `git worktree list --porcelain` on stdin, laid out for the removal picker.
-# Three kinds of row are withheld, because `git worktree remove` takes all three
-# without complaint and each one costs something that cannot be undone by hand:
-#
-#   - the main checkout, which git lists first
-#   - the worktree $1 is standing in: removing it leaves the shell in a
-#     directory that no longer exists
-#   - anything under .claude/worktrees, whose lifecycle is Claude Code's and
-#     which may still have an agent running in it
-#
-# Kept apart from the call below so a test can pin the columns and the
-# exclusions down.
+# `git worktree list --porcelain` on stdin. Three rows are withheld because git
+# removes all three without complaint and each costs something unrecoverable:
+# the main checkout (listed first), the worktree $1 stands in (the shell would
+# be left in a directory that is gone), and anything under .claude/worktrees
+# (Claude Code's lifecycle; an agent may still be running in it).
 _ck_wt_repo_rows_filter() {
   awk -v cwd="${1:-}" '
     function keep(p) {
@@ -201,9 +161,7 @@ _ck_wt_repo_rows_filter() {
   '
 }
 
-# The worktrees of the repository the caller stands in. git reports resolved
-# paths, so the working directory is resolved too or the two spellings would not
-# compare.
+# git reports resolved paths, so $PWD is resolved too or the two would not compare.
 _ck_wt_repo_rows() {
   git worktree list --porcelain 2>/dev/null | _ck_wt_repo_rows_filter "${PWD:A}"
 }

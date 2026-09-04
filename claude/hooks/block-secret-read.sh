@@ -8,7 +8,6 @@
 # listed here only as a second line of defence. It matches on the protected assets, which are
 # a closed set, rather than on reading commands, which are not. Splitting a path across
 # segments (`cd ~/.config && cat gh/hosts.yml`) or going through a variable still gets past it.
-# .claude/rules/claude-code.md records the measurements behind these points.
 #
 # Side effect: commands that only mention these paths as text (`rg '~/.azure/' README.md`)
 # are refused as well. Rewrite them without a literal path.
