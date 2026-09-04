@@ -28,7 +28,7 @@ paths:
 **ツールチェーン:**
 
 - formatter は `stylua`、diagnostics は `emmylua_check` が正。editor 内では `emmylua_ls` が両方を担う
-- ツールの宣言先は呼び出し元で決める。nvim が任意のディレクトリで呼ぶもの（`tree-sitter`・`shuck`・`ryl`・`rumdl`）は `.config/mise/config.toml`、このリポジトリの `mise run` からだけ呼ぶ Lua 系（`stylua`・`emmylua_check`・`emmylua_ls`）は `mise.toml`
+- ツールの宣言先は呼び出し元で決める（README の Tool Manager）。nvim が任意のディレクトリで呼ぶ `tree-sitter`・`shuck`・`ryl`・`rumdl` は `.config/mise/config.toml`、Lua 系は `mise.toml`
 - `mise.toml` のツールはこのリポジトリの外で PATH に載らない。`cmd` で PATH を直接参照する `lsp/emmylua_ls.lua` は他リポジトリで開いた Lua には attach しない（Lua はここでしか書かないため許容している）
 
 **検査の維持:**

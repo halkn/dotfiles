@@ -14,7 +14,7 @@ description: このリポジトリの Neovim 設定（.config/nvim 配下の Lua
 
 ## emmylua_check の警告を解く
 
-警告 0 件を維持する。推論限界に見えるものの大半は型注釈で解ける。
+推論限界に見えるものの大半は型注釈で解ける。
 
 - module-local の state テーブル: `---@class` + `---@field x integer?`
 - `M.config`: `---@class` + `---@type`、および `M.setup` の `---@param opts <Config>?`
