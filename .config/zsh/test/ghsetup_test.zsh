@@ -39,6 +39,13 @@ jq_get() {
 
 check 'ruleset targets the default branch' '~DEFAULT_BRANCH' \
   "$(jq_get '.conditions.ref_name.include | join(",")')"
+
+# _forge_ruleset_id finds the ruleset to update by this name. If the payload
+# stops carrying it, the next run creates a second, overlapping ruleset instead
+# of updating the one that is there.
+check 'ruleset carries the name the lookup filters on' "$_FORGE_RULESET_NAME" \
+  "$(jq_get '.name')"
+
 check 'ruleset is enforced' active "$(jq_get '.enforcement')"
 
 # An admin bypass would also be a bypass for anything running under the same

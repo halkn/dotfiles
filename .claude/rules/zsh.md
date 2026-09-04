@@ -13,8 +13,8 @@ paths:
 **置き場所:**
 
 - `.zshrc`: interactive zsh を成立させる基盤（history・options・completion・keybind・alias）と、軽量な tool init。fzf の widget や `eza`・`nvim` の上書きのように、無くても標準の動作が残るものはここで `command -v` 分岐する
-- `.config/zsh/workflows/*.zsh`: ユーザーが打つコマンド（`wk`・`gst`）。操作はサブコマンドで表す。新しい操作は新ファイルではなくサブコマンドとして足す
-- `.config/zsh/lib/*.zsh`: 扱う情報ごとの層。`checkout`（ローカルの path 規約）・`forge`（リモートの forge）・`session`（herdr）・`ui`（fzf chrome・依存チェック・preview）。分割の軸に外部ツール名を使わない。`session` を herdr を呼ぶ唯一の層にする形で境界を作る
+- `.config/zsh/workflows/*.zsh`: ユーザーが打つコマンド（`wk`・`gst`・`ghsetup`）。操作はサブコマンドで表す。新しい操作は、既存コマンドが扱う対象と同じならサブコマンドとして足す。対象が別（`ghsetup` は GitHub 上の repo 設定で、`wk` の扱う checkout ではない）のときだけ新ファイルにする
+- `.config/zsh/lib/*.zsh`: 扱う情報ごとの層。`checkout`（ローカルの path 規約）・`forge`（リモートの forge とそこでの repo 設定）・`session`（herdr）・`ui`（fzf chrome・依存チェック・preview）。分割の軸に外部ツール名を使わない。`session` を herdr を呼ぶ唯一の層にする形で境界を作る
 - lib は workflows も他の lib も source しない。他層の情報が要るときは呼び出し側が引数で渡す（`_forge_repo_rows <root> ...`）。workflow は自身の path から必要な lib を source する
 - workflow に function を置くのは「選択の後に判断が続く」とき（cd 先・削除の可否・ピッカー内で完結する stage / restore）。選択 + 単一コマンドで終わるものは function を作らず、`.zshrc` の `_fzf_comprun` / `_fzf_complete_<cmd>` に寄せて `<コマンド> **<TAB>` から引く
 - fzf の共通オプション（見た目・キー）は `.zshrc` の `FZF_DEFAULT_OPTS`。候補生成と preview はコマンド側の関心なので、行データは lib の function を呼んで得る

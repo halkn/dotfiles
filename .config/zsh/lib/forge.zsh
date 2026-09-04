@@ -82,10 +82,16 @@ _forge_pr_head() {
 # Not included: `required_linear_history`, which contradicts the merge commits
 # this account's repositories carry, and `required_status_checks`, which needs a
 # check to name.
+#
+# The name is a variable because _forge_ruleset_id finds the ruleset to update by
+# it: written twice, a rename would silently turn an update into a second,
+# overlapping ruleset. The JSON below holds no other expansion.
+_FORGE_RULESET_NAME=main
+
 _forge_ruleset_payload() {
-  cat <<'JSON'
+  cat <<JSON
 {
-  "name": "main",
+  "name": "$_FORGE_RULESET_NAME",
   "target": "branch",
   "enforcement": "active",
   "bypass_actors": [],
@@ -112,8 +118,14 @@ JSON
 # The id of the ruleset named above, empty when the repository has none. The
 # list endpoint answers with names and ids only, so the rules themselves need
 # the per-ruleset endpoint.
+#
+# `includes_parents` defaults to true, which mixes in the organisation and
+# enterprise rulesets that also apply here. Those ids belong to another owner:
+# updating one is refused, and the repository would be left with no ruleset of
+# its own.
 _forge_ruleset_id() {
-  gh api "repos/${1:-}/rulesets" --jq '.[] | select(.name == "main") | .id'
+  gh api "repos/${1:-}/rulesets?includes_parents=false&per_page=100" \
+    --jq "[.[] | select(.name == \"$_FORGE_RULESET_NAME\") | .id] | first // empty"
 }
 
 _forge_apply_ruleset() {
@@ -129,13 +141,23 @@ _forge_apply_ruleset() {
 # Push protection is the one that acts before the damage: a secret in a commit
 # is rejected at push time rather than reported after it has been published.
 # Wiki and projects are turned off as surface nothing here uses.
+#
+# Two PATCHes rather than one: the endpoint applies a body atomically, and
+# secret scanning needs an eligible repository (public, or private with Secret
+# Protection). Sent together, a private repository on a plan without it would
+# lose the merge settings to the same rejection.
 _forge_apply_repo_settings() {
-  gh api --silent --method PATCH "repos/${1:-}" --input - <<'JSON'
+  local nwo=${1:-} rc=0
+  gh api --silent --method PATCH "repos/$nwo" --input - <<'JSON' || rc=1
 {
   "security_and_analysis": {
     "secret_scanning": { "status": "enabled" },
     "secret_scanning_push_protection": { "status": "enabled" }
-  },
+  }
+}
+JSON
+  gh api --silent --method PATCH "repos/$nwo" --input - <<'JSON' || rc=1
+{
   "allow_auto_merge": true,
   "allow_update_branch": true,
   "delete_branch_on_merge": true,
@@ -143,6 +165,7 @@ _forge_apply_repo_settings() {
   "has_projects": false
 }
 JSON
+  return $rc
 }
 
 _forge_apply_dependabot() {
@@ -154,7 +177,9 @@ _forge_apply_dependabot() {
 
 # What the settings above currently are. The ruleset it writes has no bypass
 # actor, so applying it takes away the caller's own push to the default branch:
-# the current state has to be readable before that happens.
+# the current state has to be readable before that happens. Dependabot alerts
+# are absent: this endpoint reports the security updates only, and the alerts
+# have an endpoint of their own that answers with a status code.
 _forge_settings_report() {
   local nwo=${1:-} id
   gh api "repos/$nwo" --jq '
@@ -162,7 +187,7 @@ _forge_settings_report() {
     "  default branch:          \(.default_branch)",
     "  secret scanning:         \(.security_and_analysis.secret_scanning.status // "n/a")",
     "  push protection:         \(.security_and_analysis.secret_scanning_push_protection.status // "n/a")",
-    "  dependabot alerts:       \(.security_and_analysis.dependabot_security_updates.status // "n/a")",
+    "  dependabot updates:      \(.security_and_analysis.dependabot_security_updates.status // "n/a")",
     "  allow_auto_merge:        \(.allow_auto_merge)",
     "  allow_update_branch:     \(.allow_update_branch)",
     "  delete_branch_on_merge:  \(.delete_branch_on_merge)",

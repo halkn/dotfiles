@@ -55,8 +55,16 @@ ghsetup() {
 
   _ui_require gh ghsetup || return 1
 
+  # Resolved from `origin` rather than from the working directory alone: in a
+  # clone of a fork, gh's own default is the base repository, and this command
+  # would hand a ruleset with no bypass actor to upstream.
   if [[ -z $nwo ]]; then
-    nwo=$(gh repo view --json nameWithOwner --jq '.nameWithOwner') || return 1
+    local origin
+    origin=$(git remote get-url origin 2>/dev/null) || {
+      print -u2 'ghsetup: no origin remote here; name the repository'
+      return 1
+    }
+    nwo=$(gh repo view "$origin" --json nameWithOwner --jq '.nameWithOwner') || return 1
   fi
   if [[ $nwo != */* ]]; then
     print -u2 "ghsetup: expected <owner>/<repo>, got '$nwo'"
