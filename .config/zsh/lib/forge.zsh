@@ -1,16 +1,13 @@
 # forge - what the remote hosting knows: the URL a spec clones from, the
-# repositories of your own account, the open pull requests of the repository you
-# stand in, and the settings a repository is expected to carry.
+# repositories of your own account, the open pull requests, and the settings a
+# repository is expected to carry.
 #
 # GitHub is the only forge with a listing here, because `gh` is the only one
 # that answers without being told an organisation and a project first. An Azure
-# Repos URL still clones: that path goes through _ck_repo_dest and the URL below,
-# neither of which asks the forge anything.
+# Repos URL still clones, since that path asks the forge nothing.
 
-# What git is handed to clone from. A spec carrying a `:` already names a host
-# the way git reads it - a scheme or the scp-like `git@host:path` - and is passed
-# through; a bare path is https, with the first segment read as a host when it
-# looks like one and as a GitHub owner when it does not.
+# A spec carrying a `:` already names a host the way git reads it and is passed
+# through untouched.
 _forge_url() {
   local spec=${1:-}
   case $spec in
@@ -30,20 +27,17 @@ _forge_url() {
   esac
 }
 
-# Your repositories on GitHub, one `<owner>/<repo>` per line. gh's own failure -
-# not logged in, offline, rate limited - is what has to be read, so the caller
-# fetches this before opening a picker rather than through a pipe fzf would
-# paint over.
+# gh's own failure - not logged in, offline, rate limited - is what has to be
+# read, so the caller fetches this before opening a picker rather than through a
+# pipe fzf would paint over.
 _forge_repo_list() {
   gh repo list --limit 200 --json nameWithOwner --jq '.[].nameWithOwner'
 }
 
-# `<display>\t<owner/repo>` for the picker, given the clone root as $1. The
-# listing is what is on GitHub, so the clones already under that root are marked
-# rather than dropped: picking one is still a way to get to it. The mark is a
-# path test, which keeps the list free of a process per row. The root is passed
-# in rather than read here, since where a clone lands is checkout.zsh's and lib
-# files do not reach into each other.
+# The listing is what is on GitHub, so a clone already under $1 is marked rather
+# than dropped: picking it is still a way to get to it. The root is passed in
+# because where a clone lands is checkout.zsh's, and lib files do not reach into
+# each other.
 _forge_repo_rows() {
   local root=${1:-} nwo
   shift
@@ -57,7 +51,6 @@ _forge_repo_rows() {
   return 0
 }
 
-# `<display>\t<number>` for the picker.
 _forge_pr_rows() {
   gh pr list --limit 100 \
     --json number,title,headRefName,author \
@@ -70,9 +63,6 @@ _forge_pr_head() {
 
 # ── repository settings ──────────────────────────────
 
-# The ruleset guarding the default branch, as the body of
-# POST/PUT /repos/{owner}/{repo}/rulesets.
-#
 # `bypass_actors` is empty on purpose. An agent runs under the same ssh key and
 # the same gh token as the person who started it, so an admin bypass would be a
 # bypass for both; an exception has to be a deliberate visit to the ruleset in
@@ -115,10 +105,6 @@ _forge_ruleset_payload() {
 JSON
 }
 
-# The id of the ruleset named above, empty when the repository has none. The
-# list endpoint answers with names and ids only, so the rules themselves need
-# the per-ruleset endpoint.
-#
 # `includes_parents` defaults to true, which mixes in the organisation and
 # enterprise rulesets that also apply here. Those ids belong to another owner:
 # updating one is refused, and the repository would be left with no ruleset of
@@ -138,10 +124,6 @@ _forge_apply_ruleset() {
   fi
 }
 
-# Push protection is the one that acts before the damage: a secret in a commit
-# is rejected at push time rather than reported after it has been published.
-# Wiki and projects are turned off as surface nothing here uses.
-#
 # Two PATCHes rather than one: the endpoint applies a body atomically, and
 # secret scanning needs an eligible repository (public, or private with Secret
 # Protection). Sent together, a private repository on a plan without it would
@@ -175,11 +157,8 @@ _forge_apply_dependabot() {
   return $rc
 }
 
-# What the settings above currently are. The ruleset it writes has no bypass
-# actor, so applying it takes away the caller's own push to the default branch:
-# the current state has to be readable before that happens. Dependabot alerts
-# are absent: this endpoint reports the security updates only, and the alerts
-# have an endpoint of their own that answers with a status code.
+# Dependabot alerts are absent because this endpoint reports the security
+# updates only; the alerts answer on their own endpoint with a status code.
 _forge_settings_report() {
   local nwo=${1:-} id
   gh api "repos/$nwo" --jq '
