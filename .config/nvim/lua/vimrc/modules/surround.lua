@@ -32,7 +32,7 @@ local function get_surround(char)
   return surround_map[char] or { open = char, close = char }
 end
 
--- Returns { open = {row, col}, close = {row, col} }, rows and cols both 0-based.
+---@return { open: integer[], close: integer[] }? # 0-based rows and cols
 local function find_surround(char)
   local pair = bracket_pairs[char]
   if pair then

@@ -191,8 +191,7 @@ local function show(msg, level, opts)
 
   add_history(msg, level, title)
 
-  -- Update existing notification with same id.
-  -- The handles are bound locally so the validity checks narrow them for the api calls.
+  -- Bound locally so the validity checks narrow them for the api calls.
   local existing = id and find_active(id)
   local ex_win = existing and existing.win
   local ex_buf = existing and existing.buf
@@ -225,12 +224,11 @@ local function show(msg, level, opts)
     return existing.id
   end
 
-  -- Create new notification
   local buf = vim.api.nvim_create_buf(false, true)
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
   vim.bo[buf].modifiable = false
 
-  -- initial position (will be corrected by reposition)
+  -- reposition() sets the final row and col.
   local win = vim.api.nvim_open_win(buf, false, {
     relative = 'editor',
     row = 0,

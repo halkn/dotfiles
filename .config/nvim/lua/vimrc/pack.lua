@@ -44,8 +44,6 @@ local plugs = {
     src = 'saghen/blink.cmp',
     version = 'v1.10.2',
     config = function()
-      -- blink.cmp declares every field of its *ConfigPartial types as required,
-      -- so the option table is built outside the call and cast.
       local opts = {
         keymap = {
           preset = 'super-tab',
@@ -63,8 +61,7 @@ local plugs = {
         },
       }
       -- blink.cmp declares every field of its *ConfigPartial types as required,
-      -- so any partial config is reported as incomplete. The cast drops a check
-      -- that cannot pass rather than one that works.
+      -- so the table is built outside the call and cast: the check cannot pass.
       require('blink.cmp').setup(opts --[[@as blink.cmp.Config]])
     end,
   },
