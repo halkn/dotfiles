@@ -26,8 +26,7 @@ check '_ck_repo_root' /tmp/repos "$(REPO_ROOT=/tmp/repos _ck_repo_root)"
 # A trailing slash must not double up where the callers append to the result.
 check '_ck_repo_root (trailing slash)' /tmp/repos "$(REPO_ROOT=/tmp/repos/ _ck_repo_root)"
 
-# The root is also read from a shell profile, where a leading ~ is a literal
-# character rather than something the shell has already expanded.
+# A leading ~ read from a shell profile is a literal character.
 check '_ck_repo_root (tilde)' "$HOME/repos" "$(REPO_ROOT='~/repos' _ck_repo_root)"
 
 check '_ck_repo_root (unset)' "$HOME/repos" "$(unset REPO_ROOT && _ck_repo_root)"
@@ -52,11 +51,8 @@ check '_ck_repo_dest (host shorthand)' /r/github.com/halkn/dotfiles \
 scratch=$(mktemp -d "${TMPDIR:-/tmp}/checkout-test.XXXXXX") || exit 1
 trap 'rm -rf -- "$scratch"' EXIT
 
-# The listing is shared by every machine, so a path that is not on this one is
-# dropped rather than offered as a row that cannot be opened. A `~` written by
-# hand is expanded first, since an unexpanded one would be dropped by that same
-# test with no way to tell the two apart. The tab pins the assertions to the
-# target column, which is what the picker acts on.
+# A missing path is dropped, a hand-written `~` is expanded first. The tab pins
+# the assertions to the target column, which is what the picker acts on.
 places=$(WS_PLACES="$scratch:$scratch/absent:~" _ck_place_rows)
 [[ $places == *$'\t'"${scratch:A}"$'\t'* ]] || check '_ck_place_rows' "a row for ${scratch:A}" "$places"
 [[ $places != *"$scratch/absent"* ]] || check '_ck_place_rows (absent)' 'no row' "$places"
@@ -68,8 +64,7 @@ check '_ck_wt_root' /w/wt "$(WT_ROOT=/w/wt _ck_wt_root)"
 check '_ck_wt_root (trailing slash)' /w/wt "$(WT_ROOT=/w/wt/ _ck_wt_root)"
 check '_ck_wt_root (tilde)' "$HOME/wt" "$(WT_ROOT='~/wt' _ck_wt_root)"
 
-# The fallback is herdr's own `[worktrees] directory`: the two place worktrees
-# in one tree, so a worktree herdr created is in the listing below.
+# The fallback is herdr's own `[worktrees] directory`.
 herdr_dir=$(sed -n 's/^directory = "\(.*\)"$/\1/p' "${0:A:h}/../../herdr/config.toml")
 check '_ck_wt_root (unset)' "${herdr_dir/#\~/$HOME}" \
   "$(unset WT_ROOT && XDG_DATA_HOME=$HOME/.local/share _ck_wt_root)"
@@ -79,9 +74,7 @@ check '_ck_wt_slug' 'feature-a' "$(_ck_wt_slug 'feature/a')"
 check '_ck_wt_slug (nested)' 'a-b-c' "$(_ck_wt_slug 'a/b/c')"
 check '_ck_wt_slug (plain)' 'topic' "$(_ck_wt_slug topic)"
 
-# The listing is a glob over <root>/<owner>/<repo>/<branch>, so it costs no git
-# call per row. What a row reads as is the caller's, so only the paths are
-# served here.
+# A glob over <root>/<owner>/<repo>/<branch>; only the paths are served here.
 mkdir -p "$scratch/halkn/dotfiles/topic" "$scratch/halkn/other/feature-a"
 
 check '_ck_wt_paths' \
