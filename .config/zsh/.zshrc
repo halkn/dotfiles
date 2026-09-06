@@ -163,16 +163,27 @@ if command -v fzf >/dev/null 2>&1 && [[ -t 0 ]]; then
   # `$1` is the whole command line; `prefix` is the word being completed and is
   # set by the caller in fzf's completion.zsh, hence the `-` default here.
   _fzf_complete_git() {
-    local -a tokens
-    local token sub
-    tokens=(${(z)1})
-    # The subcommand is the first word that is not git itself or an option, so
-    # that `git -C <dir> switch` still completes as `switch`.
-    for token in ${tokens[2,-1]}; do
-      [[ $token == -* ]] && continue
-      sub=$token
-      break
+    local -a tokens git_args
+    local token sub git_cmd stage_cwd
+    local -i i=2
+    tokens=("${(@Q)${(z)1}}")
+    # Preserve repeated -C arguments in the order git resolves them.
+    while ((i <= ${#tokens})); do
+      token=$tokens[i]
+      if [[ $token == -C ]]; then
+        ((i++))
+        if ((i > ${#tokens})); then
+          _fzf_path_completion "${prefix-}" "$1"
+          return
+        fi
+        git_args+=(-C "$tokens[i]")
+      elif [[ $token != -* ]]; then
+        sub=$token
+        break
+      fi
+      ((i++))
     done
+    git_cmd="git ${(j: :)${(@q)git_args}}"
 
     case $sub in
       switch | checkout | branch | br)
@@ -180,22 +191,30 @@ if command -v fzf >/dev/null 2>&1 && [[ -t 0 ]]; then
         # The second field drops the `origin/` prefix: `git switch <name>` tracks
         # the remote branch, while `git switch origin/<name>` detaches HEAD.
         _fzf_complete --delimiter '\t' --with-nth 1 --accept-nth 2 \
-          --preview 'git log --oneline --graph --color=always {1} -- | head -200' \
+          --preview "$git_cmd log --oneline --graph --color=always {1} -- | head -200" \
           -- "$@" < <(
-            git branch --all --sort=-committerdate --format='%(refname:short)' 2>/dev/null \
+            git "${git_args[@]}" branch --all --sort=-committerdate --format='%(refname:short)' 2>/dev/null \
               | grep -vx origin \
               | while IFS= read -r ref; do printf '%s\t%s\n' "$ref" "${ref#origin/}"; done
           )
         ;;
       add | restore)
+        # Resolve each directory physically like git, without running chpwd hooks.
+        stage_cwd=$(
+          for ((i = 2; i <= ${#git_args}; i += 2)); do
+            [[ -n $git_args[i] ]] || continue
+            builtin cd -q -P -- "$git_args[i]" || exit 1
+          done
+          print -r -- "$PWD"
+        ) || return 1
         _fzf_complete --multi \
-          --preview "source ${_GIT_LIB}; _git_stage_preview {}" \
-          -- "$@" < <(_git_stage_rows)
+          --preview "builtin cd -q -- ${(q)stage_cwd} && source ${(q)_GIT_LIB} && _git_stage_preview {}" \
+          -- "$@" < <(builtin cd -q -- "$stage_cwd" && _git_stage_rows)
         ;;
       log | show)
         _fzf_complete --ansi --no-sort --accept-nth 1 \
-          --preview 'git show --color=always {1}' \
-          -- "$@" < <(git log --color=always --format='%C(auto)%h %s %C(dim)%cr' 2>/dev/null)
+          --preview "$git_cmd show --color=always {1}" \
+          -- "$@" < <(git "${git_args[@]}" log --color=always --format='%C(auto)%h %s %C(dim)%cr' 2>/dev/null)
         ;;
       *)
         _fzf_path_completion "${prefix-}" "$1"

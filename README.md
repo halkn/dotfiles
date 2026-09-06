@@ -153,6 +153,10 @@ but not one with unpushed commits, and leaves the branch behind — delete it wi
 because git removes each without complaint: the main checkout, the one you are
 standing in, and anything under `.claude/worktrees`.
 
+When removing several worktrees, `wk rm` attempts each selected target and
+returns a failure if any removal fails or its force confirmation is declined.
+Cancelling the picker is a successful no-op; picker errors remain failures.
+
 herdr's `alt+s` / `alt+n` / `alt+g` are bare `wk` / `wk open` / `wk new`, run
 from `.config/herdr/*.sh`.
 
