@@ -15,31 +15,33 @@ _sess_available() {
 # not have labelled it. Empty rather than failing when the server does not
 # answer, since the herdr picker runs this under `set -euo pipefail`.
 _sess_workspace_rows() {
-  local workspaces
+  local workspaces rows
   _sess_available || return 0
   command -v jq >/dev/null 2>&1 || return 0
   workspaces=$(herdr workspace list 2>/dev/null) || return 0
   [[ -n $workspaces ]] || return 0
-  print -r -- "$workspaces" | jq -r '
+  rows=$(print -r -- "$workspaces" | jq -r '
     .result.workspaces[]?
     | [.workspace_id,
        (.number | tostring),
        .label,
        (.worktree.checkout_path // "")]
     | @tsv
-  ' 2>/dev/null
+  ' 2>/dev/null) || return 0
+  [[ -n $rows ]] && print -r -- "$rows"
   return 0
 }
 
 _sess_workspace_id() {
-  local wt_path=$1 worktrees
+  local wt_path=$1 worktrees ws
   _sess_available || return 0
   command -v jq >/dev/null 2>&1 || return 0
   worktrees=$(herdr worktree list --json 2>/dev/null) || return 0
   [[ -n $worktrees ]] || return 0
-  print -r -- "$worktrees" \
+  ws=$(print -r -- "$worktrees" \
     | jq -r --arg p "$wt_path" \
-      '.result.worktrees[]? | select(.path == $p) | .open_workspace_id // empty' 2>/dev/null
+    '.result.worktrees[]? | select(.path == $p) | .open_workspace_id // empty' 2>/dev/null) || return 0
+  [[ -n $ws ]] && print -r -- "$ws"
   return 0
 }
 

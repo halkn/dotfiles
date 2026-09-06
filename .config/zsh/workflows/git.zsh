@@ -11,6 +11,7 @@
 # Own path, so preview commands (which run in a fresh shell without these
 # functions) can re-source it. `%x` expands to the file being sourced.
 _GIT_LIB=${${(%):-%x}:A}
+source "${${_GIT_LIB:h}:h}/lib/ui.zsh"
 
 # Not `git status --porcelain`, which quotes paths holding a space or a
 # non-ASCII byte and renders a rename as `old -> new`; both would be handed to
@@ -59,13 +60,6 @@ _git_stage_preview() {
   fi
 }
 
-_git_fzf_available() {
-  command -v fzf >/dev/null 2>&1 || {
-    print 'gst: fzf is not installed' >&2
-    return 1
-  }
-}
-
 _git_in_repo() {
   git rev-parse --is-inside-work-tree >/dev/null 2>&1 || {
     print 'gst: not inside a git repository' >&2
@@ -78,7 +72,7 @@ _git_in_repo() {
 # Not ctrl-r for the latter, which reloads the list everywhere else and would
 # read as undoable; tab stays fzf's own multi-select.
 gst() {
-  _git_fzf_available || return 1
+  _ui_require fzf gst || return 1
   _git_in_repo || return 1
 
   local reload="reload(source ${_GIT_LIB}; _git_stage_display_rows)"

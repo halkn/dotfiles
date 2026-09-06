@@ -288,32 +288,33 @@ _wk_pr() {
 # decision. The one thing git does not refuse is the worktree the caller stands
 # in, which it removes out from under the shell, so that is refused here.
 _wk_remove_path() {
-  local wt_path=${1:A} root ws message rc
+  local wt_path=${1:A} root ws message
   if [[ ${PWD:A} == "$wt_path" || ${PWD:A} == "$wt_path"/* ]]; then
     print "wk: cannot remove the worktree you are standing in: $wt_path" >&2
     return 1
   fi
   ws=$(_sess_workspace_id "$wt_path")
-  message=$(git worktree remove -- "$wt_path" 2>&1)
-  rc=$?
-  if ((rc != 0)); then
+  if ! message=$(git worktree remove -- "$wt_path" 2>&1); then
     print -r -- "$message" >&2
     _wk_confirm "remove ${wt_path:t} anyway?" || return 1
     git worktree remove --force -- "$wt_path" || return 1
   fi
   # Only inside $WT_ROOT: elsewhere the parent belongs to whoever created it.
   root=$(_ck_wt_root)
-  [[ $wt_path == "${root:A}"/* ]] && rmdir -- "${wt_path:h}" 2>/dev/null
+  if [[ $wt_path == "${root:A}"/* ]]; then
+    rmdir -- "${wt_path:h}" 2>/dev/null || true
+  fi
   _sess_close_worktree "$ws"
   return 0
 }
 
 _wk_rm() {
   local rows line tmp wt_path
+  local -i rc=0 pick_rc=0
   local -a targets
   _ui_require fzf wk || return 1
 
-  rows=$(_ck_wt_repo_rows)
+  rows=$(_ck_wt_repo_rows) || return 1
   [[ -n $rows ]] || {
     print 'wk: no worktrees' >&2
     return 0
@@ -327,7 +328,19 @@ _wk_rm() {
       --multi --delimiter '\t' --with-nth 1 --accept-nth 2 \
       --prompt 'remove> ' \
       --header 'Tab: toggle / Enter: remove selected' \
-      --preview "source ${_UI_LIB}; _ui_git_preview {3}" >|"$tmp"
+      --preview "source ${_UI_LIB}; _ui_git_preview {3}" >|"$tmp" || pick_rc=$?
+
+  if ((pick_rc != 0)); then
+    rm -f -- "$tmp"
+    case $pick_rc in
+      1 | 130)
+        return 0
+        ;;
+      *)
+        return $pick_rc
+        ;;
+    esac
+  fi
 
   while IFS= read -r line; do
     [[ -n $line ]] || continue
@@ -339,8 +352,9 @@ _wk_rm() {
   print -r -- "${(F)targets}"
   _wk_confirm 'remove these worktrees?' || return 1
   for wt_path in "${targets[@]}"; do
-    _wk_remove_path "$wt_path"
+    _wk_remove_path "$wt_path" || rc=1
   done
+  return $rc
 }
 
 # ── command ──────────────────────────────────────────

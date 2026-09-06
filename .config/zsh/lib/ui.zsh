@@ -39,11 +39,11 @@ _ui_git_preview() {
   }
   print
   if git -C "$dir" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-    git -C "$dir" -c color.ui=always status --short --branch 2>/dev/null
+    git -C "$dir" -c color.ui=always status --short --branch 2>/dev/null || true
     print
-    git -C "$dir" log --oneline --decorate --color=always -15 2>/dev/null
+    git -C "$dir" log --oneline --decorate --color=always -15 2>/dev/null || true
   else
-    ls -A -- "$dir" 2>/dev/null | head -30
+    ls -A -- "$dir" 2>/dev/null | head -30 || true
   fi
   # A directory git refuses must not end the preview process, which runs under
   # `set -e` in the herdr picker.

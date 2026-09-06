@@ -25,6 +25,7 @@ done
 git -C "$scratch" init --quiet || exit 1
 
 zsh_dir=${0:A:h}/..
+zsh_bin=$(command -v zsh)
 
 PATH=$stub_bin
 hash -r
@@ -35,7 +36,22 @@ done
 # 1. Every file loads on its own. A lib file is sourced by an fzf preview
 # running in a fresh shell, so it has to stand alone too.
 for f in "$zsh_dir"/lib/*.zsh "$zsh_dir"/workflows/*.zsh; do
-  source "$f" || fail "${f:t}: sourcing failed"
+  "$zsh_bin" -df -c 'set -euo pipefail; source "$1"' -- "$f" || fail "${f:t}: sourcing failed"
+done
+
+# A fresh shell must also survive reverse order and repeated loading.
+"$zsh_bin" -df -c '
+  set -euo pipefail
+  for f in "$1"/workflows/*.zsh(On) "$1"/workflows/*.zsh; do
+    source "$f"
+  done
+  for fn in wk gst ghsetup _wk_go_pick _wk_open_pick _wk_new; do
+    whence -w "$fn" >/dev/null
+  done
+' -- "$zsh_dir" || fail 'workflow load order or repeated sourcing'
+
+for f in "$zsh_dir"/workflows/*.zsh; do
+  source "$f"
 done
 
 # 2. Every entry point is defined even though its dependencies are missing.
