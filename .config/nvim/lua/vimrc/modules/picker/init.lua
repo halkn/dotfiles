@@ -492,7 +492,6 @@ function M.setup(opts)
   vim.keymap.set('n', '<Leader>G', M.grep, { desc = 'picker: grep' })
   vim.keymap.set('n', '<Leader>g', M.git, { desc = 'picker: git' })
   vim.keymap.set('n', '<Leader>l', M.buf_lines, { desc = 'picker: buf_lines' })
-  vim.keymap.set('n', '<Leader>e', M.tree, { desc = 'picker: tree' })
 end
 
 function M.files()
