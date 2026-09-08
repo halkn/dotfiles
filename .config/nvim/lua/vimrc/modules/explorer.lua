@@ -1,4 +1,14 @@
 local M = {}
+local icon_ns = vim.api.nvim_create_namespace('vimrc_explorer_icons')
+
+local function file_icon(name)
+  local ok, icons = pcall(require, 'nvim-web-devicons')
+  if ok then
+    local icon, hl = icons.get_icon(name, vim.fn.fnamemodify(name, ':e'), { default = true })
+    return icon or '', hl or 'Normal'
+  end
+  return '', 'Normal'
+end
 
 ---@class vimrc.explorer.Entry
 ---@field path string
@@ -51,6 +61,7 @@ local function render(state)
     { path = state.root, name = state.root, dir = true, link = false, depth = 0 },
   }
   local lines = { state.root }
+  local highlights = {}
   ---@param path string
   ---@param depth integer
   local function scan(path, depth)
@@ -92,10 +103,20 @@ local function render(state)
       local name = entry.name:gsub('[%c]', function(c)
         return string.format('\\x%02x', c:byte())
       end)
-      lines[#lines + 1] = string.rep('  ', depth - 1)
-        .. marker
-        .. name
-        .. (entry.link and ' @' or '')
+      local icon, hl
+      if entry.dir then
+        icon, hl = state.expanded[entry.path] and '' or '', 'Directory'
+      else
+        icon, hl = file_icon(entry.name)
+      end
+      local prefix = string.rep('  ', depth - 1) .. marker
+      highlights[#highlights + 1] = {
+        row = #lines,
+        col = #prefix,
+        end_col = #prefix + #icon,
+        hl = hl,
+      }
+      lines[#lines + 1] = prefix .. icon .. ' ' .. name .. (entry.link and ' @' or '')
       if entry.dir and state.expanded[entry.path] then
         scan(entry.path, depth + 1)
       end
@@ -106,6 +127,13 @@ local function render(state)
   vim.bo[buf].modifiable = true
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
   vim.bo[buf].modifiable = false
+  vim.api.nvim_buf_clear_namespace(buf, icon_ns, 0, -1)
+  for _, highlight in ipairs(highlights) do
+    vim.api.nvim_buf_set_extmark(buf, icon_ns, highlight.row, highlight.col, {
+      end_col = highlight.end_col,
+      hl_group = highlight.hl,
+    })
+  end
   local selected = state.selected
   local row = 1
   while true do
