@@ -1,5 +1,7 @@
 local M = {}
 local icon_ns = vim.api.nvim_create_namespace('vimrc_explorer_icons')
+local git = require('vimrc.modules.explorer.git')
+local git_ns = vim.api.nvim_create_namespace('vimrc_explorer_git')
 
 local function file_icon(name)
   local ok, icons = pcall(require, 'nvim-web-devicons')
@@ -16,6 +18,8 @@ end
 ---@field dir boolean
 ---@field link boolean
 ---@field depth integer
+---@field name_col integer?
+---@field name_end integer?
 
 ---@class vimrc.explorer.State
 ---@field root string
@@ -26,6 +30,8 @@ end
 ---@field win integer?
 ---@field buf integer?
 ---@field target integer?
+---@field git_status table<string, string>?
+---@field git_cancel fun()?
 
 ---@type table<integer, vimrc.explorer.State?>
 local states = {}
@@ -52,6 +58,46 @@ local function remember(state)
   if entry then
     state.selected = entry.path
   end
+end
+
+---@param state vimrc.explorer.State
+local function render_git(state)
+  local buf = state.buf
+  if not visible(state) or not buf or not vim.api.nvim_buf_is_valid(buf) then
+    return
+  end
+  vim.api.nvim_buf_clear_namespace(buf, git_ns, 0, -1)
+  for row, entry in ipairs(state.entries) do
+    local status = state.git_status and git.status(state.git_status, entry.path)
+    if status and status ~= '  ' then
+      vim.api.nvim_buf_set_extmark(buf, git_ns, row - 1, 0, {
+        virt_text = git.chunks(status),
+        virt_text_pos = 'right_align',
+        hl_mode = 'combine',
+      })
+      if status == '!!' then
+        vim.api.nvim_buf_set_extmark(buf, git_ns, row - 1, entry.name_col or 0, {
+          end_col = entry.name_end or #state.root,
+          hl_group = 'NonText',
+        })
+      end
+    end
+  end
+end
+
+---@param state vimrc.explorer.State
+local function refresh_git(state)
+  if state.git_cancel then
+    state.git_cancel()
+  end
+  state.git_cancel = git.fetch(state.root, function(statuses, err)
+    state.git_cancel = nil
+    state.git_status = statuses
+    render_git(state)
+    if err then
+      notify(err)
+    end
+  end)
 end
 
 ---@param state vimrc.explorer.State
@@ -110,6 +156,8 @@ local function render(state)
         icon, hl = file_icon(entry.name)
       end
       local prefix = string.rep('  ', depth - 1) .. marker
+      entry.name_col = #prefix + #icon + 1
+      entry.name_end = entry.name_col + #name
       highlights[#highlights + 1] = {
         row = #lines,
         col = #prefix,
@@ -152,6 +200,7 @@ local function render(state)
   end
   vim.api.nvim_win_set_cursor(win, { row, 0 })
   remember(state)
+  render_git(state)
 end
 
 ---@param state vimrc.explorer.State
@@ -162,7 +211,13 @@ local function change_root(state, path)
     notify(err or ('Not a directory: ' .. path))
     return false
   end
+  if state.root ~= path then
+    state.git_status = nil
+  end
   state.root = path
+  if visible(state) then
+    refresh_git(state)
+  end
   return true
 end
 
@@ -251,6 +306,7 @@ local function bind(state)
   map('u', function()
     remember(state)
     render(state)
+    refresh_git(state)
   end, 'Refresh explorer')
   map('q', M.close, 'Close explorer')
 end
@@ -292,6 +348,7 @@ function M.open(opts)
   if visible(state) then
     vim.api.nvim_set_current_win(assert(state.win))
     render(state)
+    refresh_git(state)
     return
   end
   local target = vim.api.nvim_get_current_win()
@@ -322,6 +379,7 @@ function M.open(opts)
   wo.list = false
   bind(state)
   render(state)
+  refresh_git(state)
 end
 
 function M.close()
@@ -330,6 +388,10 @@ function M.close()
     return
   end
   remember(state)
+  if state.git_cancel then
+    state.git_cancel()
+    state.git_cancel = nil
+  end
   if #vim.api.nvim_tabpage_list_wins(0) == 1 then
     vim.cmd('rightbelow vnew')
   end
@@ -349,6 +411,27 @@ end
 function M.setup()
   vim.keymap.set('n', '<Leader>e', M.toggle, { desc = 'explorer: toggle' })
   local group = vim.api.nvim_create_augroup('vimrc-explorer', { clear = true })
+  vim.api.nvim_create_autocmd('BufWritePost', {
+    group = group,
+    callback = function()
+      for _, state in pairs(states) do
+        if state and visible(state) then
+          refresh_git(state)
+        end
+      end
+    end,
+  })
+  vim.api.nvim_create_autocmd('WinClosed', {
+    group = group,
+    callback = function(ev)
+      for _, state in pairs(states) do
+        if state and state.win == tonumber(ev.match) and state.git_cancel then
+          state.git_cancel()
+          state.git_cancel = nil
+        end
+      end
+    end,
+  })
   vim.api.nvim_create_autocmd('CursorMoved', {
     group = group,
     callback = function()
@@ -372,6 +455,10 @@ function M.setup()
     callback = function()
       for tab in pairs(states) do
         if not vim.api.nvim_tabpage_is_valid(tab) then
+          local state = states[tab]
+          if state and state.git_cancel then
+            state.git_cancel()
+          end
           states[tab] = nil
         end
       end
