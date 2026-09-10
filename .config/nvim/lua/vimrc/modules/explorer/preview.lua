@@ -27,10 +27,12 @@ function Preview:hide()
 end
 
 local function content(path)
-  local lines, ft
+  local lines, ft, truncated
   for _, buf in ipairs(vim.api.nvim_list_bufs()) do
     if vim.api.nvim_buf_is_loaded(buf) and vim.api.nvim_buf_get_name(buf) == path then
-      local count = math.min(vim.api.nvim_buf_line_count(buf), max_lines)
+      local total = vim.api.nvim_buf_line_count(buf)
+      local count = math.min(total, max_lines)
+      truncated = total > max_lines
       if vim.api.nvim_buf_get_offset(buf, count) > max_bytes then
         return { '[Buffer exceeds 1 MiB preview limit]' }
       end
@@ -79,7 +81,7 @@ local function content(path)
     end
     result[#result + 1] = line
   end
-  if #lines >= max_lines then
+  if truncated or #lines > max_lines then
     result[#result + 1] = '[Preview limited to 2000 lines]'
   end
   return result, ft or vim.filetype.match({ filename = path })

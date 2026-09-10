@@ -112,6 +112,25 @@ local function run()
   explorer.close()
   assert(not preview_win(), 'closing explorer leaked preview')
 
+  explorer.open({ root = root })
+  select('a.lua')
+  wait_preview()
+  local replaced = vim.api.nvim_get_current_win()
+  feed('/')
+  local input = vim.api.nvim_get_current_buf()
+  vim.api.nvim_set_current_win(replaced)
+  vim.cmd.enew()
+  local replacement = vim.api.nvim_get_current_buf()
+  assert(
+    vim.wait(1000, function()
+      return not preview_win() and not vim.api.nvim_buf_is_valid(input)
+    end),
+    'buffer replacement leaked related UI'
+  )
+  explorer.toggle()
+  equal(vim.api.nvim_win_get_buf(replaced), replacement)
+  explorer.close()
+
   local p = preview.new()
   p.enabled = true
   local function entry(name)
@@ -128,6 +147,24 @@ local function run()
     win = wait_preview()
     local line = assert(vim.api.nvim_buf_get_lines(vim.api.nvim_win_get_buf(win), 0, 1, false)[1])
     assert(line:find(expected, 1, true), line)
+  end
+  for _, loaded in ipairs({ false, true }) do
+    for _, count in ipairs({ 1999, 2000, 2001 }) do
+      local name = 'lines-' .. tostring(loaded) .. '-' .. count
+      local rows = {}
+      for i = 1, count do
+        rows[i] = tostring(i)
+      end
+      vim.fn.writefile(rows, root .. '/' .. name)
+      if loaded then
+        vim.fn.bufload(vim.fn.bufadd(root .. '/' .. name))
+      end
+      p:update(parent, entry(name))
+      win = wait_preview()
+      local shown = vim.api.nvim_buf_get_lines(vim.api.nvim_win_get_buf(win), 0, -1, false)
+      equal(#shown, count)
+      equal(shown[#shown], count > 2000 and '[Preview limited to 2000 lines]' or tostring(count))
+    end
   end
   p:update(parent, entry('a.lua'))
   p:update(parent, entry('b.txt'))

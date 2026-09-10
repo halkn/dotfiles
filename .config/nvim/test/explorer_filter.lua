@@ -166,6 +166,19 @@ local function run()
   explorer.close()
 
   local system = vim.system
+  explorer.open({ root = root })
+  buf = vim.api.nvim_get_current_buf()
+  vim.system = function()
+    error('spawn failed\nsecond line\r')
+  end
+  local spawn_ok, spawn_err = pcall(function()
+    feed('/target<Esc>')
+    assert(assert(lines(buf)[1]):find('spawn failed second line ', 1, true))
+  end)
+  vim.system = system
+  explorer.close()
+  assert(spawn_ok, spawn_err)
+
   local pending = {}
   vim.system = function(_, _, callback)
     pending[#pending + 1] = callback

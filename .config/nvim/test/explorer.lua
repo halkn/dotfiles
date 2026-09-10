@@ -27,6 +27,7 @@ local function select(name)
 end
 
 local function run()
+  vim.o.columns = 120
   vim.o.hidden = true
   vim.cmd.enew()
   local target = vim.api.nvim_get_current_win()
@@ -107,10 +108,23 @@ local function run()
   feed('l')
   assert(vim.api.nvim_buf_get_name(0) == root .. '/z.txt')
   assert(vim.api.nvim_get_current_win() ~= sidebar)
+  assert(vim.api.nvim_win_get_width(sidebar) == 32, 'recreated target changed sidebar width')
   vim.api.nvim_win_close(vim.api.nvim_get_current_win(), false)
   explorer.close()
   assert(#vim.api.nvim_tabpage_list_wins(0) == 1)
   assert(vim.api.nvim_get_option_value('buftype', { buf = 0 }) == '')
+  for _, reopen in ipairs({ explorer.open, explorer.toggle }) do
+    explorer.open()
+    local replaced_win, old_buf = vim.api.nvim_get_current_win(), vim.api.nvim_get_current_buf()
+    vim.cmd.enew()
+    local replacement = vim.api.nvim_get_current_buf()
+    assert(not vim.api.nvim_buf_is_valid(old_buf))
+    reopen()
+    assert(vim.api.nvim_win_is_valid(replaced_win), 'replacement window was closed')
+    assert(vim.api.nvim_win_get_buf(replaced_win) == replacement)
+    assert(vim.bo.filetype == 'vimrc-explorer')
+    explorer.close()
+  end
   explorer.open()
   explorer.toggle()
   assert(vim.api.nvim_get_option_value('buftype', { buf = 0 }) == '')

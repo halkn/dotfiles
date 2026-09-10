@@ -47,7 +47,11 @@ end
 
 ---@param state vimrc.explorer.State
 local function visible(state)
-  return state.win ~= nil and vim.api.nvim_win_is_valid(state.win)
+  return state.win ~= nil
+    and vim.api.nvim_win_is_valid(state.win)
+    and state.buf ~= nil
+    and vim.api.nvim_buf_is_valid(state.buf)
+    and vim.api.nvim_win_get_buf(state.win) == state.buf
 end
 
 ---@param state vimrc.explorer.State
@@ -130,6 +134,19 @@ local function reset_filter(state)
 end
 
 ---@param state vimrc.explorer.State
+local function release(state)
+  state.win, state.buf = nil, nil
+  reset_filter(state)
+  if state.preview then
+    state.preview:hide()
+  end
+  if state.git_cancel then
+    state.git_cancel()
+    state.git_cancel = nil
+  end
+end
+
+---@param state vimrc.explorer.State
 local function render(state)
   local buf, win = assert(state.buf), assert(state.win)
   local entries = {
@@ -141,7 +158,7 @@ local function render(state)
   if search and filtering then
     local status = search.error
       or (search.loading and 'searching…' or (search.count .. ' matches'))
-    lines[1] = '/' .. search.query:gsub('[%c]', ' ') .. ' [' .. status .. ']'
+    lines[1] = '/' .. search.query:gsub('[%c]', ' ') .. ' [' .. status:gsub('[%c]', ' ') .. ']'
   end
   local highlights = {}
   ---@param path string
@@ -349,6 +366,7 @@ local function accept(state)
   then
     vim.cmd('rightbelow vnew')
     target = vim.api.nvim_get_current_win()
+    vim.api.nvim_win_set_width(assert(state.win), 32)
   end
   state.target = target
   vim.api.nvim_set_current_win(target)
@@ -493,6 +511,7 @@ function M.open(opts)
     refresh_git(state)
     return
   end
+  release(state)
   local target = vim.api.nvim_get_current_win()
   if vim.bo.buftype == '' then
     state.target = target
@@ -526,7 +545,11 @@ end
 
 function M.close()
   local state = states[vim.api.nvim_get_current_tabpage()]
-  if not state or not visible(state) then
+  if not state then
+    return
+  end
+  if not visible(state) then
+    release(state)
     return
   end
   remember(state)
@@ -572,14 +595,21 @@ function M.setup()
     callback = function(ev)
       for _, state in pairs(states) do
         if state and state.win == tonumber(ev.match) then
-          reset_filter(state)
-          if state.preview then
-            state.preview:hide()
-          end
-          if state.git_cancel then
-            state.git_cancel()
-            state.git_cancel = nil
-          end
+          release(state)
+        end
+      end
+    end,
+  })
+  vim.api.nvim_create_autocmd('BufWinLeave', {
+    group = group,
+    callback = function(ev)
+      for _, state in pairs(states) do
+        if state.buf == ev.buf then
+          vim.schedule(function()
+            if state.buf == ev.buf and not visible(state) then
+              release(state)
+            end
+          end)
         end
       end
     end,
