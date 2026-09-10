@@ -510,10 +510,6 @@ function M.buf_lines()
   M.open('buf_lines')
 end
 
-function M.tree()
-  M.open('tree')
-end
-
 function M.git()
   M.open('git')
 end
