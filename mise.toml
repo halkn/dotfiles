@@ -111,4 +111,8 @@ VIMRUNTIME="$(NVIM_LOG_FILE=/dev/null nvim --clean --headless -c 'lua io.write(v
   emmylua_check --warnings-as-errors .config/nvim
 """,
   "NVIM_LOG_FILE=/dev/null nvim --headless -i NONE -c 'luafile .config/nvim/test/smoke.lua'",
+  "NVIM_LOG_FILE=/dev/null nvim --clean --headless -i NONE --cmd 'set rtp^=.config/nvim' -c 'luafile .config/nvim/test/explorer.lua'",
+  "NVIM_LOG_FILE=/dev/null nvim --clean --headless -n -i NONE --cmd 'set rtp^=.config/nvim' -c 'luafile .config/nvim/test/explorer_git.lua'",
+  "NVIM_LOG_FILE=/dev/null nvim --clean --headless -n -i NONE --cmd 'set rtp^=.config/nvim' -c 'luafile .config/nvim/test/explorer_filter.lua'",
+  "NVIM_LOG_FILE=/dev/null nvim --clean --headless -n -i NONE --cmd 'set rtp^=.config/nvim' -c 'luafile .config/nvim/test/explorer_preview.lua'",
 ]
