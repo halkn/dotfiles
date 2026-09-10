@@ -2,6 +2,7 @@ local M = {}
 local icon_ns = vim.api.nvim_create_namespace('vimrc_explorer_icons')
 local git = require('vimrc.modules.explorer.git')
 local git_ns = vim.api.nvim_create_namespace('vimrc_explorer_git')
+local filter = require('vimrc.modules.explorer.filter')
 
 local function file_icon(name)
   local ok, icons = pcall(require, 'nvim-web-devicons')
@@ -32,6 +33,8 @@ end
 ---@field target integer?
 ---@field git_status table<string, string>?
 ---@field git_cancel fun()?
+---@field filter vimrc.explorer.Filter?
+---@field filter_selected string?
 
 ---@type table<integer, vimrc.explorer.State?>
 local states = {}
@@ -101,40 +104,62 @@ local function refresh_git(state)
 end
 
 ---@param state vimrc.explorer.State
+local function reset_filter(state)
+  if state.filter then
+    state.filter:dispose()
+  end
+  if state.filter_selected then
+    state.selected = state.filter_selected
+    state.filter_selected = nil
+  end
+end
+
+---@param state vimrc.explorer.State
 local function render(state)
   local buf, win = assert(state.buf), assert(state.win)
   local entries = {
     { path = state.root, name = state.root, dir = true, link = false, depth = 0 },
   }
   local lines = { state.root }
+  local search = state.filter
+  local filtering = search and search.query ~= ''
+  if search and filtering then
+    local status = search.error
+      or (search.loading and 'searching…' or (search.count .. ' matches'))
+    lines[1] = '/' .. search.query:gsub('[%c]', ' ') .. ' [' .. status .. ']'
+  end
   local highlights = {}
   ---@param path string
   ---@param depth integer
   local function scan(path, depth)
-    local handle, err = vim.uv.fs_scandir(path)
-    if not handle then
-      notify(err)
-      return
-    end
     local children = {}
-    while true do
-      local name, kind = vim.uv.fs_scandir_next(handle)
-      if not name then
-        break
+    if search and filtering then
+      children = search.children[path] or {}
+    else
+      local handle, err = vim.uv.fs_scandir(path)
+      if not handle then
+        notify(err)
+        return
       end
-      if state.hidden or name:sub(1, 1) ~= '.' then
-        local child_path = vim.fs.joinpath(path, name)
-        if not kind then
-          local stat = vim.uv.fs_lstat(child_path)
-          kind = stat and stat.type or 'unknown'
+      while true do
+        local name, kind = vim.uv.fs_scandir_next(handle)
+        if not name then
+          break
         end
-        children[#children + 1] = {
-          path = child_path,
-          name = name,
-          dir = kind == 'directory',
-          link = kind == 'link',
-          depth = depth,
-        }
+        if state.hidden or name:sub(1, 1) ~= '.' then
+          local child_path = vim.fs.joinpath(path, name)
+          if not kind then
+            local stat = vim.uv.fs_lstat(child_path)
+            kind = stat and stat.type or 'unknown'
+          end
+          children[#children + 1] = {
+            path = child_path,
+            name = name,
+            dir = kind == 'directory',
+            link = kind == 'link',
+            depth = depth,
+          }
+        end
       end
     end
     table.sort(children, function(a, b)
@@ -145,13 +170,14 @@ local function render(state)
     end)
     for _, entry in ipairs(children) do
       entries[#entries + 1] = entry
-      local marker = entry.dir and (state.expanded[entry.path] and '▾ ' or '▸ ') or '  '
+      local expanded = filtering or state.expanded[entry.path]
+      local marker = entry.dir and (expanded and '▾ ' or '▸ ') or '  '
       local name = entry.name:gsub('[%c]', function(c)
         return string.format('\\x%02x', c:byte())
       end)
       local icon, hl
       if entry.dir then
-        icon, hl = state.expanded[entry.path] and '' or '', 'Directory'
+        icon, hl = expanded and '' or '', 'Directory'
       else
         icon, hl = file_icon(entry.name)
       end
@@ -165,7 +191,7 @@ local function render(state)
         hl = hl,
       }
       lines[#lines + 1] = prefix .. icon .. ' ' .. name .. (entry.link and ' @' or '')
-      if entry.dir and state.expanded[entry.path] then
+      if entry.dir and expanded then
         scan(entry.path, depth + 1)
       end
     end
@@ -204,6 +230,46 @@ local function render(state)
 end
 
 ---@param state vimrc.explorer.State
+---@param confirm fun()
+local function open_filter(state, confirm)
+  if not state.filter then
+    state.filter = filter.new(function(search)
+      if not visible(state) then
+        return
+      end
+      if search.query ~= '' then
+        if not state.filter_selected then
+          remember(state)
+          state.filter_selected = state.selected
+        end
+        if not search.matches[state.selected] then
+          state.selected = search.first or state.root
+        end
+      elseif state.filter_selected then
+        state.selected = state.filter_selected
+        state.filter_selected = nil
+      end
+      render(state)
+    end)
+  end
+  local search = state.filter
+  if search.root ~= state.root or search.hidden ~= state.hidden then
+    search:reload(state.root, state.hidden)
+  end
+  search:open_input(assert(state.win), {
+    confirm = confirm,
+    move = function(delta)
+      local win = assert(state.win)
+      local row = vim.api.nvim_win_get_cursor(win)[1]
+      local first = #state.entries > 1 and 2 or 1
+      row = math.max(first, math.min(#state.entries, row + delta))
+      vim.api.nvim_win_set_cursor(win, { row, 0 })
+      remember(state)
+    end,
+  })
+end
+
+---@param state vimrc.explorer.State
 ---@param path string
 local function change_root(state, path)
   local stat, err = vim.uv.fs_stat(path)
@@ -212,6 +278,7 @@ local function change_root(state, path)
     return false
   end
   if state.root ~= path then
+    reset_filter(state)
     state.git_status = nil
   end
   state.root = path
@@ -228,6 +295,21 @@ local function accept(state)
     return
   end
   if entry.dir then
+    if state.filter and state.filter.query ~= '' then
+      reset_filter(state)
+      local path = entry.path
+      while path ~= state.root do
+        state.expanded[path] = true
+        local parent = vim.fs.dirname(path)
+        if not parent or parent == path then
+          break
+        end
+        path = parent
+      end
+      state.selected = entry.path
+      render(state)
+      return
+    end
     if entry.path ~= state.root then
       state.expanded[entry.path] = not state.expanded[entry.path]
       remember(state)
@@ -276,7 +358,11 @@ local function bind(state)
     if not entry then
       return
     end
-    if entry.dir and state.expanded[entry.path] then
+    if
+      entry.dir
+      and state.expanded[entry.path]
+      and not (state.filter and state.filter.query ~= '')
+    then
       state.expanded[entry.path] = nil
       state.selected = entry.path
     else
@@ -301,13 +387,28 @@ local function bind(state)
   map('H', function()
     remember(state)
     state.hidden = not state.hidden
+    if state.filter then
+      state.filter:reload(state.root, state.hidden)
+    end
     render(state)
   end, 'Toggle hidden files')
   map('u', function()
     remember(state)
+    if state.filter then
+      state.filter:reload(state.root, state.hidden)
+    end
     render(state)
     refresh_git(state)
   end, 'Refresh explorer')
+  map('/', function()
+    open_filter(state, function()
+      accept(state)
+    end)
+  end, 'Filter explorer paths')
+  map('<Esc>', function()
+    reset_filter(state)
+    render(state)
+  end, 'Clear explorer filter')
   map('q', M.close, 'Close explorer')
 end
 
@@ -388,6 +489,7 @@ function M.close()
     return
   end
   remember(state)
+  reset_filter(state)
   if state.git_cancel then
     state.git_cancel()
     state.git_cancel = nil
@@ -425,9 +527,23 @@ function M.setup()
     group = group,
     callback = function(ev)
       for _, state in pairs(states) do
-        if state and state.win == tonumber(ev.match) and state.git_cancel then
-          state.git_cancel()
-          state.git_cancel = nil
+        if state and state.win == tonumber(ev.match) then
+          reset_filter(state)
+          if state.git_cancel then
+            state.git_cancel()
+            state.git_cancel = nil
+          end
+        end
+      end
+    end,
+  })
+  vim.api.nvim_create_autocmd('WinResized', {
+    group = group,
+    callback = function()
+      for _, state in pairs(states) do
+        local input_win = state and state.filter and state.filter.input_win
+        if state and visible(state) and input_win and vim.api.nvim_win_is_valid(input_win) then
+          vim.api.nvim_win_set_width(input_win, vim.api.nvim_win_get_width(assert(state.win)))
         end
       end
     end,
@@ -456,6 +572,9 @@ function M.setup()
       for tab in pairs(states) do
         if not vim.api.nvim_tabpage_is_valid(tab) then
           local state = states[tab]
+          if state then
+            reset_filter(state)
+          end
           if state and state.git_cancel then
             state.git_cancel()
           end
