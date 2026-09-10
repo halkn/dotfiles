@@ -3,6 +3,7 @@ local icon_ns = vim.api.nvim_create_namespace('vimrc_explorer_icons')
 local git = require('vimrc.modules.explorer.git')
 local git_ns = vim.api.nvim_create_namespace('vimrc_explorer_git')
 local filter = require('vimrc.modules.explorer.filter')
+local preview = require('vimrc.modules.explorer.preview')
 
 local function file_icon(name)
   local ok, icons = pcall(require, 'nvim-web-devicons')
@@ -35,6 +36,7 @@ end
 ---@field git_cancel fun()?
 ---@field filter vimrc.explorer.Filter?
 ---@field filter_selected string?
+---@field preview vimrc.explorer.Preview?
 
 ---@type table<integer, vimrc.explorer.State?>
 local states = {}
@@ -60,6 +62,19 @@ local function remember(state)
   local entry = current(state)
   if entry then
     state.selected = entry.path
+  end
+end
+
+---@param state vimrc.explorer.State
+local function update_preview(state)
+  if not state.preview then
+    return
+  end
+  local win = vim.api.nvim_get_current_win()
+  if visible(state) and (win == state.win or (state.filter and win == state.filter.input_win)) then
+    state.preview:update(assert(state.win), current(state))
+  else
+    state.preview:hide()
   end
 end
 
@@ -227,6 +242,7 @@ local function render(state)
   vim.api.nvim_win_set_cursor(win, { row, 0 })
   remember(state)
   render_git(state)
+  update_preview(state)
 end
 
 ---@param state vimrc.explorer.State
@@ -265,8 +281,10 @@ local function open_filter(state, confirm)
       row = math.max(first, math.min(#state.entries, row + delta))
       vim.api.nvim_win_set_cursor(win, { row, 0 })
       remember(state)
+      update_preview(state)
     end,
   })
+  update_preview(state)
 end
 
 ---@param state vimrc.explorer.State
@@ -334,6 +352,9 @@ local function accept(state)
   end
   state.target = target
   vim.api.nvim_set_current_win(target)
+  if vim.api.nvim_buf_get_name(0) == entry.path then
+    return
+  end
   local ok, open_err = pcall(vim.cmd.edit, { args = { entry.path } })
   if not ok then
     notify(open_err)
@@ -394,12 +415,32 @@ local function bind(state)
   end, 'Toggle hidden files')
   map('u', function()
     remember(state)
+    if state.preview then
+      state.preview:hide()
+    end
     if state.filter then
       state.filter:reload(state.root, state.hidden)
     end
     render(state)
     refresh_git(state)
   end, 'Refresh explorer')
+  map('P', function()
+    state.preview = state.preview or preview.new()
+    state.preview.enabled = not state.preview.enabled
+    update_preview(state)
+  end, 'Toggle file preview')
+  for key, delta in pairs({ ['<C-d>'] = 1, ['<C-u>'] = -1 }) do
+    map(key, function()
+      if state.preview and state.preview.enabled then
+        state.preview:scroll(delta)
+      else
+        vim.cmd.normal({
+          args = { vim.api.nvim_replace_termcodes(key, true, false, true) },
+          bang = true,
+        })
+      end
+    end, 'Scroll preview or explorer')
+  end
   map('/', function()
     open_filter(state, function()
       accept(state)
@@ -490,6 +531,9 @@ function M.close()
   end
   remember(state)
   reset_filter(state)
+  if state.preview then
+    state.preview:hide()
+  end
   if state.git_cancel then
     state.git_cancel()
     state.git_cancel = nil
@@ -529,6 +573,9 @@ function M.setup()
       for _, state in pairs(states) do
         if state and state.win == tonumber(ev.match) then
           reset_filter(state)
+          if state.preview then
+            state.preview:hide()
+          end
           if state.git_cancel then
             state.git_cancel()
             state.git_cancel = nil
@@ -545,6 +592,7 @@ function M.setup()
         if state and visible(state) and input_win and vim.api.nvim_win_is_valid(input_win) then
           vim.api.nvim_win_set_width(input_win, vim.api.nvim_win_get_width(assert(state.win)))
         end
+        update_preview(state)
       end
     end,
   })
@@ -554,6 +602,7 @@ function M.setup()
       local state = states[vim.api.nvim_get_current_tabpage()]
       if state and state.win == vim.api.nvim_get_current_win() then
         remember(state)
+        update_preview(state)
       end
     end,
   })
@@ -564,6 +613,11 @@ function M.setup()
       if state and vim.bo.buftype == '' then
         state.target = vim.api.nvim_get_current_win()
       end
+      vim.schedule(function()
+        for _, entry in pairs(states) do
+          update_preview(entry)
+        end
+      end)
     end,
   })
   vim.api.nvim_create_autocmd('TabClosed', {
@@ -574,6 +628,9 @@ function M.setup()
           local state = states[tab]
           if state then
             reset_filter(state)
+            if state.preview then
+              state.preview:hide()
+            end
           end
           if state and state.git_cancel then
             state.git_cancel()
