@@ -152,6 +152,7 @@
     "filesystem": {
       "allowWrite": [
         "~/.azure",
+        "~/.claude/review-reports",
         "~/.cache/uv",
         "~/.cache/mise",
         "~/.cache/rumdl",
@@ -173,6 +174,8 @@
         "~/.azure",
         "~/.config",
         "~/repos/github.com/halkn/dotfiles/.config",
+        "~/repos/github.com/halkn/skills",
+        "~/repos/github.com/mizchi/skills",
         "~/.cache/uv",
         "~/.cache/mise",
         "~/.cache/rumdl",
