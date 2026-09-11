@@ -152,14 +152,14 @@
     "filesystem": {
       "allowWrite": [
         "~/.azure",
-        "~/.claude/review-reports",
         "~/.cache/uv",
         "~/.cache/mise",
         "~/.cache/rumdl",
         "~/.cache/shuck",
         "~/.local/share/uv",
         "~/.local/share/mise",
-        "~/.local/state/mise"
+        "~/.local/state/mise",
+        "~/.local/state/review-report"
       ],
       "denyWrite": [
         "~/.ssh",
