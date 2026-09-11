@@ -12,6 +12,7 @@ lockfile_platforms = ["macos-arm64", "linux-x64"]
 # dev
 uv = "latest"
 node = "latest"
+go = "latest"
 
 # terminal
 starship = "latest"
@@ -41,4 +42,5 @@ tree-sitter = "latest"
 "pipx:ryl" = "latest"
 "pipx:shuck-cli" = "latest"
 rumdl = "latest"
+"go:golang.org/x/tools/gopls" = "latest"
 # No yaml language server here: ryl covers both lint and format.
