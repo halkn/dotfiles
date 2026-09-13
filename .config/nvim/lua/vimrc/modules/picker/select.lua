@@ -26,10 +26,4 @@ function M.open(open, items, opts, on_choice)
   })
 end
 
-function M.install(open)
-  vim.ui.select = function(items, opts, on_choice)
-    return M.open(open, items, opts, on_choice)
-  end
-end
-
 return M

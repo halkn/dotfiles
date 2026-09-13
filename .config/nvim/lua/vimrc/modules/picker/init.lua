@@ -486,12 +486,6 @@ end
 ---@param opts vimrc.picker.Config?
 function M.setup(opts)
   M.config = vim.tbl_deep_extend('force', M.config, opts or {})
-  select.install(M.open)
-  vim.keymap.set('n', '<Leader>f', M.files, { desc = 'picker: files' })
-  vim.keymap.set('n', '<Leader>b', M.buffers, { desc = 'picker: buffers' })
-  vim.keymap.set('n', '<Leader>G', M.grep, { desc = 'picker: grep' })
-  vim.keymap.set('n', '<Leader>g', M.git, { desc = 'picker: git' })
-  vim.keymap.set('n', '<Leader>l', M.buf_lines, { desc = 'picker: buf_lines' })
 end
 
 function M.files()

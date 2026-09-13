@@ -1,6 +1,14 @@
 -- sa/sd/sr for brackets, quotes and single characters.
 local M = {}
 
+---@class vimrc.surround.Mappings
+---@field add string?
+---@field delete string?
+---@field replace string?
+
+---@class vimrc.surround.Setup
+---@field mappings vimrc.surround.Mappings?
+
 -- Following vim-surround: the opening key pads with spaces, the closing key does not.
 local surround_map = {
   ['('] = { open = '( ', close = ' )' },
@@ -141,37 +149,47 @@ M.replace_op = function(_type)
   vim.api.nvim_buf_set_text(0, o_row, o_col, o_row, open_end, { new_surr.open })
 end
 
-function M.setup()
+---@param opts vimrc.surround.Setup?
+function M.setup(opts)
   _G._vimrc_surround = M
+  local mappings = opts and opts.mappings or {}
 
-  vim.keymap.set('n', 'sa', function()
-    cache.add_char = nil
-    vim.o.operatorfunc = 'v:lua._vimrc_surround.add_op'
-    return 'g@'
-  end, { expr = true, noremap = true })
+  if mappings.add and mappings.add ~= '' then
+    vim.keymap.set('n', mappings.add, function()
+      cache.add_char = nil
+      vim.o.operatorfunc = 'v:lua._vimrc_surround.add_op'
+      return 'g@'
+    end, { expr = true, noremap = true })
 
-  vim.keymap.set('x', 'sa', function()
-    local char = vim.fn.getcharstr()
-    local surr = get_surround(char)
-    local esc = vim.api.nvim_replace_termcodes('<Esc>', true, false, true)
-    vim.api.nvim_feedkeys(esc, 'x', false)
-    local s = vim.api.nvim_buf_get_mark(0, '<')
-    local e = vim.api.nvim_buf_get_mark(0, '>')
-    vim.api.nvim_buf_set_text(0, e[1] - 1, e[2] + 1, e[1] - 1, e[2] + 1, { surr.close })
-    vim.api.nvim_buf_set_text(0, s[1] - 1, s[2], s[1] - 1, s[2], { surr.open })
-  end, { noremap = true })
+    vim.keymap.set('x', mappings.add, function()
+      local char = vim.fn.getcharstr()
+      local surr = get_surround(char)
+      local esc = vim.api.nvim_replace_termcodes('<Esc>', true, false, true)
+      vim.api.nvim_feedkeys(esc, 'x', false)
+      local s = vim.api.nvim_buf_get_mark(0, '<')
+      local e = vim.api.nvim_buf_get_mark(0, '>')
+      local e_line = vim.api.nvim_buf_get_lines(0, e[1] - 1, e[1], false)[1] or ''
+      local e_col = math.min(e[2] + 1, #e_line)
+      vim.api.nvim_buf_set_text(0, e[1] - 1, e_col, e[1] - 1, e_col, { surr.close })
+      vim.api.nvim_buf_set_text(0, s[1] - 1, s[2], s[1] - 1, s[2], { surr.open })
+    end, { noremap = true })
+  end
 
-  vim.keymap.set('n', 'sd', function()
-    cache.delete_char = nil
-    vim.o.operatorfunc = 'v:lua._vimrc_surround.delete_op'
-    return 'g@ '
-  end, { expr = true, noremap = true })
+  if mappings.delete and mappings.delete ~= '' then
+    vim.keymap.set('n', mappings.delete, function()
+      cache.delete_char = nil
+      vim.o.operatorfunc = 'v:lua._vimrc_surround.delete_op'
+      return 'g@ '
+    end, { expr = true, noremap = true })
+  end
 
-  vim.keymap.set('n', 'sr', function()
-    cache.replace_old, cache.replace_new = nil, nil
-    vim.o.operatorfunc = 'v:lua._vimrc_surround.replace_op'
-    return 'g@ '
-  end, { expr = true, noremap = true })
+  if mappings.replace and mappings.replace ~= '' then
+    vim.keymap.set('n', mappings.replace, function()
+      cache.replace_old, cache.replace_new = nil, nil
+      vim.o.operatorfunc = 'v:lua._vimrc_surround.replace_op'
+      return 'g@ '
+    end, { expr = true, noremap = true })
+  end
 end
 
 return M

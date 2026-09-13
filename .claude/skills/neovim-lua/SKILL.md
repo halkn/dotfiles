@@ -10,6 +10,7 @@ description: このリポジトリの Neovim 設定（.config/nvim 配下の Lua
 
 1. `mise run fmt` で整形する（`stylua` + `shuck`）
 1. `mise run lint` で確認する（`stylua --check`・`emmylua_check --warnings-as-errors`・`test/smoke.lua`）
+1. module 固有の回帰を単独確認するときは `mise run test:nvim-modules` を実行する（`test/modules/` の各スイートを `--clean`・対象 runtimepath の別プロセスで起動）
 1. ツールが無い場合は先に `mise install`。`stylua` / `emmylua_check` / `emmylua_ls` はこのリポジトリの `mise.toml` にあるので、他のリポジトリでは PATH に載らない
 
 ## emmylua_check の警告を解く

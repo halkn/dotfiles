@@ -1,6 +1,12 @@
 -- Operator that replaces the motion range with the contents of a register.
 local M = {}
 
+---@class vimrc.replace.Mappings
+---@field replace string?
+
+---@class vimrc.replace.Setup
+---@field mappings vimrc.replace.Mappings?
+
 function M.op(type)
   local reg = vim.v.register ~= '' and vim.v.register or '"'
   if type == 'line' then
@@ -23,20 +29,23 @@ function M.op(type)
   end
 end
 
-function M.setup()
+---@param opts vimrc.replace.Setup?
+function M.setup(opts)
   _G._vimrc_replace_op = M.op
-  vim.keymap.set('n', 'R', function()
-    vim.o.operatorfunc = 'v:lua._vimrc_replace_op'
-    return 'g@'
-  end, { expr = true, noremap = true })
-  vim.keymap.set('n', 'RR', 'R', { desc = 'Replace mode', remap = true })
-  vim.keymap.set('x', 'R', function()
-    local reg = vim.v.register ~= '' and vim.v.register or '"'
-    local saved, saved_type = vim.fn.getreg(reg, 1, true), vim.fn.getregtype(reg)
-    vim.cmd('normal! "_d')
-    vim.fn.setreg(reg, saved, saved_type)
-    vim.cmd('normal! P')
-  end, { noremap = true })
+  local mappings = opts and opts.mappings or {}
+  if mappings.replace and mappings.replace ~= '' then
+    vim.keymap.set('n', mappings.replace, function()
+      vim.o.operatorfunc = 'v:lua._vimrc_replace_op'
+      return 'g@'
+    end, { expr = true, noremap = true })
+    vim.keymap.set('x', mappings.replace, function()
+      local reg = vim.v.register ~= '' and vim.v.register or '"'
+      local saved, saved_type = vim.fn.getreg(reg, 1, true), vim.fn.getregtype(reg)
+      vim.cmd('normal! "_d')
+      vim.fn.setreg(reg, saved, saved_type)
+      vim.cmd('normal! P')
+    end, { noremap = true })
+  end
 end
 
 return M
