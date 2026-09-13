@@ -1,0 +1,26 @@
+---@type vim.lsp.Config
+local config = {
+  cmd = { 'gopls' },
+  filetypes = { 'go', 'gomod', 'gowork', 'gotmpl' },
+  root_markers = { 'go.work', 'go.mod', '.git' },
+  settings = {
+    gopls = {
+      gofumpt = true,
+      -- true enables every staticcheck analyzer; drop the key to fall back to
+      -- the subset gopls selects for precision.
+      staticcheck = true,
+      analyses = { shadow = true },
+      hints = {
+        assignVariableTypes = true,
+        compositeLiteralFields = true,
+        compositeLiteralTypes = true,
+        constantValues = true,
+        functionTypeParameters = true,
+        parameterNames = true,
+        rangeVariableTypes = true,
+      },
+    },
+  },
+}
+
+return config

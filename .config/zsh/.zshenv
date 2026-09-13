@@ -41,6 +41,13 @@ export UV_PYTHON_PREFERENCE=only-managed
 export UV_PROJECT_ENVIRONMENT=.venv
 export UV_COMPILE_BYTECODE=true
 
+# go
+# GOBIN is left unset so it stays $GOPATH/bin: Go Makefiles commonly resolve
+# their install dir with `go env GOPATH`/bin and would otherwise look elsewhere.
+export GOPATH=$XDG_DATA_HOME/go
+export GOMODCACHE=$XDG_CACHE_HOME/go/mod
+export GOCACHE=$XDG_CACHE_HOME/go/build
+
 # less
 export LESS='-g -i -M -R -S -W -z-4 -x4'
 export LESSHISTFILE=-
@@ -54,6 +61,7 @@ export RIPGREP_CONFIG_PATH=$XDG_CONFIG_HOME/ripgrep/config
 typeset -U path
 path=(
   $XDG_BIN_HOME(N-/)
+  $GOPATH/bin(N-/)
   $path
 )
 
