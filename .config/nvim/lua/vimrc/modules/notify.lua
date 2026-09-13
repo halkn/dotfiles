@@ -256,7 +256,7 @@ local function show(msg, level, opts)
   return id
 end
 
-local function show_history()
+function M.show_history()
   if #history == 0 then
     vim.api.nvim_echo({ { 'No notification history', 'WarningMsg' } }, true, {})
     return
@@ -309,28 +309,21 @@ function M.setup(opts)
     group = group,
     callback = reposition,
   })
+end
 
-  ---@diagnostic disable-next-line: duplicate-set-field
-  vim.notify = function(msg, level, notify_opts)
-    if not msg or msg == '' then
-      return
-    end
-    notify_opts = notify_opts or {}
-    if notify_opts.id == nil then
-      id_counter = id_counter + 1
-      notify_opts.id = id_counter
-    end
-    vim.schedule(function()
-      show(msg, level, notify_opts)
-    end)
-    return notify_opts.id
+function M.notify(msg, level, notify_opts)
+  if not msg or msg == '' then
+    return
   end
-
-  vim.api.nvim_create_user_command(
-    'NotifyHistory',
-    show_history,
-    { desc = 'Show notification history' }
-  )
+  notify_opts = notify_opts or {}
+  if notify_opts.id == nil then
+    id_counter = id_counter + 1
+    notify_opts.id = id_counter
+  end
+  vim.schedule(function()
+    show(msg, level, notify_opts)
+  end)
+  return notify_opts.id
 end
 
 return M

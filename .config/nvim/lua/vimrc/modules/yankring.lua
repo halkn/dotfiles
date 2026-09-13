@@ -7,6 +7,20 @@ local ring_idx = 0
 ---@field highlight_ms integer
 ---@field max_size integer
 
+---@class vimrc.yankring.Mappings
+---@field paste_after string?
+---@field paste_before string?
+---@field paste_after_end string?
+---@field paste_before_end string?
+---@field cycle_prev string?
+---@field cycle_next string?
+---@field show string?
+
+---@class vimrc.yankring.Setup
+---@field highlight_ms integer?
+---@field max_size integer?
+---@field mappings vimrc.yankring.Mappings?
+
 ---@type vimrc.yankring.Config
 M.config = {
   highlight_ms = 200,
@@ -157,7 +171,7 @@ local function cycle(delta)
   put(ring[ring_idx], last_paste.after, last_paste.gp, last_paste.count)
 end
 
-local function show_ring()
+function M.show()
   if #ring == 0 then
     vim.notify('yank ring is empty', vim.log.levels.INFO)
     return
@@ -176,9 +190,11 @@ local function show_ring()
   end)
 end
 
----@param opts vimrc.yankring.Config?
+---@param opts vimrc.yankring.Setup?
 function M.setup(opts)
-  M.config = vim.tbl_deep_extend('force', M.config, opts or {})
+  local config_opts = vim.tbl_extend('force', {}, opts or {})
+  config_opts.mappings = nil
+  M.config = vim.tbl_deep_extend('force', M.config, config_opts)
 
   vim.api.nvim_create_autocmd('TextYankPost', {
     group = vim.api.nvim_create_augroup('yankring', { clear = true }),
@@ -195,28 +211,43 @@ function M.setup(opts)
     end,
   })
 
+  local mappings = opts and opts.mappings or {}
   local map_opts = { noremap = true, silent = true }
 
   -- x rather than v: in select mode p replaces the selection with a literal "p".
-  vim.keymap.set({ 'n', 'x' }, 'p', function()
-    paste(true, false)
-  end, map_opts)
-  vim.keymap.set({ 'n', 'x' }, 'P', function()
-    paste(false, false)
-  end, map_opts)
-  vim.keymap.set({ 'n', 'x' }, 'gp', function()
-    paste(true, true)
-  end, map_opts)
-  vim.keymap.set({ 'n', 'x' }, 'gP', function()
-    paste(false, true)
-  end, map_opts)
-  vim.keymap.set('n', '<C-p>', function()
-    cycle(-1)
-  end, map_opts)
-  vim.keymap.set('n', '<C-n>', function()
-    cycle(1)
-  end, map_opts)
-  vim.keymap.set('n', '<Leader>y', show_ring, map_opts)
+  if mappings.paste_after and mappings.paste_after ~= '' then
+    vim.keymap.set({ 'n', 'x' }, mappings.paste_after, function()
+      paste(true, false)
+    end, map_opts)
+  end
+  if mappings.paste_before and mappings.paste_before ~= '' then
+    vim.keymap.set({ 'n', 'x' }, mappings.paste_before, function()
+      paste(false, false)
+    end, map_opts)
+  end
+  if mappings.paste_after_end and mappings.paste_after_end ~= '' then
+    vim.keymap.set({ 'n', 'x' }, mappings.paste_after_end, function()
+      paste(true, true)
+    end, map_opts)
+  end
+  if mappings.paste_before_end and mappings.paste_before_end ~= '' then
+    vim.keymap.set({ 'n', 'x' }, mappings.paste_before_end, function()
+      paste(false, true)
+    end, map_opts)
+  end
+  if mappings.cycle_prev and mappings.cycle_prev ~= '' then
+    vim.keymap.set('n', mappings.cycle_prev, function()
+      cycle(-1)
+    end, map_opts)
+  end
+  if mappings.cycle_next and mappings.cycle_next ~= '' then
+    vim.keymap.set('n', mappings.cycle_next, function()
+      cycle(1)
+    end, map_opts)
+  end
+  if mappings.show and mappings.show ~= '' then
+    vim.keymap.set('n', mappings.show, M.show, map_opts)
+  end
 end
 
 return M

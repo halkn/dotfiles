@@ -4,14 +4,19 @@ local M = {}
 ---@field pairs table<string, string>
 ---@field quotes string[]
 
+---@class vimrc.pairs.Mappings
+---@field pairs table<string, string>?
+---@field quotes string[]?
+---@field backspace string[]?
+---@field cr string?
+
+---@class vimrc.pairs.Setup
+---@field mappings vimrc.pairs.Mappings?
+
 ---@type vimrc.pairs.Config
 M.config = {
-  pairs = {
-    ['('] = ')',
-    ['['] = ']',
-    ['{'] = '}',
-  },
-  quotes = { '"', "'", '`' },
+  pairs = {},
+  quotes = {},
 }
 
 local function get_cursor_context()
@@ -108,9 +113,11 @@ local function cr()
   return '<CR>'
 end
 
----@param opts vimrc.pairs.Config?
+---@param opts vimrc.pairs.Setup?
 function M.setup(opts)
-  M.config = vim.tbl_deep_extend('force', M.config, opts or {})
+  local mappings = opts and opts.mappings or {}
+  M.config.pairs = mappings.pairs or {}
+  M.config.quotes = mappings.quotes or {}
 
   local map_opts = { expr = true, noremap = true }
 
@@ -132,9 +139,12 @@ function M.setup(opts)
     end, map_opts)
   end
 
-  vim.keymap.set('i', '<BS>', backspace, map_opts)
-  vim.keymap.set('i', '<C-h>', backspace, map_opts)
-  vim.keymap.set('i', '<CR>', cr, map_opts)
+  for _, key in ipairs(mappings.backspace or {}) do
+    vim.keymap.set('i', key, backspace, map_opts)
+  end
+  if mappings.cr and mappings.cr ~= '' then
+    vim.keymap.set('i', mappings.cr, cr, map_opts)
+  end
 end
 
 return M

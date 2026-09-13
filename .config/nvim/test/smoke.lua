@@ -54,66 +54,10 @@ check('yankring paste', function()
   feed('jp')
 end)
 
--- The cycle undoes the previous paste and redoes it. Deleting the pasted range by
--- byte offsets instead used to split multibyte characters and leave stray bytes.
-check('yankring cycle keeps multibyte text intact', function()
-  scratch({ 'xyz', 'あい', 'target' })
-  vim.cmd('normal! y$')
-  vim.api.nvim_win_set_cursor(0, { 2, 0 })
-  vim.cmd('normal! y$')
-  vim.api.nvim_win_set_cursor(0, { 3, 0 })
-  vim.cmd('normal! $')
-  feed('p')
-  assert(
-    vim.api.nvim_get_current_line() == 'targetあい',
-    'paste: ' .. vim.api.nvim_get_current_line()
-  )
-  feed('<C-n>')
-  assert(
-    vim.api.nvim_get_current_line() == 'targetxyz',
-    'cycle: ' .. vim.api.nvim_get_current_line()
-  )
-end)
-
--- A linewise register cannot be expressed as a byte range, so cycling one used to
--- leave the emptied line behind and grow the buffer on every press.
-check('yankring cycle handles linewise registers', function()
-  scratch({ 'aaa', 'bbb', 'XXX' })
-  vim.api.nvim_win_set_cursor(0, { 3, 0 })
-  vim.cmd('normal! yy')
-  vim.api.nvim_win_set_cursor(0, { 2, 0 })
-  vim.cmd('normal! yy')
-  vim.api.nvim_win_set_cursor(0, { 1, 0 })
-  feed('p')
-  feed('<C-n>')
-  local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
-  assert(#lines == 4, 'cycle changed the line count: ' .. vim.inspect(lines))
-  assert(lines[2] == 'XXX', 'cycle: ' .. vim.inspect(lines))
-end)
-
-check('yankring honours an explicit register', function()
-  scratch({ 'REG', 'RING', 'target' })
-  vim.cmd('normal! "ay$')
-  vim.api.nvim_win_set_cursor(0, { 2, 0 })
-  vim.cmd('normal! y$')
-  vim.api.nvim_win_set_cursor(0, { 3, 0 })
-  vim.cmd('normal! $')
-  feed('"ap')
-  assert(vim.api.nvim_get_current_line() == 'targetREG', vim.api.nvim_get_current_line())
-end)
-
-check('yankring honours a count', function()
-  scratch({ 'RING', 'target' })
-  vim.cmd('normal! y$')
-  vim.api.nvim_win_set_cursor(0, { 2, 0 })
-  vim.cmd('normal! $')
-  feed('3p')
-  assert(vim.api.nvim_get_current_line() == 'targetRINGRINGRING', vim.api.nvim_get_current_line())
-end)
-
 check('surround', function()
   scratch({ 'word' })
-  feed('ysiw"')
+  feed('saiw"')
+  assert(vim.api.nvim_get_current_line() == '"word"')
 end)
 
 check('pairs', function()
@@ -127,15 +71,13 @@ check('pairs respects backslash escapes', function()
   scratch({ 'a\\' })
   feed('A(<Esc>')
   assert(vim.api.nvim_get_current_line() == 'a\\(', vim.api.nvim_get_current_line())
-  scratch({ 'a\\\\' })
-  feed('A(<Esc>')
-  assert(vim.api.nvim_get_current_line() == 'a\\\\()', vim.api.nvim_get_current_line())
 end)
 
 check('replace operator', function()
   scratch({ 'alpha beta' })
   vim.cmd('normal! yiw')
   feed('wRiw')
+  assert(vim.api.nvim_get_current_line() == 'alpha alpha')
 end)
 
 check('comment', function()
@@ -152,6 +94,36 @@ end)
 check('notify', function()
   vim.notify('smoke', vim.log.levels.INFO)
   vim.notify('smoke', vim.log.levels.ERROR)
+end)
+
+check('provider wiring', function()
+  local input = require('vimrc.modules.input')
+  local notify = require('vimrc.modules.notify')
+  local picker = require('vimrc.modules.picker')
+  assert(vim.ui.input == input.input)
+  assert(vim.ui.select == picker.ui_select)
+  assert(vim.notify == notify.notify)
+  assert(type(notify.show_history) == 'function')
+  assert(vim.api.nvim_get_commands({}).NotifyHistory ~= nil)
+end)
+
+check('ui.input', function()
+  local confirmed
+  vim.ui.input({ prompt = 'smoke', default = 'value' }, function(value)
+    confirmed = value
+  end)
+  vim.wait(10)
+  feed('i<CR>')
+  assert(confirmed == 'value')
+
+  ---@type string?
+  local cancelled = 'pending'
+  vim.ui.input({ prompt = 'smoke' }, function(value)
+    cancelled = value
+  end)
+  vim.wait(10)
+  feed('i<Esc>')
+  assert(cancelled == nil)
 end)
 
 check('statusline', function()

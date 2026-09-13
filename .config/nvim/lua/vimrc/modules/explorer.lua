@@ -578,7 +578,6 @@ function M.toggle()
 end
 
 function M.setup()
-  vim.keymap.set('n', '<Leader>e', M.toggle, { desc = 'explorer: toggle' })
   local group = vim.api.nvim_create_augroup('vimrc-explorer', { clear = true })
   vim.api.nvim_create_autocmd('BufWritePost', {
     group = group,
