@@ -99,3 +99,11 @@ if vim.fn.executable('rg') == 1 then
   opt.grepprg = 'rg --vimgrep --hidden --glob "!**/.git/*"'
   opt.grepformat = '%f:%l:%c:%m'
 end
+
+-- lsp/gopls.lua only attaches under the 'gotmpl' filetype.
+vim.filetype.add({
+  extension = {
+    gotmpl = 'gotmpl',
+    gohtml = 'gotmpl',
+  },
+})

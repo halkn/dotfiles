@@ -1,3 +1,15 @@
+-- treesitter -----------------------------------------------------------------
+local ts_parsers = { 'go', 'gomod', 'gosum', 'gowork', 'gotmpl' }
+
+local ensure_ts_parsers = function()
+  local missing = vim.tbl_filter(function(lang)
+    return not vim.tbl_contains(require('nvim-treesitter').get_installed(), lang)
+  end, ts_parsers)
+  if #missing > 0 then
+    require('nvim-treesitter').install(missing)
+  end
+end
+
 -- hooks --------------------------------------------------------------------
 local on_pack_changed = function(ev)
   local name, kind = ev.data.spec.name, ev.data.kind
@@ -6,6 +18,7 @@ local on_pack_changed = function(ev)
       vim.cmd.packadd('nvim-treesitter')
     end
     vim.cmd('TSUpdate')
+    ensure_ts_parsers()
   end
 end
 
@@ -38,6 +51,10 @@ local plugs = {
           pcall(vim.treesitter.start)
         end,
       })
+      -- Skip in headless runs (e.g. `lint:nvim`) so CI doesn't hit the network.
+      if #vim.api.nvim_list_uis() > 0 then
+        vim.schedule(ensure_ts_parsers)
+      end
     end,
   },
   {
@@ -216,3 +233,5 @@ end, {
 vim.api.nvim_create_autocmd('PackChanged', { callback = on_pack_changed })
 add_plugins()
 configure_plugins()
+
+return { ts_parsers = ts_parsers }

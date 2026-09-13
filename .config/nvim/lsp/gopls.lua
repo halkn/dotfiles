@@ -6,16 +6,27 @@ local config = {
   settings = {
     gopls = {
       gofumpt = true,
+      usePlaceholders = true,
+      semanticTokens = true,
+      templateExtensions = { 'gotmpl', 'gohtml' },
       -- true enables every staticcheck analyzer; drop the key to fall back to
       -- the subset gopls selects for precision.
       staticcheck = true,
-      analyses = { shadow = true },
+      analyses = {
+        shadow = true,
+        appendclipped = true,
+        slicesdelete = true,
+      },
+      codelenses = {
+        test = true,
+      },
       hints = {
         assignVariableTypes = true,
         compositeLiteralFields = true,
         compositeLiteralTypes = true,
         constantValues = true,
         functionTypeParameters = true,
+        ignoredError = true,
         parameterNames = true,
         rangeVariableTypes = true,
       },
