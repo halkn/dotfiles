@@ -217,6 +217,14 @@ check('lsp configs load', function()
   end
 end)
 
+check('treesitter parsers declared are installable', function()
+  local ts_parsers = require('vimrc.pack').ts_parsers
+  local available = require('nvim-treesitter').get_available()
+  for _, lang in ipairs(ts_parsers) do
+    assert(vim.tbl_contains(available, lang), lang .. ' has no nvim-treesitter parser')
+  end
+end)
+
 if #failures > 0 then
   io.stderr:write('smoke test failed:\n' .. table.concat(failures, '\n') .. '\n')
   os.exit(1)
