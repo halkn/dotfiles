@@ -220,15 +220,36 @@ local add_plugins = function()
   end, plugs))
 end
 
+-- Deferred to VimEnter: startup keeps redrawing until then, clearing an immediate notify at cmdheight=0.
+local schedule_failure_notify = function(notify, failures)
+  vim.api.nvim_create_autocmd('VimEnter', {
+    once = true,
+    callback = function()
+      notify(
+        '[plugins] failed to configure:\n' .. table.concat(failures, '\n'),
+        vim.log.levels.ERROR
+      )
+    end,
+  })
+end
+
 local configure_plugins = function()
+  -- A failing config may have already swapped vim.notify for its own half-initialized one.
+  local notify = vim.notify
+  ---@type string[]
+  local failures = {}
   for _, spec in ipairs(plugs) do
     if spec.config then
       local ok, err = pcall(spec.config)
       if not ok then
-        vim.notify('[plugins] ' .. spec.src .. ': ' .. err, vim.log.levels.WARN)
+        table.insert(failures, spec.src .. ': ' .. tostring(err))
       end
     end
   end
+  if #failures > 0 then
+    schedule_failure_notify(notify, failures)
+  end
+  return failures
 end
 
 -- commands -----------------------------------------------------------------
@@ -242,7 +263,7 @@ local update_opts = {
 vim.api.nvim_create_user_command('PackUpdate', function(opts)
   local o = opts.args == '' and {} or update_opts[opts.args]
   if not o then
-    vim.notify('PackUpdate: unknown argument: ' .. opts.args, vim.log.levels.ERROR)
+    vim.notify('PackUpdate: unknown argument: ' .. opts.args, vim.log.levels.WARN)
     return
   end
   vim.pack.update(nil, o)
@@ -298,6 +319,10 @@ end, {
 
 vim.api.nvim_create_autocmd('PackChanged', { callback = on_pack_changed })
 add_plugins()
-configure_plugins()
+local config_failures = configure_plugins()
 
-return { ts_parsers = ts_parsers }
+return {
+  ts_parsers = ts_parsers,
+  config_failures = config_failures,
+  schedule_failure_notify = schedule_failure_notify,
+}
