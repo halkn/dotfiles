@@ -1,66 +1,67 @@
--- Independent modules and providers ----------------------------------------
--- Keep this section before vim.pack.add(): plugin setup and the commands below
--- use the local UI providers and notification implementation.
-local input = require('vimrc.modules.input')
-local notify = require('vimrc.modules.notify')
-local pairs_module = require('vimrc.modules.pairs')
-local picker = require('vimrc.modules.picker')
-local explorer = require('vimrc.modules.explorer')
-local replace = require('vimrc.modules.replace')
-local surround = require('vimrc.modules.surround')
-local terminal = require('vimrc.modules.terminal')
-local yankring = require('vimrc.modules.yankring')
+-- kago.nvim: the modules this configuration owns the wiring for. Deferred
+-- until after vim.pack.add() puts kago.nvim on runtimepath.
+local configure_kago = function()
+  local input = require('kago.input')
+  local notify = require('kago.notify')
+  local pairs_module = require('kago.pairs')
+  local picker = require('kago.picker')
+  local explorer = require('kago.explorer')
+  local replace = require('kago.replace')
+  local surround = require('kago.surround')
+  local terminal = require('kago.terminal')
+  local yankring = require('kago.yankring')
 
----@diagnostic disable-next-line: duplicate-set-field
-vim.ui.input = input.input
----@diagnostic disable-next-line: duplicate-set-field
-vim.ui.select = picker.ui_select
----@diagnostic disable-next-line: duplicate-set-field
-vim.notify = notify.notify
+  ---@diagnostic disable-next-line: duplicate-set-field
+  vim.ui.input = input.input
+  ---@diagnostic disable-next-line: duplicate-set-field
+  vim.ui.select = picker.ui_select
+  ---@diagnostic disable-next-line: duplicate-set-field
+  vim.notify = notify.notify
 
-notify.setup()
-pairs_module.setup({
-  mappings = {
-    pairs = {
-      ['('] = ')',
-      ['['] = ']',
-      ['{'] = '}',
+  notify.setup()
+  pairs_module.setup({
+    mappings = {
+      pairs = {
+        ['('] = ')',
+        ['['] = ']',
+        ['{'] = '}',
+      },
+      quotes = { '"', "'", '`' },
+      backspace = { '<BS>', '<C-h>' },
+      cr = '<CR>',
     },
-    quotes = { '"', "'", '`' },
-    backspace = { '<BS>', '<C-h>' },
-    cr = '<CR>',
-  },
-})
-picker.setup()
-explorer.setup()
-replace.setup({ mappings = { replace = 'R' } })
-surround.setup({ mappings = { add = 'sa', delete = 'sd', replace = 'sr' } })
-terminal.setup()
-yankring.setup({
-  mappings = {
-    paste_after = 'p',
-    paste_before = 'P',
-    paste_after_end = 'gp',
-    paste_before_end = 'gP',
-    cycle_prev = '<C-p>',
-    cycle_next = '<C-n>',
-    show = '<Leader>y',
-  },
-})
+  })
+  picker.setup()
+  explorer.setup()
+  replace.setup({ mappings = { replace = 'R' } })
+  surround.setup({ mappings = { add = 'sa', delete = 'sd', replace = 'sr' } })
+  terminal.setup()
+  yankring.setup({
+    mappings = {
+      paste_after = 'p',
+      paste_before = 'P',
+      paste_after_end = 'gp',
+      paste_before_end = 'gP',
+      cycle_prev = '<C-p>',
+      cycle_next = '<C-n>',
+      show = '<Leader>y',
+    },
+  })
 
--- Personal mappings for module actions stay in the configuration layer.
-vim.keymap.set('n', '<Leader>e', explorer.toggle, { desc = 'explorer: toggle' })
-vim.keymap.set('n', '<Leader>f', picker.files, { desc = 'picker: files' })
-vim.keymap.set('n', '<Leader>b', picker.buffers, { desc = 'picker: buffers' })
-vim.keymap.set('n', '<Leader>G', picker.grep, { desc = 'picker: grep' })
-vim.keymap.set('n', '<Leader>g', picker.git, { desc = 'picker: git' })
-vim.keymap.set('n', '<Leader>l', picker.buf_lines, { desc = 'picker: buf_lines' })
-vim.keymap.set({ 'n', 't' }, '<C-t>', terminal.toggle, { desc = 'Toggle Terminal' })
-vim.keymap.set('n', 'RR', 'R', { desc = 'Replace mode', remap = true })
+  -- Personal mappings for module actions stay in the configuration layer.
+  vim.keymap.set('n', '<Leader>e', explorer.toggle, { desc = 'explorer: toggle' })
+  vim.keymap.set('n', '<Leader>f', picker.files, { desc = 'picker: files' })
+  vim.keymap.set('n', '<Leader>b', picker.buffers, { desc = 'picker: buffers' })
+  vim.keymap.set('n', '<Leader>G', picker.grep, { desc = 'picker: grep' })
+  vim.keymap.set('n', '<Leader>g', picker.git, { desc = 'picker: git' })
+  vim.keymap.set('n', '<Leader>l', picker.buf_lines, { desc = 'picker: buf_lines' })
+  vim.keymap.set({ 'n', 't' }, '<C-t>', terminal.toggle, { desc = 'Toggle Terminal' })
+  vim.keymap.set('n', 'RR', 'R', { desc = 'Replace mode', remap = true })
 
-vim.api.nvim_create_user_command('NotifyHistory', notify.show_history, {
-  desc = 'Show notification history',
-})
+  vim.api.nvim_create_user_command('NotifyHistory', notify.show_history, {
+    desc = 'Show notification history',
+  })
+end
 
 -- treesitter -----------------------------------------------------------------
 local ts_parsers = { 'go', 'gomod', 'gosum', 'gowork', 'gotmpl' }
@@ -295,7 +296,9 @@ end, {
 })
 
 vim.api.nvim_create_autocmd('PackChanged', { callback = on_pack_changed })
+vim.cmd.packadd('kago.nvim') -- Local validation only; Phase 3 moves this into `plugs`.
 add_plugins()
 configure_plugins()
+configure_kago()
 
 return { ts_parsers = ts_parsers }
