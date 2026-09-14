@@ -43,6 +43,34 @@ end
 -- The register provider is irrelevant here and fails without a system clipboard.
 vim.o.clipboard = ''
 
+-- Bail out immediately: an unwired vim.ui.select falls back to a blocking builtin prompt that hangs headless nvim.
+do
+  local config_failures = require('vimrc.pack').config_failures
+  if #config_failures > 0 then
+    for _, msg in ipairs(config_failures) do
+      table.insert(failures, 'plugin config: ' .. msg)
+    end
+    io.stderr:write('smoke test failed:\n' .. table.concat(failures, '\n') .. '\n')
+    os.exit(1)
+  end
+end
+
+-- configure_plugins() only reaches this on a real plugin failure, and the smoke
+-- run's own early exit above means VimEnter itself never fires here either;
+-- drive the deferred notify directly with a fake failure to cover it.
+check('plugin config failure notify (deferred to VimEnter)', function()
+  local captured
+  require('vimrc.pack').schedule_failure_notify(function(msg, level)
+    captured = { msg = msg, level = level }
+  end, { 'smoke-probe: boom' })
+  vim.api.nvim_exec_autocmds('VimEnter', {})
+  if not captured then
+    error('deferred notify did not fire')
+  end
+  assert(captured.msg:match('smoke%-probe: boom'), 'wrong message: ' .. tostring(captured.msg))
+  assert(captured.level == vim.log.levels.ERROR, 'wrong level: ' .. tostring(captured.level))
+end)
+
 check('yank highlight', function()
   scratch({ 'alpha', 'beta', 'gamma' })
   vim.cmd('normal! yy')
