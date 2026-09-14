@@ -213,7 +213,6 @@ local plugs = {
   },
   {
     src = 'halkn/kago.nvim',
-    config = configure_kago,
   },
 }
 
@@ -302,5 +301,9 @@ end, {
 vim.api.nvim_create_autocmd('PackChanged', { callback = on_pack_changed })
 add_plugins()
 configure_plugins()
+
+-- Left outside configure_plugins()'s per-spec pcall: a failure here means
+-- providers and personal mappings are missing, not merely a broken plugin.
+configure_kago()
 
 return { ts_parsers = ts_parsers }
