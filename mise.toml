@@ -105,23 +105,10 @@ run = "shuck check ."
 
 [tasks."lint:nvim"]
 description = "Neovim Lua の診断と起動確認"
-depends = ["test:nvim-modules"]
 run = [
   """
 VIMRUNTIME="$(NVIM_LOG_FILE=/dev/null nvim --clean --headless -c 'lua io.write(vim.env.VIMRUNTIME)' +q 2>/dev/null)" \\
   emmylua_check --warnings-as-errors .config/nvim
 """,
   "NVIM_LOG_FILE=/dev/null nvim --headless -i NONE -c 'luafile .config/nvim/test/smoke.lua'",
-]
-
-[tasks."test:nvim-modules"]
-description = "Neovim module の単独テスト"
-run = [
-  "NVIM_LOG_FILE=/dev/null nvim --clean --headless -i NONE --cmd 'set rtp^=.config/nvim' -c 'luafile .config/nvim/test/modules/boundaries.lua'",
-  "NVIM_LOG_FILE=/dev/null nvim --clean --headless -i NONE --cmd 'set rtp^=.config/nvim' -c 'luafile .config/nvim/test/modules/editing.lua'",
-  "NVIM_LOG_FILE=/dev/null nvim --clean --headless -i NONE --cmd 'set rtp^=.config/nvim' -c 'luafile .config/nvim/test/modules/picker.lua'",
-  "NVIM_LOG_FILE=/dev/null nvim --clean --headless -i NONE --cmd 'set rtp^=.config/nvim' -c 'luafile .config/nvim/test/modules/explorer.lua'",
-  "NVIM_LOG_FILE=/dev/null nvim --clean --headless -n -i NONE --cmd 'set rtp^=.config/nvim' -c 'luafile .config/nvim/test/modules/explorer_git.lua'",
-  "NVIM_LOG_FILE=/dev/null nvim --clean --headless -n -i NONE --cmd 'set rtp^=.config/nvim' -c 'luafile .config/nvim/test/modules/explorer_filter.lua'",
-  "NVIM_LOG_FILE=/dev/null nvim --clean --headless -n -i NONE --cmd 'set rtp^=.config/nvim' -c 'luafile .config/nvim/test/modules/explorer_preview.lua'",
 ]

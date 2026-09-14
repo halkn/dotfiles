@@ -20,8 +20,7 @@
     "workspaceRoots": ["${workspaceFolder}/lua"],
     "library": [
       "{env:VIMRUNTIME}/lua",
-      "{env:HOME}/.local/share/nvim/site/pack/core/opt",
-      "{env:HOME}/.local/share/nvim/site/pack/dev/opt"
+      "{env:HOME}/.local/share/nvim/site/pack/core/opt"
     ]
   }
 }

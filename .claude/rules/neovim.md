@@ -35,5 +35,4 @@ paths:
 
 - `emmylua_check` の警告は 0 件を維持する（`--warnings-as-errors`）。`---@diagnostic disable` は使わず型注釈で解く
 - `diagnostics.disable` に入れるのは、その診断がこの構成では常に無意味なときだけ（`operatorfunc` へ `v:lua` 経由で渡すための `_G` 代入）
-- 静的検査は `vim.*` の遅延ロードモジュールに届かない。module 固有の回帰は `test/modules/` に置き、`test/smoke.lua` には integration の代表操作だけを足す
-- module 固有テストは `mise run test:nvim-modules` で `--clean`・対象 runtimepath の別プロセスとして実行する
+- 静的検査は `vim.*` の遅延ロードモジュールに届かない。`test/smoke.lua` が持つのは wiring と integration の代表操作で、module 単体の回帰は `kago.nvim` 側に置く
