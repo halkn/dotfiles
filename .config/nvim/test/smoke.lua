@@ -84,24 +84,34 @@ check('provider wiring', function()
 end)
 
 -- Mapping values are dotfiles configuration; kago.nvim owns none of them, so
--- their presence has no equivalent regression on the kago.nvim side.
+-- their presence has no equivalent regression on the kago.nvim side. Wiring to
+-- the wrong kago function (e.g. <Leader>g and <Leader>G swapped) reports
+-- 'wired' without checking the callback, so compare identity where dotfiles
+-- passes a named function directly. Surround/pairs/replace/yankring bind
+-- anonymous closures inside kago itself and can only be checked for presence
+-- here; the 'surround' check above covers one of them behaviorally.
 check('personal mappings wired', function()
-  local maps = {
-    '<Leader>e',
-    '<Leader>f',
-    '<Leader>b',
-    '<Leader>G',
-    '<Leader>g',
-    '<Leader>l',
-    '<C-t>',
-    '<Leader>y',
-    'sa',
-    'sd',
-    'sr',
-    'R',
-    'RR',
+  local explorer = require('kago.explorer')
+  local picker = require('kago.picker')
+  local terminal = require('kago.terminal')
+  local yankring = require('kago.yankring')
+
+  local wired = {
+    { lhs = '<Leader>e', fn = explorer.toggle },
+    { lhs = '<Leader>f', fn = picker.files },
+    { lhs = '<Leader>b', fn = picker.buffers },
+    { lhs = '<Leader>G', fn = picker.grep },
+    { lhs = '<Leader>g', fn = picker.git },
+    { lhs = '<Leader>l', fn = picker.buf_lines },
+    { lhs = '<C-t>', fn = terminal.toggle },
+    { lhs = '<Leader>y', fn = yankring.show },
   }
-  for _, lhs in ipairs(maps) do
+  for _, m in ipairs(wired) do
+    local map = vim.fn.maparg(m.lhs, 'n', false, true)
+    assert(map.callback == m.fn, 'wrong callback for ' .. m.lhs)
+  end
+
+  for _, lhs in ipairs({ 'sa', 'sd', 'sr', 'R', 'RR' }) do
     assert(vim.fn.maparg(lhs, 'n') ~= '', 'missing mapping: ' .. lhs)
   end
 end)
