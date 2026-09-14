@@ -13,6 +13,10 @@
       "rev": "5be654f2232c10ddcad19c1607a67b6b4b78fc29",
       "src": "https://github.com/lewis6991/gitsigns.nvim"
     },
+    "kago.nvim": {
+      "rev": "231ef4f79ea77c1556c6f8d3dd08014da6580e54",
+      "src": "https://github.com/halkn/kago.nvim"
+    },
     "kanagawa.nvim": {
       "rev": "bb85e4bfc8d89b0e62c8fa53ccdd13d12e2f77b3",
       "src": "https://github.com/rebelot/kanagawa.nvim"
