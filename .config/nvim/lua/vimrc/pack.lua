@@ -56,7 +56,8 @@ local configure_kago = function()
   vim.keymap.set('n', '<Leader>g', picker.git, { desc = 'picker: git' })
   vim.keymap.set('n', '<Leader>l', picker.buf_lines, { desc = 'picker: buf_lines' })
   vim.keymap.set({ 'n', 't' }, '<C-t>', terminal.toggle, { desc = 'Toggle Terminal' })
-  vim.keymap.set('n', 'RR', 'R', { desc = 'Replace mode', remap = true })
+  -- noremap: kago.replace also maps plain 'R', which `remap = true` would send this through.
+  vim.keymap.set('n', 'RR', 'R', { desc = 'Replace mode' })
 
   vim.api.nvim_create_user_command('NotifyHistory', notify.show_history, {
     desc = 'Show notification history',
