@@ -48,36 +48,12 @@ check('yank highlight', function()
   vim.cmd('normal! yy')
 end)
 
-check('yankring paste', function()
-  scratch({ 'alpha', 'beta' })
-  vim.cmd('normal! yy')
-  feed('jp')
-end)
-
+-- Representative integration check that a dotfiles-configured mapping ('sa')
+-- reaches kago.surround; the operator's own regressions live in kago.nvim.
 check('surround', function()
   scratch({ 'word' })
   feed('saiw"')
   assert(vim.api.nvim_get_current_line() == '"word"')
-end)
-
-check('pairs', function()
-  scratch({ '' })
-  feed('i(foo<Esc>')
-end)
-
--- is_escaped() counts backslashes from the character before the cursor; starting
--- one further back inverted the decision in both directions.
-check('pairs respects backslash escapes', function()
-  scratch({ 'a\\' })
-  feed('A(<Esc>')
-  assert(vim.api.nvim_get_current_line() == 'a\\(', vim.api.nvim_get_current_line())
-end)
-
-check('replace operator', function()
-  scratch({ 'alpha beta' })
-  vim.cmd('normal! yiw')
-  feed('wRiw')
-  assert(vim.api.nvim_get_current_line() == 'alpha alpha')
 end)
 
 check('comment', function()
@@ -97,9 +73,9 @@ check('notify', function()
 end)
 
 check('provider wiring', function()
-  local input = require('vimrc.modules.input')
-  local notify = require('vimrc.modules.notify')
-  local picker = require('vimrc.modules.picker')
+  local input = require('kago.input')
+  local notify = require('kago.notify')
+  local picker = require('kago.picker')
   assert(vim.ui.input == input.input)
   assert(vim.ui.select == picker.ui_select)
   assert(vim.notify == notify.notify)
@@ -107,23 +83,27 @@ check('provider wiring', function()
   assert(vim.api.nvim_get_commands({}).NotifyHistory ~= nil)
 end)
 
-check('ui.input', function()
-  local confirmed
-  vim.ui.input({ prompt = 'smoke', default = 'value' }, function(value)
-    confirmed = value
-  end)
-  vim.wait(10)
-  feed('i<CR>')
-  assert(confirmed == 'value')
-
-  ---@type string?
-  local cancelled = 'pending'
-  vim.ui.input({ prompt = 'smoke' }, function(value)
-    cancelled = value
-  end)
-  vim.wait(10)
-  feed('i<Esc>')
-  assert(cancelled == nil)
+-- Mapping values are dotfiles configuration; kago.nvim owns none of them, so
+-- their presence has no equivalent regression on the kago.nvim side.
+check('personal mappings wired', function()
+  local maps = {
+    '<Leader>e',
+    '<Leader>f',
+    '<Leader>b',
+    '<Leader>G',
+    '<Leader>g',
+    '<Leader>l',
+    '<C-t>',
+    '<Leader>y',
+    'sa',
+    'sd',
+    'sr',
+    'R',
+    'RR',
+  }
+  for _, lhs in ipairs(maps) do
+    assert(vim.fn.maparg(lhs, 'n') ~= '', 'missing mapping: ' .. lhs)
+  end
 end)
 
 check('statusline', function()
@@ -161,19 +141,19 @@ check('terminal', function()
   vim.cmd('bdelete!')
 end)
 
-for _, source in ipairs({ 'files', 'buffers', 'grep', 'buf_lines', 'tree', 'git' }) do
-  check('picker ' .. source, function()
-    local picker = require('vimrc.modules.picker')
-    picker.open(source)
-    vim.wait(100)
-    picker.close()
-  end)
-end
+-- Representative integration check that the picker opens through the provider;
+-- per-source behavior regressions live in kago.nvim.
+check('picker files', function()
+  local picker = require('kago.picker')
+  picker.open('files')
+  vim.wait(100)
+  picker.close()
+end)
 
 check('ui.select', function()
   vim.ui.select({ 'a', 'b' }, { prompt = 'smoke' }, function() end)
   vim.wait(100)
-  require('vimrc.modules.picker').close()
+  require('kago.picker').close()
 end)
 
 -- vim.lsp.enable() loads lsp/<name>.lua only once a matching filetype appears,
