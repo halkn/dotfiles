@@ -211,6 +211,10 @@ local plugs = {
       vim.keymap.set('n', '<Leader>hp', gs.preview_hunk, { desc = 'Preview hunk' })
     end,
   },
+  {
+    src = 'halkn/kago.nvim',
+    config = configure_kago,
+  },
 }
 
 local add_plugins = function()
@@ -296,9 +300,7 @@ end, {
 })
 
 vim.api.nvim_create_autocmd('PackChanged', { callback = on_pack_changed })
-vim.cmd.packadd('kago.nvim') -- Local validation only; Phase 3 moves this into `plugs`.
 add_plugins()
 configure_plugins()
-configure_kago()
 
 return { ts_parsers = ts_parsers }
