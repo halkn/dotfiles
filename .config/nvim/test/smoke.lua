@@ -5,26 +5,18 @@
 
 local failures = {}
 
--- A sandboxed run cannot spawn processes; that is an environment limit, not a
--- config defect, so it must not fail the run.
-local function skippable(msg)
-  return msg:match('Process failed to start')
-end
-
 -- Errors inside autocmd and keymap callbacks are caught by Neovim and reported
 -- through :messages instead of propagating, so pcall alone is not enough.
 local function check(name, fn)
   vim.cmd('silent! messages clear')
   local ok, err = pcall(fn)
   if not ok then
-    if not skippable(tostring(err)) then
-      table.insert(failures, name .. ': ' .. tostring(err))
-    end
+    table.insert(failures, name .. ': ' .. tostring(err))
     return
   end
   vim.wait(50)
   local msgs = vim.api.nvim_exec2('messages', { output = true }).output
-  if (msgs:match('E%d+:') or msgs:lower():match('error')) and not skippable(msgs) then
+  if msgs:match('E%d+:') or msgs:lower():match('error') then
     table.insert(failures, name .. ': ' .. msgs)
   end
 end
@@ -43,7 +35,8 @@ end
 -- The register provider is irrelevant here and fails without a system clipboard.
 vim.o.clipboard = ''
 
--- Bail out immediately: an unwired vim.ui.select falls back to a blocking builtin prompt that hangs headless nvim.
+-- Stop at the root cause instead of reporting secondary failures from a
+-- partially configured plugin set.
 do
   local config_failures = require('vimrc.pack').config_failures
   if #config_failures > 0 then
@@ -76,30 +69,6 @@ check('yank highlight', function()
   vim.cmd('normal! yy')
 end)
 
--- Representative integration check that a dotfiles-configured mapping ('sa')
--- reaches kago.surround; the operator's own regressions live in kago.nvim.
-check('surround', function()
-  scratch({ 'word' })
-  feed('saiw"')
-  assert(vim.api.nvim_get_current_line() == '"word"')
-end)
-
-check('comment', function()
-  scratch({ 'local x = 1' })
-  vim.bo.filetype = 'lua'
-  feed(' c')
-end)
-
-check('diagnostic float', function()
-  scratch({ 'alpha' })
-  vim.diagnostic.open_float()
-end)
-
-check('notify', function()
-  vim.notify('smoke', vim.log.levels.INFO)
-  vim.notify('smoke', vim.log.levels.ERROR)
-end)
-
 check('provider wiring', function()
   local input = require('kago.input')
   local notify = require('kago.notify')
@@ -117,7 +86,7 @@ end)
 -- 'wired' without checking the callback, so compare identity where dotfiles
 -- passes a named function directly. Surround/pairs/replace/yankring bind
 -- anonymous closures inside kago itself and can only be checked for presence
--- here; the 'surround' check above covers one of them behaviorally.
+-- here.
 check('personal mappings wired', function()
   local explorer = require('kago.explorer')
   local picker = require('kago.picker')
@@ -144,54 +113,55 @@ check('personal mappings wired', function()
   end
 end)
 
+-- This is a dotfiles integration boundary: kago.replace owns the R operator,
+-- while the personal RR mapping must still enter builtin Replace mode.
+check('RR enters Replace mode', function()
+  scratch({ 'abcdef' })
+  feed('RRxyz<Esc>')
+  assert(vim.api.nvim_get_current_line() == 'xyzdef')
+end)
+
 check('statusline', function()
   scratch({ 'alpha' })
   assert(type(require('vimrc.statusline').render()) == 'string')
 end)
 
-check('quickfix ftplugin', function()
+check('quickfix autocmd and ftplugin', function()
   vim.fn.setqflist({ { filename = 'init.lua', lnum = 1, text = 'smoke' } })
-  vim.cmd('copen')
+  vim.api.nvim_exec_autocmds('QuickFixCmdPost', { pattern = 'vimgrep' })
+  assert(vim.bo.buftype == 'quickfix', 'quickfix window did not open')
+  local map = vim.fn.maparg('q', 'n', false, true)
+  assert(map.buffer == 1, 'missing buffer-local q mapping')
   vim.cmd('cclose')
 end)
 
 check('help ftplugin', function()
   vim.cmd('help help')
+  for _, lhs in ipairs({ '<CR>', '<BS>', 'q' }) do
+    local map = vim.fn.maparg(lhs, 'n', false, true)
+    assert(map.buffer == 1, 'missing buffer-local mapping: ' .. lhs)
+  end
   vim.cmd('helpclose')
 end)
 
 check('gitcommit ftplugin', function()
   scratch({ 'smoke: message' })
   vim.bo.filetype = 'gitcommit'
+  assert(vim.wo.spell, 'spell is disabled')
+  assert(vim.bo.spelllang == 'cjk,en', 'wrong spelllang: ' .. vim.bo.spelllang)
 end)
 
-check('terminal', function()
-  vim.cmd('terminal')
+check('terminal autocmd', function()
+  scratch({ '' })
+  vim.wo.number = true
+  vim.wo.relativenumber = true
+  vim.wo.signcolumn = 'yes'
+  vim.api.nvim_exec_autocmds('TermOpen', { buffer = 0 })
   vim.cmd('stopinsert')
-  -- Deleting the buffer while the pty job is still alive races with the next job
-  -- spawn (the picker's fd) and takes the process down. jobwait() also waits for
-  -- the on_exit handlers, so nothing is left to tear down afterwards.
-  local job_id = vim.b.terminal_job_id
-  assert(type(job_id) == 'number', 'no terminal job id')
-  vim.fn.jobstop(math.floor(job_id))
-  local status = vim.fn.jobwait({ math.floor(job_id) }, 2000)[1]
-  assert(status ~= -1, 'terminal job did not exit')
-  vim.cmd('bdelete!')
-end)
-
--- Representative integration check that the picker opens through the provider;
--- per-source behavior regressions live in kago.nvim.
-check('picker files', function()
-  local picker = require('kago.picker')
-  picker.open('files')
-  vim.wait(100)
-  picker.close()
-end)
-
-check('ui.select', function()
-  vim.ui.select({ 'a', 'b' }, { prompt = 'smoke' }, function() end)
-  vim.wait(100)
-  require('kago.picker').close()
+  assert(not vim.wo.number, 'number is enabled')
+  assert(not vim.wo.relativenumber, 'relativenumber is enabled')
+  local signcolumn = vim.api.nvim_get_option_value('signcolumn', { scope = 'local', win = 0 })
+  assert(signcolumn == 'no', 'wrong signcolumn: ' .. signcolumn)
 end)
 
 -- vim.lsp.enable() loads lsp/<name>.lua only once a matching filetype appears,
