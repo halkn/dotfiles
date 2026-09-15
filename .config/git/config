@@ -56,5 +56,9 @@
   defaultBranch = main
 [safe]
   bareRepository = explicit
-[url "git@github.com:"]
-  pushInsteadOf = https://github.com/
+[credential "https://github.com"]
+	helper = ""
+	helper = !gh auth git-credential
+[credential "https://gist.github.com"]
+	helper = ""
+	helper = !gh auth git-credential
