@@ -18,7 +18,7 @@ paths:
 
 ## 採用しない設定（再提案しない。根拠は各 commit にある）
 
-`env.CLAUDE_CODE_SUBPROCESS_ENV_SCRUB`（Bash tool が広範に壊れる）、`~/.cache` を丸ごと allow して例外を `denyWrite` で列挙する形（fail-open になる）、`sandbox.network.tlsTerminate` と `credentials.envVars` の `mode: "mask"`、`az *` の `excludedCommands` 除外（`strictAllowlist` を迂回する egress 経路になる）。
+`env.CLAUDE_CODE_SUBPROCESS_ENV_SCRUB`（Bash tool が広範に壊れる）、`~/.cache` を丸ごと allow して例外を `denyWrite` で列挙する形（fail-open になる）、`sandbox.network.tlsTerminate` と `credentials.envVars` の `mode: "mask"`、`az *` の `excludedCommands` 除外（`strictAllowlist` を迂回する egress 経路になる）、`env.CLAUDE_CODE_THRIFTY_SONIC`（未文書化フラグで副作用を確かめられない）。
 
 ## ガードを足す・消すとき
 

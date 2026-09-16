@@ -25,7 +25,7 @@ Read 側は token を返し、Bash 側は `NO-TOKENS` を返す。`--allowedTool
 
 auto / bypassPermissions のセッションに、`cat` / `sed` / heredoc をファイル tool より優先させる system 指示が注入されることがある。上のロード契機が成立しなくなるため、path-scoped rule・nested `CLAUDE.md`・Read/Edit/Write matcher の hook が黙って効かなくなる。
 
-- kill switch は `env` の `CLAUDE_CODE_THRIFTY_SONIC`（unset = モデルごとのロールアウトに従う / `"0"` = 無効 / `"1"` = 有効）。`claude/settings.json` に `"0"` を置いてある
-- 未文書化のフラグで、公式 docs・CHANGELOG に記載が無い。出典は anthropics/claude-code#92271（注入文言・値の扱い・影響範囲、closed）と #89731（open）。docs に載るか挙動が変わったら置き直す
-- フラグ名は配布物によっては存在しない。remote 実行環境の bundle（2.1.273）には文字列が無く、指示は server 側から注入されていた。`"0"` が効いているかは、auto モードのセッションで実際に Read tool が使われるかで見る
+- kill switch は `env` の `CLAUDE_CODE_THRIFTY_SONIC`（unset = モデルごとのロールアウトに従う / `"0"` = 無効 / `"1"` = 有効）。出典は anthropics/claude-code#92271（注入文言・値の扱い・影響範囲、closed）と #89731（open）
+- このフラグは採用していない。公式 docs・CHANGELOG に記載が無く、無効化したときに何が一緒に変わるかを確かめられないため。docs に載ったら再検討する
+- フラグ名は配布物によっては存在しない。remote 実行環境の bundle（2.1.273）には文字列が無く、指示は server 側から注入されていた
 - このリポジトリの hook は 3 本とも matcher が `Bash` なので、この指示下でも発火し続ける
