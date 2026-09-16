@@ -1,5 +1,5 @@
 ---
-description: このリポジトリの Claude Code 設定（claude/settings.json・.claude/settings.json・claude/hooks/・sandbox・permissions・PreToolUse hook・excludedCommands・native worktree・subagent の runtime 上限）を監査・変更するときの根拠の取り方と実測記録。sandbox の allowRead/denyRead や permissions の allow/deny/ask を見直す、hook を足す・消す、auto モードの挙動を確認する、といった作業で使う。
+description: このリポジトリの Claude Code 設定（claude/settings.json・.claude/settings.json・claude/hooks/・sandbox・permissions・PreToolUse hook・excludedCommands・native worktree・subagent の runtime 上限）を監査・変更するときの根拠の取り方と実測記録。rule や nested CLAUDE.md が読み込まれない・hook が発火しない理由を調べる、sandbox の allowRead/denyRead や permissions の allow/deny/ask を見直す、hook を足す・消す、auto モードの挙動を確認する、といった作業で使う。
 ---
 
 # Claude Code 設定の監査
@@ -29,4 +29,5 @@ description: このリポジトリの Claude Code 設定（claude/settings.json�
 
 - [sandbox-permissions.md](references/sandbox-permissions.md): allowRead / denyRead / credentials を足す・削る、deny が効かない、`excludedCommands` を増やす、`permissions` のパターンが意図通り当たらない、auto モードで allow が無視される
 - [hooks.md](references/hooks.md): hook を足す・消す・書き換える、hook が黙って発火しない、`credentials.envVars` を追加する
+- [rules-loading.md](references/rules-loading.md): `.claude/rules/` の `paths:` が効いていない、サブディレクトリの `CLAUDE.md` が載らない、Read/Edit/Write matcher の hook が発火しない、auto モードが `cat` / `sed` でファイルを触る
 - [worktree-subagent.md](references/worktree-subagent.md): `isolation: worktree` の subagent に何を任せるか、`git worktree add` を打つ、`.claude/worktrees/` の掃除、subagent の同時実行数・nesting の上限

@@ -10,7 +10,7 @@ paths:
 
 どの層に書くかは何に耐えてほしいかで決める。取り違えると効かないガードが増える。
 
-- **CLAUDE.md / `.claude/rules/`**: context であって強制ではない。規約・判断基準を置く
+- **CLAUDE.md / `.claude/rules/`**: context であって強制ではない。規約・判断基準を置く。`paths:` 付きの rule は Read tool が一致する path を開いたときだけ載るので、常時効かせたいものはここに置けない
 - **`permissions` / hook**: コマンド文字列の解析なので、変数展開や余分な空白で外れる
 - **`sandbox`**: OS が強制する唯一の境界だが、効くのは Bash 層だけ。Edit / Write は `permissions` の管轄
 

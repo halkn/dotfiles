@@ -7,9 +7,9 @@
 - `claude/` が Claude Code 設定の実体。`~/.claude/` は Claude Code 自身が状態を書くのでディレクトリ単位では symlink できず、`mise.toml` の `[dotfiles]` が `claude/*` を 1 エントリずつ張る。glob は毎回展開されるので新規ファイル・サブディレクトリの追加に宣言の変更は要らない。`.claude/` はこのリポジトリ自身のプロジェクト設定で別物
 - `.config/mise/config.toml` は `~/.config/mise/config.toml` としても読まれる。ここへの変更はリポジトリ外の全プロジェクトに影響する
 - `.config/zsh/` は `.zshrc` / `workflows/` / `lib/` / `test/` の層に分かれる。置き場所の基準と制約は `.claude/rules/zsh.md`、検証手順は `/zsh-workflows` skill
-- `.claude/skills/` と `.claude/rules/` はこのリポジトリ自身の設定で symlink されない。新規ファイルはそのまま次のセッションで読まれる
+- `.claude/skills/` と `.claude/rules/` はこのリポジトリ自身の設定で symlink されない。新規ファイルは登録なしで次のセッションから対象になる
 - `mise` タスクは 2 箇所に分かれる。1 コマンドで終わるものは `mise.toml`、複数行のロジックは `mise-tasks/` 配下のファイルタスク（サブディレクトリが `lint:` などの名前空間になる。実行ビットが必要で、落ちるとエラーなくタスクが消える）
-- `.claude/rules/` の path-scoped ルールを `~/.claude/rules/` へ移さない。`paths:`/`globs:` 指定が user-level では読み込まれない（anthropics/claude-code#19377, #21858）。全プロジェクト共通のルールは `claude/CLAUDE.md` に直接書く
+- `.claude/rules/` の path-scoped ルールを `~/.claude/rules/` へ移さない。user-level でも `paths:` は一致するが、glob の基準が cwd なので他のリポジトリでも当たる（v2.1.273 で実測、記録は `/claude-code-settings` skill の rules-loading.md）。全プロジェクト共通のルールは `claude/CLAUDE.md` に直接書く
 
 ## Verification
 
@@ -27,7 +27,7 @@
 - macOS に GNU `timeout` は無い。timeout が要る script は `timeout` / `gtimeout` / 直接実行の順にフォールバックする
 - 整形は `mise run fmt` に任せる（`shuck`・`stylua`・`rumdl`）
 - コードコメントは英語で書く。識別子・コマンド名と同じ語彙で書けるため。ユーザーに表示される文字列（hook の拒否メッセージ、`mise` の task description）は日本語のまま
-- 情報の置き場所は「いつ読む必要があるか」で決める。判断基準は `.claude/rules/*.md`（path 一致で常時ロード・各 40 行以内、`mise run lint` が検査する）、手順と実測記録は `.claude/skills/*/`（呼ばれたときだけロード）、変更の経緯は commit と PR。コード側には、その実装でなければならない理由と、どちらにも無い実装固有の制約だけを残す
+- 情報の置き場所は「いつ読む必要があるか」で決める。判断基準は `.claude/rules/*.md`（`paths:` に一致するファイルを Read tool で開いたときにロード・各 40 行以内、`mise run lint` が検査する）、手順と実測記録は `.claude/skills/*/`（呼ばれたときだけロード）、変更の経緯は commit と PR。コード側には、その実装でなければならない理由と、どちらにも無い実装固有の制約だけを残す
 - commit: 小文字 conventional prefix（`fix:` `add:` `feat:` `refactor:`）+ 短い英語要約。1 コミット 1 ツール・1 テーマ（例: `fix: python lsp settings.`）
 - PR: 本文は `.github/pull_request_template.md` の節構成に沿う。`gh pr create --body` はテンプレートを適用しないので、本文を書く前にテンプレートを読む
 - 端末固有の設定は追跡外の `*.local` ファイルに置く（一覧は `README.md` の Machine-local settings）。共有したい設定をそこに書かない
