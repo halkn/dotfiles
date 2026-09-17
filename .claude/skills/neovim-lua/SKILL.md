@@ -1,10 +1,10 @@
 ---
-description: このリポジトリの Neovim 設定（.config/nvim 配下の Lua・lsp/*.lua・test/smoke.lua・.emmyrc.json）を変更するときの検証手順と実測記録。emmylua_check の警告を型注釈で解く、smoke test に検査を足す、vim.lsp.Config のキーを調べる、といった作業で使う。
+description: このリポジトリの Neovim 設定（.config/nvim 配下の Lua・lsp/*.lua・test/smoke.lua・.emmyrc.json）を変更するときの検証手順。emmylua_check の警告を型注釈で解く、smoke test に検査を足す、静的検査の届かない範囲を確かめる、といった作業で使う。
 ---
 
 # Neovim Lua の検証
 
-判断基準そのものは `.claude/rules/neovim.md`。ここに置くのは、その基準を満たすための手順と、確認済みの実測記録。
+判断基準そのものは `.claude/rules/neovim.md`。ここに置くのは、その基準を満たすための手順。
 
 ## 手順
 
@@ -24,11 +24,10 @@ description: このリポジトリの Neovim 設定（.config/nvim 配下の Lua
 
 型注釈で解けないときだけ `--[[@as T]]` を使い、なぜその検査が成立しないのかをコメントに書く。
 
-## 検査の届かない範囲（emmylua_check 0.25.0 / Neovim 0.12.4 で確認）
+## 検査の届かない範囲
 
-- `vim.hl` / `vim.pack` のような遅延ロードモジュールのフィールドは検証されない。存在しない `vim.*` API はこの検査に出ないので、実行時検査が受け持つ
-- `vim.lsp.config()` は呼び出し時に検証しない。未知キーも型不一致も黙って通る。`single_file_support` は 0.11 以降の `vim.lsp.Config` に無く、相当するのは既定 `false` の `workspace_required`
 - `.emmyrc.json` の `workspace.library` に `lua/` を入れると自分の設定が「外部ライブラリ」扱いになり、診断が 1 件も出ないまま lint が緑になる（`workspaceRoots` に置くこと）
+- 遅延ロードされる `vim.*` のフィールドは静的検査に出ない。存在しない API・LSP 設定の未知キーは lint を通るので、キー名と既定値は Neovim の docs で確認してから書き、実行時検査で受ける
 
 ## test/smoke.lua に検査を足す
 
