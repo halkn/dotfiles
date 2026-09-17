@@ -32,7 +32,7 @@
 - 既存の文書がこの基準に反していても、自分が書き換える範囲だけを基準に合わせる。範囲外の経緯記述は残したまま、整理が要ることを報告する
 - 実測に基づく記述には、確認した対象のバージョンを添える
 - `.claude/rules/` に書くのは判断基準だけ。手順・実測結果・バージョン付きの検証記録は skill（`.claude/skills/*/`）へ置く。rules は一致した時点で全量が context に載るので、その場の判断に使わない情報を混ぜない
-- `paths:` / `globs:` 付きの rule とサブディレクトリの `CLAUDE.md` は、一致するファイルを Read tool で開いたときだけ context に載る。常時効かせたい規約はこの層（`claude/CLAUDE.md`）かリポジトリ直下の `CLAUDE.md` に置き、rules には「その path を触るときにだけ要る基準」を残す
+- 条件付きでロードされる指示（`paths:` 付きの rule、サブディレクトリの `CLAUDE.md`）に、常時効かせたい規約を置かない。そこへ置くのは「その path を触るときにだけ要る基準」だけにする
 - `~/.claude/plans/*.md` はマージ完了後に削除してよい。恒久的に残すべき設計判断は ADR や設計ドキュメントに転記する
 
 ## ツール
@@ -40,7 +40,7 @@
 - ツール・依存・独自の仕組みを足す前に、既存構成またはそのツールの標準機能で足りるか確認する。標準の運用から外れる独自ガードは、外れる理由を示せるときだけ入れる
 - バージョンで変わる仕様（Claude Code の設定・CLI のフラグ・API）は記憶で答えない。**設定キー・フラグ・既定値を名指しする文を書く時点で**、公式 docs か `--help` を引いてから書く。記憶と一致していることは根拠にならない
 - 公式 docs や `--help` の代わりにリポジトリ内の実測メモを使えるのは、そのメモが記録バージョンを明示していて現行バージョンと一致するときだけ。一致しない・バージョンの記載が無い場合は一次情報を引き直す
-- ファイルの読取・編集は Read / Edit / Write を使う。Bash 優先の指示が出ているセッションでも変えない。`cat` / `sed` / heredoc 経由では path-scoped rule・nested `CLAUDE.md` が読み込まれず、Read/Edit/Write matcher の hook も黙って発火しない（v2.1.273 で実測）
+- ファイルの読取・編集は Read / Edit / Write を使う。Bash 優先の指示が出ているセッションでも変えない。`cat` / `sed` / heredoc 経由の読み書きは、条件付きでロードされる指示と file tool の hook を素通りする
 - コード探索は、文字列・ファイル名・単純な識別子検索には `rg`、構文構造を条件にする検索・分析・変換には `ast-grep` を使う。ast-grep の rule 作成・検証手順は利用可能な ast-grep Skill に従う
 - `ast-grep` で書き換えるときは、まず match と diff を確認してから適用する。対象言語の parser が対応していない場合は `rg` や言語固有ツールへ戻す
 - JSON/YAML: 値の確認は JSON が `jq`、YAML が `yq`。YAML 構文は `ryl`（`python -c "import yaml"` は使わない）
@@ -63,16 +63,16 @@
 
 - 委譲しない: 数回の tool call で終わる作業、結論より過程の共有が要る作業、自分の作業の検証・ダブルチェック目的（例外はセキュリティ / 権限設計・不可逆な操作・長時間の自律実行を含む変更で、このときだけ fresh context のレビューを 1 体立ててよい）
 - 直列依存（前タスクの結果が次の入力）は並列化しない。隔離だけが目的なら 1 体ずつ順に使う
-- 並列度は独立トラックの数で決める。1 体で足りるなら 1 体にし、spawn 数は低く保つ。抑えたいのは「利得の無い委譲」であって同時実行数ではない
-- 通常の subagent は fresh context で、会話履歴・読んだファイル・invoke 済み skill・auto memory を引き継がない。必要な前提はプロンプトに明示して渡す
-- 1 session 内の委譲と、独立 session を並べる仕組み（background session・cross-session messaging・agent teams・workflow）は別物。後者は既定では使わず、必要と判断したらユーザーに諮る
+- 並列度は独立トラックの数で決める。1 体で足りるなら 1 体にし、spawn 数は低く保つ。抑えたいのは「利得の無い委譲」であって同時実行数ではないので、runtime 側の同時実行・nesting の上限を設定で下げない
+- subagent は fresh context で会話履歴を引き継がない。必要な前提はプロンプトに明示して渡す
+- 1 session 内の委譲と、独立 session を並べる仕組みは別物。後者は既定では使わず、必要と判断したらユーザーに諮る
 
-worktree isolation（`isolation: worktree`）は書込の競合で判断する。`subagent = worktree` にはしない（fresh checkout の作り直しコストが掛かり、変更が残ると sweep まで作業木に残る）。
+worktree isolation は書込の競合で判断する。`subagent = worktree` にはしない。
 
 - 要る: 2 体以上が同じ repo へ同時に書き込む / 親が編集中のファイルに触る / 長時間の自律実行で途中状態を親へ混ぜたくない
 - 要らない: read-only の調査・レビュー、書込先が重ならない作業、単発の小さな修正
 - 成果は commit / branch 経由で受け取る。親から worktree 内のファイルを直接読み書きしない
-- Claude Code が作る worktree（`.claude/worktrees/` 配下）は ephemeral で lifecycle owner は Claude Code。人間が後から戻る作業場はその repo の worktree workflow が持つ。agent の隔離をそちらの代わりに使わない
+- agent が作る worktree は ephemeral で、lifecycle の owner は agent 側。人間が後から戻る作業場はその repo の worktree workflow が持つ。agent の隔離をそちらの代わりに使わない
 
 ## 報告
 
