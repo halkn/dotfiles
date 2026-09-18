@@ -1,0 +1,27 @@
+#!/usr/bin/env zsh
+#MISE hide=true
+# Skill content stays in context for the rest of the session once loaded, so length is a
+# recurring cost rather than a style preference. SKILL.md is read whenever the skill fires;
+# a reference file only when it is opened, so it gets the smaller share of attention.
+set -uo pipefail
+
+rc=0
+
+check() {
+  local f=$1 budget=$2 n
+  n=$(wc -l <"$f" | tr -d ' ')
+  if ((n > budget)); then
+    print "$f: $n lines exceeds the $budget-line budget; move detail to references/ or drop what the official docs already state" >&2
+    rc=1
+  fi
+}
+
+for f in .claude/skills/*/SKILL.md(N); do
+  check "$f" 100
+done
+
+for f in .claude/skills/*/references/*.md(N); do
+  check "$f" 80
+done
+
+exit $rc
