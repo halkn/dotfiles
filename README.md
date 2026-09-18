@@ -96,8 +96,8 @@ small `.zshenv` stub that sets `ZDOTDIR` and hands off to it.
 | `test/*.zsh` | Run by `mise run test:zsh` |
 
 Which layer a change belongs in, and the constraints each layer carries, are in
-`.claude/rules/zsh.md`. Why an individual function is written the way it is
-belongs in that file's own header comment.
+`.claude/skills/zsh-workflows/SKILL.md`. Why an individual function is written
+the way it is belongs in that file's own header comment.
 
 Interactive selection goes through [fzf](https://github.com/junegunn/fzf):
 `<command> **<TAB>` completions and the `Ctrl-R` / `Ctrl-T` / `Alt-C` widgets
