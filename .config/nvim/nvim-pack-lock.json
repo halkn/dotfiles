@@ -10,11 +10,11 @@
       "src": "https://github.com/monaqa/dial.nvim"
     },
     "gitsigns.nvim": {
-      "rev": "5be654f2232c10ddcad19c1607a67b6b4b78fc29",
+      "rev": "8d79f2410c76e62b92e51c28c82e28c1c5a3daeb",
       "src": "https://github.com/lewis6991/gitsigns.nvim"
     },
     "kago.nvim": {
-      "rev": "231ef4f79ea77c1556c6f8d3dd08014da6580e54",
+      "rev": "e8e8639059142f9151e6dae80600c3800888bc2e",
       "src": "https://github.com/halkn/kago.nvim"
     },
     "kanagawa.nvim": {
@@ -22,11 +22,11 @@
       "src": "https://github.com/rebelot/kanagawa.nvim"
     },
     "nvim-treesitter": {
-      "rev": "427e9222363d07c32d6db6169e4049c28d58d141",
+      "rev": "9a168f6357ed21c3a636e1727bc7d382abc451b8",
       "src": "https://github.com/nvim-treesitter/nvim-treesitter"
     },
     "nvim-web-devicons": {
-      "rev": "5f032a85be210cd1c6ac98861eb3b187ff3bd5eb",
+      "rev": "914decffe650296c87312c53b7933ecb86718499",
       "src": "https://github.com/nvim-tree/nvim-web-devicons"
     }
   }
