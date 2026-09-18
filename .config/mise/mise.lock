@@ -203,15 +203,21 @@ url = "https://nodejs.org/dist/v26.8.2/node-v26.8.2-linux-x64.tar.gz"
 checksum = "sha256:974b6d5fb2fc7c33ff2354db0902b4e91c2de01ec8acc6de48e543c97e18c9e1"
 url = "https://nodejs.org/dist/v26.8.2/node-v26.8.2-darwin-arm64.tar.gz"
 
-[[tools."pipx:ryl"]]
+[[tools."pypi:ryl"]]
 version = "0.22.0"
-backend = "pipx:ryl"
+backend = "pypi:ryl"
 specifiers = ["latest"]
 
-[[tools."pipx:shuck-cli"]]
+[tools."pypi:ryl".options]
+uvx_args = "--resolution highest"
+
+[[tools."pypi:shuck-cli"]]
 version = "0.2.2"
-backend = "pipx:shuck-cli"
+backend = "pypi:shuck-cli"
 specifiers = ["latest"]
+
+[tools."pypi:shuck-cli".options]
+uvx_args = "--resolution highest"
 
 [[tools.ripgrep]]
 version = "15.2.0"

@@ -39,8 +39,11 @@ neovim = "stable"
 tree-sitter = "latest"
 
 # LSP / Linter / Formatter
-"pipx:ryl" = "latest"
-"pipx:shuck-cli" = "latest"
+# Passing uvx_args selects uv's version-only install path, which lets uv pick its own
+# interpreter; graph locking would instead require a mise-managed python. The value is uv's
+# default, so it changes nothing else.
+"pypi:ryl" = { version = "latest", uvx_args = "--resolution highest" }
+"pypi:shuck-cli" = { version = "latest", uvx_args = "--resolution highest" }
 rumdl = "latest"
 "go:golang.org/x/tools/gopls" = "latest"
 # No yaml language server here: ryl covers both lint and format.
