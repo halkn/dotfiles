@@ -53,16 +53,16 @@ description: このリポジトリの Claude Code 設定を監査・変更する
 
 ## 再提案しない
 
-検討して採用しなかった設定。結論だけ置く（経緯は各 commit にある）。
+検討して採用しなかった設定。結論だけ置く（経緯は各 commit にある）。バージョンを添えたものは、その版で測った結果に基づくので、現行と一致しなくなったら再検討してよい。
 
-- `env.CLAUDE_CODE_SUBPROCESS_ENV_SCRUB`: Bash tool が広範に壊れる
+- `env.CLAUDE_CODE_SUBPROCESS_ENV_SCRUB`: Bash tool が広範に機能不全を起こし、`permissions.defaultMode: "auto"` も正しく反映されなかった（2026-07・v2.1.220 で実測）。再検討するなら、まず狭いスコープで再現するか確かめる
 - `~/.cache` を丸ごと allow して例外を `denyWrite` で列挙する形: fail-open になる
-- `sandbox.network.tlsTerminate` と `credentials.envVars` の `mode: "mask"`
+- `sandbox.network.tlsTerminate` と `credentials.envVars` の `mode: "mask"`: 後者は sandbox proxy が sentinel を実値へ差し替える仕組みなので、`excludedCommands` で外を走る `gh` には適用されない
 - `az *` の `excludedCommands` 除外: `strictAllowlist` を迂回する egress 経路になる
-- `gh *` の除外を外すこと: sandbox 内の `gh` は keyring と TLS の 2 系統で壊れる（維持する）
-- `Bash(git push --force*)` の deny: `--force-with-lease` まで塞ぐ。ask で足りる
+- `gh *` の除外を外すこと: sandbox 内の `gh` は keyring と TLS の 2 系統で壊れる（v2.1.226・macOS。維持する）
+- `Bash(git push --force*)` の deny: `--force-with-lease` まで塞ぐ。soft_deny の `Git Destructive` が拾うので ask で足りる
 - `.worktreeinclude`: gitignored file を agent の checkout へ複製すると露出面が広がる
-- subagent の同時実行数・nesting 深さを `env` で下げること: 抑えたいのは委譲の判断の質であって同時実行数ではない
+- subagent の同時実行数・nesting 深さを `env` で下げること: 抑えたいのは委譲の判断の質であって同時実行数ではない。下げると有効な並列作業まで塞ぐ
 
 ## References
 

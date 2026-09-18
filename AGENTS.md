@@ -27,7 +27,7 @@
 - macOS に GNU `timeout` は無い。timeout が要る script は `timeout` / `gtimeout` / 直接実行の順にフォールバックする
 - 整形は `mise run fmt` に任せる（`shuck`・`stylua`・`rumdl`）
 - コードコメントは英語で書く。識別子・コマンド名と同じ語彙で書けるため。ユーザーに表示される文字列（hook の拒否メッセージ、`mise` の task description）は日本語のまま
-- 判断基準・手順・実測記録は skill が持つ。対象を触る前に、その skill を読む
+- 判断基準・手順・実測記録は skill が持つ。対象を触る前に、その skill を読む。長さは `mise run lint`（`lint:skills`）が検査し、`SKILL.md` 100 行・`references/*.md` 80 行を超えると落ちる
   - `.config/nvim/**`・`**/*.lua` → `.claude/skills/neovim-lua/SKILL.md`
   - `.config/zsh/**`・`.config/herdr/**`・`**/*.zsh`・`.zshenv` → `.claude/skills/zsh-workflows/SKILL.md`
   - `claude/**`・`.claude/**` → `.claude/skills/claude-code-settings/SKILL.md`
