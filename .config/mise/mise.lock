@@ -38,19 +38,19 @@ url = "https://github.com/sharkdp/fd/releases/download/v10.5.0/fd-v10.5.0-aarch6
 url_api = "https://api.github.com/repos/sharkdp/fd/releases/assets/530481346"
 
 [[tools.fzf]]
-version = "0.74.3"
+version = "0.74.4"
 backend = "aqua:junegunn/fzf"
 specifiers = ["latest"]
 
 [tools.fzf."platforms.linux-x64"]
-checksum = "sha256:3501a595e4b5c40a6b047340a0e8f805c46fd4e61ef95ef8a136ba8c61cf6f22"
-url = "https://github.com/junegunn/fzf/releases/download/v0.74.3/fzf-0.74.3-linux_amd64.tar.gz"
-url_api = "https://api.github.com/repos/junegunn/fzf/releases/assets/517537066"
+checksum = "sha256:05e6813a337cc722c3ed07e54a764b75cc5d671e2e60459db0ba696ee5fa7504"
+url = "https://github.com/junegunn/fzf/releases/download/v0.74.4/fzf-0.74.4-linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/junegunn/fzf/releases/assets/558287768"
 
 [tools.fzf."platforms.macos-arm64"]
-checksum = "sha256:1f8501cea4f9c0c2d6110d0ff75d0ec9451cd9d7524d9a26244a154ea89f3bd5"
-url = "https://github.com/junegunn/fzf/releases/download/v0.74.3/fzf-0.74.3-darwin_arm64.tar.gz"
-url_api = "https://api.github.com/repos/junegunn/fzf/releases/assets/517537091"
+checksum = "sha256:4f6a113bfc0c7959e0005c78d566a51afc4fcefc956f43735c62a9deb19e92ae"
+url = "https://github.com/junegunn/fzf/releases/download/v0.74.4/fzf-0.74.4-darwin_arm64.tar.gz"
+url_api = "https://api.github.com/repos/junegunn/fzf/releases/assets/558287774"
 
 [[tools.gh]]
 version = "2.100.0"
@@ -148,19 +148,19 @@ url = "https://github.com/herdrdev/herdr/releases/download/v0.9.0/herdr-macos-aa
 url_api = "https://api.github.com/repos/herdrdev/herdr/releases/assets/549270162"
 
 [[tools.hunk]]
-version = "0.21.1"
+version = "0.22.0"
 backend = "aqua:modem-dev/hunk"
 specifiers = ["latest"]
 
 [tools.hunk."platforms.linux-x64"]
-checksum = "sha256:c7d1e23ba4ffb6ca3330797e9f0c82dbada50e3cfe1b719f4194747f2cbca122"
-url = "https://github.com/modem-dev/hunk/releases/download/v0.21.1/hunkdiff-linux-x64.tar.gz"
-url_api = "https://api.github.com/repos/modem-dev/hunk/releases/assets/545159494"
+checksum = "sha256:5f280374f2ab0fc4c48266a9909ee1b0e0c59d77dd99a340f1c26f2125d2229b"
+url = "https://github.com/modem-dev/hunk/releases/download/v0.22.0/hunkdiff-linux-x64.tar.gz"
+url_api = "https://api.github.com/repos/modem-dev/hunk/releases/assets/554957247"
 
 [tools.hunk."platforms.macos-arm64"]
-checksum = "sha256:c78d881ff3e68258ca6be7da20d786edc05993a535cc5bba2e4a298ddc1801ba"
-url = "https://github.com/modem-dev/hunk/releases/download/v0.21.1/hunkdiff-darwin-arm64.tar.gz"
-url_api = "https://api.github.com/repos/modem-dev/hunk/releases/assets/545159496"
+checksum = "sha256:0f562fdd6ab346c7d91c4755e3d9409fce1d2f72da81efd52bdb7e4431c4b05e"
+url = "https://github.com/modem-dev/hunk/releases/download/v0.22.0/hunkdiff-darwin-arm64.tar.gz"
+url_api = "https://api.github.com/repos/modem-dev/hunk/releases/assets/554957248"
 
 [[tools.jq]]
 version = "1.8.2"
@@ -235,20 +235,20 @@ url = "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15
 url_api = "https://api.github.com/repos/BurntSushi/ripgrep/releases/assets/478118851"
 
 [[tools.rumdl]]
-version = "0.2.69"
+version = "0.2.73"
 backend = "aqua:rvben/rumdl"
 specifiers = ["latest"]
 
 [tools.rumdl."platforms.linux-x64"]
-checksum = "sha256:751da4b8c4e750bdbc8ade05386e626ba113f799113379154f521e9b895acaeb"
-url = "https://github.com/rvben/rumdl/releases/download/v0.2.69/rumdl-v0.2.69-x86_64-unknown-linux-gnu.tar.gz"
-url_api = "https://api.github.com/repos/rvben/rumdl/releases/assets/551300434"
+checksum = "sha256:d56a8e40471af32fe3229e845f3e299e3691665b15cd4ca28f2deb502c487666"
+url = "https://github.com/rvben/rumdl/releases/download/v0.2.73/rumdl-v0.2.73-x86_64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/rvben/rumdl/releases/assets/557839623"
 provenance = "github-attestations"
 
 [tools.rumdl."platforms.macos-arm64"]
-checksum = "sha256:50dfbf4ead730afc39f2a42298277e6e3389dfb44b62a061155724afdd97c270"
-url = "https://github.com/rvben/rumdl/releases/download/v0.2.69/rumdl-v0.2.69-aarch64-apple-darwin.tar.gz"
-url_api = "https://api.github.com/repos/rvben/rumdl/releases/assets/551300424"
+checksum = "sha256:54e0e7c3031b8bfa37e3c57104cc0c93988e02f5b7023c1804749fd180822f9e"
+url = "https://github.com/rvben/rumdl/releases/download/v0.2.73/rumdl-v0.2.73-aarch64-apple-darwin.tar.gz"
+url_api = "https://api.github.com/repos/rvben/rumdl/releases/assets/557839617"
 provenance = "github-attestations"
 
 [[tools.starship]]
@@ -284,20 +284,20 @@ url_api = "https://api.github.com/repos/tree-sitter/tree-sitter/releases/assets/
 provenance = "github-attestations"
 
 [[tools.uv]]
-version = "0.12.12"
+version = "0.12.14"
 backend = "aqua:astral-sh/uv"
 specifiers = ["latest"]
 
 [tools.uv."platforms.linux-x64"]
-checksum = "sha256:ab9b309d4586403f024e100abaceb396616e178a553e2500c36087d180f09509"
-url = "https://github.com/astral-sh/uv/releases/download/0.12.12/uv-x86_64-unknown-linux-gnu.tar.gz"
-url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/553169491"
+checksum = "sha256:18ef5c3888ae59828cb13f38d57e9389b8173ecc719eff163bfafc74b38f5936"
+url = "https://github.com/astral-sh/uv/releases/download/0.12.14/uv-x86_64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/564686594"
 provenance = "github-attestations"
 
 [tools.uv."platforms.macos-arm64"]
-checksum = "sha256:46740540b63fdee9a6cb2e19baf3f1f475b850c440a33e63455087a6871263f1"
-url = "https://github.com/astral-sh/uv/releases/download/0.12.12/uv-aarch64-apple-darwin.tar.gz"
-url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/553169165"
+checksum = "sha256:dfed5683c5873d65eff8476eb93526059b81e5646a68305b5c94a26b29990894"
+url = "https://github.com/astral-sh/uv/releases/download/0.12.14/uv-aarch64-apple-darwin.tar.gz"
+url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/564686475"
 provenance = "github-attestations"
 
 [[tools.yq]]
