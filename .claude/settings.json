@@ -5,11 +5,13 @@
         "./",
         "~/.zshenv",
         "~/.local/share/nvim",
-        "~/.local/share/zsh"
+        "~/.local/share/zsh",
+        "~/.local/state/nvim"
       ],
       "allowWrite": [
         "~/.local/share/zsh",
-        "~/.local/share/nvim"
+        "~/.local/share/nvim",
+        "~/.local/state/nvim"
       ]
     }
   },
