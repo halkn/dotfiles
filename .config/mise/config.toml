@@ -33,6 +33,7 @@ yq = "latest"
 # vcs
 gh = "latest"
 hunk = "latest"
+"github:halkn/git-fz" = { version = "latest", minimum_release_age = "0s" }
 
 # editor
 neovim = "stable"

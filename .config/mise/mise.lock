@@ -84,6 +84,21 @@ checksum = "sha256:7281f27bfc4de8d6306d3e6aae78fc42954a6c0835664cfdc90ea1b3a1104
 url = "https://github.com/halkn/docsail/releases/download/v0.4.0/docsail-0.4.0-aarch64-apple-darwin.tar.gz"
 url_api = "https://api.github.com/repos/halkn/docsail/releases/assets/497382870"
 
+[[tools."github:halkn/git-fz"]]
+version = "0.1.0"
+backend = "github:halkn/git-fz"
+specifiers = ["latest"]
+
+[tools."github:halkn/git-fz"."platforms.linux-x64"]
+checksum = "sha256:2aab16bf06928b7c413a322612dab3737fe75763220c0340c86f7434265dd109"
+url = "https://github.com/halkn/git-fz/releases/download/v0.1.0/git-fz-0.1.0-x86_64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/halkn/git-fz/releases/assets/574276557"
+
+[tools."github:halkn/git-fz"."platforms.macos-arm64"]
+checksum = "sha256:0846d82875b6d77f6aabb4626a8a0bbf699b260af160046c0553b4e2825a3272"
+url = "https://github.com/halkn/git-fz/releases/download/v0.1.0/git-fz-0.1.0-aarch64-apple-darwin.tar.gz"
+url_api = "https://api.github.com/repos/halkn/git-fz/releases/assets/574276561"
+
 [[tools."github:halkn/mdiv"]]
 version = "0.2.2"
 backend = "github:halkn/mdiv"
