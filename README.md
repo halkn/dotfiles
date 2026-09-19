@@ -91,7 +91,7 @@ small `.zshenv` stub that sets `ZDOTDIR` and hands off to it.
 | --- | --- |
 | `.zshenv` | The shared environment and PATH |
 | `.zshrc` | The portable interactive core, plus tool setup guarded by `command -v` so a machine without those tools still gets a working shell |
-| `workflows/*.zsh` | The commands you type: `wk`, `gst`, `ghsetup` |
+| `workflows/*.zsh` | The commands you type: `wk`, `ghsetup` |
 | `lib/*.zsh` | One file per kind of information those commands work on |
 | `test/*.zsh` | Run by `mise run test:zsh` |
 
@@ -102,6 +102,10 @@ the way it is belongs in that file's own header comment.
 Interactive selection goes through [fzf](https://github.com/junegunn/fzf):
 `<command> **<TAB>` completions and the `Ctrl-R` / `Ctrl-T` / `Alt-C` widgets
 are set up in the `fzf` section of `.zshrc`.
+
+Selecting branches, commits and files to stage is not part of that: it lives in
+[git-fz](https://github.com/halkn/git-fz) as `git fz switch`, `git fz log` and
+`git fz stage`, installed as a tool like any other.
 
 ## Working on repositories: `wk`
 

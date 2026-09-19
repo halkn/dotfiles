@@ -45,7 +45,7 @@ done
   for f in "$1"/workflows/*.zsh(On) "$1"/workflows/*.zsh; do
     source "$f"
   done
-  for fn in wk gst ghsetup _wk_go_pick _wk_open_pick _wk_new; do
+  for fn in wk ghsetup _wk_go_pick _wk_open_pick _wk_new; do
     whence -w "$fn" >/dev/null
   done
 ' -- "$zsh_dir" || fail 'workflow load order or repeated sourcing'
@@ -55,7 +55,7 @@ for f in "$zsh_dir"/workflows/*.zsh; do
 done
 
 # 2. Every entry point is defined even though its dependencies are missing.
-for fn in wk gst ghsetup; do
+for fn in wk ghsetup; do
   whence -w "$fn" >/dev/null 2>&1 || fail "$fn is not defined"
 done
 
@@ -82,7 +82,6 @@ expect_guard 'wk: fzf is not installed' wk open
 expect_guard 'wk: gh is not installed' wk get
 expect_guard 'wk: gh is not installed' wk pr
 expect_guard 'wk: fzf is not installed' wk rm
-expect_guard 'gst: fzf is not installed' gst
 expect_guard 'ghsetup: gh is not installed' ghsetup
 
 # An unknown subcommand is a typo, not a picker with a query.

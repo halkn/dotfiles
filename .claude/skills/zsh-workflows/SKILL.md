@@ -11,10 +11,11 @@ description: このリポジトリの zsh 設定を変更するときに使う�
 **置き場所:**
 
 - `.zshrc`: interactive zsh を成立させる基盤（history・options・completion・keybind・alias）と、軽量な tool init。fzf の widget や `eza`・`nvim` の上書きのように、無くても標準の動作が残るものはここで `command -v` 分岐する
-- `.config/zsh/workflows/*.zsh`: ユーザーが打つコマンド（`wk`・`gst`・`ghsetup`）。操作はサブコマンドで表す。新しい操作は、既存コマンドが扱う対象と同じならサブコマンドとして足す。対象が別（`ghsetup` は GitHub 上の repo 設定で、`wk` の扱う checkout ではない）のときだけ新ファイルにする
+- `.config/zsh/workflows/*.zsh`: ユーザーが打つコマンド（`wk`・`ghsetup`）。操作はサブコマンドで表す。新しい操作は、既存コマンドが扱う対象と同じならサブコマンドとして足す。対象が別（`ghsetup` は GitHub 上の repo 設定で、`wk` の扱う checkout ではない）のときだけ新ファイルにする
 - `.config/zsh/lib/*.zsh`: 扱う情報ごとの層。`checkout`（ローカルの path 規約）・`forge`（リモートの forge とそこでの repo 設定）・`session`（herdr）・`ui`（fzf chrome・依存チェック・preview）。分割の軸に外部ツール名を使わない。`session` を herdr を呼ぶ唯一の層にする形で境界を作る
 - lib は workflows も他の lib も source しない。他層の情報が要るときは呼び出し側が引数で渡す（`_forge_repo_rows <root> ...`）。workflow は自身の path から必要な lib を source する
-- workflow に function を置くのは「選択の後に判断が続く」とき（cd 先・削除の可否・ピッカー内で完結する stage / restore）。選択 + 単一コマンドで終わるものは function を作らず、`.zshrc` の `_fzf_comprun` / `_fzf_complete_<cmd>` に寄せて `<コマンド> **<TAB>` から引く
+- branch・commit・staging の選択は `git-fz`（`git fz switch` / `log` / `stage`）が持つ。zsh 側に再実装せず、足りない操作は git-fz 側の Issue にする
+- workflow に function を置くのは「選択の後に判断が続く」とき（cd 先・削除の可否・ピッカーを開いたまま続く操作）。選択 + 単一コマンドで終わるものは function を作らず、`.zshrc` の `_fzf_comprun` / `_fzf_complete_<cmd>` に寄せて `<コマンド> **<TAB>` から引く
 - fzf の共通オプション（見た目・キー）は `.zshrc` の `FZF_DEFAULT_OPTS`。候補生成と preview はコマンド側の関心なので、行データは lib の function を呼んで得る
 - checkout の状態は git に聞く。zsh 側に状態のキャッシュや在庫を持たない。一覧は path のレイアウト（`$WT_ROOT/<owner>/<repo>/<branch>`・`$REPO_ROOT/<host>/<...>/<repo>`）から作り、git を呼ぶのは preview と実行の瞬間だけにする（行数分の process を増やさない）
 
