@@ -31,19 +31,21 @@ itself is installed in the bootstrap below.
    cd "$HOME/repos/github.com/halkn/dotfiles"
    ```
 
-1. Install mise and run the full setup. `mise trust` whitelists this repo's
-   `mise.toml` so the tasks are allowed to run.
+1. Install mise and bootstrap the machine. `mise trust` whitelists this repo's
+   `mise.toml` so its declarations are allowed to run.
 
    ```sh
    curl https://mise.run | sh
    export PATH="$HOME/.local/bin:$PATH"
    mise trust
-   mise run setup
+   mise bootstrap --yes --update
    ```
 
-`mise run setup` (= `mise bootstrap --yes --update`) converges every
-machine-state declaration in `mise.toml` and is idempotent. It may prompt for
-sudo when installing OS packages and for your password during `chsh`.
+This converges every machine-state declaration in `mise.toml` and is
+idempotent. It may prompt for sudo when installing OS packages and for your
+password during `chsh`. `--update` is for the package index a fresh machine has
+never fetched; it also fast-forwards `[bootstrap.repos]`, harmless here because
+they are being cloned.
 
 If a target like `~/.config` already exists as a real directory (not a
 symlink), mise won't overwrite it. Back it up yourself first (e.g.
@@ -52,8 +54,9 @@ symlink), mise won't overwrite it. Back it up yourself first (e.g.
 `mise bootstrap --dry-run` or `mise bootstrap status` first.
 
 When the bootstrap finishes, reopen the terminal (or start a new login
-shell) to enter zsh with the linked config. `setup` is for the first run on a
-machine; afterwards use `sync` and `update`, see [Tool Manager](#tool-manager).
+shell) to enter zsh with the linked config. This command is the first run on a
+machine and is not repeated; afterwards use `mise run sync` and
+`mise run update`, see [Tool Manager](#tool-manager).
 
 ### Git identity
 
@@ -202,15 +205,22 @@ repository's `mise run` uses (the Lua toolchain) stay in `mise.toml`.
 standalone, because its own installer is the supported path and it should
 always be on the latest version.
 
-Each configuration root has its own committed lockfile: `.config/mise/mise.lock`
-and `mise.lock`. Only `mise run update` moves the versions in them; `setup` and
-`sync` install what the lockfiles already pin. Commit any lockfile diff either
-way — after `update` it is the update itself, after `setup` or `sync` it means a
-newly declared tool had no locked version yet. `mise run update` runs `mise lock`
-for both config roots because an upgrade only records the platform it ran on,
-while the lockfiles cover every platform in `lockfile_platforms`. Versions only
-move to releases older than `minimum_release_age` (3 days), so a just-published
-release is not selectable yet.
+The two roots differ in what they promise. The global config declares *which*
+tools a machine gets, not which build: there is no lockfile beside it, so each
+machine resolves `latest` when it installs, and two machines set up months apart
+land on different versions on purpose. What guards that is
+`minimum_release_age` (3 days) — a release published less than three days ago is
+not selectable, which is the window for a compromised one to be yanked upstream.
+Tools published from this account opt out of the wait per tool.
+
+`mise.lock` pins the tools declared in `mise.toml` — the Lua toolchain
+(`stylua`, `emmylua_ls`, `emmylua_check`), whose diagnostics change between
+releases and would otherwise turn `mise run lint` red on one machine and green
+on another. It does not cover the rest of what `lint` runs: `rumdl`, `shuck`
+and `nvim` are global tools and move freely, so `fmt-check` can disagree across
+machines until they are updated together. Only `mise run update` moves the
+versions in the lockfile. Commit the diff — after `update` it is the update
+itself, after `sync` it means a newly declared tool had no locked version yet.
 
 mise shell activation uses PATH mode rather than shims. Keep shell aliases and
 functions in zsh; use mise's `[env]` only for project-specific environments.
@@ -218,17 +228,18 @@ A [mise task](https://mise.jdx.dev/tasks/) whose body is a single command is
 declared in `mise.toml`; anything longer is a file task under `mise-tasks/`,
 where it keeps a real shebang and is covered by `shuck`.
 
-The three machine-state tasks are separated by the state transition they make,
-not by the commands they happen to run:
+The two machine-state tasks are separated by the state transition they make,
+not by the commands they happen to run. The first run on a machine is not among
+them — it is `mise bootstrap --yes --update`, typed once from
+[Setup](#bootstrap) above.
 
 | Task | Use it when | Moves versions | Touches machine-global state |
 | --- | --- | --- | --- |
-| `setup` | this machine has never been set up | zsh plugin repos only (they are unpinned, and on a first run they are being cloned) | yes — OS packages, login shell, symlinks |
-| `sync` | this repo changed (here or on another machine) and the machine should follow | no — tools come from the lockfiles | yes, the same set, by converging on the new declarations |
-| `update` | a tool or external component should move to a newer version | yes — that is its purpose | yes, but only versions of what is already declared |
+| `sync` | this repo changed (here or on another machine) and the machine should follow | no — it installs what a new declaration added and leaves what is already there | yes — OS packages, login shell, symlinks, by converging on the new declarations |
+| `update` | a tool or external component should move to a newer version | yes — it is the only task that does | yes, but only versions of what is already declared |
 
 `update` never pulls this repo: run `sync` first if you want the current
-declarations, then `update`, then commit the lockfile diffs. Its steps are
+declarations, then `update`, then commit the `mise.lock` diff. Its steps are
 independent, so a failing step is reported and the rest still run.
 
 ## Neovim plugins

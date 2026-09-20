@@ -28,7 +28,7 @@ description: このリポジトリの Claude Code 設定を監査・変更する
 
 ### 置き場所
 
-- そのコマンドを複数のリポジトリで打つかで決める。単一リポジトリでしか実行しないもの（`mise bootstrap` / `mise run setup|sync|update`）は `.claude/settings.json`、汎用のもの（`mise tasks` 等）は `claude/settings.json`。sandbox の allowRead / allowWrite も同じ基準で分ける。project settings から読まれないのは `defaultMode` と `autoMode` だけで、`permissions` の allow / deny / ask は読まれる
+- そのコマンドを複数のリポジトリで打つかで決める。単一リポジトリでしか実行しないもの（`mise bootstrap` / `mise run sync|update`）は `.claude/settings.json`、汎用のもの（`mise tasks` 等）は `claude/settings.json`。sandbox の allowRead / allowWrite も同じ基準で分ける。project settings から読まれないのは `defaultMode` と `autoMode` だけで、`permissions` の allow / deny / ask は読まれる
 - `claude/settings.json` は public repo にコミットされるため `autoMode.environment` に社内・仕事用のインフラ情報（組織名・内部ホスト名等）を書かない。仕事用の trusted infrastructure は `/Library/Application Support/ClaudeCode/managed-settings.json`（repo 外・追跡外）に記述する
 - `sandbox.credentials.envVars` はワイルドカード非対応の手動列挙。シークレット系 CLI ツールを導入したら環境変数名を追加する
 

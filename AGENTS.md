@@ -16,9 +16,9 @@
 - 変更後は `mise run fmt` → `mise run lint`。`lint` は整形チェック・各言語の検査・テストを全て含む（内訳は `mise.toml` の `depends`）
 - zsh の関数を足す・振る舞いを変えたら `.config/zsh/test/` に検査を足す
 - 既存警告が多い場合は対象ファイルに絞る（`rumdl check <file>`、`shuck format --check <file>`）
-- ツールが無い場合は先に `mise install`（lockfile 固定のまま導入される）
+- ツールが無い場合は先に `mise install`（`mise.lock` にあるものは固定のまま、グローバルツールは解決して導入される）
 - `shuck` は lint・整形ともリポジトリ全体（`.`）が対象。シェルスクリプトを足すと登録なしで検査対象になるため、追加時に `mise.toml` は変更しない
-- 更新系（`mise run setup` / `sync` / `update`）はユーザーが手動実行する
+- 更新系（`mise run sync` / `update`）と `mise bootstrap` はユーザーが手動実行する
 - `mise bootstrap --force-dotfiles` は競合ファイルをバックアップなしで上書きする。提案する前に `mise bootstrap --dry-run` で差分を示す
 - 対話操作でしか確認できない変更は、PR に手動確認の内容を 1 行添える
 

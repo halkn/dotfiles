@@ -26,7 +26,6 @@
       "Bash(mise bootstrap remote*)"
     ],
     "ask": [
-      "Bash(mise run setup)",
       "Bash(mise run sync)",
       "Bash(mise run update)",
       "Bash(mise bootstrap --yes*)",
