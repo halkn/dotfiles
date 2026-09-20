@@ -25,7 +25,6 @@ step "mise self-update" mise self-update --yes
 step "mise upgrade" mise upgrade
 # The step above leaves the platform this machine is not on the previous version.
 step "lockfile platforms" mise lock
-step "lockfile platforms (global)" mise lock --global
 step "bootstrap packages" mise bootstrap packages upgrade
 step "bootstrap repos" mise bootstrap repos update --yes
 optional_step "claude update" claude update

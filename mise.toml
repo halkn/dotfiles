@@ -1,3 +1,10 @@
+# The global config declares its tools without a lockfile, so reproducibility is opted into here,
+# for the toolchain `mise run lint` depends on. Apple Silicon macOS and WSL are the machines this
+# repository is deployed on; `mise lock` resolves both regardless of which one it runs on.
+[settings]
+lockfile = true
+lockfile_platforms = ["macos-arm64", "linux-x64"]
+
 [settings.task]
 # Installation goes through `mise bootstrap` alone, which orders packages before tools.
 # Auto-installing before a task would unpack a zip on a fresh machine before unzip is there.

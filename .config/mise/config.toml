@@ -1,12 +1,14 @@
 [settings]
 # [dotfiles] symlinks this file to ~/.config/mise/config.toml, so everything here applies to
 # every project on the machine, not just this repository.
-lockfile = true
-# Long enough for a compromised release to be yanked upstream first; tools published from this
-# account opt out per tool below.
+# No `lockfile` key on purpose. The tools below are declared, not pinned: every machine resolves
+# them at install time. Leaving it unset rather than `false` keeps mise honouring the lockfiles
+# other repositories on this machine commit.
+#
+# With no lockfile to exempt the versions, this filter is what every install of the tools below
+# passes through. Long enough for a compromised release to be yanked upstream first; tools
+# published from this account opt out per tool.
 minimum_release_age = "3d"
-# Apple Silicon macOS and WSL are the machines this repository is deployed on.
-lockfile_platforms = ["macos-arm64", "linux-x64"]
 
 [tools]
 # dev
@@ -23,6 +25,7 @@ ripgrep = "latest"
 ast-grep = "latest"
 fd = "latest"
 fzf = "latest"
+# Stays on the asdf plugin: the aqua registry builds eza from source on macos-arm64.
 eza = "latest"
 jq = "latest"
 yq = "latest"
