@@ -238,6 +238,16 @@ not by the commands they happen to run:
 declarations, then `update`, then commit the `mise.lock` diff. Its steps are
 independent, so a failing step is reported and the rest still run.
 
+Two tools sit outside `update` because they move without the version string
+moving, which is what `mise upgrade` compares. Neovim is declared as `stable`, a
+rolling tag, and follows that channel only when reinstalled:
+
+```sh
+mise uninstall neovim@stable && mise install neovim@stable
+```
+
+Claude Code is the other, and it updates itself.
+
 ## Neovim plugins
 
 Neovim plugins are managed by the built-in `vim.pack`; their lockfile is

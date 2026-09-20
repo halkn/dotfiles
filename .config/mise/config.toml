@@ -39,6 +39,8 @@ hunk = "latest"
 "github:halkn/git-fz" = { version = "latest", minimum_release_age = "0s" }
 
 # editor
+# `stable` is a rolling tag, so the resolved version never changes and `mise upgrade` has nothing
+# to move. Reinstall to pick up a new release.
 neovim = "stable"
 tree-sitter = "latest"
 
