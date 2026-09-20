@@ -240,14 +240,6 @@ them — it is `mise bootstrap --yes --update`, typed once from
 declarations, then `update`, then commit the `mise.lock` diff. Its steps are
 independent, so a failing step is reported and the rest still run.
 
-Neovim sits outside `update`: `stable` is a rolling tag, so the version string
-`mise upgrade` compares never moves. It follows the channel only when
-reinstalled.
-
-```sh
-mise uninstall neovim@stable && mise install neovim@stable
-```
-
 ## Neovim plugins
 
 Neovim plugins are managed by the built-in `vim.pack`; their lockfile is

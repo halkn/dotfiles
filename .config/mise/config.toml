@@ -21,7 +21,6 @@ ripgrep = "latest"
 ast-grep = "latest"
 fd = "latest"
 fzf = "latest"
-# The aqua registry builds eza from source on macos-arm64; the asdf plugin ships binaries.
 eza = "latest"
 jq = "latest"
 yq = "latest"
@@ -35,9 +34,7 @@ hunk = "latest"
 "github:halkn/git-fz" = { version = "latest", minimum_release_age = "0s" }
 
 # editor
-# `stable` is a rolling tag, so the resolved version never changes and `mise upgrade` has nothing
-# to move.
-neovim = "stable"
+"aqua:neovim/neovim" = "latest"
 tree-sitter = "latest"
 
 # LSP / Linter / Formatter
