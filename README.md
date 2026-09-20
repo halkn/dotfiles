@@ -213,12 +213,14 @@ land on different versions on purpose. What guards that is
 not selectable, which is the window for a compromised one to be yanked upstream.
 Tools published from this account opt out of the wait per tool.
 
-`mise.lock` pins only what this repository's `mise run lint` depends on, where a
-toolchain that moves under you turns into a failing check. `lockfile = true`
-lives in `mise.toml` for that reason, and applies to nothing else on the
-machine. Only `mise run update` moves the versions in it. Commit the diff —
-after `update` it is the update itself, after `sync` it means a newly declared
-tool had no locked version yet.
+`mise.lock` pins the tools declared in `mise.toml` — the Lua toolchain
+(`stylua`, `emmylua_ls`, `emmylua_check`), whose diagnostics change between
+releases and would otherwise turn `mise run lint` red on one machine and green
+on another. It does not cover the rest of what `lint` runs: `rumdl`, `shuck`
+and `nvim` are global tools and move freely, so `fmt-check` can disagree across
+machines until they are updated together. Only `mise run update` moves the
+versions in the lockfile. Commit the diff — after `update` it is the update
+itself, after `sync` it means a newly declared tool had no locked version yet.
 
 mise shell activation uses PATH mode rather than shims. Keep shell aliases and
 functions in zsh; use mise's `[env]` only for project-specific environments.
