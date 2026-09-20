@@ -202,15 +202,22 @@ repository's `mise run` uses (the Lua toolchain) stay in `mise.toml`.
 standalone, because its own installer is the supported path and it should
 always be on the latest version.
 
-Each configuration root has its own committed lockfile: `.config/mise/mise.lock`
-and `mise.lock`. Only `mise run update` moves the versions in them; `setup` and
-`sync` install what the lockfiles already pin. Commit any lockfile diff either
-way — after `update` it is the update itself, after `setup` or `sync` it means a
-newly declared tool had no locked version yet. `mise run update` runs `mise lock`
-for both config roots because an upgrade only records the platform it ran on,
-while the lockfiles cover every platform in `lockfile_platforms`. Versions only
-move to releases older than `minimum_release_age` (3 days), so a just-published
-release is not selectable yet.
+The two roots differ in what they promise. The global config declares *which*
+tools a machine gets, not which build: there is no lockfile beside it, so each
+machine resolves `latest` when it installs, and two machines set up months apart
+land on different versions on purpose. What guards that is
+`minimum_release_age` (3 days) — a release published less than three days ago is
+not selectable, which is the window for a compromised one to be yanked upstream.
+Tools published from this account opt out of the wait per tool.
+
+`mise.lock` pins only what this repository's `mise run lint` depends on, where a
+toolchain that moves under you turns into a failing check. `lockfile = true`
+lives in `mise.toml` for that reason, and applies to nothing else on the
+machine. Only `mise run update` moves the versions in it, and it runs `mise lock`
+afterwards because an upgrade records just the platform it ran on while the
+lockfile covers both platforms in `lockfile_platforms`. Commit the diff — after
+`update` it is the update itself, after `setup` or `sync` it means a newly
+declared tool had no locked version yet.
 
 mise shell activation uses PATH mode rather than shims. Keep shell aliases and
 functions in zsh; use mise's `[env]` only for project-specific environments.
@@ -223,12 +230,12 @@ not by the commands they happen to run:
 
 | Task | Use it when | Moves versions | Touches machine-global state |
 | --- | --- | --- | --- |
-| `setup` | this machine has never been set up | zsh plugin repos only (they are unpinned, and on a first run they are being cloned) | yes — OS packages, login shell, symlinks |
-| `sync` | this repo changed (here or on another machine) and the machine should follow | no — tools come from the lockfiles | yes, the same set, by converging on the new declarations |
-| `update` | a tool or external component should move to a newer version | yes — that is its purpose | yes, but only versions of what is already declared |
+| `setup` | this machine has never been set up | it picks the first versions, since nothing is installed yet | yes — OS packages, login shell, symlinks |
+| `sync` | this repo changed (here or on another machine) and the machine should follow | no — it installs what a new declaration added and leaves what is already there | yes, the same set, by converging on the new declarations |
+| `update` | a tool or external component should move to a newer version | yes — it is the only task that does | yes, but only versions of what is already declared |
 
 `update` never pulls this repo: run `sync` first if you want the current
-declarations, then `update`, then commit the lockfile diffs. Its steps are
+declarations, then `update`, then commit the `mise.lock` diff. Its steps are
 independent, so a failing step is reported and the rest still run.
 
 ## Neovim plugins
