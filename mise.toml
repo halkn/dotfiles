@@ -58,18 +58,12 @@ login_shell = "/bin/zsh"
 "~/.local/share/zsh/plugins/zsh-autosuggestions" = { url = "https://github.com/zsh-users/zsh-autosuggestions" }
 "~/.local/share/zsh/plugins/fast-syntax-highlighting" = { url = "https://github.com/zdharma-continuum/fast-syntax-highlighting" }
 
-# `--update` refreshes the package manager metadata, which a fresh machine has never fetched;
-# it also fast-forwards [bootstrap.repos], harmless on a first run because they are being cloned.
-[tasks.setup]
-description = "初回セットアップ（パッケージ索引更新 → 宣言状態へ収束）"
-run = "mise bootstrap --yes --update"
-
 # ── Maintenance ──────────────────────────────────────
 
 # Full convergence, not just `mise install`: a pulled commit can change any declaration
 # ([dotfiles], [bootstrap.packages], [bootstrap.repos], [bootstrap.user]), and installing tools
-# alone would leave the rest of the machine on the previous declaration. No `--update`, so
-# versions only move where the lockfile moved.
+# alone would leave the rest of the machine on the previous declaration. No `--update`, which
+# would fast-forward [bootstrap.repos]; moving versions belongs to `update` alone.
 [tasks.sync]
 description = "リポジトリの更新を取り込み、宣言状態へ収束"
 run = ["git pull --ff-only", "mise bootstrap --yes"]

@@ -31,19 +31,21 @@ itself is installed in the bootstrap below.
    cd "$HOME/repos/github.com/halkn/dotfiles"
    ```
 
-1. Install mise and run the full setup. `mise trust` whitelists this repo's
-   `mise.toml` so the tasks are allowed to run.
+1. Install mise and bootstrap the machine. `mise trust` whitelists this repo's
+   `mise.toml` so its declarations are allowed to run.
 
    ```sh
    curl https://mise.run | sh
    export PATH="$HOME/.local/bin:$PATH"
    mise trust
-   mise run setup
+   mise bootstrap --yes --update
    ```
 
-`mise run setup` (= `mise bootstrap --yes --update`) converges every
-machine-state declaration in `mise.toml` and is idempotent. It may prompt for
-sudo when installing OS packages and for your password during `chsh`.
+This converges every machine-state declaration in `mise.toml` and is
+idempotent. It may prompt for sudo when installing OS packages and for your
+password during `chsh`. `--update` refreshes the package manager metadata,
+which a fresh machine has never fetched; it also fast-forwards
+`[bootstrap.repos]`, which is harmless here because they are being cloned.
 
 If a target like `~/.config` already exists as a real directory (not a
 symlink), mise won't overwrite it. Back it up yourself first (e.g.
@@ -52,8 +54,9 @@ symlink), mise won't overwrite it. Back it up yourself first (e.g.
 `mise bootstrap --dry-run` or `mise bootstrap status` first.
 
 When the bootstrap finishes, reopen the terminal (or start a new login
-shell) to enter zsh with the linked config. `setup` is for the first run on a
-machine; afterwards use `sync` and `update`, see [Tool Manager](#tool-manager).
+shell) to enter zsh with the linked config. This command is the first run on a
+machine and is not repeated; afterwards use `mise run sync` and
+`mise run update`, see [Tool Manager](#tool-manager).
 
 ### Git identity
 
@@ -216,8 +219,8 @@ lives in `mise.toml` for that reason, and applies to nothing else on the
 machine. Only `mise run update` moves the versions in it, and it runs `mise lock`
 afterwards because an upgrade records just the platform it ran on while the
 lockfile covers both platforms in `lockfile_platforms`. Commit the diff — after
-`update` it is the update itself, after `setup` or `sync` it means a newly
-declared tool had no locked version yet.
+`update` it is the update itself, after `sync` it means a newly declared tool
+had no locked version yet.
 
 mise shell activation uses PATH mode rather than shims. Keep shell aliases and
 functions in zsh; use mise's `[env]` only for project-specific environments.
@@ -225,13 +228,15 @@ A [mise task](https://mise.jdx.dev/tasks/) whose body is a single command is
 declared in `mise.toml`; anything longer is a file task under `mise-tasks/`,
 where it keeps a real shebang and is covered by `shuck`.
 
-The three machine-state tasks are separated by the state transition they make,
-not by the commands they happen to run:
+The two machine-state tasks are separated by the state transition they make,
+not by the commands they happen to run. The first run on a machine is not among
+them: it is `mise bootstrap --yes --update`, typed once from
+[Setup](#bootstrap) above, and a task would only give a second name to a command
+that is never repeated.
 
 | Task | Use it when | Moves versions | Touches machine-global state |
 | --- | --- | --- | --- |
-| `setup` | this machine has never been set up | it picks the first versions, since nothing is installed yet | yes — OS packages, login shell, symlinks |
-| `sync` | this repo changed (here or on another machine) and the machine should follow | no — it installs what a new declaration added and leaves what is already there | yes, the same set, by converging on the new declarations |
+| `sync` | this repo changed (here or on another machine) and the machine should follow | no — it installs what a new declaration added and leaves what is already there | yes — OS packages, login shell, symlinks, by converging on the new declarations |
 | `update` | a tool or external component should move to a newer version | yes — it is the only task that does | yes, but only versions of what is already declared |
 
 `update` never pulls this repo: run `sync` first if you want the current

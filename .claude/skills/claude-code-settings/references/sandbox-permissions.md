@@ -48,7 +48,7 @@
 - `classifyAllShell` が停止するのは allow ルールだけで、`permissions.ask` は auto モードでも classifier より前に評価され必ずプロンプトを出す。よって `permissions.ask` は他モード用の fallback ではなく auto モードでの一次ガード
 - ask は allow より先に評価される。`Bash(mise bootstrap*)` のような広い prefix を ask に置くと read-only 形まで毎回プロンプトになり、同じ形を allow へ足しても外れない。read-only 形を通したいなら ask 側を狭めるしかない
 - `sandbox.network.strictAllowlist` を exfiltration の防波堤として数えない。制御するのは送信先だけで、allowlist 内にも remote code path（`codeload.github.com`）と exfiltration path（`api.github.com` の gist）が残り、proxy は TLS を検査せず client 提供のホスト名で判断する。非 HTTP の生ソケット（`nc` / `ssh` / `scp`）は proxy の対象外になりうるので deny に残す
-- 環境を変える操作は「入口が閉じているか」で書き分ける。`mise run setup|sync|update` のような task 名は閉じた集合なので、完全一致で ask に列挙して人間のチェックポイントにする。`mise bootstrap` のようにサブコマンドとフラグの形が開いているものは列挙しない。mutating 形を網羅しようとすると際限なく伸び、それでも alias 表記（`packages up`）や稀なグローバルフラグは漏れる
+- 環境を変える操作は「入口が閉じているか」で書き分ける。`mise run sync|update` のような task 名は閉じた集合なので、完全一致で ask に列挙して人間のチェックポイントにする。`mise bootstrap` のようにサブコマンドとフラグの形が開いているものは列挙しない。mutating 形を網羅しようとすると際限なく伸び、それでも alias 表記（`packages up`）や稀なグローバルフラグは漏れる
 - 開いている側は、両端と「無確認で走る形」だけをルールで固定し、残りは classifier に渡す: 他ホストへ作用するもの（`mise bootstrap remote`）は deny、取り返しがつかないが正当な用途があるもの（`mise bootstrap --force-dotfiles`）と、ツール側の確認を落とす形（`--yes` / `-y`。短縮形も併記する）は ask、完全に read-only な形（`status` / `plan` / `--dry-run`）は allow
 - ask / deny のパターンは、実際に打たれる形を `mise.toml` や `README.md` で確認してから書く。`mise bootstrap` のようにサブコマンド・フラグの形が一定しないものは、`*` 無しの完全一致では実際の呼び出しを 1 つも捕捉できない
 - deny のパターンはオプションの等号形も併記する。`--http-method post` だけを書くと `--http-method=POST` がすり抜ける
