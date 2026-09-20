@@ -1,13 +1,9 @@
 [settings]
 # [dotfiles] symlinks this file to ~/.config/mise/config.toml, so everything here applies to
-# every project on the machine, not just this repository.
-# No `lockfile` key on purpose. The tools below are declared, not pinned: every machine resolves
-# them at install time. Leaving it unset rather than `false` keeps mise honouring the lockfiles
-# other repositories on this machine commit.
-#
-# With no lockfile to exempt the versions, this filter is what every install of the tools below
-# passes through. Long enough for a compromised release to be yanked upstream first; tools
-# published from this account opt out per tool.
+# every project on the machine, not just this repository. `lockfile` is left unset rather than
+# `false` for that reason: `false` would stop mise reading the lockfiles other repositories commit.
+# Long enough for a compromised release to be yanked upstream first; tools published from this
+# account opt out per tool.
 minimum_release_age = "3d"
 
 [tools]
@@ -25,7 +21,7 @@ ripgrep = "latest"
 ast-grep = "latest"
 fd = "latest"
 fzf = "latest"
-# Stays on the asdf plugin: the aqua registry builds eza from source on macos-arm64.
+# The aqua registry builds eza from source on macos-arm64; the asdf plugin ships binaries.
 eza = "latest"
 jq = "latest"
 yq = "latest"
@@ -40,7 +36,7 @@ hunk = "latest"
 
 # editor
 # `stable` is a rolling tag, so the resolved version never changes and `mise upgrade` has nothing
-# to move. Reinstall to pick up a new release.
+# to move.
 neovim = "stable"
 tree-sitter = "latest"
 

@@ -43,9 +43,9 @@ itself is installed in the bootstrap below.
 
 This converges every machine-state declaration in `mise.toml` and is
 idempotent. It may prompt for sudo when installing OS packages and for your
-password during `chsh`. `--update` refreshes the package manager metadata,
-which a fresh machine has never fetched; it also fast-forwards
-`[bootstrap.repos]`, which is harmless here because they are being cloned.
+password during `chsh`. `--update` is for the package index a fresh machine has
+never fetched; it also fast-forwards `[bootstrap.repos]`, harmless here because
+they are being cloned.
 
 If a target like `~/.config` already exists as a real directory (not a
 symlink), mise won't overwrite it. Back it up yourself first (e.g.
@@ -216,11 +216,9 @@ Tools published from this account opt out of the wait per tool.
 `mise.lock` pins only what this repository's `mise run lint` depends on, where a
 toolchain that moves under you turns into a failing check. `lockfile = true`
 lives in `mise.toml` for that reason, and applies to nothing else on the
-machine. Only `mise run update` moves the versions in it, and it runs `mise lock`
-afterwards because an upgrade records just the platform it ran on while the
-lockfile covers both platforms in `lockfile_platforms`. Commit the diff — after
-`update` it is the update itself, after `sync` it means a newly declared tool
-had no locked version yet.
+machine. Only `mise run update` moves the versions in it. Commit the diff —
+after `update` it is the update itself, after `sync` it means a newly declared
+tool had no locked version yet.
 
 mise shell activation uses PATH mode rather than shims. Keep shell aliases and
 functions in zsh; use mise's `[env]` only for project-specific environments.
@@ -230,9 +228,8 @@ where it keeps a real shebang and is covered by `shuck`.
 
 The two machine-state tasks are separated by the state transition they make,
 not by the commands they happen to run. The first run on a machine is not among
-them: it is `mise bootstrap --yes --update`, typed once from
-[Setup](#bootstrap) above, and a task would only give a second name to a command
-that is never repeated.
+them — it is `mise bootstrap --yes --update`, typed once from
+[Setup](#bootstrap) above.
 
 | Task | Use it when | Moves versions | Touches machine-global state |
 | --- | --- | --- | --- |
@@ -243,15 +240,13 @@ that is never repeated.
 declarations, then `update`, then commit the `mise.lock` diff. Its steps are
 independent, so a failing step is reported and the rest still run.
 
-Two tools sit outside `update` because they move without the version string
-moving, which is what `mise upgrade` compares. Neovim is declared as `stable`, a
-rolling tag, and follows that channel only when reinstalled:
+Neovim sits outside `update`: `stable` is a rolling tag, so the version string
+`mise upgrade` compares never moves. It follows the channel only when
+reinstalled.
 
 ```sh
 mise uninstall neovim@stable && mise install neovim@stable
 ```
-
-Claude Code is the other, and it updates itself.
 
 ## Neovim plugins
 
