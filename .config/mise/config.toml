@@ -6,6 +6,9 @@
 # account opt out per tool.
 minimum_release_age = "3d"
 
+[settings.github]
+credential_command = 'gh auth token --hostname "$MISE_CREDENTIAL_HOST"'
+
 [tools]
 # dev
 uv = "latest"
