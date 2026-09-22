@@ -19,15 +19,17 @@ _ui_require() {
 # Not FZF_DEFAULT_OPTS, which is sized for a completion popped up under the
 # cursor: these pickers are the window while they are open, and the herdr popup
 # they also run in is too narrow for a preview beside the list.
+#
+# The border label is left to the caller, which names it after the command the
+# picker belongs to rather than after the file the chrome lives in.
 typeset -ga _UI_FZF_CHROME=(
   --height=100%
   --style=full
-  --border-label=' wk '
   --preview-window 'down:60%:wrap'
 )
 
 # Every row a picker offers is a directory, so one preview covers all of them.
-# A directory that is not a checkout still gets a listing, for `wk open`.
+# A directory that is not a checkout still gets a listing.
 _ui_git_preview() {
   local dir=${1:-}
   [[ -n $dir ]] || return 0

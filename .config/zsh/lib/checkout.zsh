@@ -1,5 +1,4 @@
-# checkout - where a checkout lives on this machine: `$REPO_ROOT/<host>/<...>/<repo>`
-# for the clones, `$WT_ROOT/<owner>/<repo>/<branch>` for the worktrees.
+# checkout - where a worktree lives on this machine: `$WT_ROOT/<owner>/<repo>/<branch>`.
 #
 # The layout is the listing. Rows come from a glob over the root so that no git
 # process is spawned per row; git is asked at the preview and at the moment of
@@ -7,58 +6,15 @@
 # on, the path is what the preview reads, and they differ for a row that is not
 # a directory of its own. _ck_wt_paths is the exception - it serves bare paths,
 # because its caller interleaves them with herdr's rows and names both itself.
-
-# ── clones ───────────────────────────────────────────
+#
+# The clones are `repo`'s (bin/repo), not this file's. What is shared with it is
+# $REPO_ROOT and the layout under it, read here only so that _ck_describe can
+# tell a clone from any other directory.
 
 _ck_repo_root() {
   local root=${REPO_ROOT:-$HOME/repos}
   root=${root/#\~/$HOME}
   print -r -- "${root%/}"
-}
-
-_ck_repo_dest() {
-  local spec=${1:-} rest
-  [[ -n $spec ]] || return 1
-  case $spec in
-    *:* | *@* | */*/*) ;;
-    */*)
-      print -r -- "$(_ck_repo_root)/github.com/$spec"
-      return 0
-      ;;
-  esac
-  rest=${spec#*://}
-  rest=${rest#*@}
-  rest=${rest/:/\/}
-  rest=${rest%.git}
-  rest=${rest/\/_git\//\/}
-  print -r -- "$(_ck_repo_root)/${rest%/}"
-}
-
-# The second glob is the <host>/<org>/<project>/<repo> depth Azure DevOps needs.
-_ck_repo_rows() {
-  local dir root
-  root=$(_ck_repo_root)
-  for dir in "$root"/*/*/*(N/) "$root"/*/*/*/*(N/); do
-    [[ -e $dir/.git ]] || continue
-    printf 'repo %s\t%s\t%s\n' "${dir#"$root"/}" "$dir" "$dir"
-  done
-  return 0
-}
-
-# ── places ───────────────────────────────────────────
-
-# $WS_PLACES is shared by every machine, so a path this one does not have is
-# dropped rather than offered as a row that cannot be opened. The default value
-# is for the `set -u` the herdr popup runs with.
-_ck_place_rows() {
-  local dir
-  for dir in ${(s.:.)${WS_PLACES:-}}; do
-    # Expanded here, or a hand-written `~` would be dropped as a missing path.
-    dir=${dir/#\~/$HOME}
-    [[ -d $dir ]] || continue
-    printf 'dir  %s\t%s\t%s\n' "${dir/#$HOME/~}" "${dir:A}" "${dir:A}"
-  done
-  return 0
 }
 
 # ── worktrees ────────────────────────────────────────

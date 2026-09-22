@@ -1,7 +1,9 @@
-# wk - the one entry point for getting a repository, opening it, branching off
-# it in a worktree, moving between what is open, and removing what is done.
-# Inside a herdr session a choice becomes a workspace; outside it degrades to
-# `cd`.
+# wk - the one entry point for worktrees: branching off the repository you are
+# standing in, moving between what is open, and removing what is done. Inside a
+# herdr session a choice becomes a workspace; outside it degrades to `cd`.
+#
+# Getting and listing the clones themselves is `repo`'s (bin/repo), which is a
+# command rather than a workflow because it needs neither a picker nor `cd`.
 #
 # Sourced from .zshrc and from ~/.config/herdr/*.sh, so it must only define
 # functions and must not return early on a missing dependency: a herdr popup
@@ -117,82 +119,13 @@ _wk_go_pick() {
   _ui_require fzf wk || return 1
   target=$(
     _wk_go_rows \
-      | fzf "${_UI_FZF_CHROME[@]}" \
+      | fzf "${_UI_FZF_CHROME[@]}" --border-label ' wk ' \
         --delimiter '\t' --with-nth 1 --accept-nth 2 --ansi \
         --prompt 'go> ' \
         --preview "source ${_UI_LIB}; _ui_git_preview {3}"
   )
   [[ -n $target ]] || return 1
   _wk_goto "$target"
-}
-
-# ── open: a repository or a place ────────────────────
-
-# Where to start working, as opposed to where work is already going on.
-_wk_open_rows() {
-  _ck_place_rows
-  _ck_repo_rows
-}
-
-_wk_open_pick() {
-  local dir
-  _ui_require fzf wk || return 1
-  dir=$(
-    _wk_open_rows \
-      | fzf "${_UI_FZF_CHROME[@]}" \
-        --delimiter '\t' --with-nth 1 --accept-nth 2 --ansi \
-        --query "$*" \
-        --prompt 'open> ' \
-        --preview "source ${_UI_LIB}; _ui_git_preview {3}"
-  )
-  [[ -n $dir ]] || return 1
-  _sess_open_dir "$dir"
-}
-
-# ── get: clone one in ────────────────────────────────
-
-_wk_get_pick() {
-  local spec out
-  local -a repos
-  _ui_require gh wk || return 1
-  _ui_require fzf wk || return 1
-  out=$(_forge_repo_list) || return 1
-  repos=(${(f)out})
-  ((${#repos})) || {
-    print 'wk: gh listed no repositories' >&2
-    return 1
-  }
-  spec=$(
-    _forge_repo_rows "$(_ck_repo_root)" "${repos[@]}" \
-      | fzf "${_UI_FZF_CHROME[@]}" \
-        --delimiter '\t' --with-nth 1 --accept-nth 2 --ansi \
-        --prompt 'get> ' \
-        --header '✓: already cloned' \
-        --preview 'gh repo view {2}'
-  )
-  [[ -n $spec ]] || return 1
-  print -r -- "$spec"
-}
-
-_wk_get() {
-  local spec dest
-  case $# in
-    0)
-      spec=$(_wk_get_pick) || return 1
-      ;;
-    1)
-      spec=$1
-      ;;
-    *)
-      print 'usage: wk get [<owner/repo|url>]' >&2
-      return 1
-      ;;
-  esac
-  dest=$(_ck_repo_dest "$spec") || return 1
-  if [[ ! -d $dest ]]; then
-    git clone "$(_forge_url "$spec")" "$dest" || return 1
-  fi
-  _sess_open_dir "$dest"
 }
 
 # ── new: a worktree for a branch ─────────────────────
@@ -241,7 +174,7 @@ _wk_pr_pick() {
     return 1
   }
   print -r -- "$rows" \
-    | fzf "${_UI_FZF_CHROME[@]}" \
+    | fzf "${_UI_FZF_CHROME[@]}" --border-label ' wk ' \
       --delimiter '\t' --with-nth 1 --accept-nth 2 \
       --prompt 'pr> ' \
       --preview 'gh pr view {2}'
@@ -324,7 +257,7 @@ _wk_rm() {
   # process group, so it blocks on /dev/tty (SIGTTIN) and wk hangs.
   tmp=$(mktemp "${TMPDIR:-/tmp}/wk-rm.XXXXXX") || return 1
   print -r -- "$rows" \
-    | fzf "${_UI_FZF_CHROME[@]}" \
+    | fzf "${_UI_FZF_CHROME[@]}" --border-label ' wk ' \
       --multi --delimiter '\t' --with-nth 1 --accept-nth 2 \
       --prompt 'remove> ' \
       --header 'Tab: toggle / Enter: remove selected' \
@@ -364,14 +297,6 @@ wk() {
     '')
       _wk_go_pick
       ;;
-    open)
-      shift
-      _wk_open_pick "$@"
-      ;;
-    get)
-      shift
-      _wk_get "$@"
-      ;;
     new)
       shift
       _wk_in_repo || return 1
@@ -388,7 +313,7 @@ wk() {
       _wk_rm
       ;;
     -h | --help | help)
-      print 'usage: wk [open [<query>...] | get [<owner/repo|url>] | new <branch> [base] | pr [<number>] | rm]'
+      print 'usage: wk [new <branch> [base] | pr [<number>] | rm]'
       ;;
     *)
       print "wk: unknown subcommand: $1" >&2

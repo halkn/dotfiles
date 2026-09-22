@@ -1,7 +1,7 @@
 #!/usr/bin/env zsh
-# Tests for lib/checkout.zsh: the roots it works under, where a spec lands, and
-# how a picker row reads. Everything else is git's own answer. Run with
-# `mise run test:zsh`.
+# Tests for lib/checkout.zsh: the roots it works under, and how a checkout path
+# reads back as a name. Everything else is git's own answer, and where a clone
+# lands is `repo`'s (see test/repo_test.zsh). Run with `mise run test:zsh`.
 
 set -uo pipefail
 
@@ -19,7 +19,7 @@ check() {
   fi
 }
 
-# ── clones ───────────────────────────────────────────
+# ── roots ────────────────────────────────────────────
 
 check '_ck_repo_root' /tmp/repos "$(REPO_ROOT=/tmp/repos _ck_repo_root)"
 
@@ -31,32 +31,8 @@ check '_ck_repo_root (tilde)' "$HOME/repos" "$(REPO_ROOT='~/repos' _ck_repo_root
 
 check '_ck_repo_root (unset)' "$HOME/repos" "$(unset REPO_ROOT && _ck_repo_root)"
 
-dest() { REPO_ROOT=/r _ck_repo_dest "$1"; }
-
-check '_ck_repo_dest (owner/repo)' /r/github.com/halkn/dotfiles "$(dest halkn/dotfiles)"
-check '_ck_repo_dest (ssh)' /r/github.com/halkn/dotfiles "$(dest git@github.com:halkn/dotfiles.git)"
-check '_ck_repo_dest (https)' /r/github.com/halkn/dotfiles "$(dest https://github.com/halkn/dotfiles)"
-check '_ck_repo_dest (https, .git)' /r/github.com/halkn/dotfiles "$(dest https://github.com/halkn/dotfiles.git)"
-
-# Azure DevOps spells the repository behind a `_git` segment, which is not part
-# of the layout on disk.
-check '_ck_repo_dest (azure)' /r/dev.azure.com/org/project/repo \
-  "$(dest https://dev.azure.com/org/project/_git/repo)"
-
-check '_ck_repo_dest (host shorthand)' /r/github.com/halkn/dotfiles \
-  "$(dest github.com/halkn/dotfiles)"
-
-# ── places ───────────────────────────────────────────
-
 scratch=$(mktemp -d "${TMPDIR:-/tmp}/checkout-test.XXXXXX") || exit 1
 trap 'rm -rf -- "$scratch"' EXIT
-
-# A missing path is dropped, a hand-written `~` is expanded first. The tab pins
-# the assertions to the target column, which is what the picker acts on.
-places=$(WS_PLACES="$scratch:$scratch/absent:~" _ck_place_rows)
-[[ $places == *$'\t'"${scratch:A}"$'\t'* ]] || check '_ck_place_rows' "a row for ${scratch:A}" "$places"
-[[ $places != *"$scratch/absent"* ]] || check '_ck_place_rows (absent)' 'no row' "$places"
-[[ $places == *$'\t'"${HOME:A}"$'\t'* ]] || check '_ck_place_rows (tilde)' "a row for ${HOME:A}" "$places"
 
 # ── worktrees ────────────────────────────────────────
 

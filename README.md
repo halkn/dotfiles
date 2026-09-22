@@ -94,9 +94,12 @@ small `.zshenv` stub that sets `ZDOTDIR` and hands off to it.
 | --- | --- |
 | `.zshenv` | The shared environment and PATH |
 | `.zshrc` | The portable interactive core, plus tool setup guarded by `command -v` so a machine without those tools still gets a working shell |
-| `workflows/*.zsh` | The commands you type: `wk`, `ghsetup` |
+| `workflows/*.zsh` | The commands that need the shell itself: `wk` |
 | `lib/*.zsh` | One file per kind of information those commands work on |
 | `test/*.zsh` | Run by `mise run test:zsh` |
+
+`bin/*` sits outside that tree: commands that need neither a picker nor `cd`
+live there as executables on PATH, so anything can call them. `repo` is one.
 
 Which layer a change belongs in, and the constraints each layer carries, are in
 `.claude/skills/zsh-workflows/SKILL.md`. Why an individual function is written
@@ -110,36 +113,56 @@ Selecting branches, commits and files to stage is not part of that: it lives in
 [git-fz](https://github.com/halkn/git-fz) as `git fz switch`, `git fz log` and
 `git fz stage`, installed as a tool like any other.
 
-## Working on repositories: `wk`
+## Clones: `repo`
 
-`wk` (`.config/zsh/workflows/wk.zsh`) is the single entry point for getting a
-repository, opening it, branching off it in a worktree, moving between what is
-open, and removing what is done. Inside [herdr](https://herdr.dev) each choice
-becomes a workspace; outside it degrades to `cd`.
+`repo` (`bin/repo`) is everything about the local clones and their GitHub-side
+settings. It reads and writes nothing but stdout and an exit status: it opens no
+picker, changes no directory, and knows nothing about a terminal multiplexer.
+Selecting and arriving belong to whoever calls it, which is what lets it be
+lifted out of this repository later.
+
+```sh
+repo root                         # print $REPO_ROOT
+repo list [--full-path] [<query>] # the clones under it, one per line
+repo dest <spec>                  # where <spec> would land
+repo get [-u] <spec>              # clone it; with -u, update an existing one
+repo create [--public] <name>     # create it on GitHub, clone it, configure it
+repo setup [--dry-run] [<nwo>]    # apply the GitHub-side settings
+```
+
+A `<spec>` is `<owner>/<repo>`, a clone URL, or a bare name resolved against
+your own account. `get` and `create` print where the clone is, so `cd "$(repo
+get halkn/git-fz)"` is how you arrive; combined with a picker it is
+`cd "$(repo list --full-path | fzf)"`.
+
+Clones land at `$REPO_ROOT/<host>/<owner>/<repo>` (`~/repos`), plus the
+`<host>/<org>/<project>/<repo>` depth Azure DevOps needs. A repository at
+another depth is not listed.
+
+`-u` updates on the way past: a failed `git pull --ff-only` is reported but
+still prints the path, because a branch with no upstream or a dirty tree is no
+reason to withhold a directory that is there.
+
+## Worktrees: `wk`
+
+`wk` (`.config/zsh/workflows/wk.zsh`) is the entry point for worktrees: cutting
+one for a branch or a pull request, moving between what is open, and removing
+what is done. Inside [herdr](https://herdr.dev) each choice becomes a workspace;
+outside it degrades to `cd`.
 
 ```sh
 wk                        # go to a workspace or a worktree
-wk open [<query>...]      # open a repository or a place as a workspace
-wk get [<owner/repo|url>] # clone one in and open it
 wk new <branch> [base]    # create the worktree for a branch and open it
 wk pr [<number>]          # create the worktree for a pull request and open it
 wk rm                     # pick worktrees of this repository to remove
 ```
 
-The bare form and `open` span every repository; `new`, `pr` and `rm` act on the
-one you are standing in.
+The bare form spans every repository; `new`, `pr` and `rm` act on the one you
+are standing in.
 
-Where things are placed:
-
-- Clones land at `$REPO_ROOT/<host>/<owner>/<repo>` (`~/repos`), plus the
-  `<host>/<org>/<project>/<repo>` depth Azure DevOps needs. A repository at
-  another depth is not picked up. `dot` jumps straight to this checkout.
-- Worktrees land at `$WT_ROOT/<owner>/<repo>/<branch>`
-  (`~/.local/share/worktrees`). herdr's own `[worktrees] directory` holds the
-  same path, so the two values must be changed together.
-- `wk open` also offers the directories that are not repositories but are
-  worked in anyway, held in `$WS_PLACES` (`:`-separated, like PATH). A machine
-  adds its own with `WS_PLACES=$WS_PLACES:/mnt/c` in `.zshenv.local`.
+Worktrees land at `$WT_ROOT/<owner>/<repo>/<branch>`
+(`~/.local/share/worktrees`). herdr's own `[worktrees] directory` holds the same
+path, so the two values must be changed together.
 
 Claude Code creates worktrees of its own, so the two kinds are kept apart:
 
@@ -164,19 +187,15 @@ When removing several worktrees, `wk rm` attempts each selected target and
 returns a failure if any removal fails or its force confirmation is declined.
 Cancelling the picker is a successful no-op; picker errors remain failures.
 
-herdr's `alt+s` / `alt+n` / `alt+g` are bare `wk` / `wk open` / `wk new`, run
-from `.config/herdr/*.sh`.
+herdr's `alt+s` and `alt+g` are bare `wk` and `wk new`; `alt+n` picks from
+`repo list` and opens a workspace on the result. All three are
+`.config/herdr/*.sh`, and the herdr-specific half lives only there.
 
-## Repository settings on GitHub: `ghsetup`
+### `repo setup`
 
-```zsh
-ghsetup                     # apply to the repository you stand in
-ghsetup <owner>/<repo>      # apply to another one
-ghsetup --dry-run [<repo>]  # read the current settings without writing
-```
-
-Run it once after `gh repo create`. It is idempotent: an existing ruleset is
-updated rather than duplicated. What it sets:
+`repo create` runs it for you; run it by hand on a repository that predates it.
+It is idempotent: an existing ruleset is updated rather than duplicated. What it
+sets:
 
 - a ruleset on the default branch that requires a pull request and blocks force
   pushes and deletion
