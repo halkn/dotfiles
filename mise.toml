@@ -37,6 +37,9 @@ rename_exe = "emmylua_check"
 "~/.config" = { source = ".config" }
 "~/.zshenv" = { source = ".zshenv" }
 "~/.claude/*" = { source = "claude/*" }
+# `bin/` holds the commands that are not shell functions. ~/.local/bin is already on PATH
+# (.config/zsh/.zshenv), and the glob is per entry because ~/.local/bin holds other tools too.
+"~/.local/bin/*" = { source = "bin/*" }
 
 # git and curl are already installed by the manual steps in README before the clone, but stay
 # declared here because it is idempotent.
