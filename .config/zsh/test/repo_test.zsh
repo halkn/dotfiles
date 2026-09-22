@@ -148,6 +148,9 @@ cat >"$tools/gh" <<'STUB'
 print -r -- "gh $*" >>"$STUB_LOG"
 case "$*" in
   'api user --jq .login') print -r -- halkn ;;
+  'repo list'*) print -r -- 'halkn/zebra
+halkn/present
+other/thing' ;;
 esac
 STUB
 chmod +x "$tools/git" "$tools/gh"
@@ -176,6 +179,17 @@ mkdir -p "$stub_root/github.com/halkn/bogus"
 run_stubbed get halkn/bogus >/dev/null 2>&1
 [[ $(<"$scratch/log") == *clone* ]] ||
   fail_arg 'get (dir without .git): expected a clone'
+
+# gh's order is kept: `gh repo list` sorts by what was pushed to last, which is
+# the order a picker wants. Sorting here would throw that away.
+check 'remotes' 'halkn/zebra
+halkn/present
+other/thing' "$(run_stubbed remotes)"
+
+check 'remotes (query)' 'halkn/zebra
+halkn/present' "$(run_stubbed remotes halkn)"
+
+check 'remotes (query, no match)' '' "$(run_stubbed remotes nothing-here)"
 
 # A bare name resolves the same way in every subcommand that takes a spec.
 check 'url (bare name)' https://github.com/halkn/a-name "$(run_stubbed url a-name)"
@@ -247,6 +261,7 @@ expect_fail 'repo setup: expected at most one repository' setup halkn/one halkn/
 expect_fail 'repo get: unknown option' get --nope halkn/dotfiles
 expect_fail 'usage: repo get' get
 expect_fail 'usage: repo create' create
+expect_fail 'repo remotes: expected at most one query' remotes one two
 
 # A repository this account cannot name is not a spec to resolve. Checked before
 # gh is reached for, so it is reported as the typo it is on a machine with no gh.
@@ -270,6 +285,7 @@ expect_missing_gh() {
 }
 
 expect_missing_gh get a-bare-name
+expect_missing_gh remotes
 expect_missing_gh create a-bare-name
 expect_missing_gh setup halkn/dotfiles
 

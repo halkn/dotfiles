@@ -20,6 +20,7 @@ usage: repo <command> [<args>]
 
   root                            print $REPO_ROOT
   list [--full-path] [<query>]    the clones under it, one per line
+  remotes [<query>]               your own repositories on GitHub
   dest <spec>                     where <spec> would land
   url <spec>                      what git would clone <spec> from
   get [-u] <spec>                 clone it (with -u, update an existing one)
@@ -299,6 +300,42 @@ _repo_cmd_list() {
   _repo_list "$full" "$query"
 }
 
+# GitHub rather than the disk, so this is the one listing that costs a network
+# call. gh's own order is kept - it sorts by what was pushed to last, which is
+# the order a picker wants - and gh's failure (not logged in, offline, rate
+# limited) is received before anything is printed, so it reads as a failure
+# rather than as an account with no repositories.
+_repo_cmd_remotes() {
+  local arg query= out nwo
+  for arg in "$@"; do
+    case $arg in
+      -h | --help)
+        print -r -- 'usage: repo remotes [<query>]'
+        return 0
+        ;;
+      -*)
+        print -u2 "repo remotes: unknown option: $arg"
+        return 1
+        ;;
+      *)
+        [[ -z $query ]] || {
+          print -u2 'repo remotes: expected at most one query'
+          return 1
+        }
+        query=$arg
+        ;;
+    esac
+  done
+  _repo_require gh 'repo remotes' || return 1
+  out=$(gh repo list --limit 200 --json nameWithOwner --jq '.[].nameWithOwner') || return 1
+  for nwo in ${(f)out}; do
+    [[ -n $nwo ]] || continue
+    [[ -z $query || $nwo == *"$query"* ]] || continue
+    print -r -- "$nwo"
+  done
+  return 0
+}
+
 _repo_cmd_dest() {
   local spec=${1:-}
   (($# == 1)) && [[ -n $spec ]] || {
@@ -501,6 +538,10 @@ case ${1:-} in
   list)
     shift
     _repo_cmd_list "$@"
+    ;;
+  remotes)
+    shift
+    _repo_cmd_remotes "$@"
     ;;
   dest)
     shift

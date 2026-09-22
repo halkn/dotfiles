@@ -124,6 +124,7 @@ lifted out of this repository later.
 ```sh
 repo root                         # print $REPO_ROOT
 repo list [--full-path] [<query>] # the clones under it, one per line
+repo remotes [<query>]            # your own repositories on GitHub
 repo dest <spec>                  # where <spec> would land
 repo get [-u] <spec>              # clone it; with -u, update an existing one
 repo create [--public] <name>     # create it on GitHub, clone it, configure it
@@ -132,8 +133,16 @@ repo setup [--dry-run] [<nwo>]    # apply the GitHub-side settings
 
 A `<spec>` is `<owner>/<repo>`, a clone URL, or a bare name resolved against
 your own account. `get` and `create` print where the clone is, so `cd "$(repo
-get halkn/git-fz)"` is how you arrive; combined with a picker it is
-`cd "$(repo list --full-path | fzf)"`.
+get halkn/git-fz)"` is how you arrive. Every listing is one line per entry, so
+the picker is the caller's:
+
+```sh
+cd "$(repo list --full-path | fzf)"        # go to one already cloned
+cd "$(repo get "$(repo remotes | fzf)")"   # pick one on GitHub and clone it
+```
+
+`list` is the disk and `remotes` is GitHub, so only the latter costs a network
+call. `remotes` keeps gh's own order, which is by what was pushed to last.
 
 Clones land at `$REPO_ROOT/<host>/<owner>/<repo>` (`~/repos`), plus the
 `<host>/<org>/<project>/<repo>` depth Azure DevOps needs. A repository at
@@ -141,7 +150,8 @@ another depth is not listed.
 
 `-u` updates on the way past: a failed `git pull --ff-only` is reported but
 still prints the path, because a branch with no upstream or a dirty tree is no
-reason to withhold a directory that is there.
+reason to withhold a directory that is there. Its output goes to stderr, so the
+path stays the only thing on stdout.
 
 ### `repo setup`
 
