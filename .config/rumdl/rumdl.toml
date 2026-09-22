@@ -4,12 +4,10 @@
 disable = ["MD013"]
 respect-gitignore = true
 
-# Files that are not documents: GitHub templates are body fragments starting at h2, and a
-# project CLAUDE.md is an import stub (`@AGENTS.md`).
+# Files that are not documents: GitHub templates are body fragments starting at h2.
 [per-file-ignores]
 "**/.github/pull_request_template.md" = ["MD041"]
 "**/.github/ISSUE_TEMPLATE/*.md" = ["MD041"]
-"CLAUDE.md" = ["MD041"]
 
 [MD003]
 style = "atx"
