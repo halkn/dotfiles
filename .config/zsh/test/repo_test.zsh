@@ -11,6 +11,11 @@ repo_bin=${0:A:h}/../../../bin/repo
 
 typeset -i failures=0
 
+fail_arg() {
+  print -u2 "FAIL $1"
+  ((failures++))
+}
+
 check() {
   local label=$1 want=$2 got=$3
   if [[ $got != "$want" ]]; then
@@ -96,6 +101,12 @@ check 'dest (azure)' /r/dev.azure.com/org/project/repo \
 check 'dest (host shorthand)' /r/github.com/halkn/dotfiles \
   "$(dest github.com/halkn/dotfiles)"
 
+# A trailing slash must not make a two-segment spec look like three, which would
+# drop the host segment and land the clone off the layout.
+check 'dest (trailing slash)' /r/github.com/halkn/dotfiles "$(dest halkn/dotfiles/)"
+check 'dest (url, trailing slash)' /r/github.com/halkn/dotfiles \
+  "$(dest https://github.com/halkn/dotfiles/)"
+
 # ── url ──────────────────────────────────────────────
 
 url() { repo url "$1"; }
@@ -112,6 +123,64 @@ check 'url (ssh)' git@github.com:halkn/dotfiles.git \
   "$(url git@github.com:halkn/dotfiles.git)"
 check 'url (https)' https://github.com/halkn/dotfiles.git \
   "$(url https://github.com/halkn/dotfiles.git)"
+
+# ── get and url, against stub git and gh ─────────────
+
+# git and gh are replaced rather than reached for: what is asserted is which
+# calls `get` makes and what it lets through to stdout, not their answers.
+tools=$scratch/tools
+mkdir -p "$tools"
+ln -sf "$(command -v zsh)" "$tools/zsh"
+ln -sf "$(command -v mkdir)" "$tools/mkdir"
+
+cat >"$tools/git" <<'STUB'
+#!/usr/bin/env zsh
+print -r -- "git $*" >>"$STUB_LOG"
+case "$*" in
+  *clone*) mkdir -p "${@[-1]}/.git" ;;
+  # The real `git pull` writes its summary to stdout, which is where the path
+  # `get` prints has to be the only thing.
+  *pull*) print -r -- 'Already up to date.' ;;
+esac
+STUB
+cat >"$tools/gh" <<'STUB'
+#!/usr/bin/env zsh
+print -r -- "gh $*" >>"$STUB_LOG"
+case "$*" in
+  'api user --jq .login') print -r -- halkn ;;
+esac
+STUB
+chmod +x "$tools/git" "$tools/gh"
+
+stub_root=$scratch/stub-root
+run_stubbed() {
+  : >"$scratch/log"
+  PATH=$tools STUB_LOG=$scratch/log REPO_ROOT=$stub_root "$repo_bin" "$@"
+}
+
+# An existing clone is not re-cloned, and the path is the only thing on stdout.
+mkdir -p "$stub_root/github.com/halkn/present/.git"
+check 'get (already cloned)' "$stub_root/github.com/halkn/present" \
+  "$(run_stubbed get halkn/present)"
+
+# `pull --ff-only` prints its summary to stdout, so the caller of
+# `cd "$(repo get -u ...)"` gets a path plus chatter unless it is redirected.
+check 'get -u (stdout is only the path)' "$stub_root/github.com/halkn/present" \
+  "$(run_stubbed get -u halkn/present 2>/dev/null)"
+[[ $(<"$scratch/log") == *'pull --ff-only'* ]] ||
+  fail_arg 'get -u: expected a pull'
+
+# A directory that is not a clone is not one: an interrupted clone or a
+# hand-made directory must not be handed back as if it had been fetched.
+mkdir -p "$stub_root/github.com/halkn/bogus"
+run_stubbed get halkn/bogus >/dev/null 2>&1
+[[ $(<"$scratch/log") == *clone* ]] ||
+  fail_arg 'get (dir without .git): expected a clone'
+
+# A bare name resolves the same way in every subcommand that takes a spec.
+check 'url (bare name)' https://github.com/halkn/a-name "$(run_stubbed url a-name)"
+check 'dest (bare name)' "$stub_root/github.com/halkn/a-name" \
+  "$(run_stubbed dest a-name)"
 
 # ── ruleset ──────────────────────────────────────────
 
@@ -170,11 +239,6 @@ expect_fail() {
   rc=$?
   ((rc != 0)) || fail_arg "repo $*: expected a non-zero status"
   [[ $err == *"$want"* ]] || fail_arg "repo $*: expected stderr to contain '$want', got '$err'"
-}
-
-fail_arg() {
-  print -u2 "FAIL $1"
-  ((failures++))
 }
 
 expect_fail 'repo: unknown subcommand' nope

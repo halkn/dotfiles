@@ -87,11 +87,17 @@ _repo_url() {
   esac
 }
 
-# A spec naming a repository and nothing else is one of this account's. gh is
-# asked only in that case, so the forms that already name an owner still resolve
-# with no network and no login.
+# The one place a spec is normalised, so that every subcommand taking one lands
+# on the same answer. A trailing slash is dropped first: it would make
+# `owner/repo/` look like the three-segment form and drop the host. A spec naming
+# a repository and nothing else is one of this account's, and gh is asked only in
+# that case, so the forms that already name an owner still resolve with no
+# network and no login.
 _repo_qualify() {
   local spec=${1:-} login
+  while [[ $spec == */ ]]; do
+    spec=${spec%/}
+  done
   case $spec in
     *[/:]*)
       print -r -- "$spec"
@@ -254,7 +260,7 @@ _repo_settings_report() {
 
   id=$(_repo_ruleset_id "$nwo") || return 1
   if [[ -z $id ]]; then
-    print -r -- '  ruleset "main":          (none)'
+    print -r -- "  ruleset \"$_REPO_RULESET_NAME\":          (none)"
     return 0
   fi
   gh api "repos/$nwo/rulesets/$id" --jq '
@@ -309,6 +315,7 @@ _repo_cmd_url() {
     print -u2 'usage: repo url <spec>'
     return 1
   }
+  spec=$(_repo_qualify "$spec") || return 1
   _repo_url "$spec"
 }
 
@@ -346,11 +353,15 @@ _repo_cmd_get() {
   spec=$(_repo_qualify "$spec") || return 1
   dest=$(_repo_dest "$spec") || return 1
 
-  if [[ -d $dest ]]; then
+  # The .git is what says a clone is there, the same test the listing uses: an
+  # interrupted clone leaves a directory behind, and handing that back would have
+  # the caller arrive somewhere that was never fetched.
+  if [[ -e $dest/.git ]]; then
     # -u is "update on the way past", not "fail to arrive": --ff-only refuses a
     # branch with no upstream, a diverged one and a dirty tree, and none of
-    # those is a reason to withhold the path that was asked for.
-    if ((update)) && ! git -C "$dest" pull --ff-only; then
+    # those is a reason to withhold the path that was asked for. git writes its
+    # summary to stdout, where the path has to be the only thing.
+    if ((update)) && ! git -C "$dest" pull --ff-only >&2; then
       print -u2 "repo get: could not update $dest"
     fi
   else

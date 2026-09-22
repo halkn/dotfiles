@@ -143,6 +143,27 @@ another depth is not listed.
 still prints the path, because a branch with no upstream or a dirty tree is no
 reason to withhold a directory that is there.
 
+### `repo setup`
+
+`repo create` runs it for you; run it by hand on a repository that predates it.
+It is idempotent: an existing ruleset is updated rather than duplicated. What it
+sets:
+
+- a ruleset on the default branch that requires a pull request and blocks force
+  pushes and deletion
+- secret scanning with push protection
+- auto-merge, branch update, delete-on-merge; wiki and projects off
+- Dependabot alerts and security updates
+
+The ruleset grants **no bypass actor**, including repository admins, so applying
+it takes away your own push to the default branch. Look at `--dry-run` first;
+an exception means turning the ruleset off in the web UI on purpose.
+
+This is the server-side half. `.config/git/hooks/pre-push` refuses force pushes
+to and deletions of `main`/`master` in every repository via `core.hooksPath`,
+which covers forges without rulesets and fails before anything leaves the
+machine; the ruleset covers what a hook cannot, since a hook can be skipped.
+
 ## Worktrees: `wk`
 
 `wk` (`.config/zsh/workflows/wk.zsh`) is the entry point for worktrees: cutting
@@ -190,27 +211,6 @@ Cancelling the picker is a successful no-op; picker errors remain failures.
 herdr's `alt+s` and `alt+g` are bare `wk` and `wk new`; `alt+n` picks from
 `repo list` and opens a workspace on the result. All three are
 `.config/herdr/*.sh`, and the herdr-specific half lives only there.
-
-### `repo setup`
-
-`repo create` runs it for you; run it by hand on a repository that predates it.
-It is idempotent: an existing ruleset is updated rather than duplicated. What it
-sets:
-
-- a ruleset on the default branch that requires a pull request and blocks force
-  pushes and deletion
-- secret scanning with push protection
-- auto-merge, branch update, delete-on-merge; wiki and projects off
-- Dependabot alerts and security updates
-
-The ruleset grants **no bypass actor**, including repository admins, so applying
-it takes away your own push to the default branch. Look at `--dry-run` first;
-an exception means turning the ruleset off in the web UI on purpose.
-
-This is the server-side half. `.config/git/hooks/pre-push` refuses force pushes
-to and deletions of `main`/`master` in every repository via `core.hooksPath`,
-which covers forges without rulesets and fails before anything leaves the
-machine; the ruleset covers what a hook cannot, since a hook can be skipped.
 
 ## Tool Manager
 
