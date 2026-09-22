@@ -8,7 +8,7 @@
 - `.config/mise/config.toml` は `~/.config/mise/config.toml` としても読まれる。ここへの変更はリポジトリ外の全プロジェクトに影響する
 - `.config/zsh/` は `.zshrc` / `workflows/` / `lib/` / `test/` の層に分かれる。置き場所の基準と検証手順は `.claude/skills/zsh-workflows/SKILL.md`
 - `.claude/skills/` はこのリポジトリ自身の設定で symlink されない。新規ファイルはそのまま次のセッションで読まれる
-- `CLAUDE.md` は `@AGENTS.md` の 1 行のみ。Claude Code は AGENTS.md を直接読まないので、この import 経由で同じ内容を読ませる。指示を足すときは AGENTS.md 側に書く
+- エージェント向けの指示はこのファイルに書く。Claude Code が `AGENTS.md` を直接読むのは working directory とその上位に `CLAUDE.md` / `.claude/CLAUDE.md` / `CLAUDE.local.md` が無いときだけなので、このリポジトリにそれらを置かない（`~/.claude/CLAUDE.md` は対象外で併読される。Claude Code 2.1.278 で確認）
 - `mise` タスクは 2 箇所に分かれる。1 コマンドで終わるものは `mise.toml`、複数行のロジックは `mise-tasks/` 配下のファイルタスク（サブディレクトリが `lint:` などの名前空間になる。実行ビットが必要で、落ちるとエラーなくタスクが消える）
 
 ## Verification

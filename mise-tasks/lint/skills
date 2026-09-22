@@ -1,4 +1,5 @@
 #!/usr/bin/env zsh
+#MISE description="skill の長さ検査"
 #MISE hide=true
 # Skill content stays in context for the rest of the session once loaded, so length is a
 # recurring cost rather than a style preference. SKILL.md is read whenever the skill fires;
