@@ -105,10 +105,12 @@ run = [
 
 # A task file that lost its executable bit disappears from `mise tasks ls` without an error.
 [tasks."lint:tasks"]
+description = "mise タスク定義の検証"
 hide = true
 run = "mise tasks validate"
 
 [tasks."lint:shell"]
+description = "シェルスクリプトの静的検査"
 hide = true
 run = "shuck check ."
 
