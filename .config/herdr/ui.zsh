@@ -76,13 +76,39 @@ _ui_git_preview() {
   return 0
 }
 
+# The branch a checkout is on, into REPLY: the name under refs/heads/, or the
+# short hash of a detached HEAD. Read off the HEAD file because it runs once per
+# row, where git is kept to the preview. A worktree's .git is a file naming its
+# gitdir, relative to the worktree when not absolute.
+_ui_branch() {
+  local dir=$1 gitdir=$1/.git head=
+  REPLY=
+  if [[ -f $gitdir ]]; then
+    read -r head <"$gitdir" || [[ -n $head ]] || return 1
+    gitdir=${head#gitdir: }
+    [[ $gitdir == /* ]] || gitdir=$dir/$gitdir
+    head=
+  fi
+  [[ -r $gitdir/HEAD ]] || return 1
+  read -r head <"$gitdir/HEAD" || [[ -n $head ]] || return 1
+  if [[ $head == 'ref: refs/heads/'* ]]; then
+    REPLY=${head#ref: refs/heads/}
+  else
+    REPLY=${head[1,7]}
+  fi
+}
+
 # `<display>\t<workspace id>\t<path>` per open workspace. herdr 0.9.1 gives a
 # path only to a workspace on a git checkout; the others show their label alone.
-# A path under either root reads as what it is - <owner>/<repo>/<branch> or
-# <host>/<owner>/<repo> - and anything else keeps its full path.
+# A checkout under either root reads as the last two segments `wt` names its
+# worktrees by - <owner>/<repo>, or <project>/<repo> on Azure DevOps - and its
+# branch, so a clone (●) and its worktrees
+# (├ └) line up under one name and sort together. Anything else keeps its full
+# path and follows in herdr's order.
 _ui_workspaces() {
-  local out rows row dir shown wt_root repo_root
-  local -a f
+  local out rows row dir wt_root repo_root key next kind
+  local -a f keys sorted nums ids dirs repos marks branches
+  local -i i n width=0
   out=$(herdr workspace list) || return 1
   rows=$(print -r -- "$out" | jq -r '
     .result.workspaces[]?
@@ -93,11 +119,37 @@ _ui_workspaces() {
   repo_root=$(repo root 2>/dev/null) || repo_root=
   for row in ${(f)rows}; do
     f=("${(@ps:\t:)row}")
-    dir=${f[4]-}
-    shown=${dir/#$HOME/'~'}
-    [[ -n $wt_root && $dir == "$wt_root"/* ]] && shown=${dir#"$wt_root"/}
-    [[ -n $repo_root && $dir == "$repo_root"/* ]] && shown=${dir#"$repo_root"/}
-    printf '[%s] %-24s %s\t%s\t%s\n' "$f[2]" "${f[3]-}" "$shown" "$f[1]" "$dir"
+    ((n += 1))
+    ids[n]=$f[1] nums[n]=$f[2] dir=${f[4]-} dirs[n]=$dir
+    if [[ -n $wt_root && $dir == "$wt_root"/*/*/* ]]; then
+      repos[n]=${${dir#"$wt_root"/}%/*} marks[n]=├ kind=2
+      _ui_branch "$dir" || REPLY=${dir:t}
+    elif [[ -n $repo_root && $dir == "$repo_root"/*/*/* ]]; then
+      repos[n]=${${dir:h}:t}/${dir:t} marks[n]=● kind=1
+      _ui_branch "$dir" || true
+    else
+      repos[n]=${${dir/#$HOME/'~'}:-${f[3]-}} marks[n]=
+      REPLY=
+      keys+=("1"$'\x1'"${(l:8::0:)f[2]}"$'\x1'"$n")
+      continue
+    fi
+    branches[n]=$REPLY
+    ((${#repos[n]} <= width)) || width=${#repos[n]}
+    keys+=("0"$'\x1'"${repos[n]}"$'\x1'"$kind"$'\x1'"$REPLY"$'\x1'"$n")
+  done
+  sorted=("${(@o)keys}")
+  for ((i = 1; i <= ${#sorted}; i++)); do
+    n=${sorted[i]##*$'\x1'}
+    if [[ -z ${marks[n]} ]]; then
+      printf '[%s] %s\t%s\t%s\n' "$nums[n]" "$repos[n]" "$ids[n]" "$dirs[n]"
+      continue
+    fi
+    # The last worktree of a repository closes its branch of the tree.
+    next=${sorted[i+1]-}
+    key=${${next#0$'\x1'}%%$'\x1'*}
+    [[ ${marks[n]} != ├ || ($next == 0$'\x1'* && $key == "${repos[n]}") ]] || marks[n]=└
+    printf '[%s] %-*s %s %s\t%s\t%s\n' "$nums[n]" "$width" "$repos[n]" "$marks[n]" \
+      "$branches[n]" "$ids[n]" "$dirs[n]"
   done
 }
 
