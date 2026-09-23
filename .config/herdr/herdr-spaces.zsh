@@ -35,9 +35,14 @@ load_worktrees() {
 }
 
 is_worktree() {
-  local dir=${1:A} wt_dir
-  for wt_dir in "${worktrees[@]}"; do
-    [[ $wt_dir == "$dir" ]] && return 0
+  contains "${1:A}" "${worktrees[@]}"
+}
+
+contains() {
+  local needle=$1 item
+  shift
+  for item in "$@"; do
+    [[ $item == "$needle" ]] && return 0
   done
   return 1
 }
@@ -76,9 +81,10 @@ remove_worktree() {
 }
 
 # The worktree goes first, so a workspace whose `wt rm` is refused stays open.
+# An empty dir only closes the workspace.
 take_away() {
   local ws=$1 dir=$2 shown=$3
-  if [[ -n $dir ]] && is_worktree "$dir"; then
+  if [[ -n $dir ]]; then
     remove_worktree "$dir" "$shown" || return 1
   fi
   herdr workspace close "$ws" >/dev/null || {
@@ -88,28 +94,41 @@ take_away() {
 }
 
 # One confirmation for the whole selection, then wt's own questions per
-# worktree. The focused workspace is left out as `wt rm` refuses the worktree it
-# stands in: closing it would end the shells the popup was opened from.
+# worktree. The focused workspace and its worktree are left out as `wt rm`
+# refuses the worktree it stands in: closing it would end the shells the popup
+# was opened from. Two workspaces may sit on one worktree, which is removed once.
 take_away_all() {
-  local focused line shown
-  local -a fields targets
+  local focused focused_ws focused_dir line shown dir
+  local -a fields targets removing
   local -i rc=0
   focused=$(_ui_focused_workspace) || focused=
-  focused=${focused%%$'\t'*}
+  focused_ws=${focused%%$'\t'*}
+  focused_dir=${focused#*$'\t'}
+  [[ -z $focused_dir ]] || focused_dir=${focused_dir:A}
   load_worktrees
   for line in "$@"; do
     fields=("${(@ps:\t:)line}")
     shown=${(j: :)${=fields[1]}}
-    if [[ ${fields[2]} == "$focused" ]]; then
+    dir=${fields[3]-}
+    if [[ ${fields[2]} == "$focused_ws" ]]; then
       print -u2 "herdr-spaces: $shown is the workspace you are in; left open"
       continue
     fi
-    if [[ -n ${fields[3]-} ]] && is_worktree "${fields[3]}"; then
-      print -r -- "remove the worktree  $shown"
-    else
-      print -r -- "close                $shown"
+    if [[ -n $dir ]] && is_worktree "$dir"; then
+      dir=${dir:A}
+      if [[ $dir == "$focused_dir" ]]; then
+        print -u2 "herdr-spaces: $shown is on the worktree you are in; left open"
+        continue
+      fi
+      if ! contains "$dir" "${removing[@]}"; then
+        print -r -- "remove the worktree  $shown"
+        removing+=("$dir")
+        targets+=("${fields[2]}"$'\t'"$dir"$'\t'"$shown")
+        continue
+      fi
     fi
-    targets+=("$line")
+    print -r -- "close                $shown"
+    targets+=("${fields[2]}"$'\t\t'"$shown")
   done
   ((${#targets} > 0)) || {
     _ui_pause
@@ -118,7 +137,7 @@ take_away_all() {
   _ui_confirm 'go ahead?' || return 0
   for line in "${targets[@]}"; do
     fields=("${(@ps:\t:)line}")
-    take_away "${fields[2]}" "${fields[3]-}" "${(j: :)${=fields[1]}}" || rc=1
+    take_away "${fields[1]}" "${fields[2]}" "${fields[3]}" || rc=1
   done
   ((rc == 0)) || _ui_pause
 }
