@@ -10,20 +10,24 @@ if [[ -r $ui_lib ]]; then
   source "$ui_lib"
 fi
 
-whence _ui_require >/dev/null || {
-  print -u2 "herdr-picker: $ui_lib not found"
+# A popup closes as soon as its command ends, taking what was printed with it.
+die() {
+  [[ -z ${1:-} ]] || print -u2 "herdr-picker: $1"
+  print -n 'press any key '
+  read -rsk1 || true
   exit 1
 }
 
-_ui_require fzf herdr-picker || exit 1
-_ui_require jq herdr-picker || exit 1
+whence _ui_require >/dev/null || die "$ui_lib not found"
+_ui_require fzf herdr-picker || die
+_ui_require jq herdr-picker || die
 
-workspaces=$(herdr workspace list) || exit 1
+workspaces=$(herdr workspace list) || die 'herdr could not list the workspaces'
 rows=$(print -r -- "$workspaces" | jq -r '
   .result.workspaces[]?
   | [.workspace_id, (.number | tostring), .label, (.worktree.checkout_path // "")]
   | @tsv
-') || exit 1
+') || die 'could not read the workspace list'
 [[ -n $rows ]] || exit 0
 
 wt_root=$(wt root 2>/dev/null) || wt_root=
@@ -52,4 +56,4 @@ ws=$(
 ) || exit 0
 [[ -n $ws ]] || exit 0
 
-herdr workspace focus "$ws" >/dev/null
+herdr workspace focus "$ws" >/dev/null || die "herdr could not focus $ws"
