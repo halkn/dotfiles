@@ -29,14 +29,13 @@ JQ
 command="$(jq -r "$filter")"
 
 # Mirrors sandbox.excludedCommands in claude/settings.json; update both together.
-excluded='git (push|fetch|pull|clone|ls-remote|submodule)|git remote (update|prune)|gh |hunk session '
+s='[[:space:]]+'
+excluded="(^|[^[:alnum:]_-])(git${s}(push|fetch|pull|clone|ls-remote|submodule)|git${s}remote${s}(update|prune)|gh${s}|hunk${s}session${s})"
+compound=$'\n|\\||&&|;|\\$\\(|`|[<>]\\('
 
-is_compound() {
-  [[ "$command" == *$'\n'* ]] && return 0
-  printf '%s' "$command" | grep -Eq '\||&&|;|\$\(|`|[<>]\('
-}
-
-if printf '%s' "$command" | grep -Eq "(^|[^[:alnum:]_-])($excluded)" && is_compound; then
+# Matched in-process: `printf | grep -q` under pipefail reads an early match on a long
+# command as no match, since grep exits and printf dies of SIGPIPE.
+if [[ "$command" =~ $excluded ]] && [[ "$command" =~ $compound ]]; then
   cat >&2 <<'MSG'
 git / gh / hunk session をパイプや複合コマンドに入れないでください。
 
@@ -45,7 +44,8 @@ sandbox.excludedCommands は単体のコマンドにしか効きません。パ�
 TLS エラーや設定読取エラーになります。環境の制約に見えますが、コマンドの形の問題です。
 
 裸で実行してください（先頭の `cd <dir> &&` とリダイレクトは使えます）。出力を絞りたい場合も、
-まず裸で実行してから結果を読んでください。
+まず裸で実行してから結果を読んでください。複数行の本文は `$(cat <<EOF ...)` ではなく
+`--body-file` / `-F` でファイルから渡してください。
 MSG
   exit 2
 fi
