@@ -35,7 +35,7 @@ lines=()
 for row in ${(f)rows}; do
   fields=("${(@ps:\t:)row}")
   dir=${fields[4]-}
-  shown=${dir/#$HOME/~}
+  shown=${dir/#$HOME/'~'}
   [[ -n $wt_root && $dir == "$wt_root"/* ]] && shown=${dir#"$wt_root"/}
   [[ -n $repo_root && $dir == "$repo_root"/* ]] && shown=${dir#"$repo_root"/}
   lines+=("$(printf '[%s] %-24s %s\t%s\t%s' "${fields[2]}" "${fields[3]-}" "$shown" "${fields[1]}" "$dir")")
