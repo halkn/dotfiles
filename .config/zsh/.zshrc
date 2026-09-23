@@ -93,10 +93,6 @@ alias df='df -h'
 alias ..='cd ..'
 alias zs='exec zsh'
 alias :q='exit'
-# A fixed destination, so it skips the picker `wk open` would show. The body is
-# evaluated when the alias runs, which is why `_ck_repo_root` (lib/checkout.zsh,
-# sourced further down) is already there by then.
-alias dot='cd -- "$(_ck_repo_root)/github.com/halkn/dotfiles"'
 
 # ── plugins (git clone) ───────────────────────────────
 zsh_plugins_dir=$zsh_data_dir/plugins

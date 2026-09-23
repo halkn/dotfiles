@@ -98,7 +98,7 @@ height = "90%"
 key = "alt+n"
 type = "popup"
 command = "~/.config/herdr/herdr-open.sh"
-description = "open a workspace on a repository or a place"
+description = "open a workspace on a repository"
 width = "90%"
 height = "90%"
 

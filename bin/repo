@@ -1,0 +1,578 @@
+#!/usr/bin/env zsh
+# repo - the local clones of this machine and the GitHub-side settings they are
+# meant to carry: where one lands, what is already there, and how a new one is
+# created and configured.
+#
+# Everything is stdout and an exit status. Nothing here opens a picker, changes
+# the caller's directory, or knows about a terminal multiplexer - selecting and
+# arriving are the caller's, which is what lets this file leave the dotfiles
+# repository unchanged. The only thing shared with the shell around it is
+# $REPO_ROOT and the layout under it:
+#
+#   $REPO_ROOT/<host>/<owner>/<repo>
+#   $REPO_ROOT/<host>/<org>/<project>/<repo>    (Azure DevOps)
+
+set -uo pipefail
+
+_repo_usage() {
+  cat <<'USAGE'
+usage: repo <command> [<args>]
+
+  root                            print $REPO_ROOT
+  list [--full-path] [<query>]    the clones under it, one per line
+  remotes [<query>]               your own repositories on GitHub
+  dest <spec>                     where <spec> would land
+  url <spec>                      what git would clone <spec> from
+  get [-u] <spec>                 clone it (with -u, update an existing one)
+  create [--public] <name>        create it on GitHub, clone it, configure it
+  setup [--dry-run] [<nwo>]       apply the GitHub-side settings
+  setup --print-ruleset           print the ruleset those settings install
+
+A <spec> is <owner>/<repo>, a clone URL, or a bare name resolved against your
+own GitHub account.
+USAGE
+}
+
+_repo_require() {
+  local tool=${1:-} cmd=${2:-}
+  command -v "$tool" >/dev/null 2>&1 || {
+    print -u2 "$cmd: $tool is not installed"
+    return 1
+  }
+}
+
+# ── layout ───────────────────────────────────────────
+
+_repo_root() {
+  local root=${REPO_ROOT:-$HOME/repos}
+  root=${root/#\~/$HOME}
+  print -r -- "${root%/}"
+}
+
+_repo_dest() {
+  local spec=${1:-} rest
+  [[ -n $spec ]] || return 1
+  case $spec in
+    *:* | *@* | */*/*) ;;
+    */*)
+      print -r -- "$(_repo_root)/github.com/$spec"
+      return 0
+      ;;
+  esac
+  rest=${spec#*://}
+  rest=${rest#*@}
+  rest=${rest/:/\/}
+  rest=${rest%.git}
+  rest=${rest/\/_git\//\/}
+  print -r -- "$(_repo_root)/${rest%/}"
+}
+
+# A spec carrying a `:` already names a host the way git reads it and is passed
+# through untouched.
+_repo_url() {
+  local spec=${1:-}
+  case $spec in
+    *:*)
+      print -r -- "$spec"
+      ;;
+    */*)
+      if [[ ${spec%%/*} == *.* ]]; then
+        print -r -- "https://$spec"
+      else
+        print -r -- "https://github.com/$spec"
+      fi
+      ;;
+    *)
+      print -r -- "$spec"
+      ;;
+  esac
+}
+
+# The one place a spec is normalised, so that every subcommand taking one lands
+# on the same answer. A trailing slash is dropped first: it would make
+# `owner/repo/` look like the three-segment form and drop the host. A spec naming
+# a repository and nothing else is one of this account's, and gh is asked only in
+# that case, so the forms that already name an owner still resolve with no
+# network and no login.
+_repo_qualify() {
+  local spec=${1:-} login
+  while [[ $spec == */ ]]; do
+    spec=${spec%/}
+  done
+  case $spec in
+    *[/:]*)
+      print -r -- "$spec"
+      return 0
+      ;;
+  esac
+  _repo_require gh repo || return 1
+  login=$(gh api user --jq .login) || return 1
+  [[ -n $login ]] || {
+    print -u2 'repo: could not resolve your GitHub login'
+    return 1
+  }
+  print -r -- "$login/$spec"
+}
+
+# The layout is the listing: a glob over the root rather than a git process per
+# candidate. The second glob is the depth Azure DevOps needs. Sorted in C order
+# so the order does not depend on the locale the caller happens to run in.
+_repo_list() {
+  local -i full=${1:-0}
+  local query=${2:-} root dir rel
+  root=$(_repo_root)
+  {
+    for dir in "$root"/*/*/*(N/) "$root"/*/*/*/*(N/); do
+      [[ -e $dir/.git ]] || continue
+      rel=${dir#"$root"/}
+      [[ -z $query || $rel == *"$query"* ]] || continue
+      if ((full)); then
+        print -r -- "$dir"
+      else
+        print -r -- "$rel"
+      fi
+    done
+  } | LC_ALL=C sort
+  return 0
+}
+
+# ── GitHub-side settings ─────────────────────────────
+
+# `bypass_actors` is empty on purpose. An agent runs under the same ssh key and
+# the same gh token as the person who started it, so an admin bypass would be a
+# bypass for both; an exception has to be a deliberate visit to the ruleset in
+# the web UI. The approval count is 0 because a lone owner cannot approve their
+# own pull request - what is being enforced is that a change arrives as one.
+#
+# Not included: `required_linear_history`, which contradicts the merge commits
+# this account's repositories carry, and `required_status_checks`, which needs a
+# check to name.
+#
+# The name is a variable because _repo_ruleset_id finds the ruleset to update by
+# it: written twice, a rename would silently turn an update into a second,
+# overlapping ruleset. The JSON below holds no other expansion.
+_REPO_RULESET_NAME=main
+
+_repo_ruleset_payload() {
+  cat <<JSON
+{
+  "name": "$_REPO_RULESET_NAME",
+  "target": "branch",
+  "enforcement": "active",
+  "bypass_actors": [],
+  "conditions": { "ref_name": { "include": ["~DEFAULT_BRANCH"], "exclude": [] } },
+  "rules": [
+    { "type": "deletion" },
+    { "type": "non_fast_forward" },
+    {
+      "type": "pull_request",
+      "parameters": {
+        "required_approving_review_count": 0,
+        "dismiss_stale_reviews_on_push": false,
+        "require_code_owner_review": false,
+        "require_last_push_approval": false,
+        "required_review_thread_resolution": false,
+        "allowed_merge_methods": ["merge", "squash", "rebase"]
+      }
+    }
+  ]
+}
+JSON
+}
+
+# `includes_parents` defaults to true, which mixes in the organisation and
+# enterprise rulesets that also apply here. Those ids belong to another owner:
+# updating one is refused, and the repository would be left with no ruleset of
+# its own.
+_repo_ruleset_id() {
+  gh api "repos/${1:-}/rulesets?includes_parents=false&per_page=100" \
+    --jq "[.[] | select(.name == \"$_REPO_RULESET_NAME\") | .id] | first // empty"
+}
+
+_repo_apply_ruleset() {
+  local nwo=${1:-} id
+  id=$(_repo_ruleset_id "$nwo") || return 1
+  if [[ -n $id ]]; then
+    _repo_ruleset_payload | gh api --silent --method PUT "repos/$nwo/rulesets/$id" --input -
+  else
+    _repo_ruleset_payload | gh api --silent --method POST "repos/$nwo/rulesets" --input -
+  fi
+}
+
+# Two PATCHes rather than one: the endpoint applies a body atomically, and
+# secret scanning needs an eligible repository (public, or private with Secret
+# Protection). Sent together, a private repository on a plan without it would
+# lose the merge settings to the same rejection.
+_repo_apply_repo_settings() {
+  local nwo=${1:-}
+  local -i rc=0
+  gh api --silent --method PATCH "repos/$nwo" --input - <<'JSON' || rc=1
+{
+  "security_and_analysis": {
+    "secret_scanning": { "status": "enabled" },
+    "secret_scanning_push_protection": { "status": "enabled" }
+  }
+}
+JSON
+  gh api --silent --method PATCH "repos/$nwo" --input - <<'JSON' || rc=1
+{
+  "allow_auto_merge": true,
+  "allow_update_branch": true,
+  "delete_branch_on_merge": true,
+  "has_wiki": false,
+  "has_projects": false
+}
+JSON
+  return $rc
+}
+
+_repo_apply_dependabot() {
+  local nwo=${1:-}
+  local -i rc=0
+  gh api --silent --method PUT "repos/$nwo/vulnerability-alerts" || rc=1
+  gh api --silent --method PUT "repos/$nwo/automated-security-fixes" || rc=1
+  return $rc
+}
+
+_repo_apply_settings() {
+  local nwo=${1:-}
+  local -i rc=0
+  _repo_apply_ruleset "$nwo" || rc=1
+  _repo_apply_repo_settings "$nwo" || rc=1
+  _repo_apply_dependabot "$nwo" || rc=1
+  return $rc
+}
+
+# Dependabot alerts are absent because this endpoint reports the security
+# updates only; the alerts answer on their own endpoint with a status code.
+_repo_settings_report() {
+  local nwo=${1:-} id
+  gh api "repos/$nwo" --jq '
+    "repository:  \(.full_name) (\(if .private then "private" else "public" end))",
+    "  default branch:          \(.default_branch)",
+    "  secret scanning:         \(.security_and_analysis.secret_scanning.status // "n/a")",
+    "  push protection:         \(.security_and_analysis.secret_scanning_push_protection.status // "n/a")",
+    "  dependabot updates:      \(.security_and_analysis.dependabot_security_updates.status // "n/a")",
+    "  allow_auto_merge:        \(.allow_auto_merge)",
+    "  allow_update_branch:     \(.allow_update_branch)",
+    "  delete_branch_on_merge:  \(.delete_branch_on_merge)",
+    "  has_wiki / has_projects: \(.has_wiki) / \(.has_projects)"
+  ' || return 1
+
+  id=$(_repo_ruleset_id "$nwo") || return 1
+  if [[ -z $id ]]; then
+    print -r -- "  ruleset \"$_REPO_RULESET_NAME\":          (none)"
+    return 0
+  fi
+  gh api "repos/$nwo/rulesets/$id" --jq '
+    "  ruleset \"\(.name)\":          \(.enforcement), \(.bypass_actors | length) bypass actor(s)",
+    "    rules:                 \(.rules | map(.type) | join(", "))"
+  '
+}
+
+# ── commands ─────────────────────────────────────────
+
+_repo_cmd_list() {
+  local arg query=
+  local -i full=0
+  for arg in "$@"; do
+    case $arg in
+      -p | --full-path)
+        full=1
+        ;;
+      -h | --help)
+        print -r -- 'usage: repo list [--full-path] [<query>]'
+        return 0
+        ;;
+      -*)
+        print -u2 "repo list: unknown option: $arg"
+        return 1
+        ;;
+      *)
+        [[ -z $query ]] || {
+          print -u2 'repo list: expected at most one query'
+          return 1
+        }
+        query=$arg
+        ;;
+    esac
+  done
+  _repo_list "$full" "$query"
+}
+
+# GitHub rather than the disk, so this is the one listing that costs a network
+# call. gh's own order is kept - it sorts by what was pushed to last, which is
+# the order a picker wants - and gh's failure (not logged in, offline, rate
+# limited) is received before anything is printed, so it reads as a failure
+# rather than as an account with no repositories.
+_repo_cmd_remotes() {
+  local arg query= out nwo
+  for arg in "$@"; do
+    case $arg in
+      -h | --help)
+        print -r -- 'usage: repo remotes [<query>]'
+        return 0
+        ;;
+      -*)
+        print -u2 "repo remotes: unknown option: $arg"
+        return 1
+        ;;
+      *)
+        [[ -z $query ]] || {
+          print -u2 'repo remotes: expected at most one query'
+          return 1
+        }
+        query=$arg
+        ;;
+    esac
+  done
+  _repo_require gh 'repo remotes' || return 1
+  out=$(gh repo list --limit 200 --json nameWithOwner --jq '.[].nameWithOwner') || return 1
+  for nwo in ${(f)out}; do
+    [[ -n $nwo ]] || continue
+    [[ -z $query || $nwo == *"$query"* ]] || continue
+    print -r -- "$nwo"
+  done
+  return 0
+}
+
+_repo_cmd_dest() {
+  local spec=${1:-}
+  (($# == 1)) && [[ -n $spec ]] || {
+    print -u2 'usage: repo dest <spec>'
+    return 1
+  }
+  spec=$(_repo_qualify "$spec") || return 1
+  _repo_dest "$spec"
+}
+
+_repo_cmd_url() {
+  local spec=${1:-}
+  (($# == 1)) && [[ -n $spec ]] || {
+    print -u2 'usage: repo url <spec>'
+    return 1
+  }
+  spec=$(_repo_qualify "$spec") || return 1
+  _repo_url "$spec"
+}
+
+_repo_cmd_get() {
+  local arg spec= dest
+  local -i update=0
+  for arg in "$@"; do
+    case $arg in
+      -u | --update)
+        update=1
+        ;;
+      -h | --help)
+        print -r -- 'usage: repo get [-u] <spec>'
+        return 0
+        ;;
+      -*)
+        print -u2 "repo get: unknown option: $arg"
+        print -u2 'usage: repo get [-u] <spec>'
+        return 1
+        ;;
+      *)
+        [[ -z $spec ]] || {
+          print -u2 'repo get: expected at most one repository'
+          return 1
+        }
+        spec=$arg
+        ;;
+    esac
+  done
+  [[ -n $spec ]] || {
+    print -u2 'usage: repo get [-u] <spec>'
+    return 1
+  }
+
+  spec=$(_repo_qualify "$spec") || return 1
+  dest=$(_repo_dest "$spec") || return 1
+
+  # The .git is what says a clone is there, the same test the listing uses: an
+  # interrupted clone leaves a directory behind, and handing that back would have
+  # the caller arrive somewhere that was never fetched.
+  if [[ -e $dest/.git ]]; then
+    # -u is "update on the way past", not "fail to arrive": --ff-only refuses a
+    # branch with no upstream, a diverged one and a dirty tree, and none of
+    # those is a reason to withhold the path that was asked for. git writes its
+    # summary to stdout, where the path has to be the only thing.
+    if ((update)) && ! git -C "$dest" pull --ff-only >&2; then
+      print -u2 "repo get: could not update $dest"
+    fi
+  else
+    git clone "$(_repo_url "$spec")" "$dest" || return 1
+  fi
+  print -r -- "$dest"
+}
+
+_repo_cmd_create() {
+  local arg name= visibility=--private nwo dest
+  for arg in "$@"; do
+    case $arg in
+      --public | --private)
+        visibility=$arg
+        ;;
+      -h | --help)
+        print -r -- 'usage: repo create [--public] <name>'
+        return 0
+        ;;
+      -*)
+        print -u2 "repo create: unknown option: $arg"
+        print -u2 'usage: repo create [--public] <name>'
+        return 1
+        ;;
+      *)
+        [[ -z $name ]] || {
+          print -u2 'repo create: expected at most one name'
+          return 1
+        }
+        name=$arg
+        ;;
+    esac
+  done
+  [[ -n $name ]] || {
+    print -u2 'usage: repo create [--public] <name>'
+    return 1
+  }
+
+  _repo_require gh 'repo create' || return 1
+  nwo=$(_repo_qualify "$name") || return 1
+  dest=$(_repo_dest "$nwo") || return 1
+  [[ ! -e $dest ]] || {
+    print -u2 "repo create: $dest already exists"
+    return 1
+  }
+
+  # --add-readme so that the default branch exists before the ruleset lands on
+  # it: the ruleset targets ~DEFAULT_BRANCH and carries no bypass actor, so a
+  # repository with no commit would refuse the first push from its owner too.
+  gh repo create "$nwo" "$visibility" --add-readme >/dev/null || return 1
+  # The repository stays on failure from here on. Deleting it is a second
+  # irreversible act on top of the first, and what went wrong may be local.
+  git clone "$(_repo_url "$nwo")" "$dest" || {
+    print -u2 "repo create: $nwo exists on GitHub but could not be cloned"
+    return 1
+  }
+  _repo_apply_settings "$nwo" || {
+    print -u2 "repo create: $nwo was cloned to $dest but its settings did not apply"
+    return 1
+  }
+  print -r -- "$dest"
+}
+
+_repo_cmd_setup() {
+  local arg nwo= origin
+  local -i dry_run=0 print_ruleset=0
+  for arg in "$@"; do
+    case $arg in
+      --dry-run)
+        dry_run=1
+        ;;
+      --print-ruleset)
+        print_ruleset=1
+        ;;
+      -h | --help)
+        print -r -- 'usage: repo setup [--dry-run] [<owner>/<repo>] | repo setup --print-ruleset'
+        return 0
+        ;;
+      -*)
+        print -u2 "repo setup: unknown option: $arg"
+        print -u2 'usage: repo setup [--dry-run] [<owner>/<repo>]'
+        return 1
+        ;;
+      *)
+        [[ -z $nwo ]] || {
+          print -u2 'repo setup: expected at most one repository'
+          return 1
+        }
+        nwo=$arg
+        ;;
+    esac
+  done
+
+  if ((print_ruleset)); then
+    _repo_ruleset_payload
+    return 0
+  fi
+
+  # Checked before gh is reached for, so a malformed argument is reported as one
+  # even on a machine that has no gh.
+  if [[ -n $nwo && $nwo != */* ]]; then
+    print -u2 "repo setup: expected <owner>/<repo>, got '$nwo'"
+    return 1
+  fi
+
+  _repo_require gh 'repo setup' || return 1
+
+  # Resolved from `origin` rather than from the working directory alone: in a
+  # clone of a fork, gh's own default is the base repository, and this command
+  # would hand a ruleset with no bypass actor to upstream.
+  if [[ -z $nwo ]]; then
+    origin=$(git remote get-url origin 2>/dev/null) || {
+      print -u2 'repo setup: no origin remote here; name the repository'
+      return 1
+    }
+    nwo=$(gh repo view "$origin" --json nameWithOwner --jq '.nameWithOwner') || return 1
+  fi
+
+  if ((dry_run)); then
+    _repo_settings_report "$nwo"
+    return
+  fi
+
+  # The ruleset carries no bypass actor, so applying it takes away the caller's
+  # own push to the default branch. --dry-run is how that is seen coming.
+  _repo_apply_settings "$nwo" || return 1
+  _repo_settings_report "$nwo"
+}
+
+# ── dispatch ─────────────────────────────────────────
+
+case ${1:-} in
+  root)
+    shift
+    _repo_root "$@"
+    ;;
+  list)
+    shift
+    _repo_cmd_list "$@"
+    ;;
+  remotes)
+    shift
+    _repo_cmd_remotes "$@"
+    ;;
+  dest)
+    shift
+    _repo_cmd_dest "$@"
+    ;;
+  url)
+    shift
+    _repo_cmd_url "$@"
+    ;;
+  get)
+    shift
+    _repo_cmd_get "$@"
+    ;;
+  create)
+    shift
+    _repo_cmd_create "$@"
+    ;;
+  setup)
+    shift
+    _repo_cmd_setup "$@"
+    ;;
+  -h | --help | help)
+    _repo_usage
+    ;;
+  '')
+    _repo_usage >&2
+    exit 1
+    ;;
+  *)
+    print -u2 "repo: unknown subcommand: $1"
+    _repo_usage >&2
+    exit 1
+    ;;
+esac

@@ -13,7 +13,9 @@ export PAGER=less
 : "${XDG_STATE_HOME:=$HOME/.local/state}"
 export XDG_CONFIG_HOME XDG_CACHE_HOME XDG_DATA_HOME XDG_BIN_HOME XDG_STATE_HOME
 
-# repositories (<host>/<path> layout under this root; see .config/zsh/lib/checkout.zsh)
+# Clones land at <host>/<owner>/<repo> under this root. `repo` (bin/repo) owns that
+# layout; .config/zsh/lib/checkout.zsh reads the same value only to tell a clone from
+# any other directory. Exported because `repo` is a separate process.
 : "${REPO_ROOT:=$HOME/repos}"
 export REPO_ROOT
 
@@ -22,12 +24,6 @@ export REPO_ROOT
 # creates land in the same tree: the two must be changed together.
 : "${WT_ROOT:=$XDG_DATA_HOME/worktrees}"
 export WT_ROOT
-
-# Directories outside $REPO_ROOT that `wk open` also offers, `:`-separated the
-# way PATH is. A machine adds its own with `WS_PLACES=$WS_PLACES:/mnt/c` in
-# .zshenv.local, which keeps the OS out of the workflow.
-: "${WS_PLACES:=$HOME:${TMPDIR:-/tmp}}"
-export WS_PLACES
 
 # zsh
 skip_global_compinit=1
