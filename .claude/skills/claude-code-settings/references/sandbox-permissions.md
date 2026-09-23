@@ -29,6 +29,7 @@
 
 ## excludedCommands
 
+- 除外が効くのは単純コマンドだけ。先頭の `cd <dir> &&`・リダイレクト・クォート内の `|` `;` 改行は保つが、クォート外の `|` `&&` `;` 改行と `$(...)` を含むと行全体が sandbox 内で走る（v2.1.280・macOS で実測。docs は `pbcopy` 等のパイプにしか触れていない）。`claude/hooks/block-piped-excluded.sh` がこの形を拒否するので、判定を変えたら `mise-tasks/test/hooks` も直す
 - sandbox 内で `gh` を走らせると 2 系統で壊れる: keyring のトークンを引けず `The token in default is invalid.`、ネットワークは `tls: failed to verify certificate: x509: OSStatus -26276`（v2.1.226・macOS で実測）
 - 除外はツール呼び出しのコマンド文字列に対するマッチなので、`bash script.sh` の中から `gh` を呼ぶと除外は効かず sandbox 内で上記の失敗になる。スクリプト経由で `gh` を使わない
 - `git` はネットワーク／認証を要するサブコマンド（`push`・`fetch`・`pull`・`clone`・`ls-remote`・`remote update|prune`・`submodule`）だけを除外する。`git *` 全体を除外すると `filesystem.denyRead: ["~/"]` が git 経由で素通しになる。除外していない現在は `git hash-object <denyRead 配下>` が EPERM になることを確認済み（v2.1.226）

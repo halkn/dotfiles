@@ -106,6 +106,10 @@
           {
             "type": "command",
             "command": "h=~/.claude/hooks/scope-gh-pr-create.sh; [ -x \"$h\" ] || { echo \"PreToolUse hook missing: $h\" >&2; exit 2; }; exec \"$h\""
+          },
+          {
+            "type": "command",
+            "command": "h=~/.claude/hooks/block-piped-excluded.sh; [ -x \"$h\" ] || { echo \"PreToolUse hook missing: $h\" >&2; exit 2; }; exec \"$h\""
           }
         ]
       }

@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+#MISE description="Claude Code hook のテスト"
+set -uo pipefail
+
+hook=claude/hooks/block-piped-excluded.sh
+rc=0
+
+# expect <exit code> <command>
+expect() {
+  local want="$1" cmd="$2" got
+  jq -n --arg c "$cmd" '{tool_input: {command: $c}}' | bash "$hook" >/dev/null 2>&1
+  got=$?
+  if [ "$got" -ne "$want" ]; then
+    printf 'FAIL %s: want %s, got %s: %.80s\n' "$hook" "$want" "$got" "$cmd"
+    rc=1
+  fi
+}
+
+nl=$'\n'
+
+expect 2 'git ls-remote origin HEAD | head -1'
+expect 2 'true && git push'
+expect 2 'git push && true'
+expect 2 'git push; true'
+expect 2 'cd /x; git push'
+expect 2 "git push${nl}true"
+expect 2 'gh pr view $(git branch --show-current)'
+expect 2 'gh api x -H "a: $(echo a)"'
+expect 2 'gh api x -H "a: `echo a`"'
+expect 2 'git push |& tail'
+expect 2 'git push || true'
+expect 2 'diff <(gh api x) y'
+expect 2 'cd /x && git push | tail'
+expect 2 'hunk session list | cat'
+expect 2 'git  push | tail'
+expect 2 $'gh\tpr view | cat'
+# Long enough to overflow a pipe buffer after an early match.
+expect 2 "git push${nl}$(printf 'echo %0100d\n' $(seq 1000))"
+
+expect 0 'git push'
+expect 0 'git push 2>&1'
+expect 0 'cd /x && git push'
+expect 0 "gh pr create --body \"a | b; c${nl}d\""
+expect 0 "gh pr create --body \"say \\\"a | b\\\" here\""
+expect 0 "gh api repos/x --jq '.[] | .name'"
+expect 0 "gh api repos/x --jq \"it's | fine\""
+expect 0 "rg 'git push' README.md | head"
+expect 0 'git status | head'
+expect 0 'git log --oneline | head -5'
+expect 0 'echo high | cat'
+
+exit $rc
