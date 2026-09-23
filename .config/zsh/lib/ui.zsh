@@ -1,4 +1,4 @@
-# ui - what every picker in workflows/ shares: the dependency check, the chrome
+# ui - what every picker in .config/herdr/ shares: the dependency check, the chrome
 # of a full-screen picker, and the preview of a directory.
 #
 # lib/ files never source each other or anything in workflows/, which is what
