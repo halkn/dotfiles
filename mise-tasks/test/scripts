@@ -1,0 +1,9 @@
+#!/usr/bin/env zsh
+#MISE description="bin/ と herdr script のテスト"
+set -uo pipefail
+
+rc=0
+for f in test/**/*_test.zsh; do
+  zsh "$f" || rc=1
+done
+exit $rc

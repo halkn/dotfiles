@@ -3,11 +3,11 @@
 # it writes. It is an executable rather than a sourced function, so everything
 # here runs it as a subprocess and reads stdout - which is the whole interface.
 # The calls to gh are not tested; they are gh's answer, not ours. Run with
-# `mise run test:zsh`.
+# `mise run test:scripts`.
 
 set -uo pipefail
 
-repo_bin=${0:A:h}/../../../bin/repo
+repo_bin=${0:A:h}/../../bin/repo
 
 typeset -i failures=0
 

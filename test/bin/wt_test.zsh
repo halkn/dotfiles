@@ -3,11 +3,11 @@
 # new / rm / prune leave behind. It is an executable rather than a sourced
 # function, so everything here runs it as a subprocess against a scratch
 # repository and reads stdout. gh is a stub on PATH; `wt pr` is covered only up
-# to what the stub answers. Run with `mise run test:zsh`.
+# to what the stub answers. Run with `mise run test:scripts`.
 
 set -uo pipefail
 
-wt_bin=${0:A:h}/../../../bin/wt
+wt_bin=${0:A:h}/../../bin/wt
 
 typeset -i failures=0
 
@@ -40,7 +40,7 @@ check 'root (trailing slash)' /w/wt "$(WT_ROOT=/w/wt/ wt root)"
 check 'root (tilde)' "$HOME/wt" "$(WT_ROOT='~/wt' wt root)"
 
 # The fallback is herdr's own `[worktrees] directory`.
-herdr_dir=$(sed -n 's/^directory = "\(.*\)"$/\1/p' "${0:A:h}/../../herdr/config.toml")
+herdr_dir=$(sed -n 's/^directory = "\(.*\)"$/\1/p' "${0:A:h}/../../.config/herdr/config.toml")
 check 'root (unset)' "${herdr_dir/#\~/$HOME}" \
   "$(unset WT_ROOT && XDG_DATA_HOME=$HOME/.local/share wt root)"
 

@@ -118,7 +118,7 @@ fi
 
 # ── fzf ──────────────────────────────────────────────
 # The shell-wide bits: the widgets, the look, and the per-command completion
-# sources. Workflows built on fzf live under workflows/. The integration script
+# sources. Full-screen pickers live in .config/herdr/. The integration script
 # calls compdef, so it has to come after compinit above.
 if command -v fzf >/dev/null 2>&1 && [[ -t 0 ]]; then
   export FZF_DEFAULT_OPTS="
@@ -183,14 +183,6 @@ fi
 if command -v hunk >/dev/null 2>&1; then
   alias gd='hunk diff'
 fi
-
-# ── workflows ────────────────────────────────────────
-# Each file defines its functions unconditionally and checks its dependencies
-# inside them, so no conditions belong here and the load order does not matter.
-for _zsh_part in "$ZDOTDIR"/workflows/*.zsh(N); do
-  source "$_zsh_part"
-done
-unset _zsh_part
 
 # ── starship ─────────────────────────────────────────
 if command -v starship >/dev/null 2>&1; then

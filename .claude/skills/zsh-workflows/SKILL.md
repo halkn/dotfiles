@@ -1,5 +1,5 @@
 ---
-description: このリポジトリの zsh 設定を変更するときに使う。設計方針・検証手順・実測記録を持つ。対象は .config/zsh 配下の .zshenv・.zshrc・workflows/・test/ と .config/herdr/（herdr-*.zsh・ui.zsh）・bin/。関数・コマンドをどの層に置くか決める、bin/ のコマンドにサブコマンドを足す・直す、picker の挙動を変える、test/ に検査を足す、herdr から呼ばれる script を直す、といった作業。
+description: このリポジトリの zsh 設定を変更するときに使う。設計方針・検証手順・実測記録を持つ。対象は .config/zsh 配下の .zshenv・.zshrc と .config/herdr/（herdr-*.zsh・ui.zsh）・bin/・それらを検査する test/。関数・コマンドをどの層に置くか決める、bin/ のコマンドにサブコマンドを足す・直す、picker の挙動を変える、test/ に検査を足す、herdr から呼ばれる script を直す、といった作業。
 ---
 
 # zsh workflow
@@ -11,11 +11,11 @@ description: このリポジトリの zsh 設定を変更するときに使う�
 **置き場所:**
 
 - `.zshrc`: interactive zsh を成立させる基盤（history・options・completion・keybind・alias）と、軽量な tool init。fzf の widget や `eza`・`nvim` の上書きのように、無くても標準の動作が残るものはここで `command -v` 分岐する
-- **`bin/` と `workflows/` の線引きが最初の判断**: stdout と終了ステータスだけで表せる操作は `bin/` の実行ファイル（`repo`・`wt`）。shell でしかできないこと——`cd`・ピッカーを開いたまま続く操作——を含むものだけ `workflows/` の関数（現在は無い）。`bin/` のコマンドは他の zsh ファイルを source せず、shell と共有するのは環境変数とレイアウトの規約だけにする。これはこのリポジトリの外へ出せる状態を保つための線で、守れていれば切り出しはファイル移動で済む
+- **`bin/` に置けるかが最初の判断**: stdout と終了ステータスだけで表せる操作は `bin/` の実行ファイル（`repo`・`wt`）。`cd` やピッカーを開いたまま続く操作は呼び出し側（herdr script、または `cd "$(wt new …)"` のように打つ人）が持ち、shell 関数にはしない。`bin/` のコマンドは他の zsh ファイルを source せず、shell と共有するのは環境変数とレイアウトの規約だけにする。これはこのリポジトリの外へ出せる状態を保つための線で、守れていれば切り出しはファイル移動で済む
 - `bin/` のコマンドは作成・削除したものの path を stdout に出し、そこへ移動する・workspace を開閉するのは呼び出し側（herdr script）に任せる。確認プロンプトは持たない。呼び出し側が確認を出すべきかは終了コードで伝え（`wt rm` の 2 = `-f` なら通る）、判断は `-f` などのフラグで受け取る
 - picker の行データ（一覧・整形）も `bin/` が `<display>\t<target>` で出す（`wt prs`・`repo list`）。外部 CLI（`gh` など）を呼ぶのは `bin/` 側に寄せ、script が直接知るのは fzf・herdr CLI と preview だけにする。herdr の workspace の行だけは `bin/` が知り得ないので ui.zsh の `_ui_workspaces` が出す
 - 選択・確認・移動は `.config/herdr/herdr-*.zsh` が持つ（中身が zsh なので `.sh` にしない。`.sh` はこのリポジトリでは bash / sh の script）。`bin/` のコマンドと herdr CLI だけで組み、判断を持たない。共有するのは `.config/herdr/ui.zsh`（依存チェック・`_ui_pause` / `_ui_die` / `_ui_confirm`・fzf chrome・preview・workspace の行）だけで、ui.zsh は何も source しない
-- `.config/zsh/workflows/*.zsh`: ユーザーが打つ shell 関数。操作はサブコマンドで表す。対象が既存コマンドと同じならサブコマンドとして足し、別のときだけ新ファイルにする
+- `bin/` のコマンドは操作をサブコマンドで表す。対象が既存コマンドと同じならサブコマンドとして足し、別のときだけ新しいコマンドにする
 - branch・commit・staging の選択は `git-fz`（`git fz switch` / `log` / `stage`）が持つ。zsh 側に再実装せず、足りない操作は git-fz 側の Issue にする
 - 選択 + 単一コマンドで終わるものは function を作らず、`.zshrc` の `_fzf_comprun` / `_fzf_complete_<cmd>` に寄せて `<コマンド> **<TAB>` から引く
 - fzf の共通オプション（見た目・キー）は `.zshrc` の `FZF_DEFAULT_OPTS`。候補生成と preview はコマンド側の関心
@@ -23,7 +23,6 @@ description: このリポジトリの zsh 設定を変更するときに使う�
 
 **構造上の制約:**
 
-- `.zshrc` は `workflows/*.zsh` だけを glob で source する。登録は要らず、読み込み順にも依存しない
 - **ファイル冒頭で `return 0` しない。** function は常に定義し、依存判定は各エントリポイントの内部で `_ui_require <tool> <コマンド名>` を呼んで行う。file-level guard だと function 自体が消えて `command not found` になり、herdr から単独 source されるファイルでは沈黙して壊れる
 - ピッカーは操作ごとに 1 本持つ。行の意味も遷移先も違うものを 1 本に畳まない。同じ行への別の操作は別キー（`--expect`）で同じピッカーに載せてよい（`herdr-spaces.zsh` の ctrl-x）。行は `<display>\t<target>\t<path>` で揃え、preview は path 列だけを見る
 - 全画面で開くピッカーの見た目は `_UI_FZF_CHROME` が持つ（`--border-label` は呼び出し側がコマンド名で付ける）。`FZF_DEFAULT_OPTS` はカーソル下に出る補完用の寸法なので、そこへ寄せない。herdr の script は絶対パスで source・起動されるので、移動・改名は herdr 側の参照と同時に直す
@@ -38,14 +37,14 @@ description: このリポジトリの zsh 設定を変更するときに使う�
 
 1. `mise run fmt` で整形する（`shuck format .`）
 1. `mise run lint` で確認する（`shuck` の検査と `test/` の実行を含む）
-1. zsh だけを回すときは `mise run test:zsh`
+1. `test/` だけを回すときは `mise run test:scripts`
 1. ツールが無い場合は先に `mise install`
 
 `shuck` はリポジトリ全体（`.`）が対象。シェルスクリプトを足しても `mise.toml` への登録は要らない。
 
 ## test/ に検査を足す
 
-`.config/zsh/test/` は 1 ファイル 1 対象で、何を見るかはファイル冒頭のコメントにある。
+`test/` は対象の置き場所に合わせて分ける（`bin/` → `test/bin/`、`.config/herdr/` → `test/herdr/`）。`.config/` 配下と `bin/` は配置先へリンクされるので、テストをそこへ置かない。1 ファイル 1 対象で、何を見るかはファイル冒頭のコメントにある。
 
 - source される関数（`ui.zsh`）は `zsh -df` の子プロセスで source し、依存コマンドを関数で差し替えて出力を照合する（`ui_test.zsh`）。`$WT_ROOT` / `$REPO_ROOT` はテスト内で差し替える
 - picker を開く処理そのものは検査できない。行データや判断は `bin/` 側に寄せて、そちらを検査対象にする
