@@ -20,11 +20,13 @@ usage: wt <command> [<args>]
   list [--full-path] [<query>]    the worktrees under it, one per line
   path <branch>                   where <branch> of this repository would land
   new <branch> [<base>]           create it (or reuse it) and print its path
+  prs                             the open pull requests, `<display>\t<number>`
   pr <number>                     create it for a pull request and print its path
   rm [-f] <path|branch>...        remove worktrees and their branches
   prune [--dry-run]               remove the worktrees of merged pull requests
 
 rm keeps a branch that is not merged; -f removes local changes and the branch.
+rm exits 2 when only -f would have let it through, 1 on any other refusal.
 USAGE
 }
 
@@ -120,7 +122,7 @@ _wt_removable() {
 
 # The branch goes with the worktree, as git-wt -d does: `branch -d` keeps one
 # that is not merged, and -D is the caller taking that decision. The default
-# branch is never deleted.
+# branch is never deleted. Returns 2 when git refused what --force would take.
 _wt_remove() {
   local wt_path=$1 main branch default
   local -i force=${2:-0}
@@ -129,7 +131,7 @@ _wt_remove() {
   if ((force)); then
     git -C "$main" worktree remove --force -- "$wt_path" >&2 || return 1
   else
-    git -C "$main" worktree remove -- "$wt_path" >&2 || return 1
+    git -C "$main" worktree remove -- "$wt_path" >&2 || return 2
   fi
   rmdir -- "${wt_path:h}" 2>/dev/null
   print -r -- "$wt_path"
@@ -212,6 +214,21 @@ _wt_cmd_new() {
   print -r -- "$wt_path"
 }
 
+# `<display>\t<number>` per open pull request, for a picker to show the first
+# column and hand the second to `wt pr`. gh's own order is kept.
+_wt_cmd_prs() {
+  local rows line
+  local -a f
+  _wt_require gh wt || return 1
+  _wt_main >/dev/null || return 1
+  rows=$(gh pr list --limit 100 --json number,title,headRefName,author \
+    --jq '.[] | [.number, .title, .headRefName, .author.login] | @tsv') || return 1
+  for line in ${(f)rows}; do
+    f=("${(@ps:\t:)line}")
+    printf '#%-5s %-50s %s (@%s)\t%s\n' "$f[1]" "${${f[2]}[1,50]}" "$f[3]" "$f[4]" "$f[1]"
+  done
+}
+
 # `gh pr checkout` is the only thing that gets a fork's head right, so the
 # worktree is added detached and gh is run inside it. The directory is named
 # after the head branch, which a fork does not qualify by owner: two pull
@@ -248,10 +265,12 @@ _wt_cmd_pr() {
   print -r -- "$wt_path"
 }
 
-# Every target is attempted; the status says whether any of them failed.
+# Every target is attempted. The status is for a caller deciding whether to offer
+# -f: 1 when any target was refused in a way -f does not lift, else 2 when git
+# refused one that -f would take.
 _wt_cmd_rm() {
   local arg main wt_path
-  local -i force=0 rc=0
+  local -i force=0 hard=0 soft=0 rc
   local -a targets
   for arg in "$@"; do
     case $arg in
@@ -284,12 +303,17 @@ _wt_cmd_rm() {
       wt_path=$(_wt_path "$main" "$arg")
     fi
     _wt_removable "$wt_path" || {
-      rc=1
+      hard=1
       continue
     }
-    _wt_remove "$wt_path" "$force" || rc=1
+    _wt_remove "$wt_path" "$force"
+    rc=$?
+    ((rc == 2)) && soft=1
+    ((rc == 1)) && hard=1
   done
-  return $rc
+  ((hard)) && return 1
+  ((soft)) && return 2
+  return 0
 }
 
 # A branch whose upstream origin deleted is a candidate; it goes only when gh
@@ -380,6 +404,10 @@ case ${1:-} in
   new)
     shift
     _wt_cmd_new "$@"
+    ;;
+  prs)
+    shift
+    _wt_cmd_prs "$@"
     ;;
   pr)
     shift

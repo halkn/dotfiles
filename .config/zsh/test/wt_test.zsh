@@ -76,8 +76,9 @@ git -C "$main" branch -D -q remote-only
 git -C "$main" update-ref -d refs/remotes/origin/remote-only
 
 # A stub gh: `pr list --state merged --head <b>` answers the head oid of each
-# merged PR recorded in $STUB_MERGED_DIR/<b>, `pr view` answers $STUB_PR_VIEW,
-# and `pr checkout` makes the branch.
+# merged PR recorded in $STUB_MERGED_DIR/<b>, any other `pr list` answers
+# $STUB_PR_ROWS, `pr view` answers $STUB_PR_VIEW, and `pr checkout` makes the
+# branch.
 stub=$scratch/stub
 mkdir -p "$stub"
 cat >"$stub/gh" <<'STUB'
@@ -86,6 +87,10 @@ args=("$@")
 case "$1 $2" in
   'pr list')
     head=${args[(i)--head]}
+    if ((head > ${#args})); then
+      print -r -- "${STUB_PR_ROWS:-}"
+      exit
+    fi
     b=${args[head + 1]}
     [[ -f ${STUB_MERGED_DIR:-/nonexistent}/$b ]] && cat -- "$STUB_MERGED_DIR/$b"
     ;;
@@ -144,6 +149,20 @@ check 'pr (checked out by gh)' pr-branch \
 
 STUB_PR_VIEW='' in_main pr 8 >/dev/null 2>&1 && fail 'pr (unresolved head) should fail'
 
+# ── prs ──────────────────────────────────────────────
+
+# `<display>\t<number>`: a picker shows the first column and hands back the
+# second to `wt pr`. A long title is cut so the branch and author stay visible.
+long='A title long enough to run past the fifty columns kept'
+got=$(STUB_PR_ROWS=$'12\tFix thing\tfix-thing\talice\n3\t'"$long"$'\tlong\tbob' in_main prs)
+check 'prs' \
+  "$(
+    printf '#%-5s %-50s %s (@%s)\t%s\n' 12 'Fix thing' fix-thing alice 12
+    printf '#%-5s %-50s %s (@%s)\t%s' 3 "${long[1,50]}" long bob 3
+  )" \
+  "$got"
+check 'prs (none open)' '' "$(STUB_PR_ROWS='' in_main prs)"
+
 # ── list ─────────────────────────────────────────────
 
 check 'list' \
@@ -159,17 +178,25 @@ check 'list (empty root)' '' "$(WT_ROOT=$scratch/nowhere wt list)"
 
 # ── rm ───────────────────────────────────────────────
 
+# The status tells the caller whether asking for -f makes sense: 1 is a refusal
+# -f does not lift, 2 is git's refusal that -f overrides.
+status_of() {
+  "$@" >/dev/null 2>&1
+  print $?
+}
+
 # git removes the worktree the caller stands in without complaint.
-(cd -- "$WT_ROOT/owner/proj/topic" && "$wt_bin" rm "$WT_ROOT/owner/proj/topic" >/dev/null 2>&1) &&
-  fail 'rm (standing in it) should fail'
+check 'rm (standing in it)' 1 \
+  "$(cd -- "$WT_ROOT/owner/proj/topic" && status_of "$wt_bin" rm -f "$WT_ROOT/owner/proj/topic")"
 [[ -d $WT_ROOT/owner/proj/topic ]] || fail 'rm (standing in it) removed the worktree'
 
 # Only the layout under $WT_ROOT is ours: not the main checkout, not Claude
 # Code's .claude/worktrees.
-in_main rm "$main" >/dev/null 2>&1 && fail 'rm (main checkout) should fail'
+check 'rm (main checkout)' 1 "$(status_of in_main rm -f "$main")"
 git -C "$main" worktree add -q "$main/.claude/worktrees/agent" -b agent 2>/dev/null
-in_main rm "$main/.claude/worktrees/agent" >/dev/null 2>&1 && fail 'rm (claude worktree) should fail'
+check 'rm (claude worktree)' 1 "$(status_of in_main rm -f "$main/.claude/worktrees/agent")"
 [[ -d $main/.claude/worktrees/agent ]] || fail 'rm (claude worktree) removed it'
+check 'rm (no target)' 1 "$(status_of in_main rm)"
 
 # A merged branch goes with its worktree; by branch name from inside the repo.
 check 'rm (by branch)' "$WT_ROOT/owner/proj/topic" "$(in_main rm topic 2>/dev/null)"
@@ -184,8 +211,10 @@ git -C "$main" show-ref -q --verify refs/heads/based || fail 'rm (unmerged) dele
 
 # Local changes are git's refusal, and -f is the caller overriding it.
 print change >"$WT_ROOT/owner/proj/local-only/file"
-in_main rm local-only >/dev/null 2>&1 && fail 'rm (dirty) should fail'
+check 'rm (dirty)' 2 "$(status_of in_main rm local-only)"
 [[ -d $WT_ROOT/owner/proj/local-only ]] || fail 'rm (dirty) removed the worktree'
+# A refusal -f cannot lift outranks one it can, so the caller does not offer it.
+check 'rm (dirty and main checkout)' 1 "$(status_of in_main rm local-only "$main")"
 check 'rm -f (dirty)' "$WT_ROOT/owner/proj/local-only" "$(in_main rm -f local-only 2>/dev/null)"
 git -C "$main" show-ref -q --verify refs/heads/local-only && fail 'rm -f left the branch'
 

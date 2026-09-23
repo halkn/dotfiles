@@ -95,7 +95,6 @@ small `.zshenv` stub that sets `ZDOTDIR` and hands off to it.
 | `.zshenv` | The shared environment and PATH |
 | `.zshrc` | The portable interactive core, plus tool setup guarded by `command -v` so a machine without those tools still gets a working shell |
 | `workflows/*.zsh` | The commands that need the shell itself (none at present) |
-| `lib/*.zsh` | Shared by those commands and the herdr pickers: `ui.zsh` |
 | `test/*.zsh` | Run by `mise run test:zsh` |
 
 `bin/*` sits outside that tree: commands that need neither a picker nor `cd`
@@ -185,13 +184,16 @@ caller's. [herdr](https://herdr.dev) is that caller; outside it, `cd "$(wt new
 ```sh
 wt list [--full-path] [<query>]  # the worktrees under $WT_ROOT
 wt new <branch> [<base>]         # create one for a branch (or reuse it)
+wt prs                           # the open pull requests, <display>\t<number>
 wt pr <number>                   # create one for a pull request
 wt rm [-f] <path|branch>...      # remove worktrees and their branches
 wt prune [--dry-run]             # remove the worktrees of merged pull requests
 ```
 
-`new`, `pr` and `prune` act on the repository you are standing in; `list` and
-`rm` by path span every repository.
+`new`, `prs`, `pr` and `prune` act on the repository you are standing in;
+`list` and `rm` by path span every repository. `rm` exits 2 when only `-f` would
+have let it through (local changes) and 1 on any other refusal, so a caller
+knows whether offering `-f` makes sense.
 
 Worktrees land at `$WT_ROOT/<owner>/<repo>/<branch>`
 (`~/.local/share/worktrees`). herdr's own `[worktrees] directory` holds the same
@@ -222,7 +224,8 @@ branch of origin, so its worktree is left to `wt rm`. `wt pr` pre-trusts the
 worktree's mise config only when the pull request is not from a fork.
 
 herdr's keys are `.config/herdr/*.sh`, and the herdr-specific half lives only
-there:
+there; the pickers share their chrome and preview from `.config/herdr/ui.zsh`.
+They call `wt`, `repo` and the herdr CLI, and nothing else decides for them:
 
 | Key | Does |
 | --- | --- |
@@ -230,7 +233,7 @@ there:
 | `alt+n` | pick from `repo list` and open a workspace on it |
 | `alt+g` | `wt new` for a branch you type, then open it |
 | `alt+p` | pick an open pull request, `wt pr`, then open it |
-| `alt+x` | pick worktrees, `wt rm` (confirming `-f` per refusal), close their workspaces |
+| `alt+x` | pick worktrees, `wt rm` (asking before `-f` when only local changes stop it), close their workspaces |
 | `alt+c` | `wt prune` after showing `--dry-run`, then close their workspaces |
 
 ## Tool Manager
