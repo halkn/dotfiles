@@ -12,19 +12,27 @@ if [[ -r $ui_lib ]]; then
   source "$ui_lib"
 fi
 
-whence _ui_require >/dev/null || {
-  print -u2 "herdr-wt: $ui_lib not found"
-  exit 1
-}
-
-_ui_require wt herdr-wt || exit 1
-_ui_require jq herdr-wt || exit 1
-
 # A popup closes as soon as its command ends, taking what was printed with it.
 pause() {
   print -n 'press any key '
   read -rsk1 || true
 }
+
+whence _ui_require >/dev/null || {
+  print -u2 "herdr-wt: $ui_lib not found"
+  pause
+  exit 1
+}
+
+need() {
+  _ui_require "$1" herdr-wt || {
+    pause
+    return 1
+  }
+}
+
+need wt || exit 1
+need jq || exit 1
 
 confirm() {
   print -n "$1 [y/N] "
@@ -87,8 +95,8 @@ cmd_new() {
 
 cmd_pr() {
   local rows number dir
-  _ui_require gh herdr-wt || return 1
-  _ui_require fzf herdr-wt || return 1
+  need gh || return 1
+  need fzf || return 1
   # Fetched before the picker opens rather than from inside it, so a gh failure
   # is reported instead of showing an empty list.
   rows=$(gh pr list --limit 100 \
@@ -123,7 +131,7 @@ cmd_rm() {
   local root rows dir removed
   local -a targets
   local -i rc=0
-  _ui_require fzf herdr-wt || return 1
+  need fzf || return 1
   root=$(wt root)
   rows=$(wt list --full-path)
   [[ -n $rows ]] || {
