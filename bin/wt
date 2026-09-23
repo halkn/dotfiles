@@ -22,11 +22,12 @@ usage: wt <command> [<args>]
   new <branch> [<base>]           create it (or reuse it) and print its path
   prs                             the open pull requests, `<display>\t<number>`
   pr <number>                     create it for a pull request and print its path
-  rm [-f] <path|branch>...        remove worktrees and their branches
+  rm [-f] [-D | -k] <path|branch>...  remove worktrees and their branches
   prune [--dry-run]               remove the worktrees of merged pull requests
 
-rm keeps a branch that is not merged; -f removes local changes and the branch.
-rm exits 2 when only -f would have let it through, 1 on any other refusal.
+rm deletes a merged branch with its worktree. An unmerged one needs -D (delete)
+or -k (keep); -f discards local changes. Nothing is removed while a decision is
+missing: rm exits 2 when -f is needed, 3 when -D or -k is, 1 on any other refusal.
 USAGE
 }
 
@@ -120,14 +121,43 @@ _wt_removable() {
   }
 }
 
-# The branch goes with the worktree, as git-wt -d does: `branch -d` keeps one
-# that is not merged, and -D is the caller taking that decision. The default
-# branch is never deleted. Returns 2 when git refused what --force would take.
+# What `git branch -d` would accept: the branch is contained in its upstream, or
+# in the main checkout's HEAD when it has none.
+_wt_merged() {
+  local main=$1 branch=$2 into
+  into=$(git -C "$main" rev-parse -q --verify "refs/heads/$branch@{upstream}" 2>/dev/null) ||
+    into=HEAD
+  git -C "$main" merge-base --is-ancestor "refs/heads/$branch" "$into" 2>/dev/null
+}
+
+# The worktree and its branch are two decisions, taken before anything is
+# removed. Local changes are git's refusal, lifted by --force (status 2). An
+# unmerged branch is never deleted by default and never kept silently: the
+# caller says which, and until then nothing is touched (status 3). The default
+# branch always stays.
 _wt_remove() {
-  local wt_path=$1 main branch default
-  local -i force=${2:-0}
+  local wt_path=$1 branch_mode=$3 main branch default
+  local -i force=${2:-0} delete=0
   main=$(_wt_main "$wt_path") || return 1
   branch=$(git -C "$wt_path" symbolic-ref --short -q HEAD)
+  default=$(git -C "$main" symbolic-ref --short -q refs/remotes/origin/HEAD)
+  if [[ -n $branch && $branch != "${default#origin/}" ]]; then
+    case $branch_mode in
+      delete)
+        delete=1
+        ;;
+      keep) ;;
+      *)
+        if _wt_merged "$main" "$branch"; then
+          delete=1
+        else
+          print -u2 "wt: branch $branch is not merged: -D deletes it, -k keeps it"
+          return 3
+        fi
+        ;;
+    esac
+  fi
+
   if ((force)); then
     git -C "$main" worktree remove --force -- "$wt_path" >&2 || return 1
   else
@@ -135,14 +165,7 @@ _wt_remove() {
   fi
   rmdir -- "${wt_path:h}" 2>/dev/null
   print -r -- "$wt_path"
-
-  default=$(git -C "$main" symbolic-ref --short -q refs/remotes/origin/HEAD)
-  [[ -n $branch && $branch != "${default#origin/}" ]] || return 0
-  if ((force)); then
-    git -C "$main" branch -D -q -- "$branch" >&2
-  elif ! git -C "$main" branch -d -q -- "$branch" 2>/dev/null; then
-    print -u2 "wt: kept branch $branch, which is not merged (rm -f deletes it)"
-  fi
+  ((delete)) && git -C "$main" branch -D -q -- "$branch" >&2
   return 0
 }
 
@@ -186,9 +209,22 @@ _wt_cmd_path() {
   _wt_path "$main" "$branch"
 }
 
+# An existing directory is handed back only when it holds the branch asked for:
+# `/` folds to `-`, so another branch may be sitting there.
+_wt_reuse() {
+  local wt_path=$1 branch=$2 held
+  held=$(git -C "$wt_path" symbolic-ref --short -q HEAD)
+  [[ $held == "$branch" ]] || {
+    print -u2 "wt: $wt_path holds ${held:-a detached HEAD}, not $branch"
+    return 1
+  }
+  print -r -- "$wt_path"
+}
+
 # With no base, a branch is picked up where it already is - locally, then on
 # origin - so one that exists only on the remote is tracked instead of silently
-# forked. A base always means a new branch, and fails if it already exists.
+# forked. When origin cannot be reached, what the last fetch knew of it still
+# counts. A base always means a new branch, and fails if it already exists.
 _wt_cmd_new() {
   local branch=${1:-} base=${2:-} main wt_path
   [[ -n $branch ]] || {
@@ -198,19 +234,29 @@ _wt_cmd_new() {
   main=$(_wt_main) || return 1
   wt_path=$(_wt_path "$main" "$branch")
 
-  if [[ ! -d $wt_path ]]; then
-    if [[ -n $base ]]; then
-      git worktree add -b "$branch" "$wt_path" "$base" >&2 || return 1
-    elif git show-ref --verify --quiet "refs/heads/$branch"; then
-      git worktree add "$wt_path" "$branch" >&2 || return 1
-    elif git fetch -q origin "$branch" 2>/dev/null &&
-      git show-ref --verify --quiet "refs/remotes/origin/$branch"; then
+  if [[ -d $wt_path ]]; then
+    [[ -z $base ]] || {
+      print -u2 "wt: $wt_path already exists, so <base> cannot apply"
+      return 1
+    }
+    _wt_reuse "$wt_path" "$branch"
+    return
+  fi
+
+  if [[ -n $base ]]; then
+    git worktree add -b "$branch" "$wt_path" "$base" >&2 || return 1
+  elif git show-ref --verify --quiet "refs/heads/$branch"; then
+    git worktree add "$wt_path" "$branch" >&2 || return 1
+  else
+    git fetch -q origin "$branch" 2>/dev/null ||
+      print -u2 "wt: could not fetch $branch from origin; using what is known of it"
+    if git show-ref --verify --quiet "refs/remotes/origin/$branch"; then
       git worktree add --track -b "$branch" "$wt_path" "origin/$branch" >&2 || return 1
     else
       git worktree add -b "$branch" "$wt_path" >&2 || return 1
     fi
-    _wt_trust_mise "$wt_path"
   fi
+  _wt_trust_mise "$wt_path"
   print -r -- "$wt_path"
 }
 
@@ -253,32 +299,40 @@ _wt_cmd_pr() {
   }
 
   wt_path=$(_wt_path "$main" "$branch")
-  if [[ ! -d $wt_path ]]; then
-    git worktree add -q --detach "$wt_path" HEAD >&2 || return 1
-    if ! (cd -- "$wt_path" && gh pr checkout "$number" >&2); then
-      git worktree remove --force -- "$wt_path" >&2
-      rmdir -- "${wt_path:h}" 2>/dev/null
-      return 1
-    fi
-    [[ $cross == true ]] || _wt_trust_mise "$wt_path"
+  if [[ -d $wt_path ]]; then
+    _wt_reuse "$wt_path" "$branch"
+    return
   fi
+  git worktree add -q --detach "$wt_path" HEAD >&2 || return 1
+  if ! (cd -- "$wt_path" && gh pr checkout "$number" >&2); then
+    git worktree remove --force -- "$wt_path" >&2
+    rmdir -- "${wt_path:h}" 2>/dev/null
+    return 1
+  fi
+  [[ $cross == true ]] || _wt_trust_mise "$wt_path"
   print -r -- "$wt_path"
 }
 
-# Every target is attempted. The status is for a caller deciding whether to offer
-# -f: 1 when any target was refused in a way -f does not lift, else 2 when git
-# refused one that -f would take.
+# Every target is attempted. The status is for a caller deciding what to ask:
+# 1 when any target was refused in a way no flag lifts, else 2 when git refused
+# one that -f would take, else 3 when an unmerged branch needs -D or -k.
 _wt_cmd_rm() {
-  local arg main wt_path
-  local -i force=0 hard=0 soft=0 rc
+  local arg main wt_path branch_mode=
+  local -i force=0 hard=0 dirty=0 unmerged=0 rc
   local -a targets
   for arg in "$@"; do
     case $arg in
       -f | --force)
         force=1
         ;;
+      -D | --delete-branch)
+        branch_mode=delete
+        ;;
+      -k | --keep-branch)
+        branch_mode=keep
+        ;;
       -h | --help)
-        print -r -- 'usage: wt rm [-f] <path|branch>...'
+        print -r -- 'usage: wt rm [-f] [-D | -k] <path|branch>...'
         return 0
         ;;
       -*)
@@ -291,28 +345,32 @@ _wt_cmd_rm() {
     esac
   done
   ((${#targets} > 0)) || {
-    print -u2 'usage: wt rm [-f] <path|branch>...'
+    print -u2 'usage: wt rm [-f] [-D | -k] <path|branch>...'
     return 1
   }
 
   for arg in "${targets[@]}"; do
     if [[ $arg == */* && -d $arg ]]; then
       wt_path=${arg:A}
-    else
-      main=$(_wt_main) || return 1
+    elif main=$(_wt_main); then
       wt_path=$(_wt_path "$main" "$arg")
+    else
+      hard=1
+      continue
     fi
     _wt_removable "$wt_path" || {
       hard=1
       continue
     }
-    _wt_remove "$wt_path" "$force"
+    _wt_remove "$wt_path" "$force" "$branch_mode"
     rc=$?
-    ((rc == 2)) && soft=1
     ((rc == 1)) && hard=1
+    ((rc == 2)) && dirty=1
+    ((rc == 3)) && unmerged=1
   done
   ((hard)) && return 1
-  ((soft)) && return 2
+  ((dirty)) && return 2
+  ((unmerged)) && return 3
   return 0
 }
 
@@ -345,7 +403,7 @@ _wt_prune_one() {
   if ((dry_run)); then
     print -r -- "$wt_path"
   else
-    _wt_remove "$wt_path" 1
+    _wt_remove "$wt_path" 1 delete
   fi
 }
 

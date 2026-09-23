@@ -186,14 +186,14 @@ wt list [--full-path] [<query>]  # the worktrees under $WT_ROOT
 wt new <branch> [<base>]         # create one for a branch (or reuse it)
 wt prs                           # the open pull requests, <display>\t<number>
 wt pr <number>                   # create one for a pull request
-wt rm [-f] <path|branch>...      # remove worktrees and their branches
+wt rm [-f] [-D|-k] <path|branch>... # remove worktrees and their branches
 wt prune [--dry-run]             # remove the worktrees of merged pull requests
 ```
 
 `new`, `prs`, `pr` and `prune` act on the repository you are standing in;
-`list` and `rm` by path span every repository. `rm` exits 2 when only `-f` would
-have let it through (local changes) and 1 on any other refusal, so a caller
-knows whether offering `-f` makes sense.
+`list` and `rm` by path span every repository. `new` and `pr` hand back an
+existing directory only when it holds the branch asked for, since `/` folds to
+`-` and another branch may be sitting there.
 
 Worktrees land at `$WT_ROOT/<owner>/<repo>/<branch>`
 (`~/.local/share/worktrees`). herdr's own `[worktrees] directory` holds the same
@@ -211,17 +211,27 @@ Claude Code creates worktrees of its own, so the two kinds are kept apart:
 `wt rm` takes only directories of the layout under `$WT_ROOT`, which keeps out
 the main checkout and `.claude/worktrees` (an agent may still be running in
 one), and refuses the worktree you are standing in, which git would remove
-without complaint. Local changes are git's refusal; `-f` overrides it. The
-branch goes with the worktree when git considers it merged and stays otherwise;
-`-f` deletes it regardless. The default branch is never deleted.
+without complaint. The worktree and its branch are separate decisions, and
+nothing is removed while one is missing:
+
+| Status | Meaning | Lifted by |
+| --- | --- | --- |
+| 0 | removed; a merged branch went with it | — |
+| 2 | git refused: local changes | `-f` (discard them) |
+| 3 | the branch is not merged | `-D` (delete it) or `-k` (keep it) |
+| 1 | any other refusal | nothing |
+
+A merged branch is one `git branch -d` would take. The default branch is never
+deleted.
 
 `wt prune` fetches with `--prune` and removes a worktree when origin has deleted
 its branch **and** `gh` finds a merged pull request whose head is exactly the
 local tip, because a squash merge leaves nothing git can recognise, a closed
 pull request's branch is gone too, and a branch may have been committed to after
-its merge or reuse a merged branch's name. A worktree with local changes is kept. A fork's pull request tracks no
-branch of origin, so its worktree is left to `wt rm`. `wt pr` pre-trusts the
-worktree's mise config only when the pull request is not from a fork.
+its merge or reuse a merged branch's name. A worktree with local changes is
+kept. A fork's pull request tracks no branch of origin, so its worktree is left
+to `wt rm`. `wt pr` pre-trusts the worktree's mise config only when the pull
+request is not from a fork.
 
 herdr's keys are `.config/herdr/*.sh`, and the herdr-specific half lives only
 there; the pickers share their chrome and preview from `.config/herdr/ui.zsh`.
@@ -233,7 +243,7 @@ They call `wt`, `repo` and the herdr CLI, and nothing else decides for them:
 | `alt+n` | pick from `repo list` and open a workspace on it |
 | `alt+g` | `wt new` for a branch you type, then open it |
 | `alt+p` | pick an open pull request, `wt pr`, then open it |
-| `alt+x` | pick worktrees, `wt rm` (asking before `-f` when only local changes stop it), close their workspaces |
+| `alt+x` | pick worktrees, `wt rm` (asking separately before `-f` and before `-D` / `-k`), close their workspaces |
 | `alt+c` | `wt prune` after showing `--dry-run`, then close their workspaces |
 
 ## Tool Manager

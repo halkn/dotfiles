@@ -109,6 +109,11 @@ in_main() {
   (cd -- "$main" && "$wt_bin" "$@")
 }
 
+status_of() {
+  "$@" >/dev/null 2>&1
+  print $?
+}
+
 # ── path / new ───────────────────────────────────────
 
 # The directory is <owner>/<repo> of the main checkout plus the branch as one
@@ -134,8 +139,26 @@ in_main new based main >/dev/null 2>&1
 check 'new (base)' "$(git -C "$main" rev-parse main)" \
   "$(git -C "$WT_ROOT/owner/proj/based" rev-parse HEAD 2>/dev/null)"
 
-# A base always means a new branch, so an existing one is an error.
+# A base always means a new branch, so an existing one is an error, and so is a
+# worktree already standing where the new one would go.
 in_main new main main >/dev/null 2>&1 && fail 'new (base on an existing branch) should fail'
+in_main new topic main >/dev/null 2>&1 && fail 'new (base on an existing worktree) should fail'
+
+# `/` folds to `-` in the directory, so feat/x and feat-x share one. Handing back
+# the other branch's worktree would open the wrong branch without a word.
+in_main new feat-x >/dev/null 2>&1
+in_main new feat/x >/dev/null 2>&1 && fail 'new (directory holds another branch) should fail'
+
+# An origin that cannot be reached still leaves what is known of it: the branch
+# is tracked from the last fetch rather than forked afresh from HEAD.
+git -C "$main" branch offline
+git -C "$main" push -q origin offline
+git -C "$main" branch -D -q offline
+git -C "$main" remote set-url origin "$scratch/unreachable.git"
+in_main new offline >/dev/null 2>&1
+check 'new (origin unreachable, known remote branch)' origin/offline \
+  "$(git -C "$WT_ROOT/owner/proj/offline" rev-parse --abbrev-ref '@{upstream}' 2>/dev/null)"
+git -C "$main" remote set-url origin "$origin"
 
 in_main new >/dev/null 2>&1 && fail 'new (no branch) should fail'
 (cd -- "$scratch" && "$wt_bin" new topic >/dev/null 2>&1) && fail 'new (outside a repository) should fail'
@@ -148,6 +171,12 @@ check 'pr (checked out by gh)' pr-branch \
   "$(git -C "$WT_ROOT/owner/proj/pr-branch" branch --show-current 2>/dev/null)"
 
 STUB_PR_VIEW='' in_main pr 8 >/dev/null 2>&1 && fail 'pr (unresolved head) should fail'
+
+check 'pr (again)' "$WT_ROOT/owner/proj/pr-branch" \
+  "$(STUB_PR_VIEW=$'pr-branch\tfalse' in_main pr 7 2>/dev/null)"
+# Another pull request whose head folds to the same directory.
+STUB_PR_VIEW=$'pr/branch\ttrue' in_main pr 9 >/dev/null 2>&1 &&
+  fail 'pr (directory holds another branch) should fail'
 
 # ── prs ──────────────────────────────────────────────
 
@@ -167,7 +196,9 @@ check 'prs (none open)' '' "$(STUB_PR_ROWS='' in_main prs)"
 
 check 'list' \
   'owner/proj/based
+owner/proj/feat-x
 owner/proj/local-only
+owner/proj/offline
 owner/proj/pr-branch
 owner/proj/remote-only
 owner/proj/topic' \
@@ -177,13 +208,6 @@ check 'list --full-path (query)' "$WT_ROOT/owner/proj/topic" "$(wt list --full-p
 check 'list (empty root)' '' "$(WT_ROOT=$scratch/nowhere wt list)"
 
 # ── rm ───────────────────────────────────────────────
-
-# The status tells the caller whether asking for -f makes sense: 1 is a refusal
-# -f does not lift, 2 is git's refusal that -f overrides.
-status_of() {
-  "$@" >/dev/null 2>&1
-  print $?
-}
 
 # git removes the worktree the caller stands in without complaint.
 check 'rm (standing in it)' 1 \
@@ -203,20 +227,37 @@ check 'rm (by branch)' "$WT_ROOT/owner/proj/topic" "$(in_main rm topic 2>/dev/nu
 [[ -d $WT_ROOT/owner/proj/topic ]] && fail 'rm (by branch) left the worktree'
 git -C "$main" show-ref -q --verify refs/heads/topic && fail 'rm (merged) left the branch'
 
-# An unmerged branch is kept even though the worktree goes, as git-wt -d does.
+# An unmerged branch is a decision of its own: nothing is removed until the
+# caller says -D (delete it) or -k (keep it). -f does not decide it.
 git -C "$WT_ROOT/owner/proj/based" commit -q --allow-empty -m unmerged
-check 'rm (unmerged, by path, from anywhere)' "$WT_ROOT/owner/proj/based" \
-  "$(cd -- "$scratch" && "$wt_bin" rm "$WT_ROOT/owner/proj/based" 2>/dev/null)"
-git -C "$main" show-ref -q --verify refs/heads/based || fail 'rm (unmerged) deleted the branch'
+check 'rm (unmerged)' 3 "$(cd -- "$scratch" && status_of "$wt_bin" rm "$WT_ROOT/owner/proj/based")"
+check 'rm -f (unmerged)' 3 "$(cd -- "$scratch" && status_of "$wt_bin" rm -f "$WT_ROOT/owner/proj/based")"
+[[ -d $WT_ROOT/owner/proj/based ]] || fail 'rm (unmerged) removed the worktree'
+check 'rm -k (unmerged, by path, from anywhere)' "$WT_ROOT/owner/proj/based" \
+  "$(cd -- "$scratch" && "$wt_bin" rm -k "$WT_ROOT/owner/proj/based" 2>/dev/null)"
+git -C "$main" show-ref -q --verify refs/heads/based || fail 'rm -k deleted the branch'
 
-# Local changes are git's refusal, and -f is the caller overriding it.
+in_main new unmerged main >/dev/null 2>&1
+git -C "$WT_ROOT/owner/proj/unmerged" commit -q --allow-empty -m unmerged
+check 'rm -D (unmerged)' "$WT_ROOT/owner/proj/unmerged" "$(in_main rm -D unmerged 2>/dev/null)"
+git -C "$main" show-ref -q --verify refs/heads/unmerged && fail 'rm -D left the branch'
+
+# Local changes are git's refusal, and -f is the caller overriding it. The
+# merged branch still goes by -d.
 print change >"$WT_ROOT/owner/proj/local-only/file"
 check 'rm (dirty)' 2 "$(status_of in_main rm local-only)"
 [[ -d $WT_ROOT/owner/proj/local-only ]] || fail 'rm (dirty) removed the worktree'
 # A refusal -f cannot lift outranks one it can, so the caller does not offer it.
 check 'rm (dirty and main checkout)' 1 "$(status_of in_main rm local-only "$main")"
 check 'rm -f (dirty)' "$WT_ROOT/owner/proj/local-only" "$(in_main rm -f local-only 2>/dev/null)"
-git -C "$main" show-ref -q --verify refs/heads/local-only && fail 'rm -f left the branch'
+git -C "$main" show-ref -q --verify refs/heads/local-only && fail 'rm -f left the merged branch'
+
+# Every target is attempted: one that cannot be resolved outside a repository
+# does not stop the next.
+in_main new later >/dev/null 2>&1
+check 'rm (unresolvable, then a path)' 1 \
+  "$(cd -- "$scratch" && status_of "$wt_bin" rm nowhere "$WT_ROOT/owner/proj/later")"
+[[ -d $WT_ROOT/owner/proj/later ]] && fail 'rm stopped at an unresolvable target'
 
 # A root reached through a symlink still names the worktrees under it.
 ln -s "$WT_ROOT" "$scratch/wt-link"

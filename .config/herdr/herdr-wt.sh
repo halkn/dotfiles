@@ -122,12 +122,44 @@ cmd_pr() {
   open_worktree "$dir"
 }
 
-# `wt rm` exits 2 when only -f would let it through (local changes); seeing why
-# and saying yes again is what -f is. Any other refusal is final.
+# `wt rm` removes nothing while a decision is missing and says which by its
+# status: 2 asks for -f (discard local changes), 3 for -D or -k (an unmerged
+# branch). Each is asked on its own, with wt's reason on screen, and the answers
+# accumulate until wt goes through or refuses for good (1).
+remove_one() {
+  local dir=$1 name=$2 removed
+  local -a flags
+  local -i st
+  while true; do
+    st=0
+    removed=$(wt rm "${flags[@]}" "$dir") || st=$?
+    case $st in
+      0)
+        [[ -n $removed ]] && close_worktree "$removed"
+        return 0
+        ;;
+      2)
+        confirm "discard the local changes in $name?" || return 1
+        flags+=(-f)
+        ;;
+      3)
+        if confirm "delete its unmerged branch too? (no keeps the branch)"; then
+          flags+=(-D)
+        else
+          flags+=(-k)
+        fi
+        ;;
+      *)
+        return 1
+        ;;
+    esac
+  done
+}
+
 cmd_rm() {
-  local root rows dir removed
+  local root rows dir
   local -a targets
-  local -i rc=0 st
+  local -i rc=0
   need fzf || return 1
   root=$(wt root)
   rows=$(wt list --full-path)
@@ -151,23 +183,7 @@ cmd_rm() {
   confirm 'remove these worktrees and their branches?' || return 0
   load_workspaces
   for dir in "${targets[@]}"; do
-    st=0
-    removed=$(wt rm "$dir") || st=$?
-    if ((st == 1)); then
-      rc=1
-      continue
-    fi
-    if ((st == 2)); then
-      confirm "remove ${dir#"$root"/} anyway?" || {
-        rc=1
-        continue
-      }
-      removed=$(wt rm -f "$dir") || {
-        rc=1
-        continue
-      }
-    fi
-    [[ -n $removed ]] && close_worktree "$removed"
+    remove_one "$dir" "${dir#"$root"/}" || rc=1
   done
   pause
   return $rc
