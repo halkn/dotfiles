@@ -3,7 +3,7 @@
 # errexit, and workspace rows read off `herdr workspace list`.
 set -uo pipefail
 typeset -i failures=0
-ui_lib=${0:A:h}/../../herdr/ui.zsh
+ui_lib=${0:A:h}/../../.config/herdr/ui.zsh
 
 for scenario in status log directory; do
   out=$(zsh -df -c '

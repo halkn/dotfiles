@@ -1,5 +1,5 @@
 ---
-description: このリポジトリの zsh 設定を変更するときに使う。設計方針・検証手順・実測記録を持つ。対象は .config/zsh 配下の .zshenv・.zshrc・workflows/・test/ と .config/herdr/（herdr-*.zsh・ui.zsh）・bin/。関数・コマンドをどの層に置くか決める、bin/ のコマンドにサブコマンドを足す・直す、picker の挙動を変える、test/ に検査を足す、herdr から呼ばれる script を直す、といった作業。
+description: このリポジトリの zsh 設定を変更するときに使う。設計方針・検証手順・実測記録を持つ。対象は .config/zsh 配下の .zshenv・.zshrc・workflows/ と .config/herdr/（herdr-*.zsh・ui.zsh）・bin/・それらを検査する test/。関数・コマンドをどの層に置くか決める、bin/ のコマンドにサブコマンドを足す・直す、picker の挙動を変える、test/ に検査を足す、herdr から呼ばれる script を直す、といった作業。
 ---
 
 # zsh workflow
@@ -38,14 +38,14 @@ description: このリポジトリの zsh 設定を変更するときに使う�
 
 1. `mise run fmt` で整形する（`shuck format .`）
 1. `mise run lint` で確認する（`shuck` の検査と `test/` の実行を含む）
-1. zsh だけを回すときは `mise run test:zsh`
+1. `test/` だけを回すときは `mise run test:scripts`
 1. ツールが無い場合は先に `mise install`
 
 `shuck` はリポジトリ全体（`.`）が対象。シェルスクリプトを足しても `mise.toml` への登録は要らない。
 
 ## test/ に検査を足す
 
-`.config/zsh/test/` は 1 ファイル 1 対象で、何を見るかはファイル冒頭のコメントにある。
+`test/` は対象の置き場所に合わせて分ける（`bin/` → `test/bin/`、`.config/herdr/` → `test/herdr/`）。`.config/` 配下と `bin/` は配置先へリンクされるので、テストをそこへ置かない。1 ファイル 1 対象で、何を見るかはファイル冒頭のコメントにある。
 
 - source される関数（`ui.zsh`）は `zsh -df` の子プロセスで source し、依存コマンドを関数で差し替えて出力を照合する（`ui_test.zsh`）。`$WT_ROOT` / `$REPO_ROOT` はテスト内で差し替える
 - picker を開く処理そのものは検査できない。行データや判断は `bin/` 側に寄せて、そちらを検査対象にする
