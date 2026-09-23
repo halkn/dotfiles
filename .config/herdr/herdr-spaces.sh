@@ -1,6 +1,6 @@
 #!/bin/zsh
 # alt+s in herdr: the open workspaces, one picker to focus one (Enter) or take
-# one away (ctrl-x).
+# away the selected ones (Tab to select, ctrl-x).
 #
 # Taking away a workspace on a worktree under $WT_ROOT removes the worktree with
 # `wt rm` and then closes the workspace; any other workspace is only closed, so
@@ -24,10 +24,20 @@ _ui_require jq herdr-spaces || _ui_die
 _ui_require wt herdr-spaces || _ui_die
 
 # Whether a worktree is one is `wt list`'s to say, the same test `wt rm` applies.
-is_worktree() {
-  local dir=${1:A} line
+# Read once per batch.
+typeset -a worktrees
+load_worktrees() {
+  local line
+  worktrees=()
   for line in ${(f)"$(wt list --full-path)"}; do
-    [[ ${line:A} == "$dir" ]] && return 0
+    worktrees+=("${line:A}")
+  done
+}
+
+is_worktree() {
+  local dir=${1:A} wt_dir
+  for wt_dir in "${worktrees[@]}"; do
+    [[ $wt_dir == "$dir" ]] && return 0
   done
   return 1
 }
@@ -37,7 +47,7 @@ is_worktree() {
 # branch). Each is asked on its own, with wt's reason on screen, and the answers
 # accumulate until wt goes through or refuses for good (1).
 remove_worktree() {
-  local dir=$1
+  local dir=$1 shown=$2
   local -a flags
   local -i st
   while true; do
@@ -48,11 +58,11 @@ remove_worktree() {
         return 0
         ;;
       2)
-        _ui_confirm 'discard its local changes?' || return 1
+        _ui_confirm "discard the local changes in $shown?" || return 1
         flags+=(-f)
         ;;
       3)
-        if _ui_confirm 'delete its unmerged branch too? (no keeps the branch)'; then
+        if _ui_confirm "delete the unmerged branch of $shown too? (no keeps it)"; then
           flags+=(-D)
         else
           flags+=(-k)
@@ -65,20 +75,11 @@ remove_worktree() {
   done
 }
 
-# The focused workspace is refused as `wt rm` refuses the worktree it stands in:
-# closing it would end the shells the popup was opened from.
+# The worktree goes first, so a workspace whose `wt rm` is refused stays open.
 take_away() {
-  local ws=$1 dir=$2 shown=$3 focused
-  focused=$(_ui_focused_workspace) || focused=
-  if [[ $ws == "${focused%%$'\t'*}" ]]; then
-    print -u2 "herdr-spaces: $shown is the workspace you are in"
-    return 1
-  fi
+  local ws=$1 dir=$2 shown=$3
   if [[ -n $dir ]] && is_worktree "$dir"; then
-    _ui_confirm "remove the worktree $shown?" || return 0
-    remove_worktree "$dir" || return 1
-  else
-    _ui_confirm "close $shown?" || return 0
+    remove_worktree "$dir" "$shown" || return 1
   fi
   herdr workspace close "$ws" >/dev/null || {
     print -u2 "herdr-spaces: herdr could not close $ws"
@@ -86,30 +87,67 @@ take_away() {
   }
 }
 
-# Back to the picker after taking one away, so several go in one popup. A
-# cancelled picker is not a failure, and `set -e` would otherwise close the
-# popup on a non-zero status.
+# One confirmation for the whole selection, then wt's own questions per
+# worktree. The focused workspace is left out as `wt rm` refuses the worktree it
+# stands in: closing it would end the shells the popup was opened from.
+take_away_all() {
+  local focused line shown
+  local -a fields targets
+  local -i rc=0
+  focused=$(_ui_focused_workspace) || focused=
+  focused=${focused%%$'\t'*}
+  load_worktrees
+  for line in "$@"; do
+    fields=("${(@ps:\t:)line}")
+    shown=${(j: :)${=fields[1]}}
+    if [[ ${fields[2]} == "$focused" ]]; then
+      print -u2 "herdr-spaces: $shown is the workspace you are in; left open"
+      continue
+    fi
+    if [[ -n ${fields[3]-} ]] && is_worktree "${fields[3]}"; then
+      print -r -- "remove the worktree  $shown"
+    else
+      print -r -- "close                $shown"
+    fi
+    targets+=("$line")
+  done
+  ((${#targets} > 0)) || {
+    _ui_pause
+    return 0
+  }
+  _ui_confirm 'go ahead?' || return 0
+  for line in "${targets[@]}"; do
+    fields=("${(@ps:\t:)line}")
+    take_away "${fields[2]}" "${fields[3]-}" "${(j: :)${=fields[1]}}" || rc=1
+  done
+  ((rc == 0)) || _ui_pause
+}
+
+# Back to the picker after taking some away. Enter drops the selection so that
+# it always goes to the row under the cursor. A cancelled picker is not a
+# failure, and `set -e` would otherwise close the popup on a non-zero status.
 while true; do
   rows=$(_ui_workspaces) || _ui_die herdr-spaces 'herdr could not list the workspaces'
   [[ -n $rows ]] || exit 0
   picked=$(
     print -r -- "$rows" \
       | fzf "${_UI_FZF_CHROME[@]}" --border-label ' workspaces ' \
-        --delimiter '\t' --with-nth 1 --expect ctrl-x \
+        --multi --delimiter '\t' --with-nth 1 --expect ctrl-x \
+        --bind 'enter:clear-multi+accept' \
         --prompt 'go> ' \
-        --header 'Enter: go / ctrl-x: remove the worktree or close' \
+        --header 'Enter: go / Tab: select / ctrl-x: remove the worktrees or close' \
         --preview "source ${_UI_LIB}; _ui_git_preview {3}"
   ) || exit 0
-  key=${picked%%$'\n'*}
-  line=${picked#*$'\n'}
-  [[ -n $line && $line != "$picked" ]] || exit 0
-  fields=("${(@ps:\t:)line}")
-  ws=${fields[2]}
-  dir=${fields[3]-}
+  lines=("${(@f)picked}")
+  key=${lines[1]-}
+  lines=("${(@)lines[2,-1]}")
+  ((${#lines} > 0)) || exit 0
 
   if [[ $key != ctrl-x ]]; then
-    herdr workspace focus "$ws" >/dev/null || _ui_die herdr-spaces "herdr could not focus $ws"
+    fields=("${(@ps:\t:)lines[1]}")
+    herdr workspace focus "${fields[2]}" >/dev/null ||
+      _ui_die herdr-spaces "herdr could not focus ${fields[2]}"
     exit 0
   fi
-  take_away "$ws" "$dir" "${(j: :)${=fields[1]}}" || _ui_pause
+  take_away_all "${lines[@]}"
 done

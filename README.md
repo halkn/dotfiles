@@ -241,7 +241,7 @@ nothing else decides for them:
 | Key | Does |
 | --- | --- |
 | `alt+n` | pick from `repo list` and open a workspace on it |
-| `alt+s` | pick an open workspace: Enter focuses it; `ctrl-x` runs `wt rm` on a worktree's workspace (asking separately before `-f` and before `-D` / `-k`) and closes it, or only closes any other one |
+| `alt+s` | pick an open workspace: Enter focuses it; `ctrl-x` takes away the ones selected with Tab after one confirmation, running `wt rm` on a worktree's workspace (asking separately before `-f` and before `-D` / `-k`) and closing it, or only closing any other one |
 | `alt+g` | `wt new` for a branch you type, from the focused workspace's checkout, then open it |
 
 The workspace you are in is not taken away from `alt+s`, as `wt rm` refuses the
