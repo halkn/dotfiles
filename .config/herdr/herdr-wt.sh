@@ -4,10 +4,10 @@
 #
 # `wt` creates and removes the worktrees and prints their paths; this file only
 # picks, confirms, and opens or closes the workspace sitting on a path. Only the
-# chrome and the preview are shared, from lib/ui.zsh.
+# chrome and the preview are shared, from ui.zsh.
 set -euo pipefail
 
-ui_lib=${XDG_CONFIG_HOME:-$HOME/.config}/zsh/lib/ui.zsh
+ui_lib=${XDG_CONFIG_HOME:-$HOME/.config}/herdr/ui.zsh
 if [[ -r $ui_lib ]]; then
   source "$ui_lib"
 fi
@@ -95,13 +95,10 @@ cmd_new() {
 
 cmd_pr() {
   local rows number dir
-  need gh || return 1
   need fzf || return 1
-  # Fetched before the picker opens rather than from inside it, so a gh failure
+  # Fetched before the picker opens rather than from inside it, so a failure
   # is reported instead of showing an empty list.
-  rows=$(gh pr list --limit 100 \
-    --json number,title,headRefName,author \
-    --template '{{range .}}{{printf "#%-5v %-50.50v %v (@%v)\t%v\n" .number .title .headRefName .author.login .number}}{{end}}') || {
+  rows=$(wt prs) || {
     pause
     return 1
   }
@@ -125,12 +122,12 @@ cmd_pr() {
   open_worktree "$dir"
 }
 
-# wt refuses a worktree with local changes; seeing why and saying yes again is
-# what `rm -f` is.
+# `wt rm` exits 2 when only -f would let it through (local changes); seeing why
+# and saying yes again is what -f is. Any other refusal is final.
 cmd_rm() {
   local root rows dir removed
   local -a targets
-  local -i rc=0
+  local -i rc=0 st
   need fzf || return 1
   root=$(wt root)
   rows=$(wt list --full-path)
@@ -154,7 +151,13 @@ cmd_rm() {
   confirm 'remove these worktrees and their branches?' || return 0
   load_workspaces
   for dir in "${targets[@]}"; do
-    if ! removed=$(wt rm "$dir"); then
+    st=0
+    removed=$(wt rm "$dir") || st=$?
+    if ((st == 1)); then
+      rc=1
+      continue
+    fi
+    if ((st == 2)); then
       confirm "remove ${dir#"$root"/} anyway?" || {
         rc=1
         continue

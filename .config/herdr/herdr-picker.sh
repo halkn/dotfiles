@@ -5,7 +5,7 @@
 # created (herdr-wt.sh), so one without a workspace is reopened from there.
 set -euo pipefail
 
-ui_lib=${XDG_CONFIG_HOME:-$HOME/.config}/zsh/lib/ui.zsh
+ui_lib=${XDG_CONFIG_HOME:-$HOME/.config}/herdr/ui.zsh
 if [[ -r $ui_lib ]]; then
   source "$ui_lib"
 fi

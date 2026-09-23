@@ -3,10 +3,10 @@
 #
 # The picker lives here rather than in a zsh function because neither half of it
 # belongs to the shell: `repo` serves the list on stdout and herdr does the
-# opening. Only the chrome and the preview are shared, from lib/ui.zsh.
+# opening. Only the chrome and the preview are shared, from ui.zsh.
 set -euo pipefail
 
-ui_lib=${XDG_CONFIG_HOME:-$HOME/.config}/zsh/lib/ui.zsh
+ui_lib=${XDG_CONFIG_HOME:-$HOME/.config}/herdr/ui.zsh
 if [[ -r $ui_lib ]]; then
   source "$ui_lib"
 fi
