@@ -102,13 +102,13 @@ _wt_trust_mise() {
 # still be running there). The one thing git removes without complaint is the
 # worktree the caller stands in, so that is refused here as well.
 _wt_removable() {
-  local wt_path=$1 root
+  local wt_path=$1 root resolved=${1:A}
   root=${${:-$(_wt_root)}:A}
-  if [[ $wt_path != "$root"/*/*/* || $wt_path == "$root"/*/*/*/* ]]; then
+  if [[ $resolved != "$root"/*/*/* || $resolved == "$root"/*/*/*/* ]]; then
     print -u2 "wt: not a worktree under $root: $wt_path"
     return 1
   fi
-  if [[ ${PWD:A} == "$wt_path" || ${PWD:A} == "$wt_path"/* ]]; then
+  if [[ ${PWD:A} == "$resolved" || ${PWD:A} == "$resolved"/* ]]; then
     print -u2 "wt: cannot remove the worktree you are standing in: $wt_path"
     return 1
   fi
@@ -293,21 +293,26 @@ _wt_cmd_rm() {
 }
 
 # A branch whose upstream origin deleted is a candidate; it goes only when gh
-# confirms a merged pull request from it, because a squash merge leaves nothing
-# git itself can recognise and a closed pull request's branch is gone too.
-# Local changes are never removed here. A fork's branch tracks no ref of origin,
-# so its worktree is left to `wt rm`.
+# names a merged pull request whose head is exactly the local tip, because a
+# squash merge leaves nothing git itself can recognise, a closed pull request's
+# branch is gone too, and a branch name may have been reused or committed to
+# after its merge. Local changes are never removed here. A fork's branch tracks
+# no ref of origin, so its worktree is left to `wt rm`.
 _wt_prune_one() {
-  local main=$1 wt_path=$2 branch=$3 merged
+  local main=$1 wt_path=$2 branch=$3 tip heads
   local -i dry_run=$4
   [[ -n $wt_path && -n $branch ]] || return 0
   [[ $(git -C "$main" for-each-ref --format='%(upstream:track)' "refs/heads/$branch") == '[gone]' ]] ||
     return 0
   _wt_removable "$wt_path" 2>/dev/null || return 0
 
-  merged=$(cd -- "$main" && gh pr list --state merged --head "$branch" --limit 1 \
-    --json number --jq length) || return 1
-  ((merged > 0)) || return 0
+  tip=$(git -C "$main" rev-parse "refs/heads/$branch") || return 1
+  heads=$(cd -- "$main" && gh pr list --state merged --head "$branch" --limit 100 \
+    --json headRefOid --jq '.[].headRefOid') || return 1
+  ((${${(f)heads}[(Ie)$tip]})) || {
+    [[ -z $heads ]] || print -u2 "wt: kept $wt_path, whose tip is not the head of a merged pull request"
+    return 0
+  }
   if [[ -n $(git -C "$wt_path" status --porcelain 2>/dev/null) ]]; then
     print -u2 "wt: kept $wt_path, which has local changes"
     return 0

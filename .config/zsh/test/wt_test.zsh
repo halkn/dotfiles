@@ -75,8 +75,9 @@ git -C "$main" push -q origin remote-only
 git -C "$main" branch -D -q remote-only
 git -C "$main" update-ref -d refs/remotes/origin/remote-only
 
-# A stub gh: `pr list --state merged --head <b>` answers 1 for branches in
-# $GH_MERGED, `pr view` answers $GH_PR_VIEW, and `pr checkout` makes the branch.
+# A stub gh: `pr list --state merged --head <b>` answers the head oid of each
+# merged PR recorded in $STUB_MERGED_DIR/<b>, `pr view` answers $STUB_PR_VIEW,
+# and `pr checkout` makes the branch.
 stub=$scratch/stub
 mkdir -p "$stub"
 cat >"$stub/gh" <<'STUB'
@@ -86,13 +87,13 @@ case "$1 $2" in
   'pr list')
     head=${args[(i)--head]}
     b=${args[head + 1]}
-    if [[ " ${GH_MERGED:-} " == *" $b "* ]]; then print 1; else print 0; fi
+    [[ -f ${STUB_MERGED_DIR:-/nonexistent}/$b ]] && cat -- "$STUB_MERGED_DIR/$b"
     ;;
   'pr view')
-    print -r -- "${GH_PR_VIEW:-}"
+    print -r -- "${STUB_PR_VIEW:-}"
     ;;
   'pr checkout')
-    git checkout -q -b "${GH_PR_BRANCH:-pr-branch}"
+    git checkout -q -b pr-branch
     ;;
 esac
 STUB
@@ -136,12 +137,12 @@ in_main new >/dev/null 2>&1 && fail 'new (no branch) should fail'
 
 # ── pr ───────────────────────────────────────────────
 
-got=$(GH_PR_VIEW=$'pr-branch\tfalse' in_main pr '#7' 2>/dev/null)
+got=$(STUB_PR_VIEW=$'pr-branch\tfalse' in_main pr '#7' 2>/dev/null)
 check 'pr' "$WT_ROOT/owner/proj/pr-branch" "$got"
 check 'pr (checked out by gh)' pr-branch \
   "$(git -C "$WT_ROOT/owner/proj/pr-branch" branch --show-current 2>/dev/null)"
 
-GH_PR_VIEW='' in_main pr 8 >/dev/null 2>&1 && fail 'pr (unresolved head) should fail'
+STUB_PR_VIEW='' in_main pr 8 >/dev/null 2>&1 && fail 'pr (unresolved head) should fail'
 
 # ── list ─────────────────────────────────────────────
 
@@ -188,18 +189,31 @@ in_main rm local-only >/dev/null 2>&1 && fail 'rm (dirty) should fail'
 check 'rm -f (dirty)' "$WT_ROOT/owner/proj/local-only" "$(in_main rm -f local-only 2>/dev/null)"
 git -C "$main" show-ref -q --verify refs/heads/local-only && fail 'rm -f left the branch'
 
+# A root reached through a symlink still names the worktrees under it.
+ln -s "$WT_ROOT" "$scratch/wt-link"
+in_main new linked >/dev/null 2>&1
+check 'rm (by branch, symlinked root)' "$scratch/wt-link/owner/proj/linked" \
+  "$(cd -- "$main" && WT_ROOT=$scratch/wt-link "$wt_bin" rm linked 2>/dev/null)"
+[[ -d $WT_ROOT/owner/proj/linked ]] && fail 'rm (symlinked root) left the worktree'
+
 # ── prune ────────────────────────────────────────────
 
 # merged: its PR merged and origin deleted the branch. closed: origin deleted the
-# branch but no PR merged. dirty: merged, but with work in the worktree.
-for b in merged closed dirty; do
+# branch but no PR merged. dirty: merged, but with work in the worktree. after:
+# merged, then committed to locally. reused: a merged PR of the same branch name
+# had another head.
+export STUB_MERGED_DIR=$scratch/merged
+mkdir -p "$STUB_MERGED_DIR"
+for b in merged closed dirty after reused; do
   in_main new "$b" main >/dev/null 2>&1
   git -C "$WT_ROOT/owner/proj/$b" commit -q --allow-empty -m "$b"
   git -C "$WT_ROOT/owner/proj/$b" push -q -u origin "$b" 2>/dev/null
   git -C "$main" push -q origin --delete "$b" 2>/dev/null
+  [[ $b == closed ]] || git -C "$main" rev-parse "refs/heads/$b" >"$STUB_MERGED_DIR/$b"
 done
 print change >"$WT_ROOT/owner/proj/dirty/file"
-export GH_MERGED='merged dirty'
+git -C "$WT_ROOT/owner/proj/after" commit -q --allow-empty -m 'after the merge'
+print 0000000000000000000000000000000000000000 >"$STUB_MERGED_DIR/reused"
 
 check 'prune --dry-run' "$WT_ROOT/owner/proj/merged" "$(in_main prune --dry-run 2>/dev/null)"
 [[ -d $WT_ROOT/owner/proj/merged ]] || fail 'prune --dry-run removed a worktree'
@@ -209,6 +223,8 @@ check 'prune' "$WT_ROOT/owner/proj/merged" "$(in_main prune 2>/dev/null)"
 git -C "$main" show-ref -q --verify refs/heads/merged && fail 'prune left the merged branch'
 [[ -d $WT_ROOT/owner/proj/closed ]] || fail 'prune removed an unmerged worktree'
 [[ -d $WT_ROOT/owner/proj/dirty ]] || fail 'prune removed a dirty worktree'
+[[ -d $WT_ROOT/owner/proj/after ]] || fail 'prune removed commits made after the merge'
+[[ -d $WT_ROOT/owner/proj/reused ]] || fail 'prune removed a branch whose merged PR had another head'
 # remote-only still has its upstream, so it is not a candidate at all.
 [[ -d $WT_ROOT/owner/proj/remote-only ]] || fail 'prune removed a worktree whose branch is still on origin'
 

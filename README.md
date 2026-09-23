@@ -214,9 +214,10 @@ branch goes with the worktree when git considers it merged and stays otherwise;
 `-f` deletes it regardless. The default branch is never deleted.
 
 `wt prune` fetches with `--prune` and removes a worktree when origin has deleted
-its branch **and** `gh` finds a merged pull request from it, because a squash
-merge leaves nothing git can recognise and a closed pull request's branch is
-gone too. A worktree with local changes is kept. A fork's pull request tracks no
+its branch **and** `gh` finds a merged pull request whose head is exactly the
+local tip, because a squash merge leaves nothing git can recognise, a closed
+pull request's branch is gone too, and a branch may have been committed to after
+its merge or reuse a merged branch's name. A worktree with local changes is kept. A fork's pull request tracks no
 branch of origin, so its worktree is left to `wt rm`. `wt pr` pre-trusts the
 worktree's mise config only when the pull request is not from a fork.
 
