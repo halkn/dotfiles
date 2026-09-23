@@ -100,8 +100,9 @@ _ui_branch() {
 
 # `<display>\t<workspace id>\t<path>` per open workspace. herdr 0.9.1 gives a
 # path only to a workspace on a git checkout; the others show their label alone.
-# A checkout under either root - <host>/<owner>/<repo> or <owner>/<repo>/<branch>
-# - reads as <owner>/<repo> and its branch, so a clone (●) and its worktrees
+# A checkout under either root reads as the last two segments `wt` names its
+# worktrees by - <owner>/<repo>, or <project>/<repo> on Azure DevOps - and its
+# branch, so a clone (●) and its worktrees
 # (├ └) line up under one name and sort together. Anything else keeps its full
 # path and follows in herdr's order.
 _ui_workspaces() {
@@ -124,7 +125,7 @@ _ui_workspaces() {
       repos[n]=${${dir#"$wt_root"/}%/*} marks[n]=├ kind=2
       _ui_branch "$dir" || REPLY=${dir:t}
     elif [[ -n $repo_root && $dir == "$repo_root"/*/*/* ]]; then
-      repos[n]=${${dir#"$repo_root"/}#*/} marks[n]=● kind=1
+      repos[n]=${${dir:h}:t}/${dir:t} marks[n]=● kind=1
       _ui_branch "$dir" || true
     else
       repos[n]=${${dir/#$HOME/'~'}:-${f[3]-}} marks[n]=
