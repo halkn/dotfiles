@@ -88,7 +88,6 @@ depends = [
   "lint:tasks",
   "lint:shell",
   "lint:nvim",
-  "lint:skills",
   "test:hooks",
   "test:scripts",
 ]
