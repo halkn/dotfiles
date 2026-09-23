@@ -6,7 +6,7 @@
 
 - `claude/` が Claude Code 設定の実体。`~/.claude/` は Claude Code 自身が状態を書くのでディレクトリ単位では symlink できず、`mise.toml` の `[dotfiles]` が `claude/*` を 1 エントリずつ張る。glob は毎回展開されるので新規ファイル・サブディレクトリの追加に宣言の変更は要らない。`.claude/` はこのリポジトリ自身のプロジェクト設定で別物
 - `.config/mise/config.toml` は `~/.config/mise/config.toml` としても読まれる。ここへの変更はリポジトリ外の全プロジェクトに影響する
-- `.config/zsh/` は `.zshrc` / `workflows/` の層に分かれる。`bin/` と `.config/herdr/` のテストはリンクされない直下の `test/` に置く。置き場所の基準と検証手順は `.claude/skills/zsh-workflows/SKILL.md`
+- `.config/zsh/` は `.zshenv` / `.zshrc` だけを持ち、独自のコマンドは `bin/`、herdr のピッカーは `.config/herdr/` に置く。`bin/` と `.config/herdr/` のテストはリンクされない直下の `test/` に置く。置き場所の基準と検証手順は `.claude/skills/zsh-workflows/SKILL.md`
 - `bin/` は shell 関数にしないコマンドの置き場で、`[dotfiles]` が `~/.local/bin/*` へ 1 エントリずつ張る（`$XDG_BIN_HOME` は `.config/zsh/.zshenv` で PATH 上）。`bin/repo`・`bin/wt` は将来この repo の外へ出す前提なので `.config/zsh/` や `.config/herdr/` の zsh ファイルを source しない。共有するのは `$REPO_ROOT`・`$WT_ROOT` とその下のレイアウトだけ
 - `.claude/skills/` はこのリポジトリ自身の設定で symlink されない。新規ファイルはそのまま次のセッションで読まれる
 - エージェント向けの指示はこのファイルに書く。Claude Code が `AGENTS.md` を直接読むのは working directory とその上位に `CLAUDE.md` / `.claude/CLAUDE.md` / `CLAUDE.local.md` が無いときだけなので、このリポジトリにそれらを置かない（`~/.claude/CLAUDE.md` は対象外で併読される。Claude Code 2.1.278 で確認）

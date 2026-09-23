@@ -94,7 +94,6 @@ small `.zshenv` stub that sets `ZDOTDIR` and hands off to it.
 | --- | --- |
 | `.zshenv` | The shared environment and PATH |
 | `.zshrc` | The portable interactive core, plus tool setup guarded by `command -v` so a machine without those tools still gets a working shell |
-| `workflows/*.zsh` | The commands that need the shell itself (none at present) |
 
 `bin/*` sits outside that tree: commands that need neither a picker nor `cd`
 live there as executables on PATH, so anything can call them. `repo` and `wt`
