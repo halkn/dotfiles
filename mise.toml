@@ -89,6 +89,7 @@ depends = [
   "lint:shell",
   "lint:nvim",
   "lint:skills",
+  "test:hooks",
   "test:zsh",
 ]
 run = "git diff --check"
