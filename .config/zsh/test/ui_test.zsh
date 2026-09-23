@@ -24,7 +24,7 @@ for scenario in status log directory; do
     ls() { print directory-output; return 1; }
     _ui_git_preview .
     print survived
-  ' -- "${0:A:h}/../lib/ui.zsh" "$scenario")
+  ' -- "${0:A:h}/../../herdr/ui.zsh" "$scenario")
   rc=$?
   case $scenario in
     status)

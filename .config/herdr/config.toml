@@ -40,7 +40,7 @@ delay_seconds = 3
 # Moved out of the default ~/.herdr/worktrees to follow XDG. A worktree can hold uncommitted
 # work, so it belongs under data rather than cache or state, and it outlives herdr, so it is
 # not under a herdr-owned directory. `$WT_ROOT` (.config/zsh/.zshenv) holds the same path:
-# herdr and `wk` place worktrees in one tree, so the two move together.
+# herdr and `wt` place worktrees in one tree, so the two move together.
 [worktrees]
 directory = "~/.local/share/worktrees"
 
@@ -90,7 +90,7 @@ command = "herdr pane split --direction right --ratio 0.3 --focus"
 key = "alt+s"
 type = "popup"
 command = "~/.config/herdr/herdr-picker.sh"
-description = "go to a workspace or a worktree"
+description = "go to a workspace"
 width = "90%"
 height = "90%"
 
@@ -102,16 +102,40 @@ description = "open a workspace on a repository"
 width = "90%"
 height = "90%"
 
-# `wk new` rather than herdr's own new_worktree, which is left on its default chord: the
+# `wt new` rather than herdr's own new_worktree, which is left on its default chord: the
 # branch has to be picked up where it already is (locally, then on origin) before a new one
-# is created, and that decision lives in .config/zsh/workflows/wk.zsh.
+# is created, and that decision lives in bin/wt.
 [[keys.command]]
 key = "alt+g"
 type = "popup"
-command = "~/.config/herdr/herdr-new.sh"
+command = "~/.config/herdr/herdr-wt.sh new"
 description = "create the worktree for a branch and open it"
 width = "60%"
 height = "20%"
+
+[[keys.command]]
+key = "alt+p"
+type = "popup"
+command = "~/.config/herdr/herdr-wt.sh pr"
+description = "create the worktree for a pull request and open it"
+width = "90%"
+height = "90%"
+
+[[keys.command]]
+key = "alt+x"
+type = "popup"
+command = "~/.config/herdr/herdr-wt.sh rm"
+description = "remove worktrees and their branches"
+width = "90%"
+height = "90%"
+
+[[keys.command]]
+key = "alt+c"
+type = "popup"
+command = "~/.config/herdr/herdr-wt.sh prune"
+description = "remove the worktrees of merged pull requests"
+width = "60%"
+height = "40%"
 
 [[keys.command]]
 key = "alt+t"

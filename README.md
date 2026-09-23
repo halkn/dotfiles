@@ -94,12 +94,12 @@ small `.zshenv` stub that sets `ZDOTDIR` and hands off to it.
 | --- | --- |
 | `.zshenv` | The shared environment and PATH |
 | `.zshrc` | The portable interactive core, plus tool setup guarded by `command -v` so a machine without those tools still gets a working shell |
-| `workflows/*.zsh` | The commands that need the shell itself: `wk` |
-| `lib/*.zsh` | One file per kind of information those commands work on |
+| `workflows/*.zsh` | The commands that need the shell itself (none at present) |
 | `test/*.zsh` | Run by `mise run test:zsh` |
 
 `bin/*` sits outside that tree: commands that need neither a picker nor `cd`
-live there as executables on PATH, so anything can call them. `repo` is one.
+live there as executables on PATH, so anything can call them. `repo` and `wt`
+are two.
 
 Which layer a change belongs in, and the constraints each layer carries, are in
 `.claude/skills/zsh-workflows/SKILL.md`. Why an individual function is written
@@ -174,22 +174,26 @@ to and deletions of `main`/`master` in every repository via `core.hooksPath`,
 which covers forges without rulesets and fails before anything leaves the
 machine; the ruleset covers what a hook cannot, since a hook can be skipped.
 
-## Worktrees: `wk`
+## Worktrees: `wt`
 
-`wk` (`.config/zsh/workflows/wk.zsh`) is the entry point for worktrees: cutting
-one for a branch or a pull request, moving between what is open, and removing
-what is done. Inside [herdr](https://herdr.dev) each choice becomes a workspace;
-outside it degrades to `cd`.
+`wt` (`bin/wt`) creates and removes worktrees, and like `repo` it only prints:
+a command that creates or removes one prints its path, and arriving there is the
+caller's. [herdr](https://herdr.dev) is that caller; outside it, `cd "$(wt new
+<branch>)"`.
 
 ```sh
-wk                        # go to a workspace or a worktree
-wk new <branch> [base]    # create the worktree for a branch and open it
-wk pr [<number>]          # create the worktree for a pull request and open it
-wk rm                     # pick worktrees of this repository to remove
+wt list [--full-path] [<query>]  # the worktrees under $WT_ROOT
+wt new <branch> [<base>]         # create one for a branch (or reuse it)
+wt prs                           # the open pull requests, <display>\t<number>
+wt pr <number>                   # create one for a pull request
+wt rm [-f] [-D|-k] <path|branch>... # remove worktrees and their branches
+wt prune [--dry-run]             # remove the worktrees of merged pull requests
 ```
 
-The bare form spans every repository; `new`, `pr` and `rm` act on the one you
-are standing in.
+`new`, `prs`, `pr` and `prune` act on the repository you are standing in;
+`list` and `rm` by path span every repository. `new` and `pr` hand back an
+existing directory only when it holds the branch asked for, since `/` folds to
+`-` and another branch may be sitting there.
 
 Worktrees land at `$WT_ROOT/<owner>/<repo>/<branch>`
 (`~/.local/share/worktrees`). herdr's own `[worktrees] directory` holds the same
@@ -197,30 +201,50 @@ path, so the two values must be changed together.
 
 Claude Code creates worktrees of its own, so the two kinds are kept apart:
 
-| | `wk` / herdr | Claude Code |
+| | `wt` / herdr | Claude Code |
 | --- | --- | --- |
 | For | branch and multi-session work a human returns to | isolating a session or a subagent while it runs |
-| Created by | `wk new`, herdr `alt+g` | `--worktree`, `EnterWorktree`, `isolation: worktree` |
+| Created by | `wt new` / `wt pr`, herdr `alt+g` / `alt+p` | `--worktree`, `EnterWorktree`, `isolation: worktree` |
 | Placed in | `~/.local/share/worktrees/` | `<repo>/.claude/worktrees/` (gitignored) |
-| Removed by | you — `wk rm` | Claude Code, on exit or by its periodic sweep |
+| Removed by | you — `wt rm` / `wt prune` | Claude Code, on exit or by its periodic sweep |
 
-Claude Code's are inside the repository and so outside `$WT_ROOT`, which keeps
-them out of the `wk` listing; `wk rm` excludes them by path as well, because one
-of them may still have an agent running in it.
+`wt rm` takes only directories of the layout under `$WT_ROOT`, which keeps out
+the main checkout and `.claude/worktrees` (an agent may still be running in
+one), and refuses the worktree you are standing in, which git would remove
+without complaint. The worktree and its branch are separate decisions, and
+nothing is removed while one is missing:
 
-`wk rm` leaves the decision to git, which refuses a worktree with local changes
-but not one with unpushed commits, and leaves the branch behind — delete it with
-`git branch -d` when you are done with it. Three worktrees are never offered,
-because git removes each without complaint: the main checkout, the one you are
-standing in, and anything under `.claude/worktrees`.
+| Status | Meaning | Lifted by |
+| --- | --- | --- |
+| 0 | removed; a merged branch went with it | — |
+| 2 | git refused: local changes | `-f` (discard them) |
+| 3 | the branch is not merged | `-D` (delete it) or `-k` (keep it) |
+| 1 | any other refusal | nothing |
 
-When removing several worktrees, `wk rm` attempts each selected target and
-returns a failure if any removal fails or its force confirmation is declined.
-Cancelling the picker is a successful no-op; picker errors remain failures.
+A merged branch is one `git branch -d` would take. The default branch is never
+deleted.
 
-herdr's `alt+s` and `alt+g` are bare `wk` and `wk new`; `alt+n` picks from
-`repo list` and opens a workspace on the result. All three are
-`.config/herdr/*.sh`, and the herdr-specific half lives only there.
+`wt prune` fetches with `--prune` and removes a worktree when origin has deleted
+its branch **and** `gh` finds a merged pull request whose head is exactly the
+local tip, because a squash merge leaves nothing git can recognise, a closed
+pull request's branch is gone too, and a branch may have been committed to after
+its merge or reuse a merged branch's name. A worktree with local changes is
+kept. A fork's pull request tracks no branch of origin, so its worktree is left
+to `wt rm`. `wt pr` pre-trusts the worktree's mise config only when the pull
+request is not from a fork.
+
+herdr's keys are `.config/herdr/*.sh`, and the herdr-specific half lives only
+there; the pickers share their chrome and preview from `.config/herdr/ui.zsh`.
+They call `wt`, `repo` and the herdr CLI, and nothing else decides for them:
+
+| Key | Does |
+| --- | --- |
+| `alt+s` | pick an open workspace and focus it |
+| `alt+n` | pick from `repo list` and open a workspace on it |
+| `alt+g` | `wt new` for a branch you type, then open it |
+| `alt+p` | pick an open pull request, `wt pr`, then open it |
+| `alt+x` | pick worktrees, `wt rm` (asking separately before `-f` and before `-D` / `-k`), close their workspaces |
+| `alt+c` | `wt prune` after showing `--dry-run`, then close their workspaces |
 
 ## Tool Manager
 

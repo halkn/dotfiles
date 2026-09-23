@@ -187,8 +187,6 @@ fi
 # ── workflows ────────────────────────────────────────
 # Each file defines its functions unconditionally and checks its dependencies
 # inside them, so no conditions belong here and the load order does not matter.
-# lib/ is not globbed: a workflow sources the parts it needs itself, which is
-# what lets ~/.config/herdr/*.sh get a whole workflow from one file.
 for _zsh_part in "$ZDOTDIR"/workflows/*.zsh(N); do
   source "$_zsh_part"
 done
