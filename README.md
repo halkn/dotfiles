@@ -233,7 +233,7 @@ kept. A fork's pull request tracks no branch of origin, so its worktree is left
 to `wt rm`. `wt pr` pre-trusts the worktree's mise config only when the pull
 request is not from a fork.
 
-herdr's keys are `.config/herdr/*.sh`, and the herdr-specific half lives only
+herdr's keys are `.config/herdr/herdr-*.zsh`, and the herdr-specific half lives only
 there; they share the prompts, the picker chrome, the preview and the workspace
 rows from `.config/herdr/ui.zsh`. They call `wt`, `repo` and the herdr CLI, and
 nothing else decides for them:

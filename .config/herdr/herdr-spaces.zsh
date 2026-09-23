@@ -5,7 +5,7 @@
 # Taking away a workspace on a worktree under $WT_ROOT removes the worktree with
 # `wt rm` and then closes the workspace; any other workspace is only closed, so
 # a clone is never deleted from here. A worktree without a workspace is reopened
-# with alt+g (herdr-new.sh) or removed with `wt rm` from a shell.
+# with alt+g (herdr-new.zsh) or removed with `wt rm` from a shell.
 set -euo pipefail
 
 ui_lib=${XDG_CONFIG_HOME:-$HOME/.config}/herdr/ui.zsh
