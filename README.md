@@ -204,7 +204,7 @@ Claude Code creates worktrees of its own, so the two kinds are kept apart:
 | | `wt` / herdr | Claude Code |
 | --- | --- | --- |
 | For | branch and multi-session work a human returns to | isolating a session or a subagent while it runs |
-| Created by | `wt new` / `wt pr`, herdr `alt+g` / `alt+p` | `--worktree`, `EnterWorktree`, `isolation: worktree` |
+| Created by | `wt new` / `wt pr`, herdr `alt+g` | `--worktree`, `EnterWorktree`, `isolation: worktree` |
 | Placed in | `~/.local/share/worktrees/` | `<repo>/.claude/worktrees/` (gitignored) |
 | Removed by | you — `wt rm` / `wt prune` | Claude Code, on exit or by its periodic sweep |
 
@@ -234,17 +234,19 @@ to `wt rm`. `wt pr` pre-trusts the worktree's mise config only when the pull
 request is not from a fork.
 
 herdr's keys are `.config/herdr/*.sh`, and the herdr-specific half lives only
-there; the pickers share their chrome and preview from `.config/herdr/ui.zsh`.
-They call `wt`, `repo` and the herdr CLI, and nothing else decides for them:
+there; they share the prompts, the picker chrome, the preview and the workspace
+rows from `.config/herdr/ui.zsh`. They call `wt`, `repo` and the herdr CLI, and
+nothing else decides for them:
 
 | Key | Does |
 | --- | --- |
-| `alt+s` | pick an open workspace and focus it |
 | `alt+n` | pick from `repo list` and open a workspace on it |
-| `alt+g` | `wt new` for a branch you type, then open it |
-| `alt+p` | pick an open pull request, `wt pr`, then open it |
-| `alt+x` | pick worktrees, `wt rm` (asking separately before `-f` and before `-D` / `-k`), close their workspaces |
-| `alt+c` | `wt prune` after showing `--dry-run`, then close their workspaces |
+| `alt+s` | pick an open workspace: Enter focuses it; `ctrl-x` runs `wt rm` on a worktree's workspace (asking separately before `-f` and before `-D` / `-k`) and closes it, or only closes any other one |
+| `alt+g` | `wt new` for a branch you type, from the focused workspace's checkout, then open it |
+
+The workspace you are in is not taken away from `alt+s`, as `wt rm` refuses the
+worktree you stand in. Pull requests and pruning stay in the shell: `wt pr`,
+`wt prune`.
 
 ## Tool Manager
 
