@@ -1,0 +1,403 @@
+#!/usr/bin/env zsh
+# wt - the worktrees of this machine: where one lands, what is already there,
+# and how one is created from a branch or a pull request and removed again.
+#
+# Everything is stdout and an exit status, as with `repo`. Nothing here opens a
+# picker, changes the caller's directory, or knows about a terminal multiplexer
+# - arriving in a worktree is the caller's. A command that creates or removes
+# one prints its path, so the caller can open or close whatever sits on it. The
+# only thing shared with the shell around it is $WT_ROOT and the layout under it:
+#
+#   $WT_ROOT/<owner>/<repo>/<branch>
+
+set -uo pipefail
+
+_wt_usage() {
+  cat <<'USAGE'
+usage: wt <command> [<args>]
+
+  root                            print $WT_ROOT
+  list [--full-path] [<query>]    the worktrees under it, one per line
+  path <branch>                   where <branch> of this repository would land
+  new <branch> [<base>]           create it (or reuse it) and print its path
+  pr <number>                     create it for a pull request and print its path
+  rm [-f] <path|branch>...        remove worktrees and their branches
+  prune [--dry-run]               remove the worktrees of merged pull requests
+
+rm keeps a branch that is not merged; -f removes local changes and the branch.
+USAGE
+}
+
+_wt_require() {
+  local tool=${1:-} cmd=${2:-}
+  command -v "$tool" >/dev/null 2>&1 || {
+    print -u2 "$cmd: $tool is not installed"
+    return 1
+  }
+}
+
+# ── layout ───────────────────────────────────────────
+
+# The default matches herdr's own `[worktrees] directory`; change both together.
+_wt_root() {
+  local root=${WT_ROOT:-${XDG_DATA_HOME:-$HOME/.local/share}/worktrees}
+  root=${root/#\~/$HOME}
+  print -r -- "${root%/}"
+}
+
+# The checkout every worktree of the repository hangs off. `git worktree list`
+# always names it first, whichever worktree git is asked from.
+_wt_main() {
+  local dir=${1:-.} line
+  line=$(git -C "$dir" worktree list --porcelain 2>/dev/null) || {
+    print -u2 'wt: not inside a git repository'
+    return 1
+  }
+  line=${${(f)line}[1]}
+  print -r -- "${line#worktree }"
+}
+
+# Read off the main checkout's path rather than the remote URL, so a repository
+# with no remote still lands somewhere predictable. A branch name is one path
+# segment; two branches differing only in `/` share a directory, and that
+# collision is accepted rather than encoded.
+_wt_path() {
+  local main=$1 branch=$2
+  print -r -- "$(_wt_root)/${${main:h}:t}/${main:t}/${branch//\//-}"
+}
+
+# The layout is the listing: a glob over the root rather than a git process per
+# worktree. Sorted in C order so the order does not depend on the locale.
+_wt_list() {
+  local -i full=${1:-0}
+  local query=${2:-} root dir rel
+  root=$(_wt_root)
+  {
+    for dir in "$root"/*/*/*(N/); do
+      rel=${dir#"$root"/}
+      [[ -z $query || $rel == *"$query"* ]] || continue
+      if ((full)); then
+        print -r -- "$dir"
+      else
+        print -r -- "$rel"
+      fi
+    done
+  } | LC_ALL=C sort
+  return 0
+}
+
+# mise prompts for trust on every new checkout path. Only code from a repository
+# the user already works in gets pre-trusted.
+_wt_trust_mise() {
+  local wt_path=$1
+  command -v mise >/dev/null 2>&1 || return 0
+  [[ -f $wt_path/mise.toml || -f $wt_path/.mise.toml || -f $wt_path/mise/config.toml ]] || return 0
+  mise trust --quiet "$wt_path" >/dev/null 2>&1 || true
+}
+
+# ── removal ──────────────────────────────────────────
+
+# Only a directory of the layout under $WT_ROOT is taken, which keeps out the
+# main checkout and Claude Code's .claude/worktrees (its lifecycle; an agent may
+# still be running there). The one thing git removes without complaint is the
+# worktree the caller stands in, so that is refused here as well.
+_wt_removable() {
+  local wt_path=$1 root
+  root=${${:-$(_wt_root)}:A}
+  if [[ $wt_path != "$root"/*/*/* || $wt_path == "$root"/*/*/*/* ]]; then
+    print -u2 "wt: not a worktree under $root: $wt_path"
+    return 1
+  fi
+  if [[ ${PWD:A} == "$wt_path" || ${PWD:A} == "$wt_path"/* ]]; then
+    print -u2 "wt: cannot remove the worktree you are standing in: $wt_path"
+    return 1
+  fi
+  [[ -d $wt_path ]] || {
+    print -u2 "wt: no such worktree: $wt_path"
+    return 1
+  }
+}
+
+# The branch goes with the worktree, as git-wt -d does: `branch -d` keeps one
+# that is not merged, and -D is the caller taking that decision. The default
+# branch is never deleted.
+_wt_remove() {
+  local wt_path=$1 main branch default
+  local -i force=${2:-0}
+  main=$(_wt_main "$wt_path") || return 1
+  branch=$(git -C "$wt_path" symbolic-ref --short -q HEAD)
+  if ((force)); then
+    git -C "$main" worktree remove --force -- "$wt_path" >&2 || return 1
+  else
+    git -C "$main" worktree remove -- "$wt_path" >&2 || return 1
+  fi
+  rmdir -- "${wt_path:h}" 2>/dev/null
+  print -r -- "$wt_path"
+
+  default=$(git -C "$main" symbolic-ref --short -q refs/remotes/origin/HEAD)
+  [[ -n $branch && $branch != "${default#origin/}" ]] || return 0
+  if ((force)); then
+    git -C "$main" branch -D -q -- "$branch" >&2
+  elif ! git -C "$main" branch -d -q -- "$branch" 2>/dev/null; then
+    print -u2 "wt: kept branch $branch, which is not merged (rm -f deletes it)"
+  fi
+  return 0
+}
+
+# ── commands ─────────────────────────────────────────
+
+_wt_cmd_list() {
+  local arg query=
+  local -i full=0
+  for arg in "$@"; do
+    case $arg in
+      -p | --full-path)
+        full=1
+        ;;
+      -h | --help)
+        print -r -- 'usage: wt list [--full-path] [<query>]'
+        return 0
+        ;;
+      -*)
+        print -u2 "wt list: unknown option: $arg"
+        return 1
+        ;;
+      *)
+        [[ -z $query ]] || {
+          print -u2 'wt list: expected at most one query'
+          return 1
+        }
+        query=$arg
+        ;;
+    esac
+  done
+  _wt_list "$full" "$query"
+}
+
+_wt_cmd_path() {
+  local branch=${1:-} main
+  [[ -n $branch ]] || {
+    print -u2 'usage: wt path <branch>'
+    return 1
+  }
+  main=$(_wt_main) || return 1
+  _wt_path "$main" "$branch"
+}
+
+# With no base, a branch is picked up where it already is - locally, then on
+# origin - so one that exists only on the remote is tracked instead of silently
+# forked. A base always means a new branch, and fails if it already exists.
+_wt_cmd_new() {
+  local branch=${1:-} base=${2:-} main wt_path
+  [[ -n $branch ]] || {
+    print -u2 'usage: wt new <branch> [<base>]'
+    return 1
+  }
+  main=$(_wt_main) || return 1
+  wt_path=$(_wt_path "$main" "$branch")
+
+  if [[ ! -d $wt_path ]]; then
+    if [[ -n $base ]]; then
+      git worktree add -b "$branch" "$wt_path" "$base" >&2 || return 1
+    elif git show-ref --verify --quiet "refs/heads/$branch"; then
+      git worktree add "$wt_path" "$branch" >&2 || return 1
+    elif git fetch -q origin "$branch" 2>/dev/null &&
+      git show-ref --verify --quiet "refs/remotes/origin/$branch"; then
+      git worktree add --track -b "$branch" "$wt_path" "origin/$branch" >&2 || return 1
+    else
+      git worktree add -b "$branch" "$wt_path" >&2 || return 1
+    fi
+    _wt_trust_mise "$wt_path"
+  fi
+  print -r -- "$wt_path"
+}
+
+# `gh pr checkout` is the only thing that gets a fork's head right, so the
+# worktree is added detached and gh is run inside it. The directory is named
+# after the head branch, which a fork does not qualify by owner: two pull
+# requests proposing the same branch name collide. A fork's code is someone
+# else's, so its mise config is left for the user to trust.
+_wt_cmd_pr() {
+  local number=${1:-} main head branch cross wt_path
+  number=${number#\#}
+  [[ -n $number ]] || {
+    print -u2 'usage: wt pr <number>'
+    return 1
+  }
+  _wt_require gh wt || return 1
+  main=$(_wt_main) || return 1
+
+  head=$(gh pr view "$number" --json headRefName,isCrossRepository \
+    --jq '[.headRefName, (.isCrossRepository | tostring)] | @tsv') || return 1
+  IFS=$'\t' read -r branch cross <<<"$head"
+  [[ -n $branch ]] || {
+    print -u2 "wt: could not resolve the head branch of #$number"
+    return 1
+  }
+
+  wt_path=$(_wt_path "$main" "$branch")
+  if [[ ! -d $wt_path ]]; then
+    git worktree add -q --detach "$wt_path" HEAD >&2 || return 1
+    if ! (cd -- "$wt_path" && gh pr checkout "$number" >&2); then
+      git worktree remove --force -- "$wt_path" >&2
+      rmdir -- "${wt_path:h}" 2>/dev/null
+      return 1
+    fi
+    [[ $cross == true ]] || _wt_trust_mise "$wt_path"
+  fi
+  print -r -- "$wt_path"
+}
+
+# Every target is attempted; the status says whether any of them failed.
+_wt_cmd_rm() {
+  local arg main wt_path
+  local -i force=0 rc=0
+  local -a targets
+  for arg in "$@"; do
+    case $arg in
+      -f | --force)
+        force=1
+        ;;
+      -h | --help)
+        print -r -- 'usage: wt rm [-f] <path|branch>...'
+        return 0
+        ;;
+      -*)
+        print -u2 "wt rm: unknown option: $arg"
+        return 1
+        ;;
+      *)
+        targets+=("$arg")
+        ;;
+    esac
+  done
+  ((${#targets} > 0)) || {
+    print -u2 'usage: wt rm [-f] <path|branch>...'
+    return 1
+  }
+
+  for arg in "${targets[@]}"; do
+    if [[ $arg == */* && -d $arg ]]; then
+      wt_path=${arg:A}
+    else
+      main=$(_wt_main) || return 1
+      wt_path=$(_wt_path "$main" "$arg")
+    fi
+    _wt_removable "$wt_path" || {
+      rc=1
+      continue
+    }
+    _wt_remove "$wt_path" "$force" || rc=1
+  done
+  return $rc
+}
+
+# A branch whose upstream origin deleted is a candidate; it goes only when gh
+# confirms a merged pull request from it, because a squash merge leaves nothing
+# git itself can recognise and a closed pull request's branch is gone too.
+# Local changes are never removed here. A fork's branch tracks no ref of origin,
+# so its worktree is left to `wt rm`.
+_wt_prune_one() {
+  local main=$1 wt_path=$2 branch=$3 merged
+  local -i dry_run=$4
+  [[ -n $wt_path && -n $branch ]] || return 0
+  [[ $(git -C "$main" for-each-ref --format='%(upstream:track)' "refs/heads/$branch") == '[gone]' ]] ||
+    return 0
+  _wt_removable "$wt_path" 2>/dev/null || return 0
+
+  merged=$(cd -- "$main" && gh pr list --state merged --head "$branch" --limit 1 \
+    --json number --jq length) || return 1
+  ((merged > 0)) || return 0
+  if [[ -n $(git -C "$wt_path" status --porcelain 2>/dev/null) ]]; then
+    print -u2 "wt: kept $wt_path, which has local changes"
+    return 0
+  fi
+
+  if ((dry_run)); then
+    print -r -- "$wt_path"
+  else
+    _wt_remove "$wt_path" 1
+  fi
+}
+
+_wt_cmd_prune() {
+  local arg main line wt_path= branch=
+  local -i dry_run=0 rc=0
+  for arg in "$@"; do
+    case $arg in
+      -n | --dry-run)
+        dry_run=1
+        ;;
+      -h | --help)
+        print -r -- 'usage: wt prune [--dry-run]'
+        return 0
+        ;;
+      *)
+        print -u2 "wt prune: unknown argument: $arg"
+        return 1
+        ;;
+    esac
+  done
+  _wt_require gh wt || return 1
+  main=$(_wt_main) || return 1
+  git -C "$main" fetch -q --prune origin >&2 || return 1
+
+  for line in ${(f)"$(git -C "$main" worktree list --porcelain)"}; do
+    case $line in
+      'worktree '*)
+        _wt_prune_one "$main" "$wt_path" "$branch" "$dry_run" || rc=1
+        wt_path=${line#worktree }
+        branch=
+        ;;
+      'branch refs/heads/'*)
+        branch=${line#branch refs/heads/}
+        ;;
+    esac
+  done
+  _wt_prune_one "$main" "$wt_path" "$branch" "$dry_run" || rc=1
+  return $rc
+}
+
+# ── dispatch ─────────────────────────────────────────
+
+case ${1:-} in
+  root)
+    _wt_root
+    ;;
+  list)
+    shift
+    _wt_cmd_list "$@"
+    ;;
+  path)
+    shift
+    _wt_cmd_path "$@"
+    ;;
+  new)
+    shift
+    _wt_cmd_new "$@"
+    ;;
+  pr)
+    shift
+    _wt_cmd_pr "$@"
+    ;;
+  rm)
+    shift
+    _wt_cmd_rm "$@"
+    ;;
+  prune)
+    shift
+    _wt_cmd_prune "$@"
+    ;;
+  -h | --help | help)
+    _wt_usage
+    ;;
+  '')
+    _wt_usage >&2
+    exit 1
+    ;;
+  *)
+    print -u2 "wt: unknown subcommand: $1"
+    _wt_usage >&2
+    exit 1
+    ;;
+esac
