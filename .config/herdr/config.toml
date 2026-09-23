@@ -89,15 +89,15 @@ command = "herdr pane split --direction right --ratio 0.3 --focus"
 [[keys.command]]
 key = "alt+s"
 type = "popup"
-command = "~/.config/herdr/herdr-picker.sh"
-description = "go to a workspace"
+command = "~/.config/herdr/herdr-spaces.zsh"
+description = "go to a workspace, or remove / close one"
 width = "90%"
 height = "90%"
 
 [[keys.command]]
 key = "alt+n"
 type = "popup"
-command = "~/.config/herdr/herdr-open.sh"
+command = "~/.config/herdr/herdr-open.zsh"
 description = "open a workspace on a repository"
 width = "90%"
 height = "90%"
@@ -108,34 +108,10 @@ height = "90%"
 [[keys.command]]
 key = "alt+g"
 type = "popup"
-command = "~/.config/herdr/herdr-wt.sh new"
+command = "~/.config/herdr/herdr-new.zsh"
 description = "create the worktree for a branch and open it"
 width = "60%"
 height = "20%"
-
-[[keys.command]]
-key = "alt+p"
-type = "popup"
-command = "~/.config/herdr/herdr-wt.sh pr"
-description = "create the worktree for a pull request and open it"
-width = "90%"
-height = "90%"
-
-[[keys.command]]
-key = "alt+x"
-type = "popup"
-command = "~/.config/herdr/herdr-wt.sh rm"
-description = "remove worktrees and their branches"
-width = "90%"
-height = "90%"
-
-[[keys.command]]
-key = "alt+c"
-type = "popup"
-command = "~/.config/herdr/herdr-wt.sh prune"
-description = "remove the worktrees of merged pull requests"
-width = "60%"
-height = "40%"
 
 [[keys.command]]
 key = "alt+t"
@@ -149,7 +125,7 @@ height = "80%"
 [[keys.command]]
 key = "alt+r"
 type = "shell"
-command = "~/.config/herdr/herdr-hunk.sh"
+command = "~/.config/herdr/herdr-hunk.zsh"
 description = "toggle a hunk pane on the right"
 
 # A pane rather than a popup: both open full width, but a popup captures every
