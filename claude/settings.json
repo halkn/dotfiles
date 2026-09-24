@@ -180,6 +180,7 @@
         "~/.cache/mise",
         "~/.cache/rumdl",
         "~/.cache/shuck",
+        "~/.local/state/review-report",
         "~/.local/share/uv",
         "~/.local/share/mise",
         "~/.local/state/mise",
