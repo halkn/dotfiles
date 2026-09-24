@@ -6,6 +6,12 @@
 
 「設定の理由」の節は実測に基づく。確認した環境は Claude Code v2.1.220〜2.1.280・macOS（Seatbelt）で、WSL（bubblewrap）には当てはめない。記述と実際の挙動が食い違ったら、公式 docs を読むか測り直してから設定を変える。
 
+## 使い方の原則
+
+- 作業の起点は、Claude Code を起動したリポジトリ。Bash からの読取はホームを閉じ、そのリポジトリだけを `.claude/settings.local.json` の `sandbox.filesystem.allowRead: ["./"]` で開ける。ユーザー設定の相対パスは `~/.claude` を指すので、ユーザー設定では開けられない。セッション中に作業ディレクトリを動かさない
+- sandbox と `permissions.ask` は、失敗やモードの切替で外れないようにする。sandbox を起動できないときの素通り、sandbox の外での再実行、ask を飛ばすモードを閉じる
+- Claude Code 本体の更新は `mise run update` に一本化し、自動更新は止める。プラグインの更新は Claude Code に任せる
+
 ## 3 つの層の使い分け
 
 | 層 | 性質 | 置くもの |
