@@ -30,14 +30,14 @@ command="$(jq -r "$filter")"
 
 # Mirrors sandbox.excludedCommands in claude/settings.json; update both together.
 s='[[:space:]]+'
-excluded="(^|[^[:alnum:]_-])(git${s}(push|fetch|pull|clone|ls-remote|submodule)|git${s}remote${s}(update|prune)|gh${s})"
+excluded="(^|[^[:alnum:]_-])(git${s}(push|fetch|pull|clone|ls-remote|submodule)|git${s}remote${s}(update|prune)|gh${s}|hunk${s}session${s})"
 compound=$'\n|\\||&&|;|\\$\\(|`|[<>]\\('
 
 # Matched in-process: `printf | grep -q` under pipefail reads an early match on a long
 # command as no match, since grep exits and printf dies of SIGPIPE.
 if [[ "$command" =~ $excluded ]] && [[ "$command" =~ $compound ]]; then
   cat >&2 <<'MSG'
-git / gh をパイプや複合コマンドに入れないでください。
+git / gh / hunk session をパイプや複合コマンドに入れないでください。
 
 sandbox.excludedCommands は単体のコマンドにしか効きません。パイプ・`&&`・`;`・改行・コマンド置換に
 入れると行全体が sandbox 内で実行され、CA バンドル（/etc/ssl/cert.pem）や gh の設定に届かず、
