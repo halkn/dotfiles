@@ -144,8 +144,6 @@
     "network": {
       "strictAllowlist": true,
       "allowedDomains": [
-        "github.com",
-        "*.github.com",
         "dev.azure.com",
         "*.dev.azure.com",
         "*.vssps.visualstudio.com",
