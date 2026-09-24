@@ -1,13 +1,13 @@
 #!/usr/bin/env zsh
-# ui.zsh: preview failures must preserve output and return successfully under
-# errexit, and workspace rows read off `herdr workspace list`.
+# ui.zsh: preview failures must preserve output and return successfully, and
+# workspace rows read off `herdr workspace list`.
 set -uo pipefail
 typeset -i failures=0
 ui_lib=${0:A:h}/../../.config/herdr/ui.zsh
 
 for scenario in status log directory; do
   out=$(zsh -df -c '
-    set -euo pipefail
+    set -uo pipefail
     source "$1"
     scenario=$2
     git() {
@@ -66,7 +66,7 @@ trap 'rm -rf -- "$ws_root"' EXIT
 
 run_ws() {
   zsh -df -c '
-    set -euo pipefail
+    set -uo pipefail
     source "$1"
     root=$2
     herdr_fails=$3

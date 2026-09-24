@@ -38,6 +38,10 @@ tool の cache・state・data は XDG の各ディレクトリに置く。消え
 - script はリンク先のパス（`~/.config/herdr/...`）で `.config/herdr/config.toml` から呼ばれる。移動・改名するときは、`config.toml` の参照も同時に直す
 - エラーを見せる経路では、popup が閉じる前に止める（`_ui_die`）
 - script（`herdr-*.zsh`）には実行ビットを付ける
+
+## script の書き方
+
+- `set -e` は使わず、`set -uo pipefail` で書く。失敗するコマンドは、その場で扱い方を決める（`|| exit 1`・`|| _ui_die`・`|| rc=1`）
 - 中身が zsh の script の拡張子は `.zsh` にする。`.sh` は bash / sh の script に使う
 
 ## worktree
