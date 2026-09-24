@@ -1,8 +1,9 @@
----@type vim.lsp.Config
+---@type vimrc.lsp.Config
 local config = {
   cmd = { 'gopls' },
   filetypes = { 'go', 'gomod', 'gowork', 'gotmpl' },
   root_markers = { 'go.work', 'go.mod', '.git' },
+  format_code_actions = { 'source.organizeImports' },
   settings = {
     gopls = {
       gofumpt = true,

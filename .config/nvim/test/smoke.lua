@@ -179,6 +179,53 @@ check('lsp configs load', function()
   end
 end)
 
+-- An in-process server stands in for a real one, recording which code action
+-- kinds the format path asks for.
+check('lsp format applies the server-declared code actions', function()
+  local requested = {}
+  scratch({ 'alpha' })
+  vim.api.nvim_buf_set_name(0, vim.fn.tempname())
+  local client_id = vim.lsp.start({
+    name = 'smoke-format',
+    cmd = function()
+      return {
+        request = function(method, params, callback)
+          local results = {
+            initialize = {
+              capabilities = { codeActionProvider = true, documentFormattingProvider = true },
+            },
+            ['textDocument/codeAction'] = {},
+            ['textDocument/formatting'] = {},
+          }
+          if method == 'textDocument/codeAction' then
+            table.insert(requested, params.context.only[1])
+          end
+          callback(nil, results[method])
+          return true, 1
+        end,
+        notify = function()
+          return true
+        end,
+        is_closing = function()
+          return false
+        end,
+        terminate = function() end,
+      }
+    end,
+    format_code_actions = { 'source.smoke.a', 'source.smoke.b' },
+  })
+  local client = assert(vim.lsp.get_client_by_id(assert(client_id)), 'fake server did not start')
+  vim.wait(1000, function()
+    return #vim.lsp.get_clients({ id = client_id, bufnr = 0 }) > 0
+  end)
+  feed(',f')
+  client:stop(true)
+  assert(
+    vim.deep_equal(requested, { 'source.smoke.a', 'source.smoke.b' }),
+    'wrong kinds: ' .. vim.inspect(requested)
+  )
+end)
+
 check('treesitter parsers declared are installable', function()
   local ts_parsers = require('vimrc.pack').ts_parsers
   local available = require('nvim-treesitter').get_available()
