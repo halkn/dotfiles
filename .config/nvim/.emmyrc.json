@@ -3,9 +3,6 @@
   "completion": {
     "callSnippet": false
   },
-  "diagnostics": {
-    "disable": ["global-in-non-module"]
-  },
   "format": {
     "externalTool": {
       "program": "stylua",
