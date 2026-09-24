@@ -30,7 +30,10 @@
       "Bash(mise run update)",
       "Bash(mise bootstrap --yes*)",
       "Bash(mise bootstrap -y*)",
-      "Bash(mise bootstrap --force-dotfiles*)"
+      "Bash(mise bootstrap --force-dotfiles*)",
+      "Bash(mise bootstrap * --yes*)",
+      "Bash(mise bootstrap * -y*)",
+      "Bash(mise bootstrap * --force-dotfiles*)"
     ]
   }
 }
