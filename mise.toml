@@ -1,6 +1,6 @@
-# The global config declares its tools without a lockfile; reproducibility is opted into here, for
-# the toolchain `mise run lint` depends on. Apple Silicon macOS and WSL are the machines this
-# repository is deployed on.
+# Only tools used inside this repository are declared here, so the lockfile pins just those; tools
+# called from any directory stay unpinned in the global config. Apple Silicon macOS and WSL are
+# the machines this repository is deployed on.
 [settings]
 lockfile = true
 lockfile_platforms = ["macos-arm64", "linux-x64"]
