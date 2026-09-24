@@ -116,14 +116,3 @@ run = "mise tasks validate"
 description = "シェルスクリプトの静的検査"
 hide = true
 run = "shuck check ."
-
-[tasks."lint:nvim"]
-description = "Neovim Lua の診断と起動確認"
-run = [
-  """
-VIMRUNTIME="$(NVIM_LOG_FILE=/dev/null nvim --clean --headless -c 'lua io.write(vim.env.VIMRUNTIME)' +q 2>/dev/null)" \\
-  emmylua_check --warnings-as-errors .config/nvim
-""",
-  "NVIM_LOG_FILE=/dev/null nvim --clean --headless --cmd 'set runtimepath^=.config/nvim' -l .config/nvim/test/keymaps.lua",
-  "NVIM_LOG_FILE=/dev/null nvim --headless -i NONE -c 'luafile .config/nvim/test/smoke.lua'",
-]

@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+#MISE description="Neovim Lua の診断と起動確認"
+set -uo pipefail
+
+export NVIM_LOG_FILE=/dev/null
+rc=0
+
+vimruntime="$(nvim --clean --headless -c 'lua io.write(vim.env.VIMRUNTIME)' +q 2>/dev/null)" || exit 1
+VIMRUNTIME="$vimruntime" emmylua_check --warnings-as-errors .config/nvim || rc=1
+nvim --clean --headless --cmd 'set runtimepath^=.config/nvim' -l .config/nvim/test/keymaps.lua || rc=1
+nvim --headless -i NONE -c 'luafile .config/nvim/test/smoke.lua' || rc=1
+
+exit $rc
