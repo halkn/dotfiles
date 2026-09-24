@@ -174,6 +174,8 @@ check('lsp configs load', function()
     local config = dofile(path)
     assert(type(config) == 'table', path .. ' did not return a table')
     assert(config.cmd, path .. ' has no cmd')
+    local name = vim.fn.fnamemodify(path, ':t:r')
+    assert(vim.lsp.is_enabled(name), name .. ' is not in servers')
   end
 end)
 

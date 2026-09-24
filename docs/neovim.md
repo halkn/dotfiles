@@ -22,7 +22,7 @@
 
 ## LSP
 
-- server の設定は `lsp/<name>.lua` に 1 server 1 ファイルで完結させ（数行の重複は共通化しない）、有効にするものを `lua/vimrc/lsp.lua` の `servers` で選ぶ。server 本体をどこで導入するかは [mise.md](mise.md) に従う
+- server の設定は `lsp/<name>.lua` に 1 server 1 ファイルで完結させ（数行の重複は共通化しない）、有効にするものを `lua/vimrc/lsp.lua` の `servers` で選ぶ。`servers` に入れない server のファイルは置かない（必要になったら git の履歴から戻す）。server 本体をどこで導入するかは [mise.md](mise.md) に従う
 - server ごとに決まる調整は、その server の `lsp/<name>.lua` の `on_init` に置き、attach の順序に依存させない
 
 ## 検査とテスト
