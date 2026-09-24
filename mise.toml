@@ -64,8 +64,8 @@ login_shell = "/bin/zsh"
 "~/.local/share/zsh/plugins/zsh-autosuggestions" = { url = "https://github.com/zsh-users/zsh-autosuggestions" }
 "~/.local/share/zsh/plugins/fast-syntax-highlighting" = { url = "https://github.com/zdharma-continuum/fast-syntax-highlighting" }
 
-# Claude Code is in the mise registry, but it self-updates in place and would drift from the
-# lockfile, so it stays on its own installer.
+# Claude Code is in the mise registry, but `claude update` (run by `mise run update`) replaces it
+# in place and would drift from the lockfile, so it stays on its own installer.
 [bootstrap.hooks.final]
 run = "command -v claude >/dev/null || curl -fsSL https://claude.ai/install.sh | bash"
 
