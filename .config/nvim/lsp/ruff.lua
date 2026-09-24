@@ -7,7 +7,7 @@ local function has_uv_project(root_dir)
     or vim.uv.fs_stat(vim.fs.joinpath(root_dir, '.venv')) ~= nil
 end
 
----@type vim.lsp.Config
+---@type vimrc.lsp.Config
 local config = {
   cmd = function(dispatchers, cfg)
     local cmd = { 'ruff', 'server' }
@@ -31,6 +31,7 @@ local config = {
   on_init = function(client)
     client.server_capabilities.hoverProvider = false
   end,
+  format_code_actions = { 'source.organizeImports.ruff', 'source.fixAll.ruff' },
   settings = {
     organizeImports = true,
     fixAll = true,

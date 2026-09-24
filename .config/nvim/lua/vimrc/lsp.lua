@@ -10,12 +10,8 @@ local servers = {
 
 -- formatting
 
--- Per-client code action kinds to apply before formatting on save. Only
--- clients that actually attach to the buffer are queried.
-local organize_actions = {
-  ruff = { 'source.organizeImports.ruff', 'source.fixAll.ruff' },
-  gopls = { 'source.organizeImports' },
-}
+---@class vimrc.lsp.Config: vim.lsp.Config
+---@field format_code_actions? string[] code action kinds applied, in order, before formatting
 
 local format_group = vim.api.nvim_create_augroup('vimrc_lspformat', { clear = true })
 
@@ -53,16 +49,12 @@ local function apply_code_action(client, bufnr, kind)
 end
 
 local function format_buffer(bufnr)
-  for name, kinds in pairs(organize_actions) do
-    local client = vim.lsp.get_clients({
-      bufnr = bufnr,
-      name = name,
-      method = 'textDocument/codeAction',
-    })[1]
-    if client then
-      for _, kind in ipairs(kinds) do
-        apply_code_action(client, bufnr, kind)
-      end
+  for _, client in
+    ipairs(vim.lsp.get_clients({ bufnr = bufnr, method = 'textDocument/codeAction' }))
+  do
+    local config = client.config --[[@as vimrc.lsp.Config]]
+    for _, kind in ipairs(config.format_code_actions or {}) do
+      apply_code_action(client, bufnr, kind)
     end
   end
   vim.lsp.buf.format({ bufnr = bufnr, timeout_ms = 1000 })
