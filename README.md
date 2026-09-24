@@ -49,6 +49,11 @@ the CLI tooling around them, set up by [mise](https://mise.jdx.dev/) from
    aside yourself (e.g. `mv ~/.config ~/.config.bak`) and run it again. Do not
    reach for `--force-dotfiles`: it overwrites with no backup.
 
+   Until `gh auth login` below, mise calls the GitHub API anonymously, and one
+   bootstrap uses about half of the hourly limit. If a rerun hits the limit,
+   wait an hour, or run `gh auth login` if `gh` is already installed, then run
+   `mise bootstrap --yes --update` again.
+
 1. Set your git identity and log in to GitHub. git authenticates to GitHub
    through `gh`, and `repo` and `wt` call it too.
 
