@@ -6,7 +6,7 @@
 # `wt rm` and then closes the workspace; any other workspace is only closed, so
 # a clone is never deleted from here. A worktree without a workspace is reopened
 # with alt+g (herdr-new.zsh) or removed with `wt rm` from a shell.
-set -euo pipefail
+set -uo pipefail
 
 ui_lib=${XDG_CONFIG_HOME:-$HOME/.config}/herdr/ui.zsh
 if [[ -r $ui_lib ]]; then
@@ -144,7 +144,7 @@ take_away_all() {
 
 # Back to the picker after taking some away. Enter drops the selection so that
 # it always goes to the row under the cursor. A cancelled picker is not a
-# failure, and `set -e` would otherwise close the popup on a non-zero status.
+# failure.
 while true; do
   rows=$(_ui_workspaces) || _ui_die herdr-spaces 'herdr could not list the workspaces'
   [[ -n $rows ]] || exit 0

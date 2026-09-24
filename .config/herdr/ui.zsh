@@ -71,8 +71,7 @@ _ui_git_preview() {
   else
     ls -A -- "$dir" 2>/dev/null | head -30 || true
   fi
-  # A directory git refuses must not end the preview process, which runs under
-  # `set -e` in the herdr picker.
+  # A directory git refuses is still a preview, not a failure.
   return 0
 }
 

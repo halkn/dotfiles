@@ -6,7 +6,7 @@
 # runs, so a pane cd'd elsewhere does not change the repository, and a new
 # branch forks from that checkout's HEAD. A workspace off a checkout has no path
 # in herdr 0.9.1, and the popup's cwd stands in for it.
-set -euo pipefail
+set -uo pipefail
 
 ui_lib=${XDG_CONFIG_HOME:-$HOME/.config}/herdr/ui.zsh
 if [[ -r $ui_lib ]]; then
