@@ -81,6 +81,7 @@
 - `~/.cache` を丸ごと許可し、例外を `denyWrite` で列挙する形: 列挙から漏れたものが開いたままになる
 - `credentials.envVars` の `mode: "mask"` と `sandbox.network.tlsTerminate`: mask は sandbox の proxy が値を差し替える仕組みなので、sandbox の外で走る `gh` には効かない
 - `az *` の除外: `strictAllowlist` を迂回する送信経路になる
+- `"attribution": false`: 2.1.281 より前の CLI は、この値を含む設定ファイルを丸ごと読み飛ばす。`claude/settings.json` は CLI の版が揃わない複数の端末で共有するので、オブジェクト形式（`commit` / `pr` を空にする）を続ける
 - `Bash(git push --force*)` の deny: `--force-with-lease` まで塞いでしまう。ask で足りる
 - `.worktreeinclude`: gitignore されたファイルを agent の checkout に複製すると、見える範囲が広がる
 - subagent の同時実行数・入れ子の深さを下げる設定: 抑えたいのは委譲するかどうかの判断の質で、同時実行数ではない
