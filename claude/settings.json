@@ -18,9 +18,6 @@
   "permissions": {
     "allow": [
       "Bash(git status*)",
-      "Bash(git log*)",
-      "Bash(git diff*)",
-      "Bash(git show*)",
       "Bash(git branch)",
       "Bash(git branch -v*)",
       "Bash(git rev-parse*)",
@@ -37,10 +34,12 @@
       "Bash(gh run view*)",
       "Bash(gh repo view*)",
       "Bash(gh search *)",
-      "Bash(mise tasks*)",
+      "Bash(mise tasks)",
+      "Bash(mise tasks ls *)",
+      "Bash(mise tasks info *)",
+      "Bash(mise tasks deps *)",
       "Bash(mise task info*)",
       "Bash(eza *)",
-      "Bash(tree *)",
       "WebFetch(domain:learn.microsoft.com)",
       "WebFetch(domain:docs.microsoft.com)",
       "WebFetch(domain:azure.microsoft.com)",
@@ -60,13 +59,13 @@
       "Read(//**/id_ed25519*)",
       "Read(//**/id_ecdsa*)",
       "Read(//**/.ssh/**)",
+      "Edit(~/.gnupg/**)",
       "Bash(sudo*)",
       "Bash(nc *)",
       "Bash(ssh*)",
       "Bash(scp*)",
       "Bash(git reflog expire*)",
       "Bash(git gc --prune*)",
-      "Bash(uv publish*)",
       "Bash(az devops invoke *--http-method *)",
       "Bash(az devops invoke *--http-method=*)"
     ],
@@ -85,7 +84,8 @@
       "Bash(git branch -D*)",
       "Bash(git worktree remove*)",
       "Bash(uv tool uninstall*)",
-      "Bash(uv python uninstall*)"
+      "Bash(uv python uninstall*)",
+      "Edit(~/repos/github.com/halkn/dotfiles/claude/**)"
     ],
     "defaultMode": "auto",
     "disableBypassPermissionsMode": "disable"
@@ -173,7 +173,7 @@
         "~/"
       ],
       "allowRead": [
-        ".",
+        "~/.claude",
         "~/.azure",
         "~/.config",
         "~/repos/github.com/halkn/dotfiles/.config",
