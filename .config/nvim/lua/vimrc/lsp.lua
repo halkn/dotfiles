@@ -6,6 +6,9 @@ local servers = {
   'rumdl',
   'ryl',
   'gopls',
+  'tsc',
+  'oxlint',
+  'oxfmt',
 }
 
 -- formatting

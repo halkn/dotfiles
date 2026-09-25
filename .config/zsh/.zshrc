@@ -116,6 +116,18 @@ if command -v uv >/dev/null 2>&1; then
   unset _uv_comp
 fi
 
+# ── bun ──────────────────────────────────────────────
+# `bun completions` prints the script only when stdout is not a TTY; on a TTY it
+# installs the file itself and appends a source line to .zshrc.
+if command -v bun >/dev/null 2>&1; then
+  _bun_comp="$zsh_cache_dir/bun_completion.zsh"
+  if [[ ! -s "$_bun_comp" || "$(command -v bun)" -nt "$_bun_comp" ]]; then
+    bun completions >|"$_bun_comp"
+  fi
+  source "$_bun_comp"
+  unset _bun_comp
+fi
+
 # ── fzf ──────────────────────────────────────────────
 # The shell-wide bits: the widgets, the look, and the per-command completion
 # sources. Full-screen pickers live in .config/herdr/. The integration script

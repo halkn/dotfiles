@@ -1,6 +1,19 @@
 -- treesitter -----------------------------------------------------------------
-local ts_parsers =
-  { 'bash', 'go', 'gomod', 'gosum', 'gowork', 'gotmpl', 'json', 'python', 'toml', 'yaml' }
+local ts_parsers = {
+  'bash',
+  'go',
+  'gomod',
+  'gosum',
+  'gowork',
+  'gotmpl',
+  'javascript',
+  'json',
+  'python',
+  'toml',
+  'tsx',
+  'typescript',
+  'yaml',
+}
 
 local ensure_ts_parsers = function()
   local missing = vim.tbl_filter(function(lang)

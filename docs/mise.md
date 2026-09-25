@@ -18,7 +18,8 @@
 - 宣言先は、どこから呼ばれるかより、対象のファイルがどこにあるかで決める。Lua はこのリポジトリでしか書かないので、Neovim から起動する `emmylua_ls` も `mise.toml` に置く
 - 固定するかどうかは宣言先の結果で、固定したいからといってグローバルのツールを `mise.toml` に移さない。`lint` が使うグローバルのツール（`rumdl`・`shuck`・`nvim`）の版がマシン間でずれ、`lint` の結果が変わることは許容する
 - ツールは、できるだけ他の依存が無い形で入れる。node や python に依存する配布（npm・pipx）は避ける。その上で registry の短縮名を優先し、registry に無いものや依存が増えるものだけ backend を明示する
-- LSP・formatter・linter は、その言語の toolchain と同じ場所に置く。Go はグローバルなので `gopls` も `.config/mise/config.toml` に、Python はプロジェクトの環境で固定するので `pyright`・`ruff` は mise で宣言せずそのプロジェクトの環境から起動する
+- LSP・formatter・linter は、その言語の toolchain と同じ場所に置く。Go はグローバルなので `gopls` も `.config/mise/config.toml` に、Python はプロジェクトの環境で固定するので `pyright`・`ruff` は mise で宣言せずそのプロジェクトの環境から起動する。TypeScript も同様に、`tsc`・`oxlint`・`oxfmt` はプロジェクトの `node_modules` から起動する
+- JavaScript の runtime は bun だけを入れ、node は入れない。npm の配布物は node の shebang を持つので、bun に `--bun` で実行させる。プロジェクトに無いツールを勝手に取得しないよう、`bunx` には `--no-install` を付ける
 - shell の alias・関数は zsh に置く。追跡する mise 設定の `[env]` は、プロジェクト固有の環境変数だけに使う。マシン固有の値は追跡外の `*.local` に置く
 - 新しい CLI が設定ディレクトリや認証情報を読む場合は、Claude Code の sandbox 側の設定も要る（[claude-code.md](claude-code.md)）
 

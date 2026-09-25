@@ -179,6 +179,29 @@ check('lsp configs load', function()
   end
 end)
 
+check('tsc attaches only where the project has TypeScript 7+', function()
+  local tsc = dofile(vim.api.nvim_get_runtime_file('lsp/tsc.lua', false)[1])
+  local root = vim.fn.tempname()
+  vim.fn.mkdir(vim.fs.joinpath(root, 'node_modules', 'typescript'), 'p')
+  vim.fn.writefile({}, vim.fs.joinpath(root, 'bun.lock'))
+  -- vim.fs.root() ignores the name of a 'nofile' buffer, so this one stays a normal buffer.
+  vim.cmd('enew!')
+  vim.api.nvim_buf_set_name(0, vim.fs.joinpath(root, 'index.ts'))
+  -- The buffer name resolves symlinks (macOS /tmp -> /private/tmp).
+  root = assert(vim.uv.fs_realpath(root))
+  local function attached_root(version)
+    local pkg = vim.fs.joinpath(root, 'node_modules', 'typescript', 'package.json')
+    vim.fn.writefile({ vim.json.encode({ version = version }) }, pkg)
+    local got
+    tsc.root_dir(0, function(dir)
+      got = dir
+    end)
+    return got
+  end
+  assert(attached_root('5.9.3') == nil, 'attached to TypeScript 5')
+  assert(attached_root('7.0.2') == root, 'did not attach to TypeScript 7')
+end)
+
 -- An in-process server stands in for a real one, recording which code action
 -- kinds the format path asks for.
 check('lsp format applies the server-declared code actions', function()

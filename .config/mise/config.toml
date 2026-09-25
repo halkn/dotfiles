@@ -12,7 +12,7 @@ credential_command = 'gh auth token --hostname "$MISE_CREDENTIAL_HOST"'
 [tools]
 # dev
 uv = "latest"
-node = "latest"
+bun = "latest"
 go = "latest"
 
 # terminal
