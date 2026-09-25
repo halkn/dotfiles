@@ -43,6 +43,11 @@ export GOPATH=$XDG_DATA_HOME/go
 export GOMODCACHE=$XDG_CACHE_HOME/go/mod
 export GOCACHE=$XDG_CACHE_HOME/go/build
 
+# bun
+export BUN_INSTALL_CACHE_DIR=$XDG_CACHE_HOME/bun/install/cache
+export BUN_INSTALL_GLOBAL_DIR=$XDG_DATA_HOME/bun/install/global
+export BUN_INSTALL_BIN=$XDG_DATA_HOME/bun/bin
+
 # less
 export LESS='-g -i -M -R -S -W -z-4 -x4'
 export LESSHISTFILE=-
@@ -57,6 +62,7 @@ typeset -U path
 path=(
   $XDG_BIN_HOME(N-/)
   $GOPATH/bin(N-/)
+  $BUN_INSTALL_BIN(N-/)
   $path
 )
 
