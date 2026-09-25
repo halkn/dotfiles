@@ -152,10 +152,12 @@
       "allowWrite": [
         "~/.azure",
         "~/.cache/uv",
+        "~/.cache/bun",
         "~/.cache/mise",
         "~/.cache/rumdl",
         "~/.cache/shuck",
         "~/.local/share/uv",
+        "~/.local/share/bun",
         "~/.local/share/mise",
         "~/.local/state/mise",
         "~/.local/state/review-report"
@@ -175,11 +177,13 @@
         "~/repos/github.com/halkn/dotfiles/.config",
         "~/repos/github.com/halkn/skills",
         "~/.cache/uv",
+        "~/.cache/bun",
         "~/.cache/mise",
         "~/.cache/rumdl",
         "~/.cache/shuck",
         "~/.local/state/review-report",
         "~/.local/share/uv",
+        "~/.local/share/bun",
         "~/.local/share/mise",
         "~/.local/state/mise",
         "~/.local/bin"
