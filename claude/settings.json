@@ -1,8 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
-  "worktree": {
-    "baseRef": "head"
-  },
+  "syncClaudeAiSkills": false,
   "env": {
     "CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR": "1",
     "DISABLE_AUTOUPDATER": "1",
@@ -88,6 +86,7 @@
     "defaultMode": "auto",
     "disableBypassPermissionsMode": "disable"
   },
+  "disableClaudeAiConnectors": true,
   "hooks": {
     "PreToolUse": [
       {
@@ -113,9 +112,21 @@
       }
     ]
   },
+  "worktree": {
+    "baseRef": "head"
+  },
+  "disableRemoteControl": true,
+  "enableArtifact": false,
   "statusLine": {
     "type": "command",
     "command": "~/.claude/statusline-command.sh"
+  },
+  "enabledPlugins": {
+    "skill-creator@claude-plugins-official": true,
+    "claude-md-management@claude-plugins-official": true,
+    "ast-grep@ast-grep-marketplace": true,
+    "cc-plugin-agents-md@builtin": false,
+    "cc-plugin-telemetry@builtin": false
   },
   "extraKnownMarketplaces": {
     "ast-grep-marketplace": {
@@ -125,28 +136,20 @@
       }
     }
   },
-  "enabledPlugins": {
-    "skill-creator@claude-plugins-official": true,
-    "claude-md-management@claude-plugins-official": true,
-    "ast-grep@ast-grep-marketplace": true
-  },
+  "outputStyle": "Concise",
   "language": "japanese",
-  "disableRemoteControl": true,
-  "enableArtifact": false,
-  "syncClaudeAiSkills": false,
-  "disableClaudeAiConnectors": true,
   "sandbox": {
     "enabled": true,
     "failIfUnavailable": true,
     "allowUnsandboxedCommands": false,
     "network": {
-      "strictAllowlist": true,
       "allowedDomains": [
         "dev.azure.com",
         "*.dev.azure.com",
         "*.vssps.visualstudio.com",
         "login.microsoftonline.com"
-      ]
+      ],
+      "strictAllowlist": true
     },
     "filesystem": {
       "allowWrite": [
@@ -263,11 +266,18 @@
       "hunk session *"
     ]
   },
-  "outputStyle": "Concise",
   "tui": "fullscreen",
   "theme": "dark",
   "editorMode": "vim",
   "autoMode": {
+    "soft_deny": [
+      "$defaults",
+      "Snowflake Destructive DDL [named+specifics — **must name:** the exact object]: `DROP`, `TRUNCATE TABLE`, `CREATE OR REPLACE` against an existing table, view, stage, schema, or database, or any statement that discards a Snowflake object the agent did not create in this session. A Snowflake object is addressed by database and schema name, with no host or namespace marker, so the Sensitive remote targets heuristic does not reach it: treat every database and schema as shared unless the user named it as scratch in this session. Also covers `COPY INTO` an external stage or cloud storage location, which moves table contents outside Snowflake."
+    ],
+    "hard_deny": [
+      "$defaults",
+      "Cross-Context Transfer: This machine serves two separate contexts — personal work under github.com/halkn, and employer business work in separate remotes. Never push or mirror content that originated in one context's repository into a remote, pull request, or issue belonging to the other, and never add or repoint a remote that crosses the two. Infer the current context from the repository remote and the working directory. This applies in both directions. Both contexts are trusted on their own, so neither the destination being private nor the user asking for it clears this: the boundary is between them, not around them. Refuse the outbound operation itself and tell the user to move the content by hand. Copying a configuration snippet into a local file is not covered by this rule — it is judged by the shipped provenance and publication rules."
+    ],
     "environment": [
       "$defaults",
       "Two distinct contexts share this configuration: personal projects and employer business work. Infer which one applies from the repository remote and the working directory; never assume the personal context by default. In the business context, treat internal hosts, data, identifiers, and source code as confidential, and do not rely on this file's statements as evidence that no sensitive infrastructure exists. This file is public, so trusted business infrastructure is declared in managed settings, not here.",
@@ -281,14 +291,6 @@
       "Secrets management: credentials live in the OS keychain and in CLI token caches, never in tracked files. Machine-local secrets live in untracked *.local files. None of these belong in a commit, PR, or issue.",
       "Sensitive data locations & audiences: SSH and GPG key directories, cloud and CLI credential stores, Claude Code session transcripts, and any .env or *.local file. Contents of these locations must not be copied into commits, pull requests, issues, or any outbound request.",
       "Network posture: untrusted network. Assume no network-level trust boundary protects this machine."
-    ],
-    "soft_deny": [
-      "$defaults",
-      "Snowflake Destructive DDL [named+specifics — **must name:** the exact object]: `DROP`, `TRUNCATE TABLE`, `CREATE OR REPLACE` against an existing table, view, stage, schema, or database, or any statement that discards a Snowflake object the agent did not create in this session. A Snowflake object is addressed by database and schema name, with no host or namespace marker, so the Sensitive remote targets heuristic does not reach it: treat every database and schema as shared unless the user named it as scratch in this session. Also covers `COPY INTO` an external stage or cloud storage location, which moves table contents outside Snowflake."
-    ],
-    "hard_deny": [
-      "$defaults",
-      "Cross-Context Transfer: This machine serves two separate contexts — personal work under github.com/halkn, and employer business work in separate remotes. Never push or mirror content that originated in one context's repository into a remote, pull request, or issue belonging to the other, and never add or repoint a remote that crosses the two. Infer the current context from the repository remote and the working directory. This applies in both directions. Both contexts are trusted on their own, so neither the destination being private nor the user asking for it clears this: the boundary is between them, not around them. Refuse the outbound operation itself and tell the user to move the content by hand. Copying a configuration snippet into a local file is not covered by this rule — it is judged by the shipped provenance and publication rules."
     ],
     "classifyAllShell": true
   }
