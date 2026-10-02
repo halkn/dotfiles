@@ -8,7 +8,7 @@
 # Tags only: columns bury the `*` marker in branch listings and split untracked paths.
 [column]
   tag = auto
-# git pages branch listings by default, giving hunk a full screen for a few lines.
+# git pages branch listings by default, taking over the screen for a few lines.
 [pager]
   branch = false
 [branch]
@@ -37,12 +37,16 @@
   ba = branch -av
   sw = switch
   sm = "!git switch main && git pull && git pm"
-  diff-narrow = -c core.pager=\"hunk pager --mode stack\" diff
-  prdiff = "!f() { git diff --no-color \"$(git merge-base \"${1:-origin/main}\" HEAD)\" | hunk patch -; }; f"
+  diff-split = -c delta.side-by-side=true diff
+  prdiff = "!f() { git diff \"$(git merge-base \"${1:-origin/main}\" HEAD)\"; }; f"
   pm = "!f() { base=\"${1:-origin/main}\"; current=$(git branch --show-current); git for-each-ref --format='%(refname:short)' --merged=\"$base\" refs/heads | while IFS= read -r branch; do [ -n \"$branch\" ] || continue; [ \"$branch\" = \"$current\" ] && continue; [ \"$branch\" = \"main\" ] && continue; git branch -d \"$branch\"; done; }; f"
 [core]
-  pager = hunk pager
+  pager = delta
   hooksPath = ~/.config/git/hooks
+[interactive]
+  diffFilter = delta --color-only
+[delta]
+  navigate = true
 [rerere]
   enabled = true
   autoupdate = true
