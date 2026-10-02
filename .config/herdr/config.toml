@@ -121,17 +121,8 @@ description = "open scratch terminal"
 width = "80%"
 height = "80%"
 
-# herdr toggles plugin panes only, so the script does the open/close itself.
 [[keys.command]]
 key = "alt+r"
-type = "shell"
-command = "~/.config/herdr/herdr-hunk.zsh"
-description = "toggle a hunk pane on the right"
-
-# A pane rather than a popup: both open full width, but a popup captures every
-# key until it exits, so the diff could not be read next to an editor.
-[[keys.command]]
-key = "alt+d"
-type = "pane"
-command = "hunk diff --mode split --watch main"
-description = "review the branch against main side by side"
+type = "plugin_action"
+command = "persiyanov.reviewr.toggle"
+description = "toggle the reviewr pane"
