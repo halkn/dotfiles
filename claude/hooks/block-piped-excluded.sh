@@ -7,8 +7,8 @@
 # like the shape of the command. Refusing the shape up front turns that failure into an instruction.
 #
 # Measured on Claude Code 2.1.288 (macOS): `|`, `&&`, `;`, a newline, `$(...)`, a redirection to or
-# from a file (`2>/dev/null` included), `git -C <dir>` before the subcommand, and a `cd` into any
-# directory other than the working directory drop the exclusion. `2>&1`, a `cd` into the working
+# from a file (`2>/dev/null` included), `git -C <dir>` before the subcommand, a `VAR=value` prefix,
+# and a `cd` into any directory other than the working directory drop the exclusion. `2>&1`, a `cd` into the working
 # directory, and `|`, `;` or newlines inside quotes keep it. A lone `&` and subshells were not
 # measured and are let through.
 #
@@ -39,16 +39,18 @@ excluded="(^|[^[:alnum:]_-])(git${s}${network}|gh${s})"
 # Global options before the subcommand keep even a lone command sandboxed.
 git_opts="(^|[^[:alnum:]_-])git(${s}-[^[:space:]]+(${s}[^-[:space:]][^[:space:]]*)?)+${s}${network}([[:space:]]|$)"
 compound=$'\n|\\||&&|;|\\$\\(|`|[<>]'
+prefixed="^[[:space:]]*(env([[:space:]]+[^[:space:]]+)*|([A-Za-z_][A-Za-z0-9_]*=[^[:space:]]*[[:space:]]+)+)[[:space:]]*(git${s}${network}|gh${s})"
 
 # Matched in-process: `printf | grep -q` under pipefail reads an early match on a long
 # command as no match, since grep exits and printf dies of SIGPIPE.
-if [[ "$command" =~ $git_opts ]] || { [[ "$command" =~ $excluded ]] && [[ "$command" =~ $compound ]]; }; then
+if [[ "$command" =~ $git_opts ]] || [[ "$command" =~ $prefixed ]] ||
+  { [[ "$command" =~ $excluded ]] && [[ "$command" =~ $compound ]]; }; then
   cat >&2 <<'MSG'
 git / gh を、sandbox の除外が外れる形で実行しようとしています。
 
 sandbox.excludedCommands は単体のコマンドにしか効きません。パイプ・`&&`・`;`・改行・コマンド置換、
 ファイルへのリダイレクト（`2>/dev/null` を含む）、`git -C` などサブコマンドの前のオプション、
-作業ディレクトリ以外への `cd` のどれかがあると、行全体が sandbox 内で実行されます。GitHub への通信
+環境変数の前置（`VAR=… gh`・`env … gh`）、作業ディレクトリ以外への `cd` のどれかがあると、行全体が sandbox 内で実行されます。GitHub への通信
 （sandbox の許可先に無い）や gh の設定に届かず、プロキシの接続拒否（CONNECT 403）や設定読取エラーになります。
 環境の制約に見えますが、コマンドの形の問題です。
 

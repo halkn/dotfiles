@@ -61,6 +61,10 @@ expect 2 "gh pr create --body-file - <<'EOF'${nl}body${nl}EOF"
 expect 2 'git -C /x push'
 expect 2 'git -c push.default=current push'
 expect 2 'git --no-pager fetch'
+expect 2 'GH_PAGER=cat gh pr view'
+expect 2 "A='x y' B=1 git push"
+expect 2 'env GH_PAGER=cat gh pr view'
+expect 2 'env -u FOO git push'
 expect 2 $'gh\tpr view | cat'
 # Long enough to overflow a pipe buffer after an early match.
 expect 2 "git push${nl}$(printf 'echo %0100d\n' $(seq 1000))"
@@ -74,6 +78,9 @@ expect 0 'git pull | tail'
 expect 0 'git submodule update | tail'
 expect 0 'git -C /x status'
 expect 0 'git log --oneline > log.txt'
+expect 0 'gh api repos/x -f title=a'
+expect 0 'FOO=1 git status'
+expect 0 'environment-check gh-like'
 expect 0 "gh pr create --body \"a | b; c${nl}d\""
 expect 0 "gh pr create --body \"say \\\"a | b\\\" here\""
 expect 0 "gh api repos/x --jq '.[] | .name'"
