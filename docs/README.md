@@ -8,7 +8,7 @@
 | `.zshenv`・`.config/zsh/`・`bin/`・`.config/herdr/`・`test/` | [shell.md](shell.md) |
 | `.config/nvim/` | [neovim.md](neovim.md) |
 | `claude/`・`.claude/` | [claude-code.md](claude-code.md) |
-| 上記以外（`.config/git/`・その他の `.config/*`・`.github/`） | 専用の doc は無い。ファイルにコメントがあればそれに従う。git の `pre-push` hook と `.config/git` は [claude-code.md](claude-code.md) の「git / gh の基準」（main への push を止める 4 つの層）と「sandbox の基準」も読む |
+| 上記以外（`.config/git/`・その他の `.config/*`・`.github/`） | 専用の doc は無い。ファイルにコメントがあればそれに従う。git の `pre-push` hook と `.config/git` は [claude-code.md](claude-code.md) の「git / gh の基準」と「sandbox の基準」も読む |
 
 ## doc の書き方
 

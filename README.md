@@ -63,6 +63,39 @@ the CLI tooling around them, set up by [mise](https://mise.jdx.dev/) from
    gh auth login
    ```
 
+1. Give Claude Code its own GitHub token. Claude Code's `gh` and git reach GitHub
+   with it instead of your login, and a hook stops them while it is missing
+   (see [docs/claude-code.md](docs/claude-code.md)).
+
+   Create a fine-grained personal access token with your account as the
+   resource owner, all repositories, and an expiration date. Grant read and
+   write on Contents, Pull requests and Issues, and read on Actions and Commit
+   statuses; leave Administration, Workflows and Secrets unset. Then, outside
+   Claude Code:
+
+   ```sh
+   dir="$HOME/.local/state/gh-claude"
+   mkdir -p -m 700 "$dir"
+   read -rs 'token?Token: '
+   (umask 077 && printf 'github.com:\n    oauth_token: %s\n    user: %s\n    git_protocol: https\n' \
+     "$token" "$(gh api user --jq .login)" >"$dir/hosts.yml")
+   unset token
+   ```
+
+   Do not use `GH_CONFIG_DIR=… gh auth login` for this: it rewrites the
+   keychain entry your own `gh` uses. Point Claude Code at the directory through
+   managed settings, which hold what differs per machine (on Linux and WSL the
+   directory is `/etc/claude-code/managed-settings.d`):
+
+   ```sh
+   d="/Library/Application Support/ClaudeCode/managed-settings.d"
+   sudo mkdir -p "$d"
+   jq -n --arg dir "$HOME/.local/state/gh-claude" '{env: {GH_CONFIG_DIR: $dir}}' |
+     sudo tee "$d/50-gh-claude.json" >/dev/null
+   ```
+
+   Restart Claude Code. To renew the token, rewrite `hosts.yml` the same way.
+
 1. Reopen the terminal. zsh starts inside [herdr](https://herdr.dev); set
    `HERDR_AUTO_START=0` in `.zshrc.local` to stop that on a machine.
 
