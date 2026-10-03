@@ -170,7 +170,6 @@
         "~/repos/github.com/halkn/dotfiles/claude"
       ],
       "allowRead": [
-        "~/.claude",
         "~/.azure",
         "~/.config",
         "~/repos/github.com/halkn/dotfiles/.config",
