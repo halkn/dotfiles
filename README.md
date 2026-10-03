@@ -76,11 +76,18 @@ the CLI tooling around them, set up by [mise](https://mise.jdx.dev/) from
    ```sh
    dir="$HOME/.local/state/gh-claude"
    mkdir -p -m 700 "$dir"
-   read -rs 'token?Token: '
-   (umask 077 && printf 'github.com:\n    oauth_token: %s\n    user: %s\n    git_protocol: https\n' \
-     "$token" "$(gh api user --jq .login)" >"$dir/hosts.yml")
-   unset token
+   login="$(gh api user --jq .login)"
    ```
+
+   Run the next line on its own: `read` takes the token from the terminal, so
+   anything pasted after it would be read as the token.
+
+   ```sh
+   read -rs 'token?Token: ' && (umask 077 && printf 'github.com:\n    oauth_token: %s\n    user: %s\n    git_protocol: https\n' "$token" "$login" >"$dir/hosts.yml"); unset token
+   ```
+
+   `GH_CONFIG_DIR="$dir" gh auth status` should then show a token starting with
+   `github_pat_`.
 
    Do not use `GH_CONFIG_DIR=… gh auth login` for this: it rewrites the
    keychain entry your own `gh` uses. Point Claude Code at the directory through
