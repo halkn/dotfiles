@@ -191,11 +191,6 @@ if command -v nvim >/dev/null 2>&1; then
   alias vimdiff='nvim -d'
 fi
 
-# ── hunk ─────────────────────────────────────────────
-if command -v hunk >/dev/null 2>&1; then
-  alias gd='hunk diff'
-fi
-
 # ── starship ─────────────────────────────────────────
 if command -v starship >/dev/null 2>&1; then
   export STARSHIP_CONFIG=$XDG_CONFIG_HOME/starship/starship.toml

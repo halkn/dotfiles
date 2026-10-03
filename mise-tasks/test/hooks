@@ -31,7 +31,6 @@ expect 2 'git push |& tail'
 expect 2 'git push || true'
 expect 2 'diff <(gh api x) y'
 expect 2 'cd /x && git push | tail'
-expect 2 'hunk session list | cat'
 expect 2 'git  push | tail'
 expect 2 $'gh\tpr view | cat'
 # Long enough to overflow a pipe buffer after an early match.

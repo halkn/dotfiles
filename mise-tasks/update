@@ -28,6 +28,13 @@ step "lockfile platforms" mise lock
 step "bootstrap packages" mise bootstrap packages upgrade
 step "bootstrap repos" mise bootstrap repos update --yes
 optional_step "claude update" claude update
+# reviewr's documented update is uninstall then install; its config is keyed by plugin id and stays.
+if command -v herdr >/dev/null; then
+  # The install runs even when the uninstall fails, so a plugin missing here is put back.
+  step "reviewr" sh -c 'herdr plugin uninstall persiyanov.reviewr; herdr plugin install persiyanov/herdr-reviewr --yes'
+else
+  echo "skip: herdr is not installed"
+fi
 
 if ((${#failed[@]} > 0)); then
   printf 'failed: %s\n' "${failed[@]}" >&2

@@ -1,0 +1,8 @@
+# The nearest dark theme to Kanagawa Wave (ghostty, nvim), which reviewr does not ship.
+theme = "tokyo-night"
+# Agents commit as they go in their worktree, so uncommitted alone hides most of their work.
+default_scope = "branch"
+# Opened by alt+r (.config/herdr/config.toml) only, not on every worktree.
+auto_open = false
+# $EDITOR is not set.
+editor = "nvim +{line} {file}"
