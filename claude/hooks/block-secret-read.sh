@@ -21,7 +21,7 @@ deny() {
 }
 
 deny_path() {
-  deny "Azure/Snowflake/GitHub の認証情報（~/.azure・~/.snowflake・~/.snowsql・~/.config/gh・~/.config/snowflake）への参照は禁止です。認証は az / snowflake / gh CLI 経由で行ってください。"
+  deny "Azure/Snowflake/GitHub の認証情報（~/.azure・~/.snowflake・~/.snowsql・~/.config/gh・~/.config/snowflake・~/.local/state/gh-claude）への参照は禁止です。認証は az / snowflake / gh CLI 経由で行ってください。"
 }
 
 # sandbox.credentials.envVars `mode: "deny"` is the primary guard, but excludedCommands
@@ -42,7 +42,7 @@ normalized="$(printf '%s' "$normalized" | sed -E 's#(^|[[:space:]<>|;&=(])\./#\1
 
 # A preceding alphanumeric or underscore excludes the match, so hostnames such as
 # `management.azure.com` are not caught.
-if printf '%s' "$normalized" | grep -Eq '(^|[^[:alnum:]_])(\.(azure|snowflake|snowsql)|\.config/(gh|snowflake))(/|[[:space:];|&<>)]|$)'; then
+if printf '%s' "$normalized" | grep -Eq '(^|[^[:alnum:]_])(\.(azure|snowflake|snowsql)|\.config/(gh|snowflake)|\.local/state/gh-claude)(/|[[:space:];|&<>)]|$)'; then
   deny_path
 fi
 
