@@ -33,8 +33,10 @@ rename_exe = "emmylua_check"
 # `~/.claude` cannot be linked as a whole directory because Claude Code writes its own state
 # there, so the glob links each entry of `claude/` instead. `claude/**/*` cannot replace it:
 # it matches both `hooks` and `hooks/*` and fails with a conflicting-declaration error.
+# `~/.config` is linked per entry too, so that it stays a real directory: the Claude Code sandbox
+# grants an `allowRead` path that is itself a symlink only at its target (docs/claude-code.md).
 [dotfiles]
-"~/.config" = { source = ".config" }
+"~/.config/*" = { source = ".config/*" }
 "~/.zshenv" = { source = ".zshenv" }
 "~/.claude/*" = { source = "claude/*" }
 # `bin/` holds the commands that are not shell functions. ~/.local/bin is already on PATH
