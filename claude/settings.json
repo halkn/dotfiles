@@ -13,13 +13,6 @@
   },
   "permissions": {
     "allow": [
-      "Bash(git status*)",
-      "Bash(git branch)",
-      "Bash(git branch -v*)",
-      "Bash(git rev-parse*)",
-      "Bash(git ls-files*)",
-      "Bash(git worktree list*)",
-      "Bash(git stash list*)",
       "Bash(gh pr list*)",
       "Bash(gh pr view*)",
       "Bash(gh pr checks*)",
@@ -58,6 +51,7 @@
       "Read(//**/id_ed25519*)",
       "Read(//**/id_ecdsa*)",
       "Read(//**/.ssh/**)",
+      "Edit(~/.ssh/**)",
       "Edit(~/.gnupg/**)",
       "Bash(sudo*)",
       "Bash(nc *)",
