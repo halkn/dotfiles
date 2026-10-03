@@ -9,20 +9,21 @@
 # itself is not documented, so there is no pattern that fixes it in settings.json. Refusing
 # the shape is what is left.
 #
-# Measured on Claude Code 2.1.280 (macOS): a leading `cd <dir> &&`, redirections, and `|`,
-# `;` or newlines inside quotes keep the exclusion; `|`, `&&`, `;`, a newline and `$(...)`
-# outside quotes drop it. A lone `&`, subshells and `git -C <dir> push` were not measured
-# and are let through.
+# Measured on Claude Code 2.1.280 (macOS): redirections, and `|`, `;` or newlines inside
+# quotes keep the exclusion; `|`, `&&`, `;`, a newline and `$(...)` outside quotes drop it.
+# Measured on 2.1.288 (macOS): a leading `cd <dir> &&` keeps it only when <dir> is an
+# unquoted absolute path; `~`, quotes, variables and relative paths drop it. A lone `&`,
+# subshells and `git -C <dir> push` were not measured and are let through.
 #
 # It matches on the excluded commands, which are a closed set kept in step with
 # `sandbox.excludedCommands`, rather than on shell syntax, which is not.
 set -euo pipefail
 
-# Drops one leading `cd <dir> &&` and the contents of quoted strings, keeping `$(` and
-# backquotes from double-quoted ones since those still substitute.
+# Drops one leading `cd <unquoted absolute path> &&` and the contents of quoted strings,
+# keeping `$(` and backquotes from double-quoted ones since those still substitute.
 read -r -d '' filter <<'JQ' || true
 .tool_input.command // ""
-| sub("^\\s*cd\\s+(\"[^\"]*\"|'[^']*'|[^\\s|;&]+)\\s*&&\\s*"; "")
+| sub("^\\s*cd\\s+/[^\\s|;&$`'\"~]*\\s*&&\\s*"; "")
 | gsub("(?<q>'[^']*'|\"(?:[^\"\\\\]|\\\\.)*\")";
     if (.q | startswith("\"")) and (.q | test("\\$\\(|`")) then "$(" else "''" end)
 JQ
@@ -30,7 +31,7 @@ command="$(jq -r "$filter")"
 
 # Mirrors sandbox.excludedCommands in claude/settings.json; update both together.
 s='[[:space:]]+'
-excluded="(^|[^[:alnum:]_-])(git${s}(push|fetch|pull|clone|ls-remote|submodule)|git${s}remote${s}(update|prune)|gh${s})"
+excluded="(^|[^[:alnum:]_-])(git${s}(push|fetch|clone|ls-remote)|git${s}remote${s}(update|prune)|gh${s})"
 compound=$'\n|\\||&&|;|\\$\\(|`|[<>]\\('
 
 # Matched in-process: `printf | grep -q` under pipefail reads an early match on a long
@@ -43,7 +44,8 @@ sandbox.excludedCommands は単体のコマンドにしか効きません。パ�
 入れると行全体が sandbox 内で実行され、GitHub への通信（sandbox の許可先に無い）や gh の設定に届かず、
 プロキシの接続拒否（CONNECT 403）や設定読取エラーになります。環境の制約に見えますが、コマンドの形の問題です。
 
-裸で実行してください（先頭の `cd <dir> &&` とリダイレクトは使えます）。出力を絞りたい場合も、
+裸で実行してください（リダイレクトは使えます）。作業中のリポジトリでは `cd` は要りません。別のディレクトリで
+実行するときだけ、引用符・`~`・変数を含まない絶対パスで `cd /abs/path && <コマンド>` と書けます。出力を絞りたい場合も、
 まず裸で実行してから結果を読んでください。複数行の本文は `$(cat <<EOF ...)` ではなく
 `--body-file` / `-F` でファイルから渡してください。
 MSG

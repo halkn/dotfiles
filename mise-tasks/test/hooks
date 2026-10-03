@@ -32,6 +32,13 @@ expect 2 'git push || true'
 expect 2 'diff <(gh api x) y'
 expect 2 'cd /x && git push | tail'
 expect 2 'git  push | tail'
+expect 2 'cd ~/x && git push'
+expect 2 'cd "/x" && git push'
+expect 2 "cd '/x' && git push"
+expect 2 'cd $HOME/x && git push'
+expect 2 'cd "$HOME/x" && git push'
+expect 2 'cd . && git push'
+expect 2 'cd x && gh pr view'
 expect 2 $'gh\tpr view | cat'
 # Long enough to overflow a pipe buffer after an early match.
 expect 2 "git push${nl}$(printf 'echo %0100d\n' $(seq 1000))"
@@ -39,6 +46,9 @@ expect 2 "git push${nl}$(printf 'echo %0100d\n' $(seq 1000))"
 expect 0 'git push'
 expect 0 'git push 2>&1'
 expect 0 'cd /x && git push'
+expect 0 'cd /x/y-z.1 && gh pr view'
+expect 0 'git pull | tail'
+expect 0 'git submodule update | tail'
 expect 0 "gh pr create --body \"a | b; c${nl}d\""
 expect 0 "gh pr create --body \"say \\\"a | b\\\" here\""
 expect 0 "gh api repos/x --jq '.[] | .name'"

@@ -44,7 +44,7 @@
 - 公式 docs や `--help` の代わりにリポジトリ内の実測メモを使えるのは、そのメモが記録バージョンを明示していて現行バージョンと一致するときだけ。一致しない・バージョンの記載が無い場合は一次情報を引き直す
 - 文字列・ファイル名・単純な識別子検索は `rg`、構文構造を条件にする検索・分析・変換は `ast-grep`（rule 作成・検証手順は `ast-grep:ast-grep` Skill に従う）
 - `ast-grep` で書き換えるときは、まず match と diff を確認してから適用する。対象言語の parser が対応していない場合は `rg` や言語固有ツールへ戻す
-- git のネットワーク系（`push` / `fetch` / `pull` / `clone` / `ls-remote`）と `gh` は 1 行 1 コマンドで実行し、パイプ・`&&`・`;`・`$(...)` でつながない。sandbox の除外が単純コマンドにしか効かないため。出力はツール自身のオプション（`--json` / `--jq`、`-n`）で絞る
+- git のネットワーク系（`push` / `fetch` / `clone` / `ls-remote`）と `gh` は 1 行 1 コマンドで実行し、パイプ・`&&`・`;`・`$(...)` でつながない。sandbox の除外が単純コマンドにしか効かないため。`git pull` は除外していないので `git fetch` と `git merge` に分ける。`cd` は作業中のリポジトリでは付けず、別のディレクトリでは引用符・`~`・変数を含まない絶対パスで書く。出力はツール自身のオプション（`--json` / `--jq`、`-n`）で絞る
   - GitHub 上のコードは、数ファイルなら `gh api -H 'Accept: application/vnd.github.raw' repos/<owner>/<repo>/contents/<path>`（`--jq` も `base64 -d` も付けない）、横断して読む・grep する・試すなら `gh repo clone <owner>/<repo> /tmp/claude/src/<repo> -- --depth 1` で取得し、以降は sandbox 内で読む
 - Bash の外部通信は sandbox の `allowedDomains` 以外へ出られず、`allowed_domains` を渡しても広がらない。Web の docs は WebFetch、依存の取得（`bun add`・初回の `cargo build`・`mise install`）は `!` でユーザーに頼む
 - 作業ディレクトリの外のパスを Bash が `Operation not permitted` で、ファイルツールが `blockReadsOutsideWorkingDirectories` で拒否したら、読取の許可が無い。回避策は探さず、`/add-dir` か `allowRead` への追加をユーザーに頼む
