@@ -27,8 +27,7 @@
       "Bash(mise tasks ls *)",
       "Bash(mise tasks info *)",
       "Bash(mise tasks deps *)",
-      "Bash(mise task info*)",
-      "Bash(eza *)"
+      "Bash(mise task info*)"
     ],
     "deny": [
       "Read(//**/.env)",
