@@ -45,6 +45,9 @@
 - 文字列・ファイル名・単純な識別子検索は `rg`、構文構造を条件にする検索・分析・変換は `ast-grep`（rule 作成・検証手順は `ast-grep:ast-grep` Skill に従う）
 - `ast-grep` で書き換えるときは、まず match と diff を確認してから適用する。対象言語の parser が対応していない場合は `rg` や言語固有ツールへ戻す
 - git のネットワーク系（`push` / `fetch` / `pull` / `clone` / `ls-remote`）と `gh` は 1 行 1 コマンドで実行し、パイプ・`&&`・`;`・`$(...)` でつながない。sandbox の除外が単純コマンドにしか効かないため。出力はツール自身のオプション（`--json` / `--jq`、`-n`）で絞る
+  - GitHub 上のコードは、数ファイルなら `gh api -H 'Accept: application/vnd.github.raw' repos/<owner>/<repo>/contents/<path>`（`--jq` も `base64 -d` も付けない）、横断して読む・grep する・試すなら `gh repo clone <owner>/<repo> /tmp/claude/src/<repo> -- --depth 1` で取得し、以降は sandbox 内で読む
+- Bash の外部通信は sandbox の `allowedDomains` 以外へ出られず、`allowed_domains` を渡しても広がらない。Web の docs は WebFetch、依存の取得（`bun add`・初回の `cargo build`・`mise install`）は `!` でユーザーに頼む
+- cwd のリポジトリで Bash が `Operation not permitted`・git が exit 128 になったら、sandbox の allowRead にそのリポジトリが無い。回避策は探さず、Read tool で読める範囲で進めながら、allowRead への追加をユーザーに頼む
 - JSON/YAML: 値の確認は JSON が `jq`、YAML が `yq`。YAML 構文は `ryl`（`python -c "import yaml"` は使わない）
 
 ## Git
@@ -71,4 +74,5 @@
 ## 報告
 
 - 実行できなかった検証は、理由と代わりに何を確認したかを書く
+- 自分で観測できない変更（TUI・キー操作・端末描画・sandbox の外でしか動かないもの）は、完了報告に、ユーザーが手で確認する手順を番号付きで添える。確認用のファイルは、リポジトリの `.scratch/`（global gitignore 済み）に作る
 - ファイルに書き出すドキュメント・報告は必要な範囲に留め、水増しの節・冗長な要約・定型文を入れない
