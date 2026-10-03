@@ -47,7 +47,7 @@
 
 - 読取は既定で閉じ、ツールが必要とする場所だけを開ける（`blockReadsOutsideWorkingDirectories` と `allowRead`）。丸ごと開けて例外を列挙する形は取らない。列挙から漏れたものが開いたままになる
 - 書込を開けるのは、ツールが自分の状態を書く場所だけ（`~/.azure` のトークンキャッシュ、skill の出力先）。他のプロセスが後で実行する場所には開けない。`~/.cache` をツール単位で開けるのはこのため（ログインシェルが起動時に実行するキャッシュがあり、そこへ書ければ sandbox の外でコードを走らせられる）
-- Claude Code が読み込む・実行するファイル（`claude/` 全体）は、組込みの保護に頼らず `denyWrite` と `Edit` の ask で塞ぐ。組込みの保護が覆う範囲は版で変わり、symlink の先にある hook や statusline のスクリプトまで届くとは限らない。副作用として、`claude/` を変える `git switch` / `git merge` は sandbox 内で失敗する
+- Claude Code が読み込む・実行するファイル（`claude/` 全体）は、組込みの保護に頼らず `denyWrite` と `Edit` の ask で塞ぐ。組込みの保護が覆う範囲は版で変わり、symlink の先にある hook や statusline のスクリプトまで届くとは限らない。副作用として、`claude/` を変える `git switch` / `git merge` は sandbox 内で失敗する。Claude がこれらを変えるときは Edit / Write tool を使い、ask の確認で人が承認する（Bash は `denyWrite` で通らない）。リポジトリ側の `.claude/settings*.json` も同じ経路にするため ask に入れる。auto モードでは保護パスへの書込が classifier に回り、自己改変として拒否されることがあるが、ask は classifier より先に効いて確認になる
 - 追跡されている公開設定は閉じない（`~/.config` は丸ごと開ける）。閉じるのは、追跡外で認証情報を持つものだけで、`sandbox.credentials` に宣言する。認証情報だと宣言でき、許可を広げる方向の誤用も起きない
 - 認証情報の閉じ方は、それを使うツールが sandbox のどちら側で動くかで決まる。sandbox の外で動くツール（`gh`）の認証情報は `sandbox.credentials` で閉じる。sandbox の中で動くツール（`az`）の認証情報は、閉じるとツール自身も読めないので `allowRead`（更新するなら `allowWrite` も）で開け、コマンドからの参照を `block-secret-read.sh` の列挙に足して塞ぐ。ファイルツールからは、作業ディレクトリの外なので `blockReadsOutsideWorkingDirectories` が閉じる。認証情報を渡す環境変数は `credentials.envVars` で閉じ、sandbox の中のツールはトークンキャッシュで認証させる
 - `excludedCommands` のコマンドは sandbox の外で動き、sandbox の読取制限も `credentials` も効かない。除外は sandbox 内で動かないもの（設定を `credentials` で閉じた `gh` を含む）だけを、サブコマンドの単位で足す（`git` はネットワークや認証を使うサブコマンドだけ）。送信先の制限を迂回する経路になるもの（`az *`）は除外しない。除外を変えたら、`block-piped-excluded.sh` の列挙も合わせる

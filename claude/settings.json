@@ -84,7 +84,8 @@
       "Bash(git worktree remove*)",
       "Bash(uv tool uninstall*)",
       "Bash(uv python uninstall*)",
-      "Edit(~/repos/github.com/halkn/dotfiles/claude/**)"
+      "Edit(~/repos/github.com/halkn/dotfiles/claude/**)",
+      "Edit(//**/.claude/settings*.json)"
     ],
     "blockReadsOutsideWorkingDirectories": true,
     "defaultMode": "auto",
