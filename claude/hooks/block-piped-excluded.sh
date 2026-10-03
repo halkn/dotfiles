@@ -3,8 +3,8 @@
 #
 # `sandbox.excludedCommands` takes a command out of the sandbox only when it stands alone.
 # Put the same command in a pipeline, a list or a command substitution and the whole line
-# runs sandboxed, where `gh` has no config and git has no CA bundle, so it fails with a TLS
-# or config error that reads like an environment limit rather than like the shape of the
+# runs sandboxed, where `gh` has no config and github.com is not an allowed host, so it fails
+# with a proxy or config error that reads like an environment limit rather than like the shape of the
 # command. The docs state this for `pbcopy` / `xclip` / `wl-copy` only, and the matching rule
 # itself is not documented, so there is no pattern that fixes it in settings.json. Refusing
 # the shape is what is left.
@@ -40,8 +40,8 @@ if [[ "$command" =~ $excluded ]] && [[ "$command" =~ $compound ]]; then
 git / gh をパイプや複合コマンドに入れないでください。
 
 sandbox.excludedCommands は単体のコマンドにしか効きません。パイプ・`&&`・`;`・改行・コマンド置換に
-入れると行全体が sandbox 内で実行され、CA バンドル（/etc/ssl/cert.pem）や gh の設定に届かず、
-TLS エラーや設定読取エラーになります。環境の制約に見えますが、コマンドの形の問題です。
+入れると行全体が sandbox 内で実行され、GitHub への通信（sandbox の許可先に無い）や gh の設定に届かず、
+プロキシの接続拒否（CONNECT 403）や設定読取エラーになります。環境の制約に見えますが、コマンドの形の問題です。
 
 裸で実行してください（先頭の `cd <dir> &&` とリダイレクトは使えます）。出力を絞りたい場合も、
 まず裸で実行してから結果を読んでください。複数行の本文は `$(cat <<EOF ...)` ではなく
