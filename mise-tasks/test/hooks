@@ -91,6 +91,22 @@ expect 0 'git status | head'
 expect 0 'git log --oneline | head -5'
 expect 0 'echo high | cat'
 
+# block-secret-read.sh
+
+expect_secret() {
+  local got
+  run block-secret-read.sh "$2" >/dev/null
+  got=$?
+  [ "$got" -eq "$1" ] || fail block-secret-read.sh "$1" "$got" "$2"
+}
+
+expect_secret 2 'cat ~/.config/gh/hosts.yml'
+expect_secret 2 'cat ~/.local/state/gh-claude/hosts.yml'
+expect_secret 2 'ls "$HOME"/.local/state/gh-claude'
+expect_secret 2 'echo $GH_TOKEN'
+expect_secret 0 'ls ~/.local/state/mise'
+expect_secret 0 'curl https://management.azure.com/x'
+
 # .config/git/hooks/pre-push, run by `git push --dry-run` against a scratch bare remote.
 
 # macOS mktemp ignores $TMPDIR without a template; an empty $pp would point git at this repo.
