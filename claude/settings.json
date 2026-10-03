@@ -28,14 +28,7 @@
       "Bash(mise tasks info *)",
       "Bash(mise tasks deps *)",
       "Bash(mise task info*)",
-      "Bash(eza *)",
-      "WebFetch(domain:code.claude.com)",
-      "WebFetch(domain:mise.jdx.dev)",
-      "WebFetch(domain:learn.microsoft.com)",
-      "WebFetch(domain:docs.microsoft.com)",
-      "WebFetch(domain:azure.microsoft.com)",
-      "WebFetch(domain:docs.snowflake.com)",
-      "WebFetch(domain:community.snowflake.com)"
+      "Bash(eza *)"
     ],
     "deny": [
       "Read(//**/.env)",
@@ -146,7 +139,14 @@
         "dev.azure.com",
         "*.dev.azure.com",
         "*.vssps.visualstudio.com",
-        "login.microsoftonline.com"
+        "login.microsoftonline.com",
+        "code.claude.com",
+        "mise.jdx.dev",
+        "learn.microsoft.com",
+        "docs.microsoft.com",
+        "azure.microsoft.com",
+        "docs.snowflake.com",
+        "community.snowflake.com"
       ],
       "strictAllowlist": true
     },

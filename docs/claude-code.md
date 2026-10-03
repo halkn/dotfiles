@@ -39,7 +39,7 @@
 - classifier の既定ルール（`claude auto-mode defaults` で確かめる）が名指ししている操作は、原則として permissions に重ねない。重ねると、ユーザーが明示的に指示した操作にまで確認が出る。指示した後でも人が毎回確かめたい操作（push・未コミットの変更を捨てる `git checkout -f`・ブランチや worktree の削除・ツールの uninstall）だけは、あえて ask に重ねる
 - sandbox が制御している書込先・送信先と、git で戻せる変更（lockfile・依存）は deny に置かない
 - 入口が閉じている操作（`mise run sync|update`）は完全一致で ask に列挙する。引数の形が開いている操作（`mise bootstrap`）は列挙しきれないので、両端だけを固定し（他ホストへの作用は deny、`--force-dotfiles`・`--yes` を先頭に置いた形は ask、`status`・`plan`・`--dry-run` は allow）、残りは classifier に任せる
-- `WebFetch` の allow は、送るものが URL だけで、取得先が公式 docs のものに限る。auto モードの WebFetch は allow が無くても確認なしで通るので、allow の実際の効果は sandbox の送信先への合流（Bash の `curl` で docs を取得し `rg` で原文を引ける）になる。対象は、仕様を原文で確かめる頻度が高い docs（Azure・Snowflake・Claude Code・mise）
+- `WebFetch` の allow は書かない。auto モードの WebFetch は allow が無くても確認なしで通り、allow の残る効果は確認を出すモード（Manual・`acceptEdits`）向けと、sandbox の送信先への暗黙の合流だけになる。docs を原文で読む経路は `network.allowedDomains` で明示的に開ける
 - パターンは、実際に打たれる形を確かめてから書く。オプションは `--opt=value` の形も併記する
 - 判断の質の問題（subagent に委譲するかどうか）は CLAUDE.md で扱い、設定の上限（同時実行数・入れ子の深さ）で抑えない
 
@@ -53,7 +53,7 @@
 - `excludedCommands` のコマンドは sandbox の外で動き、sandbox の読取制限も `credentials` も効かない。除外は sandbox 内で動かないもの（設定を `credentials` で閉じた `gh` を含む）だけを、サブコマンドの単位で足す（`git` はネットワークや認証を使うサブコマンドだけ）。送信先の制限を迂回する経路になるもの（`az *`）は除外しない。git は通信だけを行うサブコマンドに限り、作業ツリーの書換えや hook の実行を伴うもの（`pull`・`submodule`）は除外しない（`git fetch` と sandbox 内の `git merge` に分ける）。git を丸ごと除外しないのは、`-c core.pager=…`・`-c alias.x='!…'`・hook で任意のコマンドを sandbox の外で動かせるため。除外を変えたら、`block-piped-excluded.sh` の列挙も合わせる
 - `allowRead` には、ツールが Bash から読む場所を足す（`~/.claude/skills/` の symlink 先、`mise.toml` の `[dotfiles]` の配置先と `[bootstrap.repos]` の clone 先、nvim のプラグインの置き場所）。減らしたら `mise run lint` を通す。設定を読めなくなったツールは、エラーを出さずに既定値で動くことが多い
 - `~/.claude` は `allowRead` で開けない。Bash に要る部分（skills・plugins・rules など）は `blockReadsOutsideWorkingDirectories` が開け直し、残りにはセッションの transcript（`~/.claude/projects`）が含まれる。履歴の分析など、その都度要るときは `/add-dir` で足す
-- 送信先（`network.allowedDomains`）は、sandbox の中で動くツールが通信する相手だけを許可する（`az` が使う Azure DevOps と Entra ID）。`excludedCommands` のコマンド（`gh`・git のネットワーク系）は sandbox の外で動くので、その通信先は足さない。`WebFetch` の allow で合流する docs のドメインは、上の `WebFetch` の基準で決める
+- 送信先（`network.allowedDomains`）は、sandbox の中で動くツールが通信する相手（`az` が使う Azure DevOps と Entra ID）と、仕様を原文で確かめる頻度が高い公式 docs（Claude Code・mise・Azure・Snowflake）だけを許可する。docs は WebFetch が抽出用のプロンプトを通して要約するので、`curl` で取得して `rg` で原文を引けるようにする。`excludedCommands` のコマンド（`gh`・git のネットワーク系）は sandbox の外で動くので、その通信先は足さない
 - `sandbox.network.strictAllowlist` を、情報流出を防ぐ仕組みとしては数えない。制御するのは送信先だけで、許可した送信先の中にも流出の経路が残る
 
 ## hook の基準
