@@ -13,13 +13,6 @@
   },
   "permissions": {
     "allow": [
-      "Bash(git status*)",
-      "Bash(git branch)",
-      "Bash(git branch -v*)",
-      "Bash(git rev-parse*)",
-      "Bash(git ls-files*)",
-      "Bash(git worktree list*)",
-      "Bash(git stash list*)",
       "Bash(gh pr list*)",
       "Bash(gh pr view*)",
       "Bash(gh pr checks*)",
@@ -34,27 +27,23 @@
       "Bash(mise tasks ls *)",
       "Bash(mise tasks info *)",
       "Bash(mise tasks deps *)",
-      "Bash(mise task info*)",
-      "Bash(eza *)",
-      "WebFetch(domain:learn.microsoft.com)",
-      "WebFetch(domain:docs.microsoft.com)",
-      "WebFetch(domain:azure.microsoft.com)",
-      "WebFetch(domain:docs.snowflake.com)",
-      "WebFetch(domain:community.snowflake.com)"
+      "Bash(mise task info*)"
     ],
     "deny": [
       "Read(//**/.env)",
       "Read(//**/.env.*)",
       "Read(//**/secrets/**)",
       "Read(//**/credentials/**)",
-      "Read(//**/*.pem)",
+      "Read(~/**/*.pem)",
       "Read(//**/*.key)",
+      "Read(//**/*.p8)",
       "Read(//**/*.p12)",
       "Read(//**/*.pfx)",
       "Read(//**/id_rsa*)",
       "Read(//**/id_ed25519*)",
       "Read(//**/id_ecdsa*)",
       "Read(//**/.ssh/**)",
+      "Edit(~/.ssh/**)",
       "Edit(~/.gnupg/**)",
       "Bash(sudo*)",
       "Bash(nc *)",
@@ -81,8 +70,10 @@
       "Bash(git worktree remove*)",
       "Bash(uv tool uninstall*)",
       "Bash(uv python uninstall*)",
-      "Edit(~/repos/github.com/halkn/dotfiles/claude/**)"
+      "Edit(~/repos/github.com/halkn/dotfiles/claude/**)",
+      "Edit(//**/.claude/settings*.json)"
     ],
+    "blockReadsOutsideWorkingDirectories": true,
     "defaultMode": "auto",
     "disableBypassPermissionsMode": "disable"
   },
@@ -147,7 +138,14 @@
         "dev.azure.com",
         "*.dev.azure.com",
         "*.vssps.visualstudio.com",
-        "login.microsoftonline.com"
+        "login.microsoftonline.com",
+        "code.claude.com",
+        "mise.jdx.dev",
+        "learn.microsoft.com",
+        "docs.microsoft.com",
+        "azure.microsoft.com",
+        "docs.snowflake.com",
+        "community.snowflake.com"
       ],
       "strictAllowlist": true
     },
@@ -170,11 +168,7 @@
         "~/.gnupg",
         "~/repos/github.com/halkn/dotfiles/claude"
       ],
-      "denyRead": [
-        "~/"
-      ],
       "allowRead": [
-        "~/.claude",
         "~/.azure",
         "~/.config",
         "~/repos/github.com/halkn/dotfiles/.config",
@@ -189,7 +183,9 @@
         "~/.local/share/bun",
         "~/.local/share/mise",
         "~/.local/state/mise",
-        "~/.local/bin"
+        "~/.local/bin",
+        "~/.local/share/nvim",
+        "~/.local/share/zsh/plugins"
       ]
     },
     "credentials": {
@@ -255,13 +251,10 @@
       "git push *",
       "git fetch",
       "git fetch *",
-      "git pull",
-      "git pull *",
       "git clone *",
       "git ls-remote *",
       "git remote update*",
       "git remote prune*",
-      "git submodule *",
       "gh *"
     ]
   },

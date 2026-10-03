@@ -1,20 +1,4 @@
 {
-  "sandbox": {
-    "filesystem": {
-      "allowRead": [
-        "./",
-        "~/.zshenv",
-        "~/.local/share/nvim",
-        "~/.local/share/zsh",
-        "~/.local/state/nvim/nvim.log"
-      ],
-      "allowWrite": [
-        "~/.local/share/zsh",
-        "~/.local/share/nvim",
-        "~/.local/state/nvim/nvim.log"
-      ]
-    }
-  },
   "permissions": {
     "allow": [
       "Bash(mise bootstrap status*)",
