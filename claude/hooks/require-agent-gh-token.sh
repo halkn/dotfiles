@@ -2,8 +2,8 @@
 # PreToolUse(Bash): refuse GitHub-bound gh / git calls unless Claude Code's own token is in place.
 #
 # Claude Code authenticates to GitHub with a fine-grained token kept in $GH_CONFIG_DIR/hosts.yml
-# (GH_CONFIG_DIR is set per machine in managed settings), so a session can do less than the
-# person's own gh login. gh looks for a token in GH_TOKEN / GITHUB_TOKEN, then hosts.yml, then the
+# (GH_CONFIG_DIR is set in claude/settings.json), so a session can do less than the person's own
+# gh login. gh looks for a token in GH_TOKEN / GITHUB_TOKEN, then hosts.yml, then the
 # macOS keychain, and the keychain entry is shared by every config directory: with the token
 # missing, gh and git's `gh auth git-credential` helper fall back to the person's token without a
 # word. This hook turns that fallback into a refusal. It reads the token's prefix, never prints it.
@@ -42,7 +42,7 @@ Claude Code 用の GitHub トークンが使える状態にないため、GitHub
 gh は、Claude Code 用のトークン（GH_CONFIG_DIR の hosts.yml にある fine-grained トークン）が無いと、
 keychain にある人の全権限トークンに黙って切り替わります。次のどれかに当たっています。
 
-- GH_CONFIG_DIR が設定されていない（managed settings の env）
+- GH_CONFIG_DIR が設定されていない（claude/settings.json の env）
 - GH_CONFIG_DIR/hosts.yml に github_pat_ で始まる oauth_token が無い
 - GH_TOKEN / GITHUB_TOKEN が環境変数に設定されている（hosts.yml より優先される）
 

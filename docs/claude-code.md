@@ -72,7 +72,7 @@
 - Claude の git には、`env` の `GIT_CONFIG_*` で `core.hooksPath` を全体の hook の置き場所に固定する。リポジトリ側の設定が hook を作業ツリー内（husky など）に向けていても、Claude の push では全体の `pre-push` が走り、sandbox 内から書き換えられる hook が sandbox の外で実行されることもない。副作用として、リポジトリ固有の hook は Claude の git では走らない。検証は Claude が明示的に実行する
 - `pre-push` を外す経路を残さない。`--no-verify` は deny（省略形も拾うよう `--no-veri` で照合する）。`git -c core.hooksPath=…` と環境変数の前置は sandbox 内で動いて通信できない（`block-piped-excluded.sh` が理由を返す）
 - Claude の gh と git の GitHub への認証には、人とは別の fine-grained トークンを使う。owner を halkn に限り、Administration・Workflows・Secrets の権限を付けない。ruleset・リポジトリの設定・workflow の変更と、他の owner への書込がサーバー側でできなくなるので、PR の作成先を hook で確かめる必要もない
-- トークンは、managed settings の `env` で `GH_CONFIG_DIR` を Claude 用のディレクトリに向けて渡す。起動の仕方（ターミナル・IDE・background のセッション）に関係なく効く。ただし gh は、そのディレクトリにトークンが無いと keychain の人のトークンに切り替わるので、`require-agent-gh-token.sh` が、gh と GitHub 向けの git のネットワーク系の前にトークンの有無を確かめて止める
+- トークンは、`claude/settings.json` の `env` で `GH_CONFIG_DIR` を Claude 用のディレクトリに向けて渡す。起動の仕方（ターミナル・IDE・background のセッション）に関係なく効き、シェルの gh には影響しない。`GH_CONFIG_DIR` は `~` を展開しないので macOS の絶対パスで書き、ホームの場所が違う環境（WSL）では、そのパスが用意されるまで Claude の gh は止まる。ただし gh は、そのディレクトリにトークンが無いと keychain の人のトークンに切り替わるので、`require-agent-gh-token.sh` が、gh と GitHub 向けの git のネットワーク系の前にトークンの有無を確かめて止める
 - gh の書込（PR のマージ、issue や PR の close、コメント）は classifier の既定ルールが名指ししているので、permissions に重ねない。トークンの表示と認証の変更（`gh auth token|login|refresh|switch|logout|setup-git`）、`gh api` での ref の直接操作（`git/refs`）、拡張の導入（`gh extension install`）は deny に置く。alias は照合を外せるので ask に置く
 - git / gh のネットワーク系は、起動したリポジトリで単体のコマンドとして打つ。`excludedCommands` の除外はコマンドの形で外れ、外れると認証にも送信先にも届かない。外れる形は `block-piped-excluded.sh` が拒否し、CLAUDE.md が事前に伝える。他のリポジトリの GitHub 操作は `gh -R` で行い、push はそのリポジトリで起動したセッションから行う
 
@@ -88,7 +88,6 @@
 - 複数のリポジトリで打つコマンドの許可は `claude/settings.json` に、このリポジトリでしか打たないもの（`mise bootstrap`・`mise run sync|update`）は `.claude/settings.json` に置く。sandbox の `allowRead` / `allowWrite` は、`blockReadsOutsideWorkingDirectories` の下ではリポジトリ側に書いても効かないので、このリポジトリでしか使わない場所も `claude/settings.json` に置く
 - `autoMode` は `claude/settings.json` に置く。classifier はプロジェクト設定の `autoMode` を読まない
 - `claude/settings.json` は public repo にある。仕事用のインフラ情報（組織名・内部ホスト名）は `autoMode.environment` に書かず、追跡外の managed settings に置く
-- マシンごとに値が違う設定（`GH_CONFIG_DIR` の絶対パス）は、`claude/settings.json` ではなく managed settings の drop-in（`managed-settings.d/`）に置く
 - `claude/settings.json` は CLI の版が揃わない複数の端末で共有する。スキーマが拒む値を含む設定ファイルは丸ごと使われないので、全端末の CLI が受け付ける形で書く。例: `attribution` は `false`（v2.1.281 で追加）ではなく、オブジェクト形式で `commit` / `pr` を空にする
 
 ## 決定と理由
@@ -99,7 +98,7 @@
 - sandbox の組込みの保護は、作業ディレクトリの下の `.git` の hooks・config と `.gitconfig` を覆うが、`.config/git` は覆わない。`core.hooksPath` の先（`.config/git/hooks`）に Bash から書けた（v2.1.288）
 - `git push` は、長いオプションの一意な省略形と、短いオプションの結合を受け付ける。`--del` で削除、`--mir` で mirror、`--no-veri` で `pre-push` を飛ばせ、`-uf` で force になる。コマンドの文字列からは push の作用を判定できない（git 2.50.1）。`pre-push` は `--dry-run` でも走るので、判定は dry-run で確かめられる
 - 環境変数を前置した excludedCommands（`VAR=… gh`）は sandbox 内で動く（v2.1.288）。Claude は sandbox の外で動く git の環境を変えられないので、`pre-push` の判定（`CLAUDE_CODE_CHILD_SESSION`）と `core.hooksPath` の固定は Claude から外せない。sandbox 内のコマンドには Claude Code が `GIT_CONFIG_*` で `safe.directory` を足すが、`env` で渡した項目は残して `GIT_CONFIG_COUNT` を増やす（v2.1.288）
-- gh はトークンを `GH_TOKEN` / `GITHUB_TOKEN`、`hosts.yml`、keychain の順に探し、keychain の項目は `gh:<host>` という名前で設定ディレクトリに関係なく共有される。`gh auth login` は、ログインのたびに keychain の有効なトークンの項目を消して書き直す（cli/cli の `internal/config`）。そのため Claude 用のトークンは `gh auth login` を使わずに `hosts.yml` へ直接書く。`GH_CONFIG_DIR` は `~` を展開しない（go-gh の `ConfigDir()`）
+- gh はトークンを `GH_TOKEN` / `GITHUB_TOKEN`、`hosts.yml`、keychain の順に探し、keychain の項目は `gh:<host>` という名前で設定ディレクトリに関係なく共有される。`GH_CONFIG_DIR` が空のディレクトリを指すと、`gh api` は認証なしで失敗するが、git の認証ヘルパー（`gh auth git-credential`）経由の `git push --dry-run` は認証を通った（gh 2.101.0）。`gh auth login` は、ログインのたびに keychain の有効なトークンの項目を消して書き直す（cli/cli の `internal/config`）。そのため Claude 用のトークンは `gh auth login` を使わずに `hosts.yml` へ直接書く。`GH_CONFIG_DIR` は `~` を展開しない（go-gh の `ConfigDir()`）
 - トークンを SessionStart hook の `CLAUDE_ENV_FILE` で渡さない。書き出し先の `~/.claude/session-env` は sandbox 内から読める（v2.1.288）
 - `herdr` は sandbox 内で動かない（`herdr status` が `Operation not permitted` で失敗する）（v2.1.280）。Claude Code の外のターミナルで実行する
 - `Read` deny の `*.pem` は `~/` の下に限る。`//**/*.pem` にすると sandbox の読取制限に合流して OS の CA バンドル（`/etc/ssl/cert.pem`）も塞ぎ、`allowedDomains` で許可した送信先にも sandbox 内の curl・git が TLS で接続できない（v2.1.288）。ホームの外の `.pem` は CA バンドルが主で、鍵はホームの下に置く前提

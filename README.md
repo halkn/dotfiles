@@ -87,21 +87,12 @@ the CLI tooling around them, set up by [mise](https://mise.jdx.dev/) from
    ```
 
    `GH_CONFIG_DIR="$dir" gh auth status` should then show a token starting with
-   `github_pat_`.
+   `github_pat_`. Do not use `GH_CONFIG_DIR=… gh auth login` for this: it
+   rewrites the keychain entry your own `gh` uses.
 
-   Do not use `GH_CONFIG_DIR=… gh auth login` for this: it rewrites the
-   keychain entry your own `gh` uses. Point Claude Code at the directory through
-   managed settings, which hold what differs per machine (on Linux and WSL the
-   directory is `/etc/claude-code/managed-settings.d`):
-
-   ```sh
-   d="/Library/Application Support/ClaudeCode/managed-settings.d"
-   sudo mkdir -p "$d"
-   jq -n --arg dir "$HOME/.local/state/gh-claude" '{env: {GH_CONFIG_DIR: $dir}}' |
-     sudo tee "$d/50-gh-claude.json" >/dev/null
-   ```
-
-   Restart Claude Code. To renew the token, rewrite `hosts.yml` the same way.
+   `claude/settings.json` points Claude Code at this directory with a macOS
+   path; on another home directory, Claude Code's `gh` stays blocked until that
+   path exists. To renew the token, rewrite `hosts.yml` the same way.
 
 1. Reopen the terminal. zsh starts inside [herdr](https://herdr.dev); set
    `HERDR_AUTO_START=0` in `.zshrc.local` to stop that on a machine.
