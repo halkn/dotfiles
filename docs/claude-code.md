@@ -35,7 +35,7 @@
 - sandbox・`permissions`・auto モードの classifier という標準機能で代わりが効かないことを、先に示す
 - 防ぐ対象は、道具（インタプリタ名・読取コマンド名）ではなく、守る資産（認証情報のパス・環境変数名・push 先ブランチ）の側で列挙する。道具は代わりがいくらでもあるが、資産の集合は閉じている
 - deny に置くのは、取り返しがつかず、正当な用途もほぼ無いものだけ。例: 権限の昇格（`sudo`）、ローカルの復旧手段を消す操作（`git reflog expire`・`git gc --prune`）、専用のサブコマンドを迂回する汎用の書込口（`az devops invoke` の `--http-method`）、proxy を通らない生のソケット（`nc`・`ssh`・`scp`）。破壊的でも正当な用途がある操作（`git push --force`・`mise bootstrap --force-dotfiles`）は ask に置く
-- ガードの照合そのものを外せる操作は ask に置く。例: `git config *alias.*`（alias を作ると、以降のコマンドが permissions のパターンにも hook の照合にも当たらなくなる）
+- ガードの照合そのものを外せる操作は ask に置く。例: `git config *alias.*`・`gh alias set`（alias を作ると、以降のコマンドが permissions のパターンにも hook の照合にも当たらなくなる）
 - classifier の既定ルール（`claude auto-mode defaults` で確かめる）が名指ししている操作は、原則として permissions に重ねない。重ねると、ユーザーが明示的に指示した操作にまで確認が出る。指示した後でも人が毎回確かめたい操作（push・未コミットの変更を捨てる `git checkout -f`・ブランチや worktree の削除・ツールの uninstall）だけは、あえて ask に重ねる
 - sandbox が制御している書込先・送信先と、git で戻せる変更（lockfile・依存）は deny に置かない
 - 入口が閉じている操作（`mise run sync|update`）は完全一致で ask に列挙する。引数の形が開いている操作（`mise bootstrap`）は列挙しきれないので、両端だけを固定し（他ホストへの作用は deny、`--force-dotfiles`・`--yes` を先頭に置いた形は ask、`status`・`plan`・`--dry-run` は allow）、残りは classifier に任せる
@@ -61,7 +61,15 @@
 
 - hook は、`permissions` のパターンが取りこぼす形を拾うためにある。そのため `matcher` は tool 名だけにし、同じパターン構文で絞り込む `if` フィルタを付けない。コマンドの分解はスクリプト側で行う
 - `command` にはスクリプトのパスを直接書かず、スクリプトが無いときは `exit 2` で止める形で包む。直接書くと、改名・削除やリンクの欠落でスクリプトが無くなったときに、ガードが黙って外れる。包む形は `-x` で存在を確かめるので、スクリプトには実行ビットを付ける
+
+## git / gh の基準
+
+- Claude が確認なしで進める範囲は、作業ブランチの作成から、そのブランチへの commit・push と PR の作成まで。auto モードの classifier は、作業中のリポジトリへの push と依頼に沿った PR の作成を既定で通すので、allow を足さない
+- 確認を出す push は、リモートの ref を消す・書き換えるものと、main / master へのものに限る。force（`--force*`・`-f`・`+<refspec>`）と削除（`--delete`・`-d`・`:<ref>`・`--prune`）は `permissions.ask` に置き、全 ref に及ぶ `--mirror` は `block-main-push.sh` が拒否する。自分のブランチでの作業がこの確認で止まらないよう、push 済みのブランチは履歴を書き換えずに commit を積むことを CLAUDE.md に置く
+- 宛先を書かない `git push` は ask に置く。宛先が upstream と `push.default` で決まり、パターンからは見えないため。CLAUDE.md で宛先を明示させる
 - main / master への push は 4 つの層で止める: `permissions.ask`（素直な形）、`block-main-push.sh`（refspec などの形）、git の `pre-push` hook（`core.hooksPath` で全リポジトリに効き、Claude Code の外の push も止める）、`bin/repo setup` が入れる GitHub の ruleset（hook を飛ばした push も止める）
+- `gh` の書込（PR のマージ、issue や PR の close、リポジトリの設定・ruleset・公開範囲の変更）は classifier の既定ルールが名指ししているので、permissions に重ねない。例外は、個人と仕事の文脈を owner で分ける PR の作成先（`scope-gh-pr-create.sh`）と、照合を外せる alias
+- git / gh のネットワーク系は、起動したリポジトリで単体のコマンドとして打つ。`excludedCommands` の除外はコマンドの形で外れ、外れると認証にも送信先にも届かない。外れる形は `block-piped-excluded.sh` が拒否し、CLAUDE.md が事前に伝える。他のリポジトリの GitHub 操作は `gh -R` で行い、push はそのリポジトリで起動したセッションから行う
 
 ## worktree の基準
 
