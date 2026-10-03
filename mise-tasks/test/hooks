@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#MISE description="Claude Code hook のテスト"
+#MISE description="Claude Code の hook と git の pre-push のテスト"
 set -uo pipefail
 
 hooks="$PWD/claude/hooks"
@@ -22,27 +22,6 @@ expect() {
   run block-piped-excluded.sh "$2" >/dev/null
   got=$?
   [ "$got" -eq "$1" ] || fail block-piped-excluded.sh "$1" "$got" "$2"
-}
-
-# expect_push <ask|pass|deny> <command>, run inside $repo.
-expect_push() {
-  local out got
-  out="$(cd "$repo" && run block-main-push.sh "$2")"
-  case "$?:$out" in
-    0:*'"ask"'*)
-      got=ask
-      ;;
-    0:)
-      got=pass
-      ;;
-    2:)
-      got=deny
-      ;;
-    *)
-      got="unexpected($out)"
-      ;;
-  esac
-  [ "$got" = "$1" ] || fail block-main-push.sh "$1" "$got" "$2"
 }
 
 nl=$'\n'
@@ -105,42 +84,11 @@ expect 0 'git status | head'
 expect 0 'git log --oneline | head -5'
 expect 0 'echo high | cat'
 
-# block-main-push.sh
-
-# macOS mktemp ignores $TMPDIR without a template; an empty $repo would point git at this repo.
-repo="$(mktemp -d "${TMPDIR:-/tmp}/test-hooks.XXXXXX")" || exit 1
-trap 'rm -rf "$repo"' EXIT
-git -C "$repo" init -q -b main || exit 1
-
-expect_push ask 'git push'
-expect_push ask 'git push origin'
-expect_push ask 'git push origin main'
-expect_push ask 'git push origin HEAD:main'
-expect_push ask 'git push origin +main'
-expect_push ask 'git push origin +HEAD:main'
-expect_push ask 'git push origin :main'
-expect_push ask 'git push origin HEAD'
-expect_push ask 'git push origin @'
-expect_push ask 'git push origin HEAD:refs/heads/master'
-expect_push deny 'git push --mirror origin'
-
-git -C "$repo" switch -q -c feat/x
-
-expect_push pass 'git push'
-expect_push pass 'git push -u origin feat/x'
-expect_push pass 'git push origin HEAD'
-expect_push pass 'git push origin +feat/x'
-expect_push pass 'git push origin feat/x:feat/y'
-expect_push pass 'git push origin :'
-expect_push ask 'git push origin :feat/y'
-expect_push ask 'git push origin +:refs/heads/feat/y'
-expect_push ask 'git push origin HEAD:main'
-expect_push ask 'git push origin +main'
-
 # .config/git/hooks/pre-push, run by `git push --dry-run` against a scratch bare remote.
 
+# macOS mktemp ignores $TMPDIR without a template; an empty $pp would point git at this repo.
 pp="$(mktemp -d "${TMPDIR:-/tmp}/test-pre-push.XXXXXX")" || exit 1
-trap 'rm -rf "$repo" "$pp"' EXIT
+trap 'rm -rf "$pp"' EXIT
 hook_dir="$PWD/.config/git/hooks"
 
 g() {
