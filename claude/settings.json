@@ -43,8 +43,10 @@
       "Read(//**/id_ed25519*)",
       "Read(//**/id_ecdsa*)",
       "Read(//**/.ssh/**)",
+      "Read(~/repos/github.com/halkn/dotfiles/.config/gh/**)",
       "Edit(~/.ssh/**)",
       "Edit(~/.gnupg/**)",
+      "Edit(~/repos/github.com/halkn/dotfiles/.config/gh/**)",
       "Bash(sudo*)",
       "Bash(nc *)",
       "Bash(ssh*)",
@@ -71,6 +73,7 @@
       "Bash(uv tool uninstall*)",
       "Bash(uv python uninstall*)",
       "Edit(~/repos/github.com/halkn/dotfiles/claude/**)",
+      "Edit(~/repos/github.com/halkn/dotfiles/.config/git/**)",
       "Edit(//**/.claude/settings*.json)"
     ],
     "blockReadsOutsideWorkingDirectories": true,
@@ -166,7 +169,9 @@
       "denyWrite": [
         "~/.ssh",
         "~/.gnupg",
-        "~/repos/github.com/halkn/dotfiles/claude"
+        "~/repos/github.com/halkn/dotfiles/claude",
+        "~/repos/github.com/halkn/dotfiles/.config/git",
+        "~/repos/github.com/halkn/dotfiles/.config/gh"
       ],
       "allowRead": [
         "~/.azure",
