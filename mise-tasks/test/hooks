@@ -107,11 +107,47 @@ expect_secret 2 'echo $GH_TOKEN'
 expect_secret 0 'ls ~/.local/state/mise'
 expect_secret 0 'curl https://management.azure.com/x'
 
+# require-agent-gh-token.sh
+
+tok="$(mktemp -d "${TMPDIR:-/tmp}/test-gh-token.XXXXXX")" || exit 1
+mkdir -p "$tok/pat" "$tok/oauth" "$tok/empty"
+printf 'github.com:\n    oauth_token: github_pat_x\n    user: t\n' >"$tok/pat/hosts.yml"
+printf 'github.com:\n    oauth_token: gho_x\n    user: t\n' >"$tok/oauth/hosts.yml"
+git init -q "$tok/github" && git -C "$tok/github" remote add origin https://github.com/o/r.git || exit 1
+git init -q "$tok/azure" && git -C "$tok/azure" remote add origin https://dev.azure.com/o/p/_git/r || exit 1
+
+# expect_token <exit code> <GH_CONFIG_DIR, or - for unset> <repo dir> <command> [GH_TOKEN]
+expect_token() {
+  local got
+  (
+    cd "$3" || exit 99
+    unset GH_CONFIG_DIR GH_TOKEN GITHUB_TOKEN
+    [ "$2" = - ] || export GH_CONFIG_DIR="$2"
+    [ -z "${5:-}" ] || export GH_TOKEN="$5"
+    run require-agent-gh-token.sh "$4"
+  ) >/dev/null
+  got=$?
+  [ "$got" -eq "$1" ] || fail require-agent-gh-token.sh "$1" "$got" "$2 $3: $4 ${5:-}"
+}
+
+expect_token 0 "$tok/pat" "$tok/github" 'gh pr view'
+expect_token 0 "$tok/pat" "$tok/github" 'git push -u origin feat'
+expect_token 0 - "$tok/azure" 'git push -u origin feat'
+expect_token 0 - "$tok/github" 'git status'
+expect_token 0 - "$tok/github" "rg 'gh pr view' README.md"
+expect_token 2 - "$tok/github" 'gh pr view'
+expect_token 2 "$tok/oauth" "$tok/github" 'gh pr view'
+expect_token 2 "$tok/empty" "$tok/github" 'gh api user'
+expect_token 2 - "$tok/github" 'git push -u origin feat'
+expect_token 2 - "$tok/github" 'git fetch'
+expect_token 2 - "$tok/azure" 'git clone https://github.com/o/r.git'
+expect_token 2 "$tok/pat" "$tok/github" 'gh pr view' gho_x
+
 # .config/git/hooks/pre-push, run by `git push --dry-run` against a scratch bare remote.
 
 # macOS mktemp ignores $TMPDIR without a template; an empty $pp would point git at this repo.
 pp="$(mktemp -d "${TMPDIR:-/tmp}/test-pre-push.XXXXXX")" || exit 1
-trap 'rm -rf "$pp"' EXIT
+trap 'rm -rf "$tok" "$pp"' EXIT
 hook_dir="$PWD/.config/git/hooks"
 
 g() {
