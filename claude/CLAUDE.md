@@ -47,7 +47,7 @@
 - git のネットワーク系（`push` / `fetch` / `pull` / `clone` / `ls-remote`）と `gh` は 1 行 1 コマンドで実行し、パイプ・`&&`・`;`・`$(...)` でつながない。sandbox の除外が単純コマンドにしか効かないため。出力はツール自身のオプション（`--json` / `--jq`、`-n`）で絞る
   - GitHub 上のコードは、数ファイルなら `gh api -H 'Accept: application/vnd.github.raw' repos/<owner>/<repo>/contents/<path>`（`--jq` も `base64 -d` も付けない）、横断して読む・grep する・試すなら `gh repo clone <owner>/<repo> /tmp/claude/src/<repo> -- --depth 1` で取得し、以降は sandbox 内で読む
 - Bash の外部通信は sandbox の `allowedDomains` 以外へ出られず、`allowed_domains` を渡しても広がらない。Web の docs は WebFetch、依存の取得（`bun add`・初回の `cargo build`・`mise install`）は `!` でユーザーに頼む
-- cwd のリポジトリで Bash が `Operation not permitted`・git が exit 128 になったら、sandbox の allowRead にそのリポジトリが無い。回避策は探さず、Read tool で読める範囲で進めながら、allowRead への追加をユーザーに頼む
+- 作業ディレクトリの外のパスを Bash が `Operation not permitted` で、ファイルツールが `blockReadsOutsideWorkingDirectories` で拒否したら、読取の許可が無い。回避策は探さず、`/add-dir` か `allowRead` への追加をユーザーに頼む
 - JSON/YAML: 値の確認は JSON が `jq`、YAML が `yq`。YAML 構文は `ryl`（`python -c "import yaml"` は使わない）
 
 ## Git
