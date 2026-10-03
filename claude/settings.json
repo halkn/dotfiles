@@ -86,6 +86,7 @@
       "Bash(uv python uninstall*)",
       "Edit(~/repos/github.com/halkn/dotfiles/claude/**)"
     ],
+    "blockReadsOutsideWorkingDirectories": true,
     "defaultMode": "auto",
     "disableBypassPermissionsMode": "disable"
   },
@@ -173,9 +174,6 @@
         "~/.gnupg",
         "~/repos/github.com/halkn/dotfiles/claude"
       ],
-      "denyRead": [
-        "~/"
-      ],
       "allowRead": [
         "~/.claude",
         "~/.azure",
@@ -192,7 +190,9 @@
         "~/.local/share/bun",
         "~/.local/share/mise",
         "~/.local/state/mise",
-        "~/.local/bin"
+        "~/.local/bin",
+        "~/.local/share/nvim",
+        "~/.local/share/zsh/plugins"
       ]
     },
     "credentials": {
