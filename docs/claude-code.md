@@ -81,4 +81,5 @@
 - `allowRead` に書いたパス自体が symlink だと、許可されるのは解決後の実体パスだけで、symlink のパスは `denyRead: ["~/"]` で拒否されたままになる（v2.1.288）。ツールは `~/.config/...` の経路で設定を開くので、`~/.config` は実ディレクトリにし、`[dotfiles]` で中身をエントリごとに symlink にする。許可したディレクトリの中にある symlink は、その先も許可されていれば読める
 - sandbox は、作業ディレクトリの下にある `.zshrc` への書込を深さに関係なく拒否する（v2.1.280）。このリポジトリは `.config/zsh/.zshrc` を追跡しているので、Bash から worktree を作ると checkout の途中で失敗する
 - `herdr` は sandbox 内で動かない（`herdr status` が `Operation not permitted` で失敗する）（v2.1.280）。Claude Code の外のターミナルで実行する
+- `Read` deny の `*.pem` は `~/` の下に限る。`//**/*.pem` にすると sandbox の読取制限に合流して OS の CA バンドル（`/etc/ssl/cert.pem`）も塞ぎ、`allowedDomains` で許可した送信先にも sandbox 内の curl・git が TLS で接続できない（v2.1.288）。ホームの外の `.pem` は CA バンドルが主で、鍵はホームの下に置く前提
 - `env.CLAUDE_CODE_SUBPROCESS_ENV_SCRUB` は使わない。有効にすると `defaultMode: "auto"` が効かず、セッションが manual mode で始まる（Shift+Tab で auto には切り替えられる）（v2.1.280）
