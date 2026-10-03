@@ -65,7 +65,7 @@
 ## git / gh の基準
 
 - Claude が確認なしで進める範囲は、作業ブランチの作成から、そのブランチへの commit・push と PR の作成まで。auto モードの classifier は、作業中のリポジトリへの push と依頼に沿った PR の作成を既定で通すので、allow を足さない
-- 確認を出す push は、リモートの ref を消す・書き換えるものと、main / master へのものに限る。force（`--force*`・`-f`・`+<refspec>`）と削除（`--delete`・`-d`・`:<ref>`・`--prune`）は `permissions.ask` に置き、全 ref に及ぶ `--mirror` は `block-main-push.sh` が拒否する。自分のブランチでの作業がこの確認で止まらないよう、push 済みのブランチは履歴を書き換えずに commit を積むことを CLAUDE.md に置く
+- 確認を出す push は、リモートの ref を消す・書き換えるものと、main / master へのものに限る。force（`--force*`・`-f`・`+<refspec>`）と削除（`--delete`・`-d`・`--prune`）は `permissions.ask` に置く。`:<ref>` による削除は、ルールの末尾が `:*` になり旧来の prefix 記法と読まれるので、`block-main-push.sh` が確認を出す。全 ref に及ぶ `--mirror` は同じ hook が拒否する。自分のブランチでの作業がこの確認で止まらないよう、push 済みのブランチは履歴を書き換えずに commit を積むことを CLAUDE.md に置く
 - 宛先を書かない `git push` は ask に置く。宛先が upstream と `push.default` で決まり、パターンからは見えないため。CLAUDE.md で宛先を明示させる
 - main / master への push は 4 つの層で止める: `permissions.ask`（素直な形）、`block-main-push.sh`（refspec などの形）、git の `pre-push` hook（`core.hooksPath` で全リポジトリに効き、Claude Code の外の push も止める）、`bin/repo setup` が入れる GitHub の ruleset（hook を飛ばした push も止める）
 - `gh` の書込（PR のマージ、issue や PR の close、リポジトリの設定・ruleset・公開範囲の変更）は classifier の既定ルールが名指ししているので、permissions に重ねない。例外は、個人と仕事の文脈を owner で分ける PR の作成先（`scope-gh-pr-create.sh`）と、照合を外せる alias

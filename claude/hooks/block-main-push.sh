@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
-# PreToolUse(Bash): ask before a direct push to main/master.
+# PreToolUse(Bash): ask before a direct push to main/master, and before a refspec deletion
+# (`git push origin :<ref>`) of any branch.
+#
+# The deletion lives here rather than in `permissions.ask` because a rule for it would end in
+# `:*`, which Claude Code reads as the legacy prefix syntax and then matches literally.
 #
 # The `permissions.ask` patterns (`Bash(git push * main*)`) require a space before "main",
 # so any push that never spells that token out — a colon refspec (`git push origin HEAD:main`),
@@ -64,6 +68,11 @@ check_refspec() {
   if is_protected_branch "$dst"; then
     ask "main/master への直接 push（refspec: $1）を実行してよいですか?"
   fi
+  case "$refspec" in
+    :*)
+      ask "リモートのブランチ ${dst} を削除する push（refspec: $1）を実行してよいですか?"
+      ;;
+  esac
 }
 
 run_git() {

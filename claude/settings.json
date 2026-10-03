@@ -69,7 +69,6 @@
       "Bash(git push * --delete*)",
       "Bash(git push -d*)",
       "Bash(git push * -d*)",
-      "Bash(git push * :*)",
       "Bash(git push --prune*)",
       "Bash(git push * --prune*)",
       "Bash(git config *alias.*)",
