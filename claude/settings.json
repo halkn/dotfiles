@@ -206,6 +206,10 @@
         {
           "path": "~/repos/github.com/halkn/dotfiles/.config/gh",
           "mode": "deny"
+        },
+        {
+          "path": "~/.local/state/gh-claude",
+          "mode": "deny"
         }
       ],
       "envVars": [
