@@ -36,6 +36,8 @@
       "Bash(mise tasks deps *)",
       "Bash(mise task info*)",
       "Bash(eza *)",
+      "WebFetch(domain:code.claude.com)",
+      "WebFetch(domain:mise.jdx.dev)",
       "WebFetch(domain:learn.microsoft.com)",
       "WebFetch(domain:docs.microsoft.com)",
       "WebFetch(domain:azure.microsoft.com)",
