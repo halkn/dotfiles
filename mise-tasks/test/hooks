@@ -174,4 +174,163 @@ expect_pre_push human reject origin :main
 expect_pre_push human-allow ok origin "+$orphan:main"
 expect_pre_push human-allow ok origin :main
 
+# guard-gh.sh, which resolves origin and the current branch from the input `cwd`.
+
+gh_on_main="$pp/gh-on-main"
+gh_on_feature="$pp/gh-on-feature"
+git init -q -b main "$gh_on_main"
+git -C "$gh_on_main" remote add origin git@github.com:halkn/x.git
+git init -q -b feature "$gh_on_feature"
+git -C "$gh_on_feature" remote add origin https://github.com/other/x.git
+gh_cwd="$gh_on_feature"
+
+# expect_gh <block|ask|pass> <command>, run from the repository in $gh_cwd.
+expect_gh() {
+  local out code got
+  out="$(jq -n --arg c "$2" --arg d "$gh_cwd" '{cwd: $d, tool_input: {command: $c}}' \
+    | bash "$hooks/guard-gh.sh" 2>/dev/null)"
+  code=$?
+  if [ "$code" -eq 2 ]; then
+    got=block
+  elif [ "$code" -ne 0 ]; then
+    got="exit $code"
+  elif [ -n "$out" ]; then
+    got="$(printf '%s' "$out" | jq -r '.hookSpecificOutput.permissionDecision')"
+  else
+    got=pass
+  fi
+  [ "$got" = "$1" ] || fail guard-gh.sh "$1" "$got" "(${gh_cwd##*/}) $2"
+}
+pr() { expect_gh "$@"; }
+gw() { expect_gh "$@"; }
+
+# guard-gh.sh: gh pr create
+
+gh_cwd="$gh_on_main"
+pr pass 'gh pr create --fill'
+pr ask 'gh pr create --repo other/x --fill'
+pr pass 'gh pr view'
+
+gh_cwd="$gh_on_feature"
+pr ask 'gh pr create --fill'
+pr pass 'gh pr create --repo halkn/x --fill'
+pr pass 'gh pr create -R https://github.com/halkn/x --fill'
+
+gh_cwd="$pp"
+pr ask 'gh pr create --fill'
+
+# guard-gh.sh: merges and guard changes
+
+gh_cwd="$gh_on_feature"
+gw ask 'gh pr merge 1'
+gw ask 'gh pr merge 1 --squash --auto'
+gw ask 'time gh pr merge 1'
+gw ask 'gh repo edit --default-branch dev'
+gw ask 'gh repo edit --visibility public --accept-visibility-change-consequences'
+gw ask 'gh api -X PUT repos/halkn/x/pulls/1/merge'
+gw ask 'gh api -XPUT repos/halkn/x/pulls/1/merge'
+gw ask 'gh api --method=PUT repos/{owner}/{repo}/pulls/1/merge'
+gw ask "gh api 'repos/halkn/x/pulls/1/merge' --method put"
+gw ask 'gh api https://api.github.com/repos/halkn/x/pulls/1/merge -X PUT'
+gw ask 'gh api repos/halkn/x/merges -f base=main -f head=feature'
+gw ask 'gh api repos/halkn/x/merge-upstream -f branch=main'
+gw ask 'gh api -X PATCH repos/halkn/x/git/refs/heads/main -f sha=abc -F force=true'
+gw ask 'gh api -X DELETE /repos/halkn/x/git/refs/heads/master'
+gw ask 'gh api repos/halkn/x/git/refs -f ref=refs/heads/main -f sha=abc'
+gw ask 'gh api -X PUT repos/halkn/x/branches/main/protection --input p.json'
+gw ask 'gh api -X DELETE repos/halkn/x/branches/main/protection/required_pull_request_reviews'
+gw ask 'gh api repos/halkn/x/branches/main/rename -f new_name=trunk'
+gw ask 'gh api repos/halkn/x/rulesets --input ruleset.json'
+gw ask 'gh api -X DELETE repos/halkn/x/rulesets/1'
+gw ask 'gh api -X PUT orgs/halkn/rulesets/1 --input r.json'
+gw ask 'gh api -X PATCH repos/halkn/x -f visibility=public'
+gw block 'gh api repos/halkn/x -X DELETE'
+gw ask 'gh api repos/halkn/x/transfer -f new_owner=other'
+gw ask 'gh api -X PUT repos/halkn/x/contents/README.md -f message=m -f content=Yg=='
+gw ask "gh api graphql -f query='${nl}mutation {${nl}  mergePullRequest(input: {pullRequestId: \"x\"}) { clientMutationId }${nl}}'"
+gw ask "gh api graphql -f query='mutation { updateRepositoryRuleset(input: {}) { clientMutationId } }'"
+gw ask "gh api graphql -f query='mutation { enablePullRequestAutoMerge(input: {}) { clientMutationId } }'"
+gw ask 'gh api graphql -F query=@mutation.graphql'
+gw ask 'gh api graphql --input body.json'
+
+gw pass 'gh pr view 1'
+gw pass 'gh pr edit 1 --body-file .scratch/pr.md'
+gw pass 'gh repo view'
+gw pass 'gh api repos/halkn/x/pulls/1'
+gw pass 'gh api repos/halkn/x/rulesets'
+gw pass 'gh api repos/halkn/x/branches/main/protection'
+gw pass 'gh api repos/halkn/x'
+gw pass 'gh api repos/halkn/x/contents/README.md'
+gw pass 'gh api -X GET search/issues -f q=repo:halkn/x'
+gw pass 'gh api -X GET repos/halkn/x/git/refs -f ref=refs/heads/main'
+gw pass 'gh api repos/halkn/x/issues/1/comments -f body=hello'
+gw pass "gh api repos/halkn/x/pulls/1/comments -f body='merge it to main'"
+gw pass 'gh api -X PATCH repos/halkn/x/pulls/1 -f body=updated'
+gw pass 'gh api -X PATCH repos/halkn/x/git/refs/heads/feature -f sha=abc'
+gw pass 'gh api -X PATCH repos/halkn/x/git/refs/heads/main-fix -f sha=abc'
+gw pass 'gh api -X PATCH repos/halkn/x/git/refs/heads/{branch} -f sha=abc'
+gw pass "gh api graphql -f query='query { viewer { login } }'"
+gw pass "gh api graphql -f query='mutation { addComment(input: {}) { clientMutationId } }'"
+gw pass "rg 'gh pr merge' README.md"
+
+gh_cwd="$gh_on_main"
+gw ask 'gh api -X PATCH repos/halkn/x/git/refs/heads/{branch} -f sha=abc'
+gw ask 'gh api -X PATCH repos/:owner/:repo/git/refs/heads/:branch -f sha=abc'
+
+# Quoted values, flags in front of the subcommand, and other endpoint shapes.
+gh_cwd="$gh_on_feature"
+gw ask "gh api -f 'commit_title=fix(hooks): x' -X PUT repos/halkn/x/pulls/1/merge"
+gw ask "gh api repos/halkn/x/pulls/1/merge --jq '.sha | .[0:7]' -X PUT"
+gw ask "gh api -H 'X-A: a;b' -X PATCH repos/halkn/x -f default_branch=dev"
+gw ask "gh api -f 'body=see https://github.com/halkn/x' -X PUT repos/halkn/x/pulls/1/merge"
+gw ask 'gh api -H "a: $(echo a)" -X PUT repos/halkn/x/pulls/1/merge'
+gw ask 'gh pr -R halkn/x merge 1'
+gw ask 'gh -R halkn/x pr merge 1'
+gw ask 'env gh pr merge 1'
+gw ask "gh api /graphql -f query='mutation { mergePullRequest(input: {}) { clientMutationId } }'"
+gw ask 'gh api -X PUT repositories/123/pulls/1/merge'
+gw ask 'gh api -X PATCH repos/halkn/x/git/refs/heads/main#'
+gw ask 'gh api graphql -Fquery=@m.graphql'
+gw ask 'gh api graphql --field=query=@m.graphql'
+gw ask "gh api graphql -F x='(a)' -F query=@m.graphql"
+gw ask 'gh api -X POST repos/halkn/x/git/refs -F ref=@ref.txt -f sha=abc'
+gw ask 'gh api -X POST repos/halkn/x/git/refs --input ref.json'
+gw ask "gh api graphql -f query='mutation { enqueuePullRequest(input: {}) { clientMutationId } }'"
+gw ask 'gh repo archive halkn/x --yes'
+gw ask 'gh repo rename y --yes'
+gw ask 'gh repo sync halkn/x --branch main --force'
+gw ask 'gh alias set m "pr merge"'
+gw pass 'gh api -X POST repos/halkn/x/git/refs -f ref=refs/heads/feature -f sha=abc'
+gw pass "gh pr view 1 --json title --jq '.title | ascii_downcase'"
+gw pass 'gh run list --workflow cd --limit 5'
+
+# Denied: tokens, login state and repository deletion, also behind flags.
+gw block 'gh auth token'
+gw block 'gh auth --hostname github.com token'
+gw block 'gh auth refresh -s delete_repo'
+gw block 'gh auth login'
+gw block 'gh auth logout --hostname example.invalid'
+gw block 'gh auth switch'
+gw block 'gh auth setup-git'
+gw block 'gh auth status --show-token'
+gw block 'gh auth status -t'
+gw block 'gh auth status -at'
+gw block 'gh auth status -t=true'
+gw block 'gh repo delete halkn/x --yes'
+gw block 'gh repo --yes=true delete halkn/x'
+gw block 'gh api -X DELETE repositories/123'
+gw block 'true; gh pr merge 1; gh auth token'
+gw pass 'gh auth status'
+gw pass 'gh auth status --active --hostname github.com'
+gw pass "gh auth status --json hosts --template '{{.}}'"
+
+gh_cwd="$gh_on_main"
+pr pass 'gh pr new --fill'
+pr ask 'gh pr new --repo other/x --fill'
+pr ask 'gh -R other/x pr create'
+pr ask 'gh pr -R other/x create'
+pr ask 'gh pr create -Rother/x'
+pr ask 'GH_REPO=other/x gh pr create --fill'
+pr ask "gh pr create --title 'fix(x): y' --repo other/x"
+
 exit $rc

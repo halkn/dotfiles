@@ -65,6 +65,7 @@
       "Bash(gh auth setup-git*)",
       "Bash(gh auth status *--show-token*)",
       "Bash(gh auth status *-t*)",
+      "Bash(gh repo delete*)",
       "Bash(gh api *git/refs*)",
       "Bash(gh extension install*)",
       "Bash(gh ext install*)",
@@ -73,6 +74,8 @@
     ],
     "ask": [
       "Bash(git config *alias.*)",
+      "Bash(gh pr merge*)",
+      "Bash(gh repo edit*)",
       "Bash(gh alias set*)",
       "Bash(gh alias import*)",
       "Bash(git checkout -f*)",
@@ -100,7 +103,7 @@
           },
           {
             "type": "command",
-            "command": "h=~/.claude/hooks/scope-gh-pr-create.sh; [ -x \"$h\" ] || { echo \"PreToolUse hook missing: $h\" >&2; exit 2; }; exec \"$h\""
+            "command": "h=~/.claude/hooks/guard-gh.sh; [ -x \"$h\" ] || { echo \"PreToolUse hook missing: $h\" >&2; exit 2; }; exec \"$h\""
           },
           {
             "type": "command",
