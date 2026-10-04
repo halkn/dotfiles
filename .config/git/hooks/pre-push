@@ -7,9 +7,10 @@
 #
 # Claude Code's permission rules match the command text, which git's abbreviated long options
 # (`--del`, `--mir`) and combined short flags (`-uf`) slip past; this hook sees the ref updates
-# themselves. Claude Code can neither skip it (`--no-verify` is denied in its permissions, and a
-# prefixed `VAR=… git push` runs sandboxed without network) nor point core.hooksPath elsewhere
-# (its settings pin core.hooksPath through GIT_CONFIG_*).
+# themselves. Claude Code can neither skip it (`--no-verify` is denied in its permissions) nor
+# point core.hooksPath elsewhere (its settings pin core.hooksPath through GIT_CONFIG_*). Clearing
+# CLAUDE_CODE_CHILD_SESSION takes `env -u` or an assignment in front of `git push`, which a
+# PreToolUse hook refuses; see docs/claude-code.md.
 set -euo pipefail
 
 zero_sha='0000000000000000000000000000000000000000'
