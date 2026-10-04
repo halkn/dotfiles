@@ -44,7 +44,7 @@
 - 公式 docs や `--help` の代わりにリポジトリ内の実測メモを使えるのは、そのメモが記録バージョンを明示していて現行バージョンと一致するときだけ。一致しない・バージョンの記載が無い場合は一次情報を引き直す
 - 文字列・ファイル名・単純な識別子検索は `rg`、構文構造を条件にする検索・分析・変換は `ast-grep`（rule 作成・検証手順は `ast-grep:ast-grep` Skill に従う）
 - `ast-grep` で書き換えるときは、まず match と diff を確認してから適用する。対象言語の parser が対応していない場合は `rg` や言語固有ツールへ戻す
-- git のネットワーク系（`push` / `fetch` / `clone` / `ls-remote`）と `gh` は、起動したリポジトリで 1 行 1 コマンドとして実行する。パイプ・`&&`・`;`・`$(...)`・ファイルへのリダイレクト（`2>/dev/null` を含む）・`cd`・`git -C` を付けると sandbox の除外が外れ、通信も gh の設定読取も失敗する。`env`・`nice`・`time` などの wrapper や `VAR=…` も前に置かず、`git clone` の行き先は作業ディレクトリの中の相対パスにする（どれも hook が拒否する）。`git pull` は除外していないので `git fetch` と `git merge` に分ける。出力はツール自身のオプション（`--json` / `--jq`、`-n`）で絞る。他のリポジトリの GitHub 操作は `gh -R <owner>/<repo>` で行う
+- git のネットワーク系（`push` / `fetch` / `clone` / `ls-remote`）と `gh` は、起動したリポジトリで、前置き・パイプ・リダイレクトを付けない単体のコマンドとして打つ。sandbox の除外が外れる形は hook が理由を示して拒否する。`git pull` は `git fetch` と `git merge` に分け、出力はツール自身のオプション（`--json` / `--jq`、`-n`）で絞る。他のリポジトリの GitHub 操作は `gh -R <owner>/<repo>` で行う
   - git / gh に渡すファイル（PR 本文など）は、Write tool で作業ディレクトリの `.scratch/` に書き、同じ相対パスを渡す。作業ディレクトリの外のパスは auto モードでも確認が出て、`$TMPDIR` は sandbox の内外で別の場所を指す
   - GitHub 上のコードは、数ファイルなら `gh api -H 'Accept: application/vnd.github.raw' repos/<owner>/<repo>/contents/<path>`（`--jq` も `base64 -d` も付けない）、横断して読む・grep する・試すなら `gh repo clone <owner>/<repo> /tmp/claude/src/<repo> -- --depth 1` で取得し、以降は sandbox 内で読む
 - Bash の外部通信は sandbox の `allowedDomains` 以外へ出られず、`allowed_domains` を渡しても広がらない。`allowedDomains` にある公式 docs は `curl` で取得して `rg` で原文を確かめ、それ以外の Web の docs は WebFetch、依存の取得（`bun add`・初回の `cargo build`・`mise install`）は `!` でユーザーに頼む
@@ -53,16 +53,9 @@
 
 ## Git
 
-常時適用のガードレール:
-
 - コミット・push・PR 作成は、作業前に作成したブランチ上で行う。commit は区切りごとに分ける
 - push と PR 作成は、依頼が PR までを含むときだけ行う。編集や commit の依頼は push の依頼ではない。PR を作る依頼は、その PR のブランチへの以後の push を含む
-- merge、main/master を変える操作、ガードの変更（ruleset・branch protection・default branch・公開範囲・alias）は、ユーザーが対象を名指しして指示したときだけ行う
-- push は自分の作業ブランチ（セッション開始時のブランチ or 自分が作成したブランチ）のみ。main/master へ直接 push しない
-- push は宛先を明示する（`git push -u origin <branch>`）。push 済みのブランチを直すときは、履歴を書き換えずに commit を積む。リモートの ref の削除・force push・保護ブランチへの push は pre-push hook が拒否するので、必要ならユーザーに Claude Code の外のターミナルでの実行を頼む（`!` はセッションの環境を引き継ぐので拒否される）。ブランチを消した後に `.git/config` に残る `branch.<name>` の節は、`! git config --remove-section branch.<name>` で消すよう頼む
-- 破壊的操作（`git reset --hard`、強制切替、削除など）は事前に確認する
-- 1 リポジトリに複数の worktree があり得る。他の worktree の作業を壊さないよう、`git worktree remove` / `git worktree prune` / worktree が使用中のブランチの削除は事前に確認する
-- ユーザーの未コミット変更を戻さない
+- push 済みのブランチを直すときは、履歴を書き換えずに commit を積む。リモートの ref の削除・force push・保護ブランチへの push は pre-push hook が拒否するので、必要ならユーザーに Claude Code の外のターミナルでの実行を頼む（`!` でも拒否される）
 
 ## 並列化と Subagent
 
