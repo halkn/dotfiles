@@ -68,6 +68,7 @@
 ## git / gh の基準
 
 - Claude が確認なしで進める範囲は、作業ブランチの作成から、そのブランチへの commit・push と PR の作成まで。auto モードの classifier は、作業中のリポジトリへの push と依頼に沿った PR の作成を既定で通すので、allow も ask も足さない
+- CLAUDE.md の Git の規則（自分の作業ブランチだけに push する・merge やガードの変更は名指しで指示されたときだけ・破壊的操作の事前確認）は、classifier の既定ルールと重なっても残す。既定ルールは、session のリポジトリのどのブランチへの push も通し（Git Push Destination）、人の承認後の merge・Azure DevOps の操作・agent が触ったファイルの復元を止めない（v2.1.289）
 - リモートを壊さないことは、コマンドの書き方に左右されない層で守る: GitHub の ruleset（main の最終保証。`bin/repo setup` が入れる）と、git の `pre-push` hook（push ごとの判定）。`permissions` のパターンは、git のオプションの省略形や結合（`--del`・`-uf`）を拾えないので、push の判定には使わない
 - `pre-push` は、Claude の push（`CLAUDE_CODE_CHILD_SESSION=1`）について、ref の削除・非 fast-forward・既存のタグの書換え・保護ブランチ（main・master・develop・release/*・リモートの既定ブランチ）への push を拒否する。解除の手段は持たせない。必要なら人が Claude Code の外のターミナルで行う。自分のブランチでの作業が止まらないよう、push 済みのブランチは履歴を書き換えずに commit を積むことを CLAUDE.md に置く。人の push は main / master の force と削除だけを拒否し、`ALLOW_FORCE_PUSH=1` で解除できる
 - Claude の git には、`env` の `GIT_CONFIG_*` で `core.hooksPath` を全体の hook の置き場所に固定する。リポジトリ側の設定が hook を作業ツリー内（husky など）に向けていても、Claude の push では全体の `pre-push` が走り、sandbox 内から書き換えられる hook が sandbox の外で実行されることもない。副作用として、リポジトリ固有の hook は Claude の git では走らない。検証は Claude が明示的に実行する
