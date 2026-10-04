@@ -38,7 +38,7 @@
 - 防ぐ対象は、道具（インタプリタ名・読取コマンド名）ではなく、守る資産（認証情報のパス・環境変数名・push 先ブランチ）の側で列挙する。道具は代わりがいくらでもあるが、資産の集合は閉じている
 - deny に置くのは、取り返しがつかず、正当な用途もほぼ無いものだけ。例: 権限の昇格（`sudo`）、ローカルの復旧手段を消す操作（`git reflog expire`・`git gc --prune`）、専用のサブコマンドを迂回する汎用の書込口（`az devops invoke` の `--http-method`）、proxy を通らない生のソケット（`nc`・`ssh`・`scp`）、ガードを飛ばす口（`git push --no-verify`）、トークンの表示（`gh auth token`）。破壊的でも正当な用途がある操作（`mise bootstrap --force-dotfiles`）は ask に置く。ただし、引数の書き方が開いていてパターンで捉えきれない操作（`git push` のオプション）は、作用を見る層（`pre-push`）で拒否し、必要なら人が Claude Code の外で行う
 - ガードの照合そのものを外せる操作は ask に置く。例: `git config *alias.*`・`gh alias set`（alias を作ると、以降のコマンドが permissions のパターンにも hook の照合にも当たらなくなる）
-- classifier の既定ルール（`claude auto-mode defaults` で確かめる）が名指ししている操作は、原則として permissions に重ねない。重ねると、ユーザーが明示的に指示した操作にまで確認が出る。指示した後でも人が毎回確かめたい操作（未コミットの変更を捨てる `git checkout -f`・ブランチや worktree の削除・ツールの uninstall）だけは、あえて ask に重ねる
+- classifier の既定ルール（`claude auto-mode defaults` で確かめる）が名指ししている操作は、原則として permissions に重ねない。重ねると、ユーザーが明示的に指示した操作にまで確認が出る。指示した後でも人が毎回確かめたい操作（未コミットの変更を捨てる `git checkout -f`・ブランチや worktree の削除・ツールの uninstall・PR の merge とリポジトリのガードの変更）だけは、あえて ask に重ねる
 - sandbox が制御している書込先・送信先と、git で戻せる変更（lockfile・依存）は deny に置かない
 - 入口が閉じている操作（`mise run sync|update`）は完全一致で ask に列挙する。引数の形が開いている操作（`mise bootstrap`）は列挙しきれないので、両端だけを固定し（他ホストへの作用は deny、`--force-dotfiles`・`--yes` を先頭に置いた形は ask、`status`・`plan`・`--dry-run` は allow）、残りは classifier に任せる
 - `WebFetch` の allow は書かない。auto モードの WebFetch は allow が無くても確認なしで通り、allow の残る効果は確認を出すモード（Manual・`acceptEdits`）向けと、sandbox の送信先への暗黙の合流だけになる。docs を原文で読む経路は `network.allowedDomains` で明示的に開ける
@@ -63,6 +63,7 @@
 
 - hook は、`permissions` のパターンが取りこぼす形を拾うためにある。そのため `matcher` は tool 名だけにし、同じパターン構文で絞り込む `if` フィルタを付けない。コマンドの分解はスクリプト側で行う
 - `command` にはスクリプトのパスを直接書かず、スクリプトが無いときは `exit 2` で止める形で包む。直接書くと、改名・削除やリンクの欠落でスクリプトが無くなったときに、ガードが黙って外れる。包む形は `-x` で存在を確かめるので、スクリプトには実行ビットを付ける
+- コマンドを語に分けて引数で判定する hook は、分解を `claude/hooks/lib/commands.jq` に寄せる。hook ごとに空白で分けると、引用符で囲んだ値ひとつで判定をすり抜けられる
 
 ## git / gh の基準
 
@@ -71,7 +72,11 @@
 - `pre-push` は、Claude の push（`CLAUDE_CODE_CHILD_SESSION=1`）について、ref の削除・非 fast-forward・既存のタグの書換え・保護ブランチ（main・master・develop・release/*・リモートの既定ブランチ）への push を拒否する。解除の手段は持たせない。必要なら人が Claude Code の外のターミナルで行う。自分のブランチでの作業が止まらないよう、push 済みのブランチは履歴を書き換えずに commit を積むことを CLAUDE.md に置く。人の push は main / master の force と削除だけを拒否し、`ALLOW_FORCE_PUSH=1` で解除できる
 - Claude の git には、`env` の `GIT_CONFIG_*` で `core.hooksPath` を全体の hook の置き場所に固定する。リポジトリ側の設定が hook を作業ツリー内（husky など）に向けていても、Claude の push では全体の `pre-push` が走り、sandbox 内から書き換えられる hook が sandbox の外で実行されることもない。副作用として、リポジトリ固有の hook は Claude の git では走らない。検証は Claude が明示的に実行する
 - `pre-push` を外す経路を残さない。`--no-verify` は deny（省略形も拾うよう `--no-veri` で照合する）。`git -c core.hooksPath=…` と環境変数の前置は sandbox 内で動いて通信できない（`block-piped-excluded.sh` が理由を返す）
-- gh の書込（PR のマージ、issue や PR の close、コメント、リポジトリの設定・ruleset・公開範囲の変更）は classifier の既定ルールが名指ししているので、permissions に重ねない。例外は、個人と仕事の文脈を owner で分ける PR の作成先（`scope-gh-pr-create.sh`）。トークンの表示と認証の変更（`gh auth token|login|refresh|switch|logout|setup-git`）、`gh api` での ref の直接操作（`git/refs`）、拡張の導入（`gh extension install`）は deny に置く。alias は照合を外せるので ask に置く
+- gh の書込のうち、main / master を変える操作（PR の merge、main / master の ref の更新）とリポジトリのガードの変更（branch protection・ruleset・default branch・公開範囲・リポジトリ設定）は、ユーザーが指示した後でも ask にする。ruleset は PR を求めるが承認は求めないので、PR を作れる Claude は merge もできる。素直な形（`gh pr merge`・`gh repo edit`）は `permissions.ask` に置き、`guard-gh.sh` がサブコマンドの前にフラグを置いた形（`gh pr -R x merge`）と、`gh api` で同じことをする経路（REST と GraphQL の mutation）を拾う。`gh api` の GET と、PR・issue へのコメントは止めない。issue や PR の close、コメントは classifier に任せる
+- PR の作成先は owner で個人と仕事の文脈を分ける（`guard-gh.sh`。`github.com/halkn` の外への作成は ask）
+- トークンの表示と認証の変更（`gh auth token|login|refresh|switch|logout|setup-git`）、リポジトリの削除（`gh repo delete`）、`gh api` での ref の直接操作（`git/refs`）、拡張の導入（`gh extension install`）は deny に置く。deny のパターンが拾えない形（フラグを前に置いた形、`gh api` でのリポジトリの DELETE）は `guard-gh.sh` が拒否する。alias は照合を外せるので ask に置く
+- gh のガードは、Claude 専用のトークンではなく hook と classifier の二重で持つ。merge と ref の更新は push と同じ Contents の書込権限で動くので、トークンの権限では分けられない。トークンで閉じられるのは Administration（branch protection・ruleset・リポジトリ設定）だけで、個人のリポジトリを自分が書いたコードで扱う範囲では、照合をすり抜ける形が残っても許容する。他人が書いた内容（公開リポジトリの issue や PR、第三者のリポジトリ）を auto モードで扱う場面が増えたら、トークンで Administration を外すことを見直す
+- 人の gh のトークンにも、Claude の作業に要らない scope（`admin:public_key`・`workflow`）は付けない。git の通信は SSH で、gh のトークンを使わない
 - git / gh のネットワーク系は、起動したリポジトリで単体のコマンドとして打つ。`excludedCommands` の除外はコマンドの形で外れ、外れると認証にも送信先にも届かない。外れる形は `block-piped-excluded.sh` が拒否し、CLAUDE.md が事前に伝える。他のリポジトリの GitHub 操作は `gh -R` で行い、push はそのリポジトリで起動したセッションから行う
 
 ## worktree の基準
