@@ -54,7 +54,7 @@ if [ "${CLAUDE_CODE_CHILD_SESSION:-}" = "1" ]; then
         ;;
     esac
     if is_rewrite "$remote_sha" "$local_sha"; then
-      refuse "Claude Code からの force push（非 fast-forward、$remote_ref）は拒否されました。履歴を書き換えず commit を積んでください。"
+      refuse "Claude Code からの force push（非 fast-forward、${remote_ref}）は拒否されました。履歴を書き換えず commit を積んでください。"
     fi
   done
   exit 0

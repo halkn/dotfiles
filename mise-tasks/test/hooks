@@ -119,14 +119,18 @@ pre_push() {
         ;;
     esac
     g push --dry-run -q "$@"
-  ) >/dev/null 2>&1
+  ) 2>&1 >/dev/null
 }
 
-# expect_pre_push <who> <ok|reject> <push args>
+# expect_pre_push <who> <ok|reject> <push args>: a refusal counts only with the hook's own
+# message, so a crash in the hook (also a non-zero exit) does not pass as one.
 expect_pre_push() {
-  local who="$1" want="$2" got=ok
+  local who="$1" want="$2" got=ok err
   shift 2
-  pre_push "$who" "$@" || got=reject
+  if ! err="$(pre_push "$who" "$@")"; then
+    got="crash: $err"
+    grep -q '^pre-push: ' <<<"$err" && got=reject
+  fi
   [ "$got" = "$want" ] || fail pre-push "$want" "$got" "$who: git push $*"
 }
 
