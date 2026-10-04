@@ -1,19 +1,71 @@
 #!/usr/bin/env bash
-# pre-push hook: refuse force pushes to and deletions of main/master.
-# Claude Code's deny patterns match on the command string, which a git alias or a call through
-# `sh -c` can slip past, so the same rule is enforced by git itself. core.hooksPath applies it
-# to every repository.
+# pre-push hook: refuse pushes that delete or rewrite remote refs.
+#
+# For a person: force pushes to and deletions of main/master, unless ALLOW_FORCE_PUSH=1.
+# For Claude Code (CLAUDE_CODE_CHILD_SESSION=1): every deletion and non-fast-forward update, any
+# update of an existing tag, and any push to a protected branch, with no override.
+#
+# Claude Code's permission rules match the command text, which git's abbreviated long options
+# (`--del`, `--mir`) and combined short flags (`-uf`) slip past; this hook sees the ref updates
+# themselves. Claude Code can neither skip it (`--no-verify` is denied in its permissions, and a
+# prefixed `VAR=… git push` runs sandboxed without network) nor point core.hooksPath elsewhere
+# (its settings pin core.hooksPath through GIT_CONFIG_*).
 set -euo pipefail
 
-protected_ref_pattern='^refs/heads/(main|master)$'
 zero_sha='0000000000000000000000000000000000000000'
+remote="${1:-}"
+
+refuse() {
+  echo "pre-push: $1" >&2
+  exit 1
+}
+
+# Deleted and rewritten objects may be missing locally; an ancestry check that cannot run counts
+# as a rewrite.
+is_rewrite() {
+  ! git merge-base --is-ancestor "$1" "$2" 2>/dev/null
+}
+
+if [ "${CLAUDE_CODE_CHILD_SESSION:-}" = "1" ]; then
+  default_branch="$(git symbolic-ref -q --short "refs/remotes/$remote/HEAD" 2>/dev/null || true)"
+  default_branch="${default_branch#"$remote"/}"
+
+  while read -r _ local_sha remote_ref remote_sha; do
+    branch="${remote_ref#refs/heads/}"
+    if [ "$branch" != "$remote_ref" ]; then
+      case "$branch" in
+        main | master | develop | release/*)
+          refuse "Claude Code から保護ブランチ ($remote_ref) への push は拒否されました。PR を作成してください。"
+          ;;
+      esac
+      if [ -n "$default_branch" ] && [ "$branch" = "$default_branch" ]; then
+        refuse "Claude Code からリモートの既定ブランチ ($remote_ref) への push は拒否されました。PR を作成してください。"
+      fi
+    fi
+
+    if [ "$local_sha" = "$zero_sha" ]; then
+      refuse "Claude Code からのリモートの ref ($remote_ref) の削除は拒否されました。必要ならユーザーが Claude Code の外のターミナルで実行してください。"
+    fi
+    [ "$remote_sha" != "$zero_sha" ] || continue
+
+    case "$remote_ref" in
+      refs/tags/*)
+        refuse "Claude Code から既存のタグ ($remote_ref) の書換えは拒否されました。"
+        ;;
+    esac
+    if is_rewrite "$remote_sha" "$local_sha"; then
+      refuse "Claude Code からの force push（非 fast-forward、${remote_ref}）は拒否されました。履歴を書き換えず commit を積んでください。"
+    fi
+  done
+  exit 0
+fi
 
 if [ "${ALLOW_FORCE_PUSH:-}" = "1" ]; then
   exit 0
 fi
 
 while read -r _ local_sha remote_ref remote_sha; do
-  [[ "$remote_ref" =~ $protected_ref_pattern ]] || continue
+  [[ "$remote_ref" =~ ^refs/heads/(main|master)$ ]] || continue
 
   if [ "$local_sha" = "$zero_sha" ]; then
     echo "pre-push: 保護ブランチ ($remote_ref) の削除は拒否されました。" >&2
@@ -25,7 +77,7 @@ while read -r _ local_sha remote_ref remote_sha; do
     continue # the branch does not exist on the remote yet
   fi
 
-  if ! git merge-base --is-ancestor "$remote_sha" "$local_sha" 2>/dev/null; then
+  if is_rewrite "$remote_sha" "$local_sha"; then
     echo "pre-push: 保護ブランチ ($remote_ref) への force push (非 fast-forward) は拒否されました。" >&2
     echo "pre-push: 意図的な操作なら ALLOW_FORCE_PUSH=1 を付けて再実行してください。" >&2
     exit 1

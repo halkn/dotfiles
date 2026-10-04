@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#MISE description="Claude Code hook のテスト"
+#MISE description="Claude Code の hook と git の pre-push のテスト"
 set -uo pipefail
 
 hooks="$PWD/claude/hooks"
@@ -22,27 +22,6 @@ expect() {
   run block-piped-excluded.sh "$2" >/dev/null
   got=$?
   [ "$got" -eq "$1" ] || fail block-piped-excluded.sh "$1" "$got" "$2"
-}
-
-# expect_push <ask|pass|deny> <command>, run inside $repo.
-expect_push() {
-  local out got
-  out="$(cd "$repo" && run block-main-push.sh "$2")"
-  case "$?:$out" in
-    0:*'"ask"'*)
-      got=ask
-      ;;
-    0:)
-      got=pass
-      ;;
-    2:)
-      got=deny
-      ;;
-    *)
-      got="unexpected($out)"
-      ;;
-  esac
-  [ "$got" = "$1" ] || fail block-main-push.sh "$1" "$got" "$2"
 }
 
 nl=$'\n'
@@ -82,6 +61,10 @@ expect 2 "gh pr create --body-file - <<'EOF'${nl}body${nl}EOF"
 expect 2 'git -C /x push'
 expect 2 'git -c push.default=current push'
 expect 2 'git --no-pager fetch'
+expect 2 'GH_PAGER=cat gh pr view'
+expect 2 "A='x y' B=1 git push"
+expect 2 'env GH_PAGER=cat gh pr view'
+expect 2 'env -u FOO git push'
 expect 2 $'gh\tpr view | cat'
 # Long enough to overflow a pipe buffer after an early match.
 expect 2 "git push${nl}$(printf 'echo %0100d\n' $(seq 1000))"
@@ -95,6 +78,9 @@ expect 0 'git pull | tail'
 expect 0 'git submodule update | tail'
 expect 0 'git -C /x status'
 expect 0 'git log --oneline > log.txt'
+expect 0 'gh api repos/x -f title=a'
+expect 0 'FOO=1 git status'
+expect 0 'environment-check gh-like'
 expect 0 "gh pr create --body \"a | b; c${nl}d\""
 expect 0 "gh pr create --body \"say \\\"a | b\\\" here\""
 expect 0 "gh api repos/x --jq '.[] | .name'"
@@ -105,36 +91,87 @@ expect 0 'git status | head'
 expect 0 'git log --oneline | head -5'
 expect 0 'echo high | cat'
 
-# block-main-push.sh
+# .config/git/hooks/pre-push, run by `git push --dry-run` against a scratch bare remote.
 
-# macOS mktemp ignores $TMPDIR without a template; an empty $repo would point git at this repo.
-repo="$(mktemp -d "${TMPDIR:-/tmp}/test-hooks.XXXXXX")" || exit 1
-trap 'rm -rf "$repo"' EXIT
-git -C "$repo" init -q -b main || exit 1
+# macOS mktemp ignores $TMPDIR without a template; an empty $pp would point git at this repo.
+pp="$(mktemp -d "${TMPDIR:-/tmp}/test-pre-push.XXXXXX")" || exit 1
+trap 'rm -rf "$pp"' EXIT
+hook_dir="$PWD/.config/git/hooks"
 
-expect_push ask 'git push'
-expect_push ask 'git push origin'
-expect_push ask 'git push origin main'
-expect_push ask 'git push origin HEAD:main'
-expect_push ask 'git push origin +main'
-expect_push ask 'git push origin +HEAD:main'
-expect_push ask 'git push origin :main'
-expect_push ask 'git push origin HEAD'
-expect_push ask 'git push origin @'
-expect_push ask 'git push origin HEAD:refs/heads/master'
-expect_push deny 'git push --mirror origin'
+g() {
+  git -C "$pp/w" -c core.hooksPath="$hook_dir" -c user.name=t -c user.email=t@t "$@"
+}
 
-git -C "$repo" switch -q -c feat/x
+# pre_push <agent|human>[-allow] <push args>: the -allow form sets ALLOW_FORCE_PUSH=1.
+pre_push() {
+  local who="$1"
+  shift
+  (
+    unset CLAUDE_CODE_CHILD_SESSION ALLOW_FORCE_PUSH
+    case "$who" in
+      agent*)
+        export CLAUDE_CODE_CHILD_SESSION=1
+        ;;
+    esac
+    case "$who" in
+      *-allow)
+        export ALLOW_FORCE_PUSH=1
+        ;;
+    esac
+    g push --dry-run -q "$@"
+  ) 2>&1 >/dev/null
+}
 
-expect_push pass 'git push'
-expect_push pass 'git push -u origin feat/x'
-expect_push pass 'git push origin HEAD'
-expect_push pass 'git push origin +feat/x'
-expect_push pass 'git push origin feat/x:feat/y'
-expect_push pass 'git push origin :'
-expect_push ask 'git push origin :feat/y'
-expect_push ask 'git push origin +:refs/heads/feat/y'
-expect_push ask 'git push origin HEAD:main'
-expect_push ask 'git push origin +main'
+# expect_pre_push <who> <ok|reject> <push args>: a refusal counts only with the hook's own
+# message, so a crash in the hook (also a non-zero exit) does not pass as one.
+expect_pre_push() {
+  local who="$1" want="$2" got=ok err
+  shift 2
+  if ! err="$(pre_push "$who" "$@")"; then
+    got="crash: $err"
+    grep -q '^pre-push: ' <<<"$err" && got=reject
+  fi
+  [ "$got" = "$want" ] || fail pre-push "$want" "$got" "$who: git push $*"
+}
+
+git init -q --bare "$pp/r.git" || exit 1
+git init -q -b main "$pp/w" || exit 1
+g remote add origin "$pp/r.git"
+g commit -q --allow-empty -m c1
+g tag v1
+g switch -q -c feat && g commit -q --allow-empty -m c2
+g switch -q -c div main && g commit -q --allow-empty -m c4
+g switch -q -c trunk main
+(unset CLAUDE_CODE_CHILD_SESSION && g push -q origin main feat div trunk v1) >/dev/null 2>&1 || exit 1
+g symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/trunk
+g switch -q feat && g commit -q --allow-empty -m c3
+g switch -q div && g reset -q --hard main && g commit -q --allow-empty -m c5
+g tag -f v1 feat >/dev/null
+g tag v2 feat
+orphan="$(g commit-tree "$(g write-tree)" -m orphan)" || exit 1
+
+expect_pre_push agent ok origin feat
+expect_pre_push agent ok origin feat:refs/heads/new-branch
+expect_pre_push agent ok origin v2
+expect_pre_push agent reject origin +div
+expect_pre_push agent reject -uf origin div
+expect_pre_push agent reject origin :feat
+expect_pre_push agent reject --delete origin feat
+expect_pre_push agent reject --del origin feat
+expect_pre_push agent reject origin feat:main
+expect_pre_push agent reject origin feat:develop
+expect_pre_push agent reject origin feat:release/1.0
+expect_pre_push agent reject origin feat:trunk
+expect_pre_push agent reject origin +v1
+expect_pre_push agent-allow reject origin +div
+
+expect_pre_push human ok origin +div
+expect_pre_push human ok origin +v1
+expect_pre_push human ok origin feat:main
+expect_pre_push human ok origin feat:develop
+expect_pre_push human reject origin "+$orphan:main"
+expect_pre_push human reject origin :main
+expect_pre_push human-allow ok origin "+$orphan:main"
+expect_pre_push human-allow ok origin :main
 
 exit $rc
