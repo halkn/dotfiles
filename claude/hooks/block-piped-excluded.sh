@@ -30,15 +30,18 @@ s='[[:space:]]+'
 network="(push|fetch|clone|ls-remote|remote${s}(update|prune))"
 excluded="(^|[^[:alnum:]_-])(git${s}${network}|gh${s})"
 git_opts="(^|[^[:alnum:]_-])git(${s}-[^[:space:]]+(${s}[^-[:space:]][^[:space:]]*)?)+${s}${network}([[:space:]]|$)"
-compound=$'\n|\\||&&|;|\\$\\(|`|[<>]|(^|[[:space:]])cd([[:space:]]|$)'
+compound=$'\n|\\||&&|;|\\$\\(|`|[<>]'
 # The wrappers Claude Code strips before matching a Bash rule, and `env`, which it also looks past.
 wrapper="(env|nice|time|timeout|nohup|stdbuf|command|builtin|noglob|xargs)"
 prefixed="^[[:space:]]*(${wrapper}|[A-Za-z_][A-Za-z0-9_]*=[^[:space:]]*)([[:space:]]+[^[:space:]]+)*${s}(git${s}${network}|gh)([[:space:]]|$)"
+# `command -v` looks a command up instead of running it, and the matcher does not strip it.
+lookup="^[[:space:]]*command${s}-[vV]([[:space:]]|$)"
 clone_path="(^|[^[:alnum:]_-])git${s}clone(${s}[^[:space:]]+)*${s}(/|~|([^[:space:]]*/)?[.][.](/|[[:space:]]|$))"
 
 # Matched in-process: `printf | grep -q` under pipefail reads an early match on a long
 # command as no match, since grep exits and printf dies of SIGPIPE.
-if [[ "$command" =~ $git_opts ]] || [[ "$command" =~ $prefixed ]] || [[ "$command" =~ $clone_path ]] ||
+if [[ "$command" =~ $git_opts ]] || [[ "$command" =~ $clone_path ]] ||
+  { [[ "$command" =~ $prefixed ]] && ! [[ "$command" =~ $lookup ]]; } ||
   { [[ "$command" =~ $excluded ]] && [[ "$command" =~ $compound ]]; }; then
   cat >&2 <<'MSG'
 git / gh を、sandbox の除外が当てにできない形で実行しようとしています。
