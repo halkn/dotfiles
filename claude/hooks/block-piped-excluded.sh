@@ -25,10 +25,11 @@ command="$(jq -r "$filter")"
 # Mirrors sandbox.excludedCommands in claude/settings.json; update both together.
 s='[[:space:]]+'
 network="(push|fetch|clone|ls-remote|remote${s}(update|prune))"
-excluded="(^|[^[:alnum:]_-])(git${s}${network}|gh${s})"
-bare="^[[:space:]]*(git${s}${network}|gh)([[:space:]]|$)"
+target="(git${s}${network}([^[:alnum:]_-]|$)|gh${s})"
+excluded="(^|[^[:alnum:]_-])${target}"
+bare="^[[:space:]]*${target}"
 git_opts="(^|[^[:alnum:]_-])git(${s}-[^[:space:]]+(${s}[^-[:space:]][^[:space:]]*)?)+${s}${network}([[:space:]]|$)"
-compound=$'\n|\\||&&|;|\\$\\(|`|[<>]'
+compound=$'\n|\\||&|;|\\$\\(|`|[<>]'
 clone_path="(^|[^[:alnum:]_-])git${s}clone(${s}[^[:space:]]+)*${s}(/|~|([^[:space:]]*/)?[.][.](/|[[:space:]]|$))"
 
 # Matched in-process: `printf | grep -q` under pipefail reads an early match on a long
@@ -39,7 +40,7 @@ if [[ "$command" =~ $git_opts ]] || [[ "$command" =~ $clone_path ]] ||
 git / gh を、sandbox の除外が当てにできない形で実行しようとしています。
 
 sandbox.excludedCommands は、行頭に裸で置いた単体のコマンドにしか確実には効きません。前置き
-（`cd`・`env`・`nice`・`VAR=…` など）、パイプ・`&&`・`;`・改行・コマンド置換、ファイルへのリダイレクト
+（`cd`・`env`・`nice`・`VAR=…` など）、パイプ・`&`・`&&`・`;`・改行・コマンド置換、ファイルへのリダイレクト
 （`2>/dev/null` を含む）、`git -C` などサブコマンドの前のオプション、絶対パス・`~`・`..` を含む
 `git clone` の行き先があると、sandbox 内で動いて GitHub や gh の設定に届かない（CONNECT 403 や設定
 読取エラーになる）か、push の判定（pre-push）を当てにできない環境で動きます。
@@ -49,6 +50,8 @@ sandbox.excludedCommands は、行頭に裸で置いた単体のコマンドに�
 使ってください。出力を絞るときは `--json` / `--jq` などツール自身のオプションを使うか、まず裸で実行して
 から結果を読んでください。複数行の本文は `$(cat <<EOF ...)` やリダイレクトではなく、Write tool で
 `.scratch/` に書いたファイルを `--body-file` / `-F` で渡してください。
+
+git / gh を実行せず引数として書いただけ（`rg gh README.md` など）なら、その語を引用符で囲めば通ります。
 MSG
   exit 2
 fi
