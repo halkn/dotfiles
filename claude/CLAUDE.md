@@ -59,7 +59,7 @@
 - push と PR 作成は、依頼が PR までを含むときだけ行う。編集や commit の依頼は push の依頼ではない。PR を作る依頼は、その PR のブランチへの以後の push を含む
 - merge、main/master を変える操作、ガードの変更（ruleset・branch protection・default branch・公開範囲・alias）は、ユーザーが対象を名指しして指示したときだけ行う
 - push は自分の作業ブランチ（セッション開始時のブランチ or 自分が作成したブランチ）のみ。main/master へ直接 push しない
-- push は宛先を明示する（`git push -u origin <branch>`）。push 済みのブランチを直すときは、履歴を書き換えずに commit を積む。リモートの ref の削除・force push・保護ブランチへの push は pre-push hook が拒否するので、必要ならユーザーに Claude Code の外のターミナルでの実行を頼む
+- push は宛先を明示する（`git push -u origin <branch>`）。push 済みのブランチを直すときは、履歴を書き換えずに commit を積む。リモートの ref の削除・force push・保護ブランチへの push は pre-push hook が拒否するので、必要ならユーザーに Claude Code の外のターミナルでの実行を頼む（`!` はセッションの環境を引き継ぐので拒否される）。ブランチを消した後に `.git/config` に残る `branch.<name>` の節は、`! git config --remove-section branch.<name>` で消すよう頼む
 - 破壊的操作（`git reset --hard`、強制切替、削除など）は事前に確認する
 - 1 リポジトリに複数の worktree があり得る。他の worktree の作業を壊さないよう、`git worktree remove` / `git worktree prune` / worktree が使用中のブランチの削除は事前に確認する
 - ユーザーの未コミット変更を戻さない
