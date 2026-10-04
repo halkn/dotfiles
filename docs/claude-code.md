@@ -35,7 +35,7 @@
 - sandbox・`permissions`・auto モードの classifier という標準機能で代わりが効かないことを、先に示す
 - 防ぐ対象は、道具（インタプリタ名・読取コマンド名）ではなく、守る資産（認証情報のパス・環境変数名・push 先ブランチ）の側で列挙する。道具は代わりがいくらでもあるが、資産の集合は閉じている
 - deny に置くのは、取り返しがつかず、正当な用途もほぼ無いものだけ。例: 権限の昇格（`sudo`）、ローカルの復旧手段を消す操作（`git reflog expire`・`git gc --prune`）、専用のサブコマンドを迂回する汎用の書込口（`az devops invoke` の `--http-method`）、proxy を通らない生のソケット（`nc`・`ssh`・`scp`）。破壊的でも正当な用途がある操作（`git push --force`・`mise bootstrap --force-dotfiles`）は ask に置く
-- ガードの照合そのものを外せる操作は ask に置く。例: `git config *alias.*`（alias を作ると、以降のコマンドが permissions のパターンにも hook の照合にも当たらなくなる）
+- ガードの照合そのものを外せる操作は ask に置く。例: `git config *alias.*`・`gh alias set`（alias を作ると、以降のコマンドが permissions のパターンにも hook の照合にも当たらなくなる）
 - classifier の既定ルール（`claude auto-mode defaults` で確かめる）が名指ししている操作は、原則として permissions に重ねない。重ねると、ユーザーが明示的に指示した操作にまで確認が出る。指示した後でも人が毎回確かめたい操作（push・未コミットの変更を捨てる `git checkout -f`・ブランチや worktree の削除・ツールの uninstall）だけは、あえて ask に重ねる
 - sandbox が制御している書込先・送信先と、git で戻せる変更（lockfile・依存）は deny に置かない
 - 入口が閉じている操作（`mise run sync|update`）は完全一致で ask に列挙する。引数の形が開いている操作（`mise bootstrap`）は列挙しきれないので、両端だけを固定し（他ホストへの作用は deny、`--force-dotfiles`・`--yes` を先頭に置いた形は ask、`status`・`plan`・`--dry-run` は allow）、残りは classifier に任せる
@@ -48,9 +48,10 @@
 - 読取は既定で閉じ、ツールが必要とする場所だけを開ける（`blockReadsOutsideWorkingDirectories` と `allowRead`）。丸ごと開けて例外を列挙する形は取らない。列挙から漏れたものが開いたままになる
 - 書込を開けるのは、ツールが自分の状態を書く場所だけ（`~/.azure` のトークンキャッシュ、skill の出力先）。他のプロセスが後で実行する場所には開けない。`~/.cache` をツール単位で開けるのはこのため（ログインシェルが起動時に実行するキャッシュがあり、そこへ書ければ sandbox の外でコードを走らせられる）
 - Claude Code が読み込む・実行するファイル（`claude/` 全体）は、組込みの保護に頼らず `denyWrite` と `Edit` の ask で塞ぐ。組込みの保護が覆う範囲は版で変わり、symlink の先にある hook や statusline のスクリプトまで届くとは限らない。副作用として、`claude/` を変える `git switch` / `git merge` は sandbox 内で失敗する。Claude がこれらを変えるときは Edit / Write tool を使い、ask の確認で人が承認する（Bash は `denyWrite` で通らない）。リポジトリ側の `.claude/settings*.json` も同じ経路にするため ask に入れる。auto モードでは保護パスへの書込が classifier に回り、自己改変として拒否されることがあるが、ask は classifier より先に効いて確認になる
+- sandbox の外で動くコマンドが読み込んで実行するファイルも、同じく `denyWrite` とファイルツールの ask / deny で塞ぐ。sandbox から書けると、次の `git push` や `gh` で sandbox の外にコードを持ち出せる。このリポジトリでは、`core.hooksPath` の hook と git の config（`credential.helper` など）を持つ `.config/git` と、alias を持つ `.config/gh` が当たる。副作用は `claude/` と同じ
 - 追跡されている公開設定は閉じない（`~/.config` は丸ごと開ける）。閉じるのは、追跡外で認証情報を持つものだけで、`sandbox.credentials` に宣言する。認証情報だと宣言でき、許可を広げる方向の誤用も起きない
-- 認証情報の閉じ方は、それを使うツールが sandbox のどちら側で動くかで決まる。sandbox の外で動くツール（`gh`）の認証情報は `sandbox.credentials` で閉じる。sandbox の中で動くツール（`az`）の認証情報は、閉じるとツール自身も読めないので `allowRead`（更新するなら `allowWrite` も）で開け、コマンドからの参照を `block-secret-read.sh` の列挙に足して塞ぐ。ファイルツールからは、作業ディレクトリの外なので `blockReadsOutsideWorkingDirectories` が閉じる。認証情報を渡す環境変数は `credentials.envVars` で閉じ、sandbox の中のツールはトークンキャッシュで認証させる
-- `excludedCommands` のコマンドは sandbox の外で動き、sandbox の読取制限も `credentials` も効かない。除外は sandbox 内で動かないもの（設定を `credentials` で閉じた `gh` を含む）だけを、サブコマンドの単位で足す（`git` はネットワークや認証を使うサブコマンドだけ）。送信先の制限を迂回する経路になるもの（`az *`）は除外しない。git は通信だけを行うサブコマンドに限り、作業ツリーの書換えや hook の実行を伴うもの（`pull`・`submodule`）は除外しない（`git fetch` と sandbox 内の `git merge` に分ける）。git を丸ごと除外しないのは、`-c core.pager=…`・`-c alias.x='!…'`・hook で任意のコマンドを sandbox の外で動かせるため。除外を変えたら、`block-piped-excluded.sh` の列挙も合わせる
+- 認証情報の閉じ方は、それを使うツールが sandbox のどちら側で動くかで決まる。sandbox の外で動くツール（`gh`）の認証情報は `sandbox.credentials` で閉じる。sandbox の中で動くツール（`az`）の認証情報は、閉じるとツール自身も読めないので `allowRead`（更新するなら `allowWrite` も）で開け、コマンドからの参照を `block-secret-read.sh` の列挙に足して塞ぐ。ファイルツールからは、作業ディレクトリの外なので `blockReadsOutsideWorkingDirectories` が閉じる。このリポジトリにある実体（`.config/gh`）は作業ディレクトリの中なので、`Read` / `Edit` の deny で閉じる。認証情報を渡す環境変数は `credentials.envVars` で閉じ、sandbox の中のツールはトークンキャッシュで認証させる
+- `excludedCommands` のコマンドは sandbox の外で動き、sandbox の読取制限も `credentials` も効かない。除外は sandbox 内で動かないもの（設定を `credentials` で閉じた `gh` を含む）だけを、サブコマンドの単位で足す（`git` はネットワークや認証を使うサブコマンドだけ）。送信先の制限を迂回する経路になるもの（`az *`）は除外しない。git は通信だけを行うサブコマンドに限り、作業ツリーを書き換えるもの（`pull`・`submodule`）は除外しない（`git fetch` と sandbox 内の `git merge` に分ける）。git を丸ごと除外しないのは、`-c core.pager=…`・`-c alias.x='!…'`・hook で任意のコマンドを sandbox の外で動かせるため。除外したサブコマンドも hook と config からコマンドを実行するので、その置き場所を sandbox から書けないようにする。除外を変えたら、`block-piped-excluded.sh` の列挙も合わせる
 - `allowRead` には、ツールが Bash から読む場所を足す（`~/.claude/skills/` の symlink 先、`mise.toml` の `[dotfiles]` の配置先と `[bootstrap.repos]` の clone 先、nvim のプラグインの置き場所）。減らしたら `mise run lint` を通す。設定を読めなくなったツールは、エラーを出さずに既定値で動くことが多い
 - `~/.claude` は `allowRead` で開けない。Bash に要る部分（skills・plugins・rules など）は `blockReadsOutsideWorkingDirectories` が開け直し、残りにはセッションの transcript（`~/.claude/projects`）が含まれる。履歴の分析など、その都度要るときは `/add-dir` で足す
 - 送信先（`network.allowedDomains`）は、sandbox の中で動くツールが通信する相手（`az` が使う Azure DevOps と Entra ID）と、仕様を原文で確かめる頻度が高い公式 docs（Claude Code・mise・Azure・Snowflake）だけを許可する。docs は WebFetch が抽出用のプロンプトを通して要約するので、`curl` で取得して `rg` で原文を引けるようにする。`excludedCommands` のコマンド（`gh`・git のネットワーク系）は sandbox の外で動くので、その通信先は足さない
@@ -60,7 +61,15 @@
 
 - hook は、`permissions` のパターンが取りこぼす形を拾うためにある。そのため `matcher` は tool 名だけにし、同じパターン構文で絞り込む `if` フィルタを付けない。コマンドの分解はスクリプト側で行う
 - `command` にはスクリプトのパスを直接書かず、スクリプトが無いときは `exit 2` で止める形で包む。直接書くと、改名・削除やリンクの欠落でスクリプトが無くなったときに、ガードが黙って外れる。包む形は `-x` で存在を確かめるので、スクリプトには実行ビットを付ける
+
+## git / gh の基準
+
+- Claude が確認なしで進める範囲は、作業ブランチの作成から、そのブランチへの commit・push と PR の作成まで。auto モードの classifier は、作業中のリポジトリへの push と依頼に沿った PR の作成を既定で通すので、allow を足さない
+- 確認を出す push は、リモートの ref を消す・書き換えるものと、main / master へのものに限る。force（`--force*`・`-f`・`+<refspec>`）と削除（`--delete`・`-d`・`--prune`）は `permissions.ask` に置く。`:<ref>` による削除は、ルールの末尾が `:*` になり旧来の prefix 記法と読まれるので、`block-main-push.sh` が確認を出す。全 ref に及ぶ `--mirror` は同じ hook が拒否する。自分のブランチでの作業がこの確認で止まらないよう、push 済みのブランチは履歴を書き換えずに commit を積むことを CLAUDE.md に置く
+- 宛先を書かない `git push` は ask に置く。宛先が upstream と `push.default` で決まり、パターンからは見えないため。CLAUDE.md で宛先を明示させる
 - main / master への push は 4 つの層で止める: `permissions.ask`（素直な形）、`block-main-push.sh`（refspec などの形）、git の `pre-push` hook（`core.hooksPath` で全リポジトリに効き、Claude Code の外の push も止める）、`bin/repo setup` が入れる GitHub の ruleset（hook を飛ばした push も止める）
+- `gh` の書込（PR のマージ、issue や PR の close、リポジトリの設定・ruleset・公開範囲の変更）は classifier の既定ルールが名指ししているので、permissions に重ねない。例外は、個人と仕事の文脈を owner で分ける PR の作成先（`scope-gh-pr-create.sh`）と、照合を外せる alias
+- git / gh のネットワーク系は、起動したリポジトリで単体のコマンドとして打つ。`excludedCommands` の除外はコマンドの形で外れ、外れると認証にも送信先にも届かない。外れる形は `block-piped-excluded.sh` が拒否し、CLAUDE.md が事前に伝える。他のリポジトリの GitHub 操作は `gh -R` で行い、push はそのリポジトリで起動したセッションから行う
 
 ## worktree の基準
 
@@ -81,6 +90,7 @@
 - sandbox は symlink を解決した後の実体パスで判定する。読取を許可した場所に置いた symlink からでも、`denyRead` の下は読めない（v2.1.280）。そのため deny と `credentials.files` は実体パスで書く。`~/.config/gh`（このリポジトリへの symlink）経由の表記だけでは効かない。symlink でない環境のために、`~/.config/...` の表記も併記する
 - `allowRead` に書いたパス自体が symlink だと、許可されるのは解決後の実体パスだけで、symlink のパスはホームの読取拒否に残る。読取を開けていない場所に置いた symlink（`~/.zshenv`）も、先が作業ディレクトリでも読めない（v2.1.288）。ツールは `~/.config/...` の経路で設定を開くので、`~/.config` は実ディレクトリにし、`[dotfiles]` で中身をエントリごとに symlink にする。許可したディレクトリの中にある symlink は、その先も許可されていれば読める
 - sandbox は、作業ディレクトリの下にある `.zshrc` への書込を深さに関係なく拒否する（v2.1.280）。このリポジトリは `.config/zsh/.zshrc` を追跡しているので、Bash から worktree を作ると checkout の途中で失敗する
+- sandbox の組込みの保護は、作業ディレクトリの下の `.git` の hooks・config と `.gitconfig` を覆うが、`.config/git` は覆わない。`core.hooksPath` の先（`.config/git/hooks`）に Bash から書けた（v2.1.288）
 - `herdr` は sandbox 内で動かない（`herdr status` が `Operation not permitted` で失敗する）（v2.1.280）。Claude Code の外のターミナルで実行する
 - `Read` deny の `*.pem` は `~/` の下に限る。`//**/*.pem` にすると sandbox の読取制限に合流して OS の CA バンドル（`/etc/ssl/cert.pem`）も塞ぎ、`allowedDomains` で許可した送信先にも sandbox 内の curl・git が TLS で接続できない（v2.1.288）。ホームの外の `.pem` は CA バンドルが主で、鍵はホームの下に置く前提
 - ユーザー設定に `sandbox.filesystem.denyRead: ["~/"]` を置かない。`blockReadsOutsideWorkingDirectories` と併用すると、sandbox が作業ディレクトリを開け直さず、Bash から作業中のリポジトリを読めなくなる。ホームは block 自体が閉じる（v2.1.288）

@@ -2,21 +2,52 @@
 #MISE description="Claude Code hook のテスト"
 set -uo pipefail
 
-hook=claude/hooks/block-piped-excluded.sh
+hooks="$PWD/claude/hooks"
+cwd=/repo
 rc=0
+
+# run <hook> <command>: prints the hook's stdout, returns its exit code.
+run() {
+  jq -n --arg c "$2" --arg d "$cwd" '{cwd: $d, tool_input: {command: $c}}' | bash "$hooks/$1" 2>/dev/null
+}
+
+fail() {
+  printf 'FAIL %s: want %s, got %s: %.80s\n' "$1" "$2" "$3" "$4"
+  rc=1
+}
 
 # expect <exit code> <command>
 expect() {
-  local want="$1" cmd="$2" got
-  jq -n --arg c "$cmd" '{tool_input: {command: $c}}' | bash "$hook" >/dev/null 2>&1
+  local got
+  run block-piped-excluded.sh "$2" >/dev/null
   got=$?
-  if [ "$got" -ne "$want" ]; then
-    printf 'FAIL %s: want %s, got %s: %.80s\n' "$hook" "$want" "$got" "$cmd"
-    rc=1
-  fi
+  [ "$got" -eq "$1" ] || fail block-piped-excluded.sh "$1" "$got" "$2"
+}
+
+# expect_push <ask|pass|deny> <command>, run inside $repo.
+expect_push() {
+  local out got
+  out="$(cd "$repo" && run block-main-push.sh "$2")"
+  case "$?:$out" in
+    0:*'"ask"'*)
+      got=ask
+      ;;
+    0:)
+      got=pass
+      ;;
+    2:)
+      got=deny
+      ;;
+    *)
+      got="unexpected($out)"
+      ;;
+  esac
+  [ "$got" = "$1" ] || fail block-main-push.sh "$1" "$got" "$2"
 }
 
 nl=$'\n'
+
+# block-piped-excluded.sh
 
 expect 2 'git ls-remote origin HEAD | head -1'
 expect 2 'true && git push'
@@ -39,23 +70,71 @@ expect 2 'cd $HOME/x && git push'
 expect 2 'cd "$HOME/x" && git push'
 expect 2 'cd . && git push'
 expect 2 'cd x && gh pr view'
+expect 2 'cd /x && git push'
+expect 2 'cd /x/y-z.1 && gh pr view'
+expect 2 'cd /repo/sub && gh pr view'
+expect 2 'git push > push.log'
+expect 2 'git push >> push.log'
+expect 2 'git push 2>/dev/null'
+expect 2 'git push &> push.log'
+expect 2 'gh api x --input - < body.json'
+expect 2 "gh pr create --body-file - <<'EOF'${nl}body${nl}EOF"
+expect 2 'git -C /x push'
+expect 2 'git -c push.default=current push'
+expect 2 'git --no-pager fetch'
 expect 2 $'gh\tpr view | cat'
 # Long enough to overflow a pipe buffer after an early match.
 expect 2 "git push${nl}$(printf 'echo %0100d\n' $(seq 1000))"
 
 expect 0 'git push'
 expect 0 'git push 2>&1'
-expect 0 'cd /x && git push'
-expect 0 'cd /x/y-z.1 && gh pr view'
+expect 0 'git push >&2'
+expect 0 'cd /repo && git push'
+expect 0 'cd /repo/ && gh pr view'
 expect 0 'git pull | tail'
 expect 0 'git submodule update | tail'
+expect 0 'git -C /x status'
+expect 0 'git log --oneline > log.txt'
 expect 0 "gh pr create --body \"a | b; c${nl}d\""
 expect 0 "gh pr create --body \"say \\\"a | b\\\" here\""
 expect 0 "gh api repos/x --jq '.[] | .name'"
+expect 0 "gh api repos/x --jq '.[] | select(.n > 1)'"
 expect 0 "gh api repos/x --jq \"it's | fine\""
 expect 0 "rg 'git push' README.md | head"
 expect 0 'git status | head'
 expect 0 'git log --oneline | head -5'
 expect 0 'echo high | cat'
+
+# block-main-push.sh
+
+# macOS mktemp ignores $TMPDIR without a template; an empty $repo would point git at this repo.
+repo="$(mktemp -d "${TMPDIR:-/tmp}/test-hooks.XXXXXX")" || exit 1
+trap 'rm -rf "$repo"' EXIT
+git -C "$repo" init -q -b main || exit 1
+
+expect_push ask 'git push'
+expect_push ask 'git push origin'
+expect_push ask 'git push origin main'
+expect_push ask 'git push origin HEAD:main'
+expect_push ask 'git push origin +main'
+expect_push ask 'git push origin +HEAD:main'
+expect_push ask 'git push origin :main'
+expect_push ask 'git push origin HEAD'
+expect_push ask 'git push origin @'
+expect_push ask 'git push origin HEAD:refs/heads/master'
+expect_push deny 'git push --mirror origin'
+
+git -C "$repo" switch -q -c feat/x
+
+expect_push pass 'git push'
+expect_push pass 'git push -u origin feat/x'
+expect_push pass 'git push origin HEAD'
+expect_push pass 'git push origin +feat/x'
+expect_push pass 'git push origin feat/x:feat/y'
+expect_push pass 'git push origin :'
+expect_push ask 'git push origin :feat/y'
+expect_push ask 'git push origin +:refs/heads/feat/y'
+expect_push ask 'git push origin HEAD:main'
+expect_push ask 'git push origin +main'
 
 exit $rc

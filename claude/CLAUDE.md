@@ -44,7 +44,8 @@
 - 公式 docs や `--help` の代わりにリポジトリ内の実測メモを使えるのは、そのメモが記録バージョンを明示していて現行バージョンと一致するときだけ。一致しない・バージョンの記載が無い場合は一次情報を引き直す
 - 文字列・ファイル名・単純な識別子検索は `rg`、構文構造を条件にする検索・分析・変換は `ast-grep`（rule 作成・検証手順は `ast-grep:ast-grep` Skill に従う）
 - `ast-grep` で書き換えるときは、まず match と diff を確認してから適用する。対象言語の parser が対応していない場合は `rg` や言語固有ツールへ戻す
-- git のネットワーク系（`push` / `fetch` / `clone` / `ls-remote`）と `gh` は 1 行 1 コマンドで実行し、パイプ・`&&`・`;`・`$(...)` でつながない。sandbox の除外が単純コマンドにしか効かないため。`git pull` は除外していないので `git fetch` と `git merge` に分ける。`cd` は作業中のリポジトリでは付けず、別のディレクトリでは引用符・`~`・変数を含まない絶対パスで書く。出力はツール自身のオプション（`--json` / `--jq`、`-n`）で絞る
+- git のネットワーク系（`push` / `fetch` / `clone` / `ls-remote`）と `gh` は、起動したリポジトリで 1 行 1 コマンドとして実行する。パイプ・`&&`・`;`・`$(...)`・ファイルへのリダイレクト（`2>/dev/null` を含む）・`cd`・`git -C` を付けると sandbox の除外が外れ、通信も gh の設定読取も失敗する。`git pull` は除外していないので `git fetch` と `git merge` に分ける。出力はツール自身のオプション（`--json` / `--jq`、`-n`）で絞る。他のリポジトリの GitHub 操作は `gh -R <owner>/<repo>` で行う
+  - git / gh に渡すファイル（PR 本文など）は、Write tool で作業ディレクトリの `.scratch/` に書き、同じ相対パスを渡す。作業ディレクトリの外のパスは auto モードでも確認が出て、`$TMPDIR` は sandbox の内外で別の場所を指す
   - GitHub 上のコードは、数ファイルなら `gh api -H 'Accept: application/vnd.github.raw' repos/<owner>/<repo>/contents/<path>`（`--jq` も `base64 -d` も付けない）、横断して読む・grep する・試すなら `gh repo clone <owner>/<repo> /tmp/claude/src/<repo> -- --depth 1` で取得し、以降は sandbox 内で読む
 - Bash の外部通信は sandbox の `allowedDomains` 以外へ出られず、`allowed_domains` を渡しても広がらない。`allowedDomains` にある公式 docs は `curl` で取得して `rg` で原文を確かめ、それ以外の Web の docs は WebFetch、依存の取得（`bun add`・初回の `cargo build`・`mise install`）は `!` でユーザーに頼む
 - 作業ディレクトリの外のパスを Bash が `Operation not permitted` で、ファイルツールが `blockReadsOutsideWorkingDirectories` で拒否したら、読取の許可が無い。回避策は探さず、`/add-dir` か `allowRead` への追加をユーザーに頼む
@@ -56,6 +57,7 @@
 
 - コミット・push・PR 作成は、作業前に作成したブランチ上で行う
 - push は自分の作業ブランチ（セッション開始時のブランチ or 自分が作成したブランチ）のみ。main/master へ直接 push しない
+- push は宛先を明示する（`git push -u origin <branch>`）。push 済みのブランチを直すときは、履歴を書き換えずに commit を積む。宛先を書かない push・force push・リモートの ref の削除は確認が出る
 - 破壊的操作（`git reset --hard`、強制切替、削除など）は事前に確認する
 - 1 リポジトリに複数の worktree があり得る。他の worktree の作業を壊さないよう、`git worktree remove` / `git worktree prune` / worktree が使用中のブランチの削除は事前に確認する
 - ユーザーの未コミット変更を戻さない

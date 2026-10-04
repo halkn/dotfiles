@@ -1,11 +1,16 @@
 #!/usr/bin/env bash
-# PreToolUse(Bash): ask before a direct push to main/master.
+# PreToolUse(Bash): ask before a direct push to main/master, and before a refspec deletion
+# (`git push origin :<ref>`) of any branch.
+#
+# The deletion lives here rather than in `permissions.ask` because a rule for it would end in
+# `:*`, which Claude Code reads as the legacy prefix syntax and then matches literally.
 #
 # The `permissions.ask` patterns (`Bash(git push * main*)`) require a space before "main",
 # so any push that never spells that token out — a colon refspec (`git push origin HEAD:main`),
-# a deletion (`git push origin :main`), `--all` — slips past them. This hook parses the push
-# instead and resolves the destination branch first. `--mirror` can delete remote-only refs,
-# so it is treated as a force push and denied outright rather than asked.
+# a deletion (`git push origin :main`), a forced refspec (`+main`), `HEAD` while main is checked
+# out, `--all` — slips past them. This hook parses the push instead and resolves the destination
+# branch first. `--mirror` can delete remote-only refs, so it is treated as a force push and
+# denied outright rather than asked.
 #
 # /bin/bash on macOS is 3.2, where an empty array under `set -u` raises unbound variable, so
 # arguments are accumulated in plain variables instead of arrays.
@@ -44,7 +49,7 @@ is_protected_branch() {
 
 # Asks when the destination half of `<src>:<dst>` (or a bare `<ref>`) is main/master.
 check_refspec() {
-  local refspec="$1" dst
+  local refspec="${1#+}" dst
   case "$refspec" in
     *:*)
       dst="${refspec#*:}"
@@ -55,9 +60,19 @@ check_refspec() {
   esac
   [ -n "$dst" ] || return 0
   dst="${dst#refs/heads/}"
+  case "$dst" in
+    HEAD | @)
+      dst="$(run_git branch --show-current 2>/dev/null || true)"
+      ;;
+  esac
   if is_protected_branch "$dst"; then
-    ask "main/master への直接 push（refspec: ${refspec}）を実行してよいですか?"
+    ask "main/master への直接 push（refspec: $1）を実行してよいですか?"
   fi
+  case "$refspec" in
+    :*)
+      ask "リモートのブランチ ${dst} を削除する push（refspec: $1）を実行してよいですか?"
+      ;;
+  esac
 }
 
 run_git() {
