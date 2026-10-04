@@ -55,7 +55,9 @@
 
 常時適用のガードレール:
 
-- コミット・push・PR 作成は、作業前に作成したブランチ上で行う
+- コミット・push・PR 作成は、作業前に作成したブランチ上で行う。commit は区切りごとに分ける
+- push と PR 作成は、依頼が PR までを含むときだけ行う。編集や commit の依頼は push の依頼ではない。PR を作る依頼は、その PR のブランチへの以後の push を含む
+- merge、main/master を変える操作、ガードの変更（ruleset・branch protection・default branch・公開範囲・alias）は、ユーザーが対象を名指しして指示したときだけ行う
 - push は自分の作業ブランチ（セッション開始時のブランチ or 自分が作成したブランチ）のみ。main/master へ直接 push しない
 - push は宛先を明示する（`git push -u origin <branch>`）。push 済みのブランチを直すときは、履歴を書き換えずに commit を積む。リモートの ref の削除・force push・保護ブランチへの push は pre-push hook が拒否するので、必要ならユーザーに Claude Code の外のターミナルでの実行を頼む
 - 破壊的操作（`git reset --hard`、強制切替、削除など）は事前に確認する
