@@ -1,11 +1,31 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Secrets
+.env
+.env.*
+!.env.example
+
 # Personal scratch workspace
 .scratch/
 
 # claude
 **/.claude/settings.local.json
 **/.claude/.cc-writes/
+**/.claude/**/*.log
+.claude/worktrees/
 
 # mise
 mise.local.toml
+mise.*.local.toml
+.mise.local.toml
+.mise.*.local.toml
+mise/*.local.toml
+.mise/*.local.toml
 mise.local.lock
+mise.*.local.lock
 
+Icon[]
