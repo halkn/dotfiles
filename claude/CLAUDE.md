@@ -45,8 +45,9 @@
 - 文字列・ファイル名・単純な識別子検索は `rg`、構文構造を条件にする検索・分析・変換は `ast-grep`（rule 作成・検証手順は `ast-grep:ast-grep` Skill に従う）
 - `ast-grep` で書き換えるときは、まず match と diff を確認してから適用する。対象言語の parser が対応していない場合は `rg` や言語固有ツールへ戻す
 - git のネットワーク系（`push` / `fetch` / `clone` / `ls-remote`）と `gh` は、起動したリポジトリで単体のコマンドとして打つ。前置き（`cd`・`env` などの wrapper・`VAR=…`）、パイプ・`&&`・`;`・`$(...)`、ファイルへのリダイレクト（`2>&1` は可）、`git -C`、作業ディレクトリの外への `git clone` があると sandbox の除外が外れ、通信も gh の設定読取も失敗する（CONNECT 403 や設定読取エラーは環境の制約ではなく形の問題）。多くの形は hook が拒否する。`git pull` は `git fetch` と `git merge` に分け、出力はツール自身のオプション（`--json` / `--jq`、`-n`）で絞る。他のリポジトリの GitHub 操作は `gh -R <owner>/<repo>` で行う
-  - git / gh に渡すファイル（PR 本文など）は、Write tool で作業ディレクトリの `.scratch/` に書き、同じ相対パスを渡す。作業ディレクトリの外のパスは auto モードでも確認が出て、`$TMPDIR` は sandbox の内外で別の場所を指す
+  - git / gh に渡すファイル（PR 本文など）は、Write tool で `.scratch/` に書き、同じ相対パスを渡す。作業ディレクトリの外のパスは auto モードでも確認が出て、`$TMPDIR` は sandbox の内外で別の場所を指す
   - GitHub 上のコードは、数ファイルなら `gh api -H 'Accept: application/vnd.github.raw' repos/<owner>/<repo>/contents/<path>`（`--jq` も `base64 -d` も付けない）、横断して読む・grep する・試すなら `gh repo clone <owner>/<repo> /tmp/claude/src/<repo> -- --depth 1` で取得し、以降は sandbox 内で読む
+- `.scratch/`（global gitignore 済み）は作業ディレクトリ内の使い捨て置き場。自分が作ったファイルは用が済んだら消す（PR / issue を作った後の本文、確認が終わったファイル、結論を docs や commit に移した後の probe）。公式 docs の写しは置かない。自分が作っていないファイルには触れない
 - Bash の外部通信は sandbox の `allowedDomains` 以外へ出られず、`allowed_domains` を渡しても広がらない。`allowedDomains` にある公式 docs は `curl` で取得して `rg` で原文を確かめ、それ以外の Web の docs は WebFetch、依存の取得（`bun add`・初回の `cargo build`・`mise install`）は `!` でユーザーに頼む
 - 作業ディレクトリの外のパスを Bash が `Operation not permitted` で、ファイルツールが `blockReadsOutsideWorkingDirectories` で拒否したら、読取の許可が無い。回避策は探さず、`/add-dir` か `allowRead` への追加をユーザーに頼む
 - JSON/YAML: 値の確認は JSON が `jq`、YAML が `yq`。YAML 構文は `ryl`（`python -c "import yaml"` は使わない）
@@ -73,5 +74,5 @@
 ## 報告
 
 - 実行できなかった検証は、理由と代わりに何を確認したかを書く
-- 自分で観測できない変更（TUI・キー操作・端末描画・sandbox の外でしか動かないもの）は、完了報告に、ユーザーが手で確認する手順を番号付きで添える。確認用のファイルは、リポジトリの `.scratch/`（global gitignore 済み）に作る
+- 自分で観測できない変更（TUI・キー操作・端末描画・sandbox の外でしか動かないもの）は、完了報告に、ユーザーが手で確認する手順を番号付きで添える。確認用のファイルは `.scratch/` に作る
 - ファイルに書き出すドキュメント・報告は必要な範囲に留め、水増しの節・冗長な要約・定型文を入れない
