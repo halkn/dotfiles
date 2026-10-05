@@ -15,6 +15,7 @@
 # claude
 **/.claude/settings.local.json
 **/.claude/.cc-writes/
+**/.claude/**/*.log
 .claude/worktrees/
 
 # mise
