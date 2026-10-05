@@ -12,8 +12,10 @@
 # claude
 **/.claude/settings.local.json
 **/.claude/.cc-writes/
+.claude/worktrees/
 
 # mise
 mise.local.toml
+mise.*.local.toml
 mise.local.lock
 

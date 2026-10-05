@@ -11,17 +11,12 @@
 # machine-local mise overrides
 .config/mise/config.local.toml
 .config/mise/config.*.local.toml
-mise.local.toml
-mise.*.local.toml
 
 # machine-local neovim overrides
 .config/nvim/lua/local.lua
 
 # machine-local git identity
 .config/git/config.local
-
-# Claude Code worktrees (ephemeral agent checkouts)
-.claude/worktrees/
 
 # uv installer receipt
 .config/uv/uv-receipt.json
