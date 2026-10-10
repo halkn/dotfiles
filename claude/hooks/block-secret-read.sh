@@ -24,9 +24,19 @@ deny_path() {
   deny "Azure/Snowflake/GitHub の認証情報（~/.azure・~/.snowflake・~/.snowsql・~/.config/gh・~/.config/snowflake）への参照は禁止です。認証は az / snowflake / gh CLI 経由で行ってください。"
 }
 
+# Matched in-process: `printf | grep -q` under pipefail reads an early match on a long
+# command as no match, since grep exits and printf dies of SIGPIPE. Unlike grep, `^` and `$`
+# anchor the whole string rather than each line; a newline still satisfies the character
+# classes around the path, so a match at a line boundary is caught all the same.
+env_re='\$\{?(AZURE|SNOWFLAKE|SNOWSQL|GH|GITHUB)_'
+dot_re='/\./'
+# A preceding alphanumeric or underscore excludes the match, so hostnames such as
+# `management.azure.com` are not caught.
+path_re='(^|[^[:alnum:]_])(\.(azure|snowflake|snowsql)|\.config/(gh|snowflake))(/|[[:space:];|&<>)]|$)'
+
 # sandbox.credentials.envVars `mode: "deny"` is the primary guard, but excludedCommands
 # such as `gh *` run outside the sandbox, so the expansion is caught here as well.
-if printf '%s' "$command" | grep -Eq '\$\{?(AZURE|SNOWFLAKE|SNOWSQL|GH|GITHUB)_'; then
+if [[ "$command" =~ $env_re ]]; then
   deny "Azure/Snowflake/GitHub の認証系環境変数の展開は禁止です（値が transcript に漏洩するため）。設定値は az / snowflake / gh CLI のサブコマンド経由で扱ってください。"
 fi
 
@@ -35,14 +45,12 @@ fi
 normalized="$(printf '%s' "$command" | tr -d "\"'" | sed -E 's#/{2,}#/#g')"
 # Overlaps such as `/././` need repeated passes, and BSD sed does not accept label branches
 # (`:a; ...; ta`) in a one-liner, so the loop lives in the shell.
-while printf '%s' "$normalized" | grep -q '/\./'; do
+while [[ "$normalized" =~ $dot_re ]]; do
   normalized="$(printf '%s' "$normalized" | sed -E 's#/\./#/#g')"
 done
 normalized="$(printf '%s' "$normalized" | sed -E 's#(^|[[:space:]<>|;&=(])\./#\1#g')"
 
-# A preceding alphanumeric or underscore excludes the match, so hostnames such as
-# `management.azure.com` are not caught.
-if printf '%s' "$normalized" | grep -Eq '(^|[^[:alnum:]_])(\.(azure|snowflake|snowsql)|\.config/(gh|snowflake))(/|[[:space:];|&<>)]|$)'; then
+if [[ "$normalized" =~ $path_re ]]; then
   deny_path
 fi
 
