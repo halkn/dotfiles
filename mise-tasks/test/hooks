@@ -122,6 +122,49 @@ expect 0 'git status | head'
 expect 0 'git log --oneline | head -5'
 expect 0 'echo high | cat'
 
+# block-secret-read.sh
+
+# expect_secret <exit code> <command>
+expect_secret() {
+  local got
+  run block-secret-read.sh "$2" >/dev/null
+  got=$?
+  [ "$got" -eq "$1" ] || fail block-secret-read.sh "$1" "$got" "$2"
+}
+
+pad="$(printf 'echo %0100d\n' $(seq 1000))"
+
+expect_secret 2 'cat ~/.azure/x'
+expect_secret 2 'ls ~/.azure'
+expect_secret 2 'ls ~/.snowflake/'
+expect_secret 2 'cat ~/.snowsql/config'
+expect_secret 2 'cat ~/.config/gh/hosts.yml'
+expect_secret 2 'cat ~/.config/snowflake/config.toml'
+expect_secret 2 'cat ~/.azure;true'
+expect_secret 2 "cd ~${nl}cat .azure/x"
+expect_secret 2 "ls ~/.azure${nl}true"
+expect_secret 2 'cat ~/".azure"/x'
+expect_secret 2 "cat ~/'.config/gh'/hosts.yml"
+expect_secret 2 'cat ~/.config//gh/hosts.yml'
+expect_secret 2 'cat ~/.config/./gh/hosts.yml'
+expect_secret 2 'cat ~/.config/././snowflake/x'
+expect_secret 2 'echo $AZURE_X'
+expect_secret 2 'echo ${GH_TOKEN}'
+expect_secret 2 'echo $GITHUB_TOKEN'
+expect_secret 2 'echo $SNOWFLAKE_PASSWORD'
+expect_secret 2 'echo $SNOWSQL_PWD'
+# Long enough to overflow a pipe buffer after an early match.
+expect_secret 2 "cat ~/.azure/x${nl}${pad}"
+expect_secret 2 "echo \$AZURE_X${nl}${pad}"
+expect_secret 2 "cat ~/.config/./gh/hosts.yml${nl}${pad}"
+
+expect_secret 0 'curl https://management.azure.com/x'
+expect_secret 0 'ls ~/.config/ghostty'
+expect_secret 0 'ls ~/.azurex'
+expect_secret 0 'echo $HOME $GHOST'
+expect_secret 0 'mise run lint'
+expect_secret 0 "mise run lint${nl}${pad}"
+
 # .config/git/hooks/pre-push, run by `git push --dry-run` against a scratch bare remote.
 
 # macOS mktemp ignores $TMPDIR without a template; an empty $pp would point git at this repo.
