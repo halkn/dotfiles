@@ -18,12 +18,12 @@
 # machine-local git identity
 .config/git/config.local
 
-# herdr runtime files
-.config/herdr/*.log
-.config/herdr/session.json
-.config/herdr/release-notes.json
-.config/herdr/.plugins.lock
-.config/herdr/plugins.json
+# herdr keeps its runtime state (sessions, snapshots, logs, sockets) beside
+# config.toml, and new versions add files there, so only the config is listed.
+.config/herdr/*
+!.config/herdr/config.toml
+!.config/herdr/*.zsh
+!.config/herdr/plugins/
 .config/herdr/plugins/*
 !.config/herdr/plugins/config/
 .config/herdr/plugins/config/*
