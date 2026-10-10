@@ -38,6 +38,7 @@ tool の cache・state・data は XDG の各ディレクトリに置く。消え
 - script はリンク先のパス（`~/.config/herdr/...`）で `.config/herdr/config.toml` から呼ばれる。移動・改名するときは、`config.toml` の参照も同時に直す
 - エラーを見せる経路では、popup が閉じる前に止める（`_ui_die`）
 - script（`herdr-*.zsh`）には実行ビットを付ける
+- `.config/herdr/` は herdr の runtime state と同居するので、`.gitignore` で追跡するファイルだけを許可している。`config.toml`・直下の `*.zsh`・plugin の `config.toml` 以外のファイルを足すときは、`.gitignore` に `!` の行を足す。足さないと git にも `mise run lint` にも黙って含まれない
 
 ## script の書き方
 

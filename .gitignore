@@ -18,13 +18,16 @@
 # machine-local git identity
 .config/git/config.local
 
-# herdr runtime files
-.config/herdr/*.log
-.config/herdr/session.json
-.config/herdr/release-notes.json
-.config/herdr/.plugins.lock
-.config/herdr/plugins.json
+# herdr writes its runtime state (sessions, snapshots, logs, an ssh-agent
+# symlink) beside config.toml and adds new files there across versions
+# (herdr 0.9.3), so the tracked files are allowlisted instead.
+.config/herdr/*
+!.config/herdr/config.toml
+!.config/herdr/*.zsh
+!.config/herdr/plugins/
 .config/herdr/plugins/*
 !.config/herdr/plugins/config/
 .config/herdr/plugins/config/*
 !.config/herdr/plugins/config/persiyanov.reviewr/
+.config/herdr/plugins/config/persiyanov.reviewr/*
+!.config/herdr/plugins/config/persiyanov.reviewr/config.toml
