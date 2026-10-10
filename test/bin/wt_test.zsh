@@ -76,9 +76,8 @@ git -C "$main" branch -D -q remote-only
 git -C "$main" update-ref -d refs/remotes/origin/remote-only
 
 # A stub gh: `pr list --state merged --head <b>` answers the head oid of each
-# merged PR recorded in $STUB_MERGED_DIR/<b>, any other `pr list` answers
-# $STUB_PR_ROWS, `pr view` answers $STUB_PR_VIEW, and `pr checkout` makes the
-# branch.
+# merged PR recorded in $STUB_MERGED_DIR/<b>, `pr view` answers $STUB_PR_VIEW,
+# and `pr checkout` makes the branch.
 stub=$scratch/stub
 mkdir -p "$stub"
 cat >"$stub/gh" <<'STUB'
@@ -87,10 +86,6 @@ args=("$@")
 case "$1 $2" in
   'pr list')
     head=${args[(i)--head]}
-    if ((head > ${#args})); then
-      print -r -- "${STUB_PR_ROWS:-}"
-      exit
-    fi
     b=${args[head + 1]}
     [[ -f ${STUB_MERGED_DIR:-/nonexistent}/$b ]] && cat -- "$STUB_MERGED_DIR/$b"
     ;;
@@ -114,11 +109,13 @@ status_of() {
   print $?
 }
 
-# ── path / new ───────────────────────────────────────
+# ── new ──────────────────────────────────────────────
 
 # The directory is <owner>/<repo> of the main checkout plus the branch as one
-# path segment.
-check 'path' "$WT_ROOT/owner/proj/feature-a" "$(in_main path feature/a)"
+# path segment. Removed again so the listing below stays as it is.
+check 'new (branch with /)' "$WT_ROOT/owner/proj/feature-a" "$(in_main new feature/a 2>/dev/null)"
+git -C "$main" worktree remove "$WT_ROOT/owner/proj/feature-a"
+git -C "$main" branch -D -q feature/a
 
 got=$(in_main new topic 2>/dev/null)
 check 'new (fresh branch)' "$WT_ROOT/owner/proj/topic" "$got"
@@ -177,20 +174,6 @@ check 'pr (again)' "$WT_ROOT/owner/proj/pr-branch" \
 # Another pull request whose head folds to the same directory.
 STUB_PR_VIEW=$'pr/branch\ttrue' in_main pr 9 >/dev/null 2>&1 &&
   fail 'pr (directory holds another branch) should fail'
-
-# ── prs ──────────────────────────────────────────────
-
-# `<display>\t<number>`: a picker shows the first column and hands back the
-# second to `wt pr`. A long title is cut so the branch and author stay visible.
-long='A title long enough to run past the fifty columns kept'
-got=$(STUB_PR_ROWS=$'12\tFix thing\tfix-thing\talice\n3\t'"$long"$'\tlong\tbob' in_main prs)
-check 'prs' \
-  "$(
-    printf '#%-5s %-50s %s (@%s)\t%s\n' 12 'Fix thing' fix-thing alice 12
-    printf '#%-5s %-50s %s (@%s)\t%s' 3 "${long[1,50]}" long bob 3
-  )" \
-  "$got"
-check 'prs (none open)' '' "$(STUB_PR_ROWS='' in_main prs)"
 
 # ── list ─────────────────────────────────────────────
 

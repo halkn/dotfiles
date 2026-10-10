@@ -18,9 +18,7 @@ usage: wt <command> [<args>]
 
   root                            print $WT_ROOT
   list [--full-path] [<query>]    the worktrees under it, one per line
-  path <branch>                   where <branch> of this repository would land
   new <branch> [<base>]           create it (or reuse it) and print its path
-  prs                             the open pull requests, `<display>\t<number>`
   pr <number>                     create it for a pull request and print its path
   rm [-f] [-D | -k] <path|branch>...  remove worktrees and their branches
   prune [--dry-run]               remove the worktrees of merged pull requests
@@ -199,16 +197,6 @@ _wt_cmd_list() {
   _wt_list "$full" "$query"
 }
 
-_wt_cmd_path() {
-  local branch=${1:-} main
-  [[ -n $branch ]] || {
-    print -u2 'usage: wt path <branch>'
-    return 1
-  }
-  main=$(_wt_main) || return 1
-  _wt_path "$main" "$branch"
-}
-
 # An existing directory is handed back only when it holds the branch asked for:
 # `/` folds to `-`, so another branch may be sitting there.
 _wt_reuse() {
@@ -258,21 +246,6 @@ _wt_cmd_new() {
   fi
   _wt_trust_mise "$wt_path"
   print -r -- "$wt_path"
-}
-
-# `<display>\t<number>` per open pull request, for a picker to show the first
-# column and hand the second to `wt pr`. gh's own order is kept.
-_wt_cmd_prs() {
-  local rows line
-  local -a f
-  _wt_require gh wt || return 1
-  _wt_main >/dev/null || return 1
-  rows=$(gh pr list --limit 100 --json number,title,headRefName,author \
-    --jq '.[] | [.number, .title, .headRefName, .author.login] | @tsv') || return 1
-  for line in ${(f)rows}; do
-    f=("${(@ps:\t:)line}")
-    printf '#%-5s %-50s %s (@%s)\t%s\n' "$f[1]" "${${f[2]}[1,50]}" "$f[3]" "$f[4]" "$f[1]"
-  done
 }
 
 # `gh pr checkout` is the only thing that gets a fork's head right, so the
@@ -455,17 +428,9 @@ case ${1:-} in
     shift
     _wt_cmd_list "$@"
     ;;
-  path)
-    shift
-    _wt_cmd_path "$@"
-    ;;
   new)
     shift
     _wt_cmd_new "$@"
-    ;;
-  prs)
-    shift
-    _wt_cmd_prs "$@"
     ;;
   pr)
     shift
