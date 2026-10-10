@@ -18,8 +18,9 @@
 # machine-local git identity
 .config/git/config.local
 
-# herdr keeps its runtime state (sessions, snapshots, logs, sockets) beside
-# config.toml, and new versions add files there, so only the config is listed.
+# herdr writes its runtime state (sessions, snapshots, logs, an ssh-agent
+# symlink) beside config.toml and adds new files there across versions
+# (herdr 0.9.3), so the tracked files are allowlisted instead.
 .config/herdr/*
 !.config/herdr/config.toml
 !.config/herdr/*.zsh
@@ -28,3 +29,5 @@
 !.config/herdr/plugins/config/
 .config/herdr/plugins/config/*
 !.config/herdr/plugins/config/persiyanov.reviewr/
+.config/herdr/plugins/config/persiyanov.reviewr/*
+!.config/herdr/plugins/config/persiyanov.reviewr/config.toml
