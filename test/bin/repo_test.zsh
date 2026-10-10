@@ -82,49 +82,7 @@ check 'list (query, no match)' '' "$(list nothing-here)"
 # An empty root is an empty listing rather than a glob error.
 check 'list (empty root)' '' "$(REPO_ROOT=$scratch/nowhere repo list)"
 
-# ── dest ─────────────────────────────────────────────
-
-# Where a spec lands is what `get` would clone into, so it answers without
-# touching the network.
-dest() { REPO_ROOT=/r repo dest "$1"; }
-
-check 'dest (owner/repo)' /r/github.com/halkn/dotfiles "$(dest halkn/dotfiles)"
-check 'dest (ssh)' /r/github.com/halkn/dotfiles "$(dest git@github.com:halkn/dotfiles.git)"
-check 'dest (https)' /r/github.com/halkn/dotfiles "$(dest https://github.com/halkn/dotfiles)"
-check 'dest (https, .git)' /r/github.com/halkn/dotfiles "$(dest https://github.com/halkn/dotfiles.git)"
-
-# Azure DevOps spells the repository behind a `_git` segment, which is not part
-# of the layout on disk.
-check 'dest (azure)' /r/dev.azure.com/org/project/repo \
-  "$(dest https://dev.azure.com/org/project/_git/repo)"
-
-check 'dest (host shorthand)' /r/github.com/halkn/dotfiles \
-  "$(dest github.com/halkn/dotfiles)"
-
-# A trailing slash must not make a two-segment spec look like three, which would
-# drop the host segment and land the clone off the layout.
-check 'dest (trailing slash)' /r/github.com/halkn/dotfiles "$(dest halkn/dotfiles/)"
-check 'dest (url, trailing slash)' /r/github.com/halkn/dotfiles \
-  "$(dest https://github.com/halkn/dotfiles/)"
-
-# ── url ──────────────────────────────────────────────
-
-url() { repo url "$1"; }
-
-check 'url (owner/repo)' https://github.com/halkn/dotfiles "$(url halkn/dotfiles)"
-check 'url (host shorthand)' https://github.com/halkn/dotfiles \
-  "$(url github.com/halkn/dotfiles)"
-check 'url (azure shorthand)' https://dev.azure.com/org/project/_git/repo \
-  "$(url dev.azure.com/org/project/_git/repo)"
-
-# A spec git can already read is handed over untouched, so an ssh remote stays
-# ssh instead of being rewritten to https.
-check 'url (ssh)' git@github.com:halkn/dotfiles.git \
-  "$(url git@github.com:halkn/dotfiles.git)"
-check 'url (https)' https://github.com/halkn/dotfiles.git \
-  "$(url https://github.com/halkn/dotfiles.git)"
-
-# ── get and url, against stub git and gh ─────────────
+# ── get, against stub git and gh ─────────────────────
 
 # git and gh are replaced rather than reached for: what is asserted is which
 # calls `get` makes and what it lets through to stdout, not their answers.
@@ -148,9 +106,6 @@ cat >"$tools/gh" <<'STUB'
 print -r -- "gh $*" >>"$STUB_LOG"
 case "$*" in
   'api user --jq .login') print -r -- halkn ;;
-  'repo list'*) print -r -- 'halkn/zebra
-halkn/present
-other/thing' ;;
 esac
 STUB
 chmod +x "$tools/git" "$tools/gh"
@@ -180,21 +135,59 @@ run_stubbed get halkn/bogus >/dev/null 2>&1
 [[ $(<"$scratch/log") == *clone* ]] ||
   fail_arg 'get (dir without .git): expected a clone'
 
-# gh's order is kept: `gh repo list` sorts by what was pushed to last, which is
-# the order a picker wants. Sorting here would throw that away.
-check 'remotes' 'halkn/zebra
-halkn/present
-other/thing' "$(run_stubbed remotes)"
+# How a spec is read shows in the one call that uses it: `git clone <url> <dest>`.
+# Each case gets a root of its own, so an earlier clone never stands in for one.
+clone() {
+  local root
+  root=$(mktemp -d "$scratch/clone.XXXXXX") || return 1
+  : >"$scratch/log"
+  PATH=$tools STUB_LOG=$scratch/log REPO_ROOT=$root "$repo_bin" get "$1" >/dev/null 2>&1
+  print -r -- "${$(<"$scratch/log")//$root/<root>}"
+}
 
-check 'remotes (query)' 'halkn/zebra
-halkn/present' "$(run_stubbed remotes halkn)"
+check 'clone (owner/repo)' \
+  'git clone https://github.com/halkn/dotfiles <root>/github.com/halkn/dotfiles' \
+  "$(clone halkn/dotfiles)"
 
-check 'remotes (query, no match)' '' "$(run_stubbed remotes nothing-here)"
+# A spec git can already read is handed over untouched, so an ssh remote stays
+# ssh instead of being rewritten to https.
+check 'clone (ssh)' \
+  'git clone git@github.com:halkn/dotfiles.git <root>/github.com/halkn/dotfiles' \
+  "$(clone git@github.com:halkn/dotfiles.git)"
+check 'clone (https)' \
+  'git clone https://github.com/halkn/dotfiles <root>/github.com/halkn/dotfiles' \
+  "$(clone https://github.com/halkn/dotfiles)"
+check 'clone (https, .git)' \
+  'git clone https://github.com/halkn/dotfiles.git <root>/github.com/halkn/dotfiles' \
+  "$(clone https://github.com/halkn/dotfiles.git)"
 
-# A bare name resolves the same way in every subcommand that takes a spec.
-check 'url (bare name)' https://github.com/halkn/a-name "$(run_stubbed url a-name)"
-check 'dest (bare name)' "$stub_root/github.com/halkn/a-name" \
-  "$(run_stubbed dest a-name)"
+# Azure DevOps spells the repository behind a `_git` segment, which is not part
+# of the layout on disk.
+check 'clone (azure)' \
+  'git clone https://dev.azure.com/org/project/_git/repo <root>/dev.azure.com/org/project/repo' \
+  "$(clone https://dev.azure.com/org/project/_git/repo)"
+check 'clone (azure shorthand)' \
+  'git clone https://dev.azure.com/org/project/_git/repo <root>/dev.azure.com/org/project/repo' \
+  "$(clone dev.azure.com/org/project/_git/repo)"
+
+check 'clone (host shorthand)' \
+  'git clone https://github.com/halkn/dotfiles <root>/github.com/halkn/dotfiles' \
+  "$(clone github.com/halkn/dotfiles)"
+
+# A trailing slash must not make a two-segment spec look like three, which would
+# drop the host segment and land the clone off the layout.
+check 'clone (trailing slash)' \
+  'git clone https://github.com/halkn/dotfiles <root>/github.com/halkn/dotfiles' \
+  "$(clone halkn/dotfiles/)"
+check 'clone (url, trailing slash)' \
+  'git clone https://github.com/halkn/dotfiles <root>/github.com/halkn/dotfiles' \
+  "$(clone https://github.com/halkn/dotfiles/)"
+
+# A bare name is one of this account's, resolved through gh.
+check 'clone (bare name)' \
+  'gh api user --jq .login
+git clone https://github.com/halkn/a-name <root>/github.com/halkn/a-name' \
+  "$(clone a-name)"
 
 # ── ruleset ──────────────────────────────────────────
 
@@ -261,7 +254,6 @@ expect_fail 'repo setup: expected at most one repository' setup halkn/one halkn/
 expect_fail 'repo get: unknown option' get --nope halkn/dotfiles
 expect_fail 'usage: repo get' get
 expect_fail 'usage: repo create' create
-expect_fail 'repo remotes: expected at most one query' remotes one two
 
 # A repository this account cannot name is not a spec to resolve. Checked before
 # gh is reached for, so it is reported as the typo it is on a machine with no gh.
@@ -285,7 +277,6 @@ expect_missing_gh() {
 }
 
 expect_missing_gh get a-bare-name
-expect_missing_gh remotes
 expect_missing_gh create a-bare-name
 expect_missing_gh setup halkn/dotfiles
 
