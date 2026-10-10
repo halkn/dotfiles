@@ -84,8 +84,9 @@
 - gh の書込のうち、main / master を変える操作（`gh pr merge`）とリポジトリのガードの変更（`gh repo edit|rename|archive|unarchive|sync`）は、素直な形に限り、ユーザーが指示した後でも `permissions.ask` で確認する。ruleset は PR を求めるが承認は求めないので、PR を作れる Claude は merge もできる。同じことを別の形（サブコマンドの前のフラグ、`gh api` の REST・GraphQL）で行う経路と、他のリポジトリへの PR の作成は、classifier の既定ルール（Merge Without Review・CI Bypass・Create Public Surface・Auto-Mode Bypass、v2.1.289）に任せ、hook で重ねない。ユーザーが名指しした後や、人の承認後の merge は確認なしで通り得るが、Claude が素直な形を避けて打つ場面は意図的な回り込みに限られるので許容する
 - トークンの表示と認証の変更（`gh auth token|login|refresh|switch|logout|setup-git`）、リポジトリの削除（`gh repo delete`）、`gh api` での ref の直接操作（`git/refs`）、拡張の導入（`gh extension install`）は、素直な形を deny に置く。gh は sandbox の外で動き、`sandbox.credentials` が効かないため。パターンをすり抜ける形（結合したフラグ、サブコマンドの前のフラグ、`gh api` での DELETE）は classifier（Credential Materialization・Irreversible Deletion）に任せる。alias は照合を外せるので ask に置く
 - gh のガードは、Claude 専用のトークンではなく `permissions` と classifier で持つ。merge と ref の更新は push と同じ Contents の書込権限で動くので、トークンの権限では分けられない。トークンで閉じられるのは Administration（branch protection・ruleset・リポジトリ設定）だけで、個人のリポジトリを自分が書いたコードで扱う範囲では、パターンをすり抜ける形が残っても許容する。他人が書いた内容（公開リポジトリの issue や PR、第三者のリポジトリ）を auto モードで扱う場面が増えたら、トークンで Administration を外すことを見直す
+- Azure DevOps（`az repos`）の merge とブランチポリシーの変更は、`permissions` にも classifier の既定ルールにも止められず、CLAUDE.md の Git の規則だけで守る。実測できる環境で問題が出たら、gh と同じく素直な形を ask に足す
 - 人の gh のトークンにも、Claude の作業に要らない scope（`admin:public_key`・`workflow`）は付けない。git の通信は SSH で、gh のトークンを使わない
-- git / gh のネットワーク系は、起動したリポジトリで単体のコマンドとして打つ。`excludedCommands` の除外はコマンドの形で外れ、外れると認証にも送信先にも届かない。外れる形は `block-piped-excluded.sh` が拒否し、正しい形は拒否のメッセージが伝える（CLAUDE.md には置かない）。他のリポジトリの GitHub 操作は `gh -R` で行い、push はそのリポジトリで起動したセッションから行う
+- git / gh のネットワーク系は、起動したリポジトリで単体のコマンドとして打つ。`excludedCommands` の除外はコマンドの形で外れ、外れると認証にも送信先にも届かない。外れる形の多くは `block-piped-excluded.sh` が拒否し、正しい形は拒否のメッセージが伝えるので、CLAUDE.md には置かない。hook を通り sandbox 内で失敗する `git pull`（除外の対象外）だけは、`git fetch` と `git merge` に分けることを CLAUDE.md に置く。他のリポジトリの GitHub 操作は `gh -R` で行い、push はそのリポジトリで起動したセッションから行う
 
 ## worktree の基準
 
@@ -115,5 +116,5 @@
 - ユーザー設定に `sandbox.filesystem.denyRead: ["~/"]` を置かない。`blockReadsOutsideWorkingDirectories` と併用すると、sandbox が作業ディレクトリを開け直さず、Bash から作業中のリポジトリを読めなくなる。ホームは block 自体が閉じる（v2.1.288）
 - リポジトリ側の `permissions.additionalDirectories` は、`blockReadsOutsideWorkingDirectories` の下ではファイルツールにも sandbox にも効かない（v2.1.288、anthropics/claude-code#92582）。リポジトリ専用の場所もユーザー設定の `allowRead` に置き、後で実行されるプラグインの置き場所（nvim・zsh）には `allowWrite` を開けない
 - sandbox 内の `$TMPDIR`（`/tmp/claude-501`）は、Bash からは読めるが、`blockReadsOutsideWorkingDirectories` で Read tool からは読めない（v2.1.296）。後でファイルツールで扱う一時ファイルは、CLAUDE.md で作業ディレクトリ内の `.scratch/` に置かせる。`TMPDIR` を `.scratch/` に向けると、sandbox 内の全てのツールの一時ファイルがリポジトリに溜まるので向けない
-- `.claude/rules/` を使わない。path-scoped rule が読み込まれるのは Read / Write / Edit tool で一致するファイルを扱ったときだけで、Bash で読むと発火せず、エラーも出ない（v2.1.289 の docs）
+- `.claude/rules/` を使わない。path-scoped rule が読み込まれるのは、Read / Write / Edit tool か、読取とみなされる Bash（単一ファイルの `cat`・`head` など）で一致するファイルを扱ったときに限られる。検索や複数ファイルの読取で触れても読み込まれる保証は無く、読み込まれなくてもエラーは出ない（v2.1.296 の docs）
 - `env.CLAUDE_CODE_SUBPROCESS_ENV_SCRUB` は使わない。有効にすると `defaultMode: "auto"` が効かず、セッションが manual mode で始まる（Shift+Tab で auto には切り替えられる）（v2.1.280）
