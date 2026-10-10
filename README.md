@@ -14,7 +14,7 @@ the CLI tooling around them, set up by [mise](https://mise.jdx.dev/) from
 | `claude/` | Claude Code user settings, hooks and global instructions | `~/.claude/*` |
 | `.claude/` | Claude Code settings for working on this repository | — |
 | `mise.toml`, `mise.lock`, `mise-tasks/` | What a machine gets, and the tasks below | — |
-| `test/` | Tests for `bin/` and `.config/herdr/` | — |
+| `test/` | Tests for `bin/`, `.config/herdr/`, the Claude Code hooks and the git `pre-push` hook | — |
 | `docs/` | [Design notes](docs/README.md) for changing this repository | — |
 | `.github/` | The pull request template | — |
 
