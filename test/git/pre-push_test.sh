@@ -3,11 +3,11 @@
 # remote. Run with `mise run test:scripts`.
 set -uo pipefail
 
-hook_dir="$(cd "$(dirname "$0")/../../.config/git/hooks" && pwd)"
+hook_dir="$(CDPATH= cd -- "$(dirname -- "$0")/../../.config/git/hooks" && pwd)"
 rc=0
 
 fail() {
-  printf 'FAIL %s: want %s, got %s: %.80s\n' "$1" "$2" "$3" "$4"
+  printf 'FAIL %s: want %s, got %s: %.80s\n' "$1" "$2" "$3" "$4" >&2
   rc=1
 }
 

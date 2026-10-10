@@ -3,7 +3,7 @@
 # Run with `mise run test:scripts`.
 set -uo pipefail
 
-hooks="$(cd "$(dirname "$0")/../../claude/hooks" && pwd)"
+hooks="$(CDPATH= cd -- "$(dirname -- "$0")/../../claude/hooks" && pwd)"
 cwd=/repo
 rc=0
 
@@ -13,7 +13,7 @@ run() {
 }
 
 fail() {
-  printf 'FAIL %s: want %s, got %s: %.80s\n' "$1" "$2" "$3" "$4"
+  printf 'FAIL %s: want %s, got %s: %.80s\n' "$1" "$2" "$3" "$4" >&2
   rc=1
 }
 
