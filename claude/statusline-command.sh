@@ -9,6 +9,7 @@ YELLOW='\033[38;2;229;192;123m'
 ORANGE='\033[38;2;210;130;50m'
 RED='\033[38;2;224;108;117m'
 DIM='\033[2m'
+GRAY='\033[90m'
 R='\033[0m'
 
 color_for_pct() {
@@ -235,13 +236,13 @@ if [ -n "$week" ]; then
 fi
 
 if [ -n "$git_branch" ]; then
-  parts="${parts} ${DIM}│${R}\033[90m${git_branch}${git_status_str}\033[0m"
+  parts="${parts} ${DIM}│${R}${GRAY}${git_branch}${git_status_str}${R}"
 fi
 
 if [ -n "$lines_added" ] || [ -n "$lines_removed" ]; then
   added=${lines_added:-0}
   removed=${lines_removed:-0}
-  parts="${parts} ${DIM}│${R} \033[38;2;98;198;99m+${added}\033[0m\033[90m/\033[0m\033[38;2;224;108;117m-${removed}\033[0m"
+  parts="${parts} ${DIM}│${R} ${GREEN}+${added}${R}${GRAY}/${R}${RED}-${removed}${R}"
 fi
 
 printf '%b' " $parts"
