@@ -11,12 +11,6 @@ mkdir -p "$zsh_cache_dir/zcompcache"
 
 # ── History ──────────────────────────────────────────
 HISTFILE=$zsh_state_dir/history
-_legacy_histfile=$zsh_data_dir/history
-if [[ ! -e $HISTFILE && -f $_legacy_histfile ]]; then
-  mv "$_legacy_histfile" "$HISTFILE" ||
-    print 'zsh: failed to migrate history to XDG_STATE_HOME' >&2
-fi
-unset _legacy_histfile
 HISTSIZE=100000
 SAVEHIST=10000
 setopt hist_expire_dups_first

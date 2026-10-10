@@ -22,9 +22,6 @@ vimcmd_symbol = "[❮](green)"
 symbol = " "
 style = "bright-black"
 
-[git_commit]
-tag_symbol = '  '
-
 [git_status]
 format = "[[(*$conflicted$untracked$modified$staged$renamed$deleted)](218) ($ahead_behind$stashed)]($style)"
 style = "cyan"
@@ -34,7 +31,6 @@ format = '([\[$all_status$ahead_behind\]]($style))'
 style = "bright-black"
 
 [cmd_duration]
-#format = '\[[$duration]($style)\]'
 format = "[$duration]($style) "
 style = "yellow"
 
