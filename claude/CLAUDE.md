@@ -13,14 +13,14 @@
 - 既存の設計・命名・検証方法に合わせる。API・型・schema の境界は既存の定義方法で厳密に保つ
 - 静的検査できるルールは linter・formatter・型検査・CI に寄せる
 - タスクの範囲外の整形・リファクタリングを混ぜない
-- コードコメントは「なぜこの実装か」だけ。What の言い換え・変更の経緯・issue 番号・版付きの調査メモは commit message か設計ドキュメントに置く
+- コードコメントは「なぜこの実装か」だけ。ファイル冒頭・節の見出しのコメントには、そのファイルが何を扱うかを書いてよい。What の言い換え・変更の経緯・issue 番号・版付きの調査メモは commit message か設計ドキュメントに置く
 
 ## 判断とスコープ
 
 - 曖昧な要求は非破壊・狭い側で進め、採らなかった解釈は「関連」として添える。破壊的な解釈や範囲の拡張を採るときだけ承認を取る
 - 確認は 1 問ずつ、答えが設計を変えるものから
 - 実装計画は後から変わりやすい決定（データモデル・型・公開インターフェース・UX）を先頭に置く
-- 計画の前提が崩れたら、場当たりに直さず Plan mode に戻る
+- 計画から軽微に外れたら保守的な選択を採って続行する。計画の前提が崩れたら、場当たりに直さず Plan mode に戻る
 - ツール・依存・独自ガードを足す前に、既存構成と標準機能で足りるか確かめる
 
 ## ドキュメント
@@ -40,23 +40,24 @@
 ## 環境
 
 - 検索は `rg`、構文を条件にする検索・変換は `ast-grep`。値の確認は `jq` / `yq`、YAML 構文は `ryl`
-- 後で読み返す・git / gh に渡す一時ファイルは `$TMPDIR` ではなく `.scratch/` に置く（`$TMPDIR` は Read / Edit tool から読めない）。自分が作ったものは用が済んだら消す
-- sandbox・hook に拒否されたら回避策を探さず、`!`・`/add-dir`・外のターミナルでの実行をユーザーに頼む。依存の取得（`mise install` など）も `!` で頼む
+- 後で読み返す・git / gh に渡す一時ファイルは `$TMPDIR` ではなく `.scratch/` に置く（`$TMPDIR` は Read / Edit tool から読めず、sandbox の外で動く git / gh からは別の場所を指す）。自分が作ったものは用が済んだら消し、作っていないものには触れない
+- 読取・書込が sandbox や `blockReadsOutsideWorkingDirectories` に拒否されたら回避策を探さず、`/add-dir` か `!` での実行をユーザーに頼む。依存の取得（`mise install` など）も `!` で頼む。hook・`pre-push` の拒否は、メッセージに従って自分で直す
 
 ## Git
 
 - リモートのホストは push 先の URL で判断する。GitHub は `gh`、Azure DevOps は `az repos` で操作する
 - push・PR 作成は、依頼が PR までを含むときだけ行う。PR の依頼はそのブランチへの以後の push を含む
-- push は自分の作業ブランチだけに行う。push 済みのブランチは履歴を書き換えず commit を積む
-- merge・既定ブランチを変える操作・ガードの変更（branch protection / ruleset / branch policy・default branch・公開範囲・alias）は、対象を名指しされたときだけ行う
-- 破壊的操作とユーザーの未コミット変更を戻す操作は事前に確認する。他の worktree には触れない
+- push は自分の作業ブランチ（セッション開始時のブランチか自分が作成したブランチ）だけに行う。push 済みのブランチは履歴を書き換えず commit を積む
+- `git pull` は `git fetch` と `git merge` に分ける（`pull` は sandbox の中で動き、リモートに届かない）
+- merge・main/master を変える操作・ガードの変更（branch protection / ruleset / branch policy・default branch・公開範囲・alias）は、GitHub・Azure DevOps・ローカルのどれでも、対象を名指しされたときだけ行う
+- 破壊的操作（`git reset --hard`・強制切替・ブランチや worktree の削除・`git worktree prune`）とユーザーの未コミット変更を戻す操作は事前に確認する。他の worktree には触れない
 
 ## Subagent
 
 ハーネス既定（依頼が無ければ起動しない）より、この基準を優先する。
 
 - 委譲するのは、中間出力の隔離・独立作業の並列化・tool やモデルの絞り込みの利得が、context の分断とコストを上回るときだけ
-- 自分の作業のダブルチェックには使わない。例外はセキュリティ / 権限設計・不可逆な操作で、fresh context のレビューを 1 体まで
+- 自分の作業のダブルチェックには使わない。例外はセキュリティ / 権限設計・不可逆な操作・長時間の自律実行を含む変更で、fresh context のレビューを 1 体まで
 - 独立 session を並べる仕組み（background session・agent teams など）は、使う前にユーザーに諮る
 
 ## 報告
