@@ -63,7 +63,7 @@ tool の cache・state・data は XDG の各ディレクトリに置く。消え
 
 ## テスト
 
-- `bin/` のコマンドや `ui.zsh` の関数を足したり振る舞いを変えたりしたら、テストを足す。テストは直下の `test/` に置き、対象の置き場所に合わせて分ける（`bin/` → `test/bin/`、`.config/herdr/` → `test/herdr/`）。`bin/` の中身は全て PATH に載るので、テストを `bin/` に入れない。Neovim のテストは [neovim.md](neovim.md) を参照
+- `bin/` のコマンドや `ui.zsh` の関数を足したり振る舞いを変えたりしたら、テストを足す。テストは直下の `test/` に置き、対象の置き場所に合わせて分ける（`bin/` → `test/bin/`、`.config/herdr/` → `test/herdr/`、`claude/hooks/` → `test/claude/`、`.config/git/hooks/` → `test/git/`）。`bin/` の中身は全て PATH に載るので、テストを `bin/` に入れない。Neovim のテストは [neovim.md](neovim.md) を参照
 - picker を開く処理そのものは検査できない。行データと判断を `bin/` に寄せて、そちらを検査する
 
 次のものは lint でもテストでも確かめられない。実端末で新しいシェルを開いて確認する。

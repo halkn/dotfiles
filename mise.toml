@@ -90,14 +90,7 @@ run = ["git pull --ff-only", "mise bootstrap --yes"]
 
 [tasks.lint]
 description = "リポジトリ検証（整形チェックを含む）"
-depends = [
-  "fmt-check",
-  "lint:tasks",
-  "lint:shell",
-  "lint:nvim",
-  "test:hooks",
-  "test:scripts",
-]
+depends = ["fmt-check", "lint:tasks", "lint:shell", "lint:nvim", "test:scripts"]
 run = "git diff --check"
 
 [tasks.fmt]

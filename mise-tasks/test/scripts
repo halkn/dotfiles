@@ -1,9 +1,17 @@
 #!/usr/bin/env zsh
-#MISE description="bin/ と herdr script のテスト"
+#MISE description="test/ の下の全テスト"
 set -uo pipefail
 
 rc=0
-for f in test/**/*_test.zsh; do
-  zsh "$f" || rc=1
+# The interpreter follows the extension so a test runs without an execute bit.
+for f in test/**/*_test.(zsh|sh); do
+  case $f in
+    *.zsh)
+      zsh "$f" || rc=1
+      ;;
+    *.sh)
+      bash "$f" || rc=1
+      ;;
+  esac
 done
 exit $rc
