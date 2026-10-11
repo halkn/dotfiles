@@ -25,4 +25,11 @@ jobs:
           persist-credentials: false
       - run: sudo apt-get update && sudo apt-get install -y zsh
       - uses: jdx/mise-action@2d8d4cafcbd33be2ea37d2b6f5ad595363d1f1ca # v5.1.1
+        with:
+          # The action adds --locked whenever mise.lock exists, which fails every tool from the
+          # global config: only this repository's own tools are in the lockfile.
+          install: false
+      - run: mise install
+        env:
+          MISE_GITHUB_TOKEN: ${{ github.token }}
       - run: mise run lint
