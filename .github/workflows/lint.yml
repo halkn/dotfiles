@@ -1,0 +1,28 @@
+name: lint
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# No secret is used, so a pull request from a fork runs with the same rights.
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    # A failed plugin fetch leaves the nvim smoke test waiting instead of exiting.
+    timeout-minutes: 15
+    env:
+      # Stands in for the [dotfiles] links (~/.config/* -> .config/*), so mise's global config,
+      # nvim and git read the same files as on a machine.
+      XDG_CONFIG_HOME: ${{ github.workspace }}/.config
+    steps:
+      # Pinned by commit for the same reason .config/mise/config.toml holds back new releases.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: sudo apt-get update && sudo apt-get install -y zsh
+      - uses: jdx/mise-action@2d8d4cafcbd33be2ea37d2b6f5ad595363d1f1ca # v5.1.1
+      - run: mise run lint
