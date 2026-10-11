@@ -69,7 +69,7 @@ local function setup_formatting(client, bufnr)
   end
   vim.keymap.set('n', '<LocalLeader>f', function()
     format_buffer(bufnr)
-  end, { noremap = true, silent = true, buffer = bufnr })
+  end, { silent = true, buffer = bufnr })
   vim.api.nvim_clear_autocmds({ group = format_group, buffer = bufnr, event = 'BufWritePre' })
   vim.api.nvim_create_autocmd('BufWritePre', {
     group = format_group,
@@ -88,7 +88,7 @@ end
 -- shadows them and makes every `gr` chord wait for 'timeoutlen'; `gd` and `gD`
 -- have no default. The rest sits on <F2> and <LocalLeader>.
 local function setup_keymaps(client, bufnr)
-  local bufopts = { noremap = true, silent = true, buffer = bufnr }
+  local bufopts = { silent = true, buffer = bufnr }
   if client:supports_method('textDocument/definition') then
     vim.keymap.set('n', 'gd', vim.lsp.buf.definition, bufopts)
   end

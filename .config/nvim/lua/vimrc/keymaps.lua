@@ -1,14 +1,10 @@
 vim.g.mapleader = [[ ]]
 vim.g.maplocalleader = [[,]]
 
-local map = function(mode, lhs, rhs)
-  local opts = { silent = false, noremap = true }
-  vim.keymap.set(mode, lhs, rhs, opts)
-end
+local map = vim.keymap.set
 
 local remap = function(mode, lhs, rhs)
-  local opts = { silent = false, remap = true }
-  vim.keymap.set(mode, lhs, rhs, opts)
+  vim.keymap.set(mode, lhs, rhs, { remap = true })
 end
 
 -- Move by display line, keeping the real-line motions on gj/gk.
@@ -84,7 +80,7 @@ map('n', '[l', '<cmd>lprevious<CR>')
 map('n', ']l', '<cmd>lnext<CR>')
 
 -- commenting
-remap({ 'n', 'x', 'o' }, '<Leader>c', 'gcc')
+remap({ 'n', 'o' }, '<Leader>c', 'gcc')
 remap('v', '<Leader>c', 'gc')
 
 -- diagnostic

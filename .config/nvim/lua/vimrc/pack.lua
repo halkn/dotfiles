@@ -130,18 +130,8 @@ local plugs = {
           change = { text = '│' },
           delete = { text = '_' },
           topdelete = { text = '‾' },
-          changedelete = { text = '~' },
-          untracked = { text = '┆' },
         },
-        signs_staged_enable = true,
-        signcolumn = true,
-        numhl = false,
-        linehl = false,
-        word_diff = false,
-        watch_gitdir = { follow_files = true },
         attach_to_untracked = true,
-        current_line_blame = false,
-        update_debounce = 100,
       })
       vim.keymap.set('n', ']c', function()
         gs.nav_hunk('next')

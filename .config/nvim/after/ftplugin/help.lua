@@ -1,4 +1,4 @@
-local opts = { buffer = true, noremap = true, silent = false }
+local opts = { buffer = true }
 
 vim.keymap.set('n', '<CR>', '<C-]>', opts)
 vim.keymap.set('n', '<BS>', '<C-T>', opts)
