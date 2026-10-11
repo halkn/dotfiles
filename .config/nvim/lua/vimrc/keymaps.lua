@@ -80,8 +80,8 @@ map('n', '[l', '<cmd>lprevious<CR>')
 map('n', ']l', '<cmd>lnext<CR>')
 
 -- commenting
-remap({ 'n', 'o' }, '<Leader>c', 'gcc')
-remap('v', '<Leader>c', 'gc')
+remap('n', '<Leader>c', 'gcc')
+remap({ 'v', 'o' }, '<Leader>c', 'gc')
 
 -- diagnostic
 map('n', '<C-e>', vim.diagnostic.open_float)
