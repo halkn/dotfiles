@@ -135,6 +135,19 @@ check('quickfix autocmd and ftplugin', function()
   vim.cmd('cclose')
 end)
 
+-- After an operator, <Leader>c has to end at the comment block: a trailing
+-- key left over from the mapping would start a second command on the next
+-- motion.
+check('<Leader>c after an operator', function()
+  scratch({ '-- a', '-- b', 'x = 1', 'y = 2' })
+  vim.bo.filetype = 'lua'
+  vim.cmd('execute "normal d\\<Space>cj"')
+  assert(
+    vim.deep_equal(vim.api.nvim_buf_get_lines(0, 0, -1, false), { 'x = 1', 'y = 2' }),
+    'd<Leader>c deleted beyond the comment block'
+  )
+end)
+
 check('help ftplugin', function()
   vim.cmd('help help')
   for _, lhs in ipairs({ '<CR>', '<BS>', 'q' }) do
