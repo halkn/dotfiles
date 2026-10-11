@@ -141,6 +141,7 @@ check('help ftplugin', function()
     local map = vim.fn.maparg(lhs, 'n', false, true)
     assert(map.buffer == 1, 'missing buffer-local mapping: ' .. lhs)
   end
+  assert(vim.fn.winlayout()[1] == 'row', 'help did not open in a vertical split')
   vim.cmd('helpclose')
 end)
 

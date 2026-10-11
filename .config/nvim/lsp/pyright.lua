@@ -35,7 +35,6 @@ local config = {
       venvPath = '.',
       venv = '.venv',
       analysis = {
-        -- ignore = { '*' },
         autoSearchPaths = true,
         useLibraryCodeForTypes = true,
         diagnosticMode = 'workspace',

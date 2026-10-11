@@ -2,11 +2,7 @@ local g = vim.g
 local opt = vim.opt
 
 -- Don't use Japanese in neovim
-if vim.fn.has('unix') == 1 then
-  vim.env.LANG = 'C.UTF-8'
-else
-  vim.env.LANG = 'en'
-end
+vim.env.LANG = 'C.UTF-8'
 vim.cmd.language(vim.env.LANG)
 vim.o.langmenu = vim.env.LANG
 
@@ -37,6 +33,7 @@ opt.list = true
 opt.listchars = 'tab:»-,extends:»,precedes:«,nbsp:%,eol:↲,trail:~'
 opt.scrolloff = 8
 opt.termguicolors = true
+-- Matches the headless default, but the TUI asks the terminal and would follow its background.
 opt.background = 'dark'
 opt.synmaxcol = 512
 opt.foldenable = false
@@ -51,19 +48,15 @@ opt.fillchars = {
 }
 
 -- buffer
-opt.hidden = true
 opt.switchbuf = 'useopen'
 
 opt.undofile = true
 opt.swapfile = false
-opt.backup = false
 
-opt.diffopt = opt.diffopt + 'vertical,linematch:40,indent-heuristic,inline:char'
+opt.diffopt = opt.diffopt + 'vertical'
 
 -- edit
-opt.smarttab = true
 opt.expandtab = true
-opt.autoindent = true
 opt.shiftwidth = 2
 opt.tabstop = 2
 opt.virtualedit = 'block,onemore'
@@ -84,8 +77,6 @@ opt.equalalways = false
 -- search and replace
 opt.ignorecase = true
 opt.smartcase = true
-opt.incsearch = true
-opt.hlsearch = true
 opt.inccommand = 'split'
 
 opt.wildoptions = 'pum'

@@ -12,15 +12,6 @@ autocmd('QuickFixCmdPost', {
   end,
 })
 
--- help
-autocmd('FileType', {
-  group = group_name,
-  pattern = { 'help' },
-  callback = function()
-    vim.cmd('wincmd L')
-  end,
-})
-
 -- terminal
 autocmd('TermOpen', {
   group = group_name,
