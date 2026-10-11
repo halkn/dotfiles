@@ -36,10 +36,12 @@
   br = branch
   ba = branch -av
   sw = switch
-  sm = "!git switch main && git pull && git pm"
+  # The default branch comes from origin/HEAD, as in bin/wt. Without it they stop rather than
+  # assume `main`, which is the guess these used to hard-code.
+  sm = "!f() { d=$(git symbolic-ref --short -q refs/remotes/origin/HEAD) || { echo 'origin/HEAD が未設定です。git remote set-head origin --auto で設定してください' >&2; return 1; }; git switch \"${d#origin/}\" && git pull && git pm; }; f"
   diff-split = -c delta.side-by-side=true diff
-  prdiff = "!f() { git diff \"$(git merge-base \"${1:-origin/main}\" HEAD)\"; }; f"
-  pm = "!f() { base=\"${1:-origin/main}\"; current=$(git branch --show-current); git for-each-ref --format='%(refname:short)' --merged=\"$base\" refs/heads | while IFS= read -r branch; do [ -n \"$branch\" ] || continue; [ \"$branch\" = \"$current\" ] && continue; [ \"$branch\" = \"main\" ] && continue; git branch -d \"$branch\"; done; }; f"
+  prdiff = "!f() { base=\"${1:-}\"; if [ -z \"$base\" ]; then base=$(git symbolic-ref --short -q refs/remotes/origin/HEAD) || { echo 'origin/HEAD が未設定です。git remote set-head origin --auto で設定してください' >&2; return 1; }; fi; git diff \"$(git merge-base \"$base\" HEAD)\"; }; f"
+  pm = "!f() { d=$(git symbolic-ref --short -q refs/remotes/origin/HEAD) || { echo 'origin/HEAD が未設定です。git remote set-head origin --auto で設定してください' >&2; return 1; }; base=\"${1:-$d}\"; current=$(git branch --show-current); git for-each-ref --format='%(refname:short)' --merged=\"$base\" refs/heads | while IFS= read -r branch; do [ -n \"$branch\" ] || continue; [ \"$branch\" = \"$current\" ] && continue; [ \"$branch\" = \"${d#origin/}\" ] && continue; git branch -d \"$branch\"; done; }; f"
 [core]
   pager = delta
   hooksPath = ~/.config/git/hooks
