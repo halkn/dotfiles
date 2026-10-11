@@ -2,11 +2,7 @@ local g = vim.g
 local opt = vim.opt
 
 -- Don't use Japanese in neovim
-if vim.fn.has('unix') == 1 then
-  vim.env.LANG = 'C.UTF-8'
-else
-  vim.env.LANG = 'en'
-end
+vim.env.LANG = 'C.UTF-8'
 vim.cmd.language(vim.env.LANG)
 vim.o.langmenu = vim.env.LANG
 
