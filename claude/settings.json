@@ -156,7 +156,9 @@
         "docs.microsoft.com",
         "azure.microsoft.com",
         "docs.snowflake.com",
-        "community.snowflake.com"
+        "community.snowflake.com",
+        "go.dev",
+        "git-scm.com"
       ],
       "strictAllowlist": true
     },
@@ -164,10 +166,12 @@
       "allowWrite": [
         "~/.azure",
         "~/.cache/uv",
+        "~/.cache/go",
         "~/.cache/bun",
         "~/.cache/mise",
         "~/.cache/rumdl",
         "~/.cache/shuck",
+        "~/.cache/staticcheck",
         "~/.local/share/uv",
         "~/.local/share/bun",
         "~/.local/share/mise",
@@ -183,14 +187,17 @@
       ],
       "allowRead": [
         "~/.azure",
+        "~/.claude/skills",
         "~/.config",
         "~/repos/github.com/halkn/dotfiles/.config",
         "~/repos/github.com/halkn/skills",
         "~/.cache/uv",
+        "~/.cache/go",
         "~/.cache/bun",
         "~/.cache/mise",
         "~/.cache/rumdl",
         "~/.cache/shuck",
+        "~/.cache/staticcheck",
         "~/.local/state/review-report",
         "~/.local/share/uv",
         "~/.local/share/bun",
