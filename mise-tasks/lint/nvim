@@ -5,9 +5,11 @@ set -uo pipefail
 export NVIM_LOG_FILE=/dev/null
 rc=0
 
+# The smoke test goes first: starting the config installs the plugins, which emmylua_check
+# resolves `require` against, so a machine that has not fetched them yet still passes.
+nvim --headless -i NONE -c 'luafile .config/nvim/test/smoke.lua' || rc=1
+nvim --clean --headless --cmd 'set runtimepath^=.config/nvim' -l .config/nvim/test/keymaps.lua || rc=1
 vimruntime="$(nvim --clean --headless -c 'lua io.write(vim.env.VIMRUNTIME)' +q 2>/dev/null)" || exit 1
 VIMRUNTIME="$vimruntime" emmylua_check --warnings-as-errors .config/nvim || rc=1
-nvim --clean --headless --cmd 'set runtimepath^=.config/nvim' -l .config/nvim/test/keymaps.lua || rc=1
-nvim --headless -i NONE -c 'luafile .config/nvim/test/smoke.lua' || rc=1
 
 exit $rc

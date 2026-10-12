@@ -5,6 +5,7 @@
 ## Verification
 
 - 変更後は `mise run fmt` → `mise run lint`。`lint` は整形チェック・各言語の検査・テストを全て含む
+- PR では GitHub Actions（ubuntu）でも同じ `mise run lint` が走る。必須チェックではないので、マージ前に `gh pr checks` で結果を確かめる。macOS 固有の差は CI では検出されないので、手元の `lint` は省かない
 - 既存の警告が多いときは対象ファイルに絞る（`rumdl check <file>`、`shuck format --check <file>`）
 - ツールが無ければ先に `mise install`
 - `mise run sync` / `update` と `mise bootstrap` はユーザーが手で実行する
