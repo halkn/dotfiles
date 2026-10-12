@@ -157,7 +157,6 @@
         "azure.microsoft.com",
         "docs.snowflake.com",
         "community.snowflake.com",
-        "go.dev",
         "git-scm.com"
       ],
       "strictAllowlist": true
@@ -166,7 +165,7 @@
       "allowWrite": [
         "~/.azure",
         "~/.cache/uv",
-        "~/.cache/go",
+        "~/.cache/go/build",
         "~/.cache/bun",
         "~/.cache/mise",
         "~/.cache/rumdl",
