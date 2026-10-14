@@ -41,7 +41,17 @@ export UV_COMPILE_BYTECODE=true
 # their install dir with `go env GOPATH`/bin and would otherwise look elsewhere.
 export GOPATH=$XDG_DATA_HOME/go
 export GOMODCACHE=$XDG_CACHE_HOME/go/mod
-export GOCACHE=$XDG_CACHE_HOME/go/build
+# Claude Code's sandbox can write its build cache, and the go outside the sandbox
+# runs binaries cached there (`go run`, `go tool`), so the two never share one.
+# CLAUDECODE is not used because IDE terminals set it too.
+if [[ -n $CLAUDE_CODE_CHILD_SESSION ]]; then
+  export GOCACHE=$XDG_CACHE_HOME/go/claude-build
+else
+  export GOCACHE=$XDG_CACHE_HOME/go/build
+fi
+export GOENV=$XDG_CONFIG_HOME/go/env
+# gopls appends /gopls itself.
+export GOPLSCACHE=$XDG_CACHE_HOME
 export STATICCHECK_CACHE=$XDG_CACHE_HOME/staticcheck
 
 # bun
