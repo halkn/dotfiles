@@ -179,7 +179,9 @@ fi
 
 # ── nvim ─────────────────────────────────────────────
 if command -v nvim >/dev/null 2>&1; then
-  export MANPAGER='nvim +Man!'
+  # macOS man pipes into the pager even when its own stdout is not a terminal
+  # (`man ls | rg`, agent shells), and nvim then waits for a UI that never comes.
+  export MANPAGER='sh -c "if [ -t 1 ]; then exec nvim +Man!; else exec cat; fi"'
   alias v='nvim'
   alias vim=nvim
   alias vimdiff='nvim -d'
