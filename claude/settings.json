@@ -165,7 +165,7 @@
       "allowWrite": [
         "~/.azure",
         "~/.cache/uv",
-        "~/.cache/go/claude-build",
+        "~/.cache/go",
         "~/.cache/gopls",
         "~/.cache/bun",
         "~/.cache/mise",
@@ -199,7 +199,6 @@
         "~/.cache/rumdl",
         "~/.cache/shuck",
         "~/.cache/staticcheck",
-        "~/.local/share/go/bin",
         "~/.local/state/review-report",
         "~/.local/share/uv",
         "~/.local/share/bun",

@@ -6,11 +6,6 @@
 # account opt out per tool.
 minimum_release_age = "3d"
 
-[settings.go]
-# mise's GOBIN is the Go install's bin, which the Claude Code sandbox can write and which sits
-# ahead of gh and git on PATH; $GOPATH/bin stays outside the sandbox's writable paths.
-set_gobin = false
-
 [settings.github]
 credential_command = 'gh auth token --hostname "$MISE_CREDENTIAL_HOST"'
 
