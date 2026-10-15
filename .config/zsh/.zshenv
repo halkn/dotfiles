@@ -52,6 +52,14 @@ export BUN_INSTALL_CACHE_DIR=$XDG_CACHE_HOME/bun/install/cache
 export BUN_INSTALL_GLOBAL_DIR=$XDG_DATA_HOME/bun/install/global
 export BUN_INSTALL_BIN=$XDG_DATA_HOME/bun/bin
 
+# Claude Code's children get their own mise cache and GOCACHE: the sandbox can
+# write them, and mise's bin_paths cache and the `go run` / `go tool` binaries
+# in GOCACHE are later executed by the same tools outside the sandbox.
+if [[ -n $CLAUDE_CODE_CHILD_SESSION ]]; then
+  export MISE_CACHE_DIR=$XDG_CACHE_HOME/claude-sandbox/mise
+  export GOCACHE=$XDG_CACHE_HOME/claude-sandbox/go-build
+fi
+
 # less
 export LESS='-g -i -M -R -S -W -z-4 -x4'
 export LESSHISTFILE=-

@@ -89,6 +89,7 @@
       "Bash(uv python uninstall*)",
       "Edit(~/repos/github.com/halkn/dotfiles/claude/**)",
       "Edit(~/repos/github.com/halkn/dotfiles/.config/git/**)",
+      "Edit(~/repos/github.com/halkn/dotfiles/.config/herdr/plugins/github/**)",
       "Edit(//**/.claude/settings*.json)"
     ],
     "blockReadsOutsideWorkingDirectories": true,
@@ -165,10 +166,9 @@
       "allowWrite": [
         "~/.azure",
         "~/.cache/uv",
-        "~/.cache/go",
         "~/.cache/gopls",
         "~/.cache/bun",
-        "~/.cache/mise",
+        "~/.cache/claude-sandbox",
         "~/.cache/rumdl",
         "~/.cache/shuck",
         "~/.cache/staticcheck"
@@ -176,9 +176,13 @@
       "denyWrite": [
         "~/.ssh",
         "~/.gnupg",
+        "~/.azure/cliextensions",
+        "~/.azure/config",
+        "~/.azure/clouds.config",
         "~/repos/github.com/halkn/dotfiles/claude",
         "~/repos/github.com/halkn/dotfiles/.config/git",
-        "~/repos/github.com/halkn/dotfiles/.config/gh"
+        "~/repos/github.com/halkn/dotfiles/.config/gh",
+        "~/repos/github.com/halkn/dotfiles/.config/herdr/plugins/github"
       ],
       "allowRead": [
         "~/.azure",
@@ -190,7 +194,7 @@
         "~/.cache/go",
         "~/.cache/gopls",
         "~/.cache/bun",
-        "~/.cache/mise",
+        "~/.cache/claude-sandbox",
         "~/.cache/rumdl",
         "~/.cache/shuck",
         "~/.cache/staticcheck",
