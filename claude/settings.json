@@ -172,10 +172,6 @@
         "~/.cache/rumdl",
         "~/.cache/shuck",
         "~/.cache/staticcheck",
-        "~/.local/share/uv",
-        "~/.local/share/bun",
-        "~/.local/share/mise",
-        "~/.local/state/mise",
         "~/.local/state/review-report"
       ],
       "denyWrite": [
