@@ -171,8 +171,7 @@
         "~/.cache/mise",
         "~/.cache/rumdl",
         "~/.cache/shuck",
-        "~/.cache/staticcheck",
-        "~/.local/state/review-report"
+        "~/.cache/staticcheck"
       ],
       "denyWrite": [
         "~/.ssh",
@@ -195,7 +194,6 @@
         "~/.cache/rumdl",
         "~/.cache/shuck",
         "~/.cache/staticcheck",
-        "~/.local/state/review-report",
         "~/.local/share/uv",
         "~/.local/share/bun",
         "~/.local/share/mise",
