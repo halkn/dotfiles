@@ -184,7 +184,19 @@
         "~/repos/github.com/halkn/dotfiles/claude",
         "~/repos/github.com/halkn/dotfiles/.config/git",
         "~/repos/github.com/halkn/dotfiles/.config/gh",
-        "~/repos/github.com/halkn/dotfiles/.config/herdr/plugins/github"
+        "~/repos/github.com/halkn/dotfiles/.config/herdr",
+        "~/repos/github.com/halkn/dotfiles/.config/zsh",
+        "~/repos/github.com/halkn/dotfiles/.config/mise",
+        "~/repos/github.com/halkn/dotfiles/.config/nvim",
+        "~/repos/github.com/halkn/dotfiles/.config/ghostty",
+        "~/repos/github.com/halkn/dotfiles/.config/starship",
+        "~/repos/github.com/halkn/dotfiles/.config/ripgrep",
+        "~/repos/github.com/halkn/dotfiles/.config/snowflake",
+        "~/repos/github.com/halkn/dotfiles/.zshenv",
+        "~/repos/github.com/halkn/dotfiles/bin",
+        "~/repos/github.com/halkn/dotfiles/mise-tasks",
+        "~/repos/github.com/halkn/dotfiles/mise.toml",
+        "~/repos/github.com/halkn/dotfiles/mise.lock"
       ],
       "allowRead": [
         "~/.azure",
