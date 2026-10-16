@@ -7,7 +7,8 @@
     "FORCE_AUTOUPDATE_PLUGINS": "1",
     "GIT_CONFIG_COUNT": "1",
     "GIT_CONFIG_KEY_0": "core.hooksPath",
-    "GIT_CONFIG_VALUE_0": "~/.config/git/hooks"
+    "GIT_CONFIG_VALUE_0": "~/.config/git/hooks",
+    "MISE_CACHE_DIR": "~/.cache/claude-sandbox/mise"
   },
   "attribution": {
     "commit": "",
@@ -89,6 +90,7 @@
       "Bash(uv python uninstall*)",
       "Edit(~/repos/github.com/halkn/dotfiles/claude/**)",
       "Edit(~/repos/github.com/halkn/dotfiles/.config/git/**)",
+      "Edit(~/repos/github.com/halkn/dotfiles/.config/herdr/plugins/github/**)",
       "Edit(//**/.claude/settings*.json)"
     ],
     "blockReadsOutsideWorkingDirectories": true,
@@ -165,25 +167,24 @@
       "allowWrite": [
         "~/.azure",
         "~/.cache/uv",
-        "~/.cache/go",
+        "~/.cache/go/build",
         "~/.cache/gopls",
         "~/.cache/bun",
-        "~/.cache/mise",
+        "~/.cache/claude-sandbox",
         "~/.cache/rumdl",
         "~/.cache/shuck",
-        "~/.cache/staticcheck",
-        "~/.local/share/uv",
-        "~/.local/share/bun",
-        "~/.local/share/mise",
-        "~/.local/state/mise",
-        "~/.local/state/review-report"
+        "~/.cache/staticcheck"
       ],
       "denyWrite": [
         "~/.ssh",
         "~/.gnupg",
+        "~/.azure/cliextensions",
+        "~/.azure/config",
+        "~/.azure/clouds.config",
         "~/repos/github.com/halkn/dotfiles/claude",
         "~/repos/github.com/halkn/dotfiles/.config/git",
-        "~/repos/github.com/halkn/dotfiles/.config/gh"
+        "~/repos/github.com/halkn/dotfiles/.config/gh",
+        "~/repos/github.com/halkn/dotfiles/.config/herdr/plugins/github"
       ],
       "allowRead": [
         "~/.azure",
@@ -195,11 +196,10 @@
         "~/.cache/go",
         "~/.cache/gopls",
         "~/.cache/bun",
-        "~/.cache/mise",
+        "~/.cache/claude-sandbox",
         "~/.cache/rumdl",
         "~/.cache/shuck",
         "~/.cache/staticcheck",
-        "~/.local/state/review-report",
         "~/.local/share/uv",
         "~/.local/share/bun",
         "~/.local/share/mise",
