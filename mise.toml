@@ -93,9 +93,16 @@ description = "リポジトリ検証（整形チェックを含む）"
 depends = ["fmt-check", "lint:tasks", "lint:shell", "lint:nvim", "test:scripts"]
 run = "git diff --check"
 
+# `mise fmt` rewrites every config even when nothing changes, and the configs are not writable
+# from the Claude Code sandbox (docs/claude-code.md), so it runs only when a change is needed.
 [tasks.fmt]
 description = "ファイル整形"
-run = ["mise fmt", "rumdl fmt .", "shuck format .", "stylua .config/nvim"]
+run = [
+  "mise fmt --check >/dev/null 2>&1 || mise fmt",
+  "rumdl fmt .",
+  "shuck format .",
+  "stylua .config/nvim",
+]
 
 [tasks.fmt-check]
 description = "整形チェック（書き換えなし）"
