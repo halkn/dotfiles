@@ -10,7 +10,7 @@
 - TDD（探索 → Red → Green → Refactor）。設定・ドキュメント・小規模な修正や Red が不自然なときは最小の検証に代える
 - KPI・カバレッジ目標が与えられたら達成まで試行し、達成不能なら試したことと次の選択肢を出す
 - エラーは根本原因を直す。症状を隠す回避策は取らない
-- 既存の設計・命名・検証方法に合わせる。API・型・schema の境界は既存の定義方法で厳密に保つ
+- API・型・schema の境界は既存の定義方法で厳密に保つ
 - 静的検査できるルールは linter・formatter・型検査・CI に寄せる
 - タスクの範囲外の整形・リファクタリングを混ぜない
 - 開発ツールと版の固定は、言語の標準とデファクト（uv・bun・go の `toolchain` / `tool`）に合わせ、mise に寄せない。clone した人と CI が言語の手順だけで再現できるように
@@ -36,33 +36,25 @@
 ## 仕様の確認
 
 - 版で変わる仕様（Claude Code の設定・CLI のフラグ・API）を名指しするときは、公式 docs か `--help` を引いてから書く。リポジトリ内の実測メモで代えられるのは、記録された版が現行と一致するときだけ
-- `allowedDomains` にある docs は `curl` で取得して `rg` で原文を確かめる。それ以外は WebFetch（`strictAllowlist` のため `allowed_domains` は効かない）
+- `allowedDomains` にある docs は `curl` で取得して `rg` で原文を確かめる。それ以外は WebFetch
 - 仕様に由来する表や定数（プロトコルの符号表など）は記憶で書かず、一次資料か既存の実装から取り出して照合する。記憶の誤りは一部の項目にだけ混ざり、見た目では気付けない
 
 ## 環境
 
 - 検索は `rg`、構文を条件にする検索・変換は `ast-grep`。値の確認は `jq` / `yq`、YAML 構文は `ryl`
 - 後で読み返す・git / gh に渡す一時ファイルは `$TMPDIR` ではなく `.scratch/` に置く（`$TMPDIR` は Read / Edit tool から読めず、sandbox の外で動く git / gh からは別の場所を指す）。自分が作ったものは用が済んだら消し、作っていないものには触れない
-- 読取・書込が sandbox や `blockReadsOutsideWorkingDirectories` に拒否されたら回避策を探さず、`/add-dir` か `!` での実行をユーザーに頼む。依存の取得（`mise install` など）も `!` で頼む。hook・`pre-push` の拒否は、メッセージに従って自分で直す
+- sandbox・`blockReadsOutsideWorkingDirectories` の拒否と依存の取得（`mise install` など）は、`/add-dir` か `!` での実行をユーザーに頼む。hook・`pre-push` の拒否は、メッセージに従って自分で直す
 
 ## Git
 
 - リモートのホストは push 先の URL で判断する。GitHub は `gh`、Azure DevOps は `az repos` で操作する
-- push・PR 作成は、依頼が PR までを含むときだけ行う。PR の依頼はそのブランチへの以後の push を含む
+- PR の依頼は、そのブランチへの以後の push を含む
 - push は自分の作業ブランチ（セッション開始時のブランチか自分が作成したブランチ）だけに行う。push 済みのブランチは履歴を書き換えず commit を積む
-- `git pull` は `git fetch` と `git merge` に分ける（`pull` は sandbox の中で動き、リモートに届かない）
+- git / gh のネットワーク系は、他のコマンドとパイプ・`;`・`&&` で繋がず単体で打つ。`git pull` は `git fetch` と `git merge` に分ける
 - merge・main/master を変える操作・ガードの変更（branch protection / ruleset / branch policy・default branch・公開範囲・alias）は、GitHub・Azure DevOps・ローカルのどれでも、対象を名指しされたときだけ行う
-- 破壊的操作（`git reset --hard`・強制切替・ブランチや worktree の削除・`git worktree prune`）とユーザーの未コミット変更を戻す操作は事前に確認する。他の worktree には触れない
-
-## Subagent
-
-ハーネス既定（依頼が無ければ起動しない）より、この基準を優先する。
-
-- 委譲するのは、中間出力の隔離・独立作業の並列化・tool やモデルの絞り込みの利得が、context の分断とコストを上回るときだけ
-- 自分の作業のダブルチェックには使わない。例外はセキュリティ / 権限設計・不可逆な操作・長時間の自律実行を含む変更で、fresh context のレビューを 1 体まで
-- 独立 session を並べる仕組み（background session・agent teams など）は、使う前にユーザーに諮る
+- 他の worktree には触れない
 
 ## 報告
 
-- 実行できなかった検証は、理由と代わりに確認したことを書く
+- 実行できなかった検証には、代わりに確認したことを添える
 - 自分で観測できない変更（TUI・キー操作・sandbox の外でしか動かないもの）は、手で確認する手順を番号付きで添える

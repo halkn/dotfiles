@@ -2,7 +2,7 @@
 
 `claude/settings.json`（全リポジトリ共通）と `.claude/settings.json`（このリポジトリ専用）は JSON でコメントを書けないため、設定の理由はこの doc が持つ。各 hook の理由は `claude/hooks/*.sh` の冒頭コメントにある。
 
-`claude/` の中身は `~/.claude/` にリンクされ、全てのプロジェクトの Claude Code に効く。全プロジェクト共通の指示は `claude/CLAUDE.md` に、このリポジトリ専用の指示は `AGENTS.md` に書く。`claude/` は sandbox で Bash から書けないので、Edit / Write tool で編集する。
+`claude/` の中身は `~/.claude/` にリンクされ、全てのプロジェクトの Claude Code に効く。全プロジェクト共通の指示は `claude/CLAUDE.md` に、このリポジトリ専用の指示は `AGENTS.md` に書く。
 
 好みの設定（表示・言語・エディタ操作・output style・statusline・プラグインの選択）は対象外。既定値と同じ値は書かない。前提は macOS（Seatbelt）で、WSL（bubblewrap）には当てはめない。
 
@@ -52,12 +52,13 @@
 - 入口が閉じている操作（`mise run sync|update`）は完全一致で ask に列挙する。引数の形が開いている操作（`mise bootstrap`）は列挙しきれないので、両端だけを固定し（他ホストへの作用は deny、`--force-dotfiles`・`--yes` を先頭に置いた形は ask、`status`・`plan`・`--dry-run` は allow）、残りは classifier に任せる
 - `WebFetch` の allow は書かない。auto モードの WebFetch は allow が無くても確認なしで通り、allow の残る効果は確認を出すモード（Manual・`acceptEdits`）向けと、sandbox の送信先への暗黙の合流だけになる。docs を原文で読む経路は `network.allowedDomains` で明示的に開ける
 - パターンは、実際に打たれる形を確かめてから書く。オプションは `--opt=value` の形も併記する
-- 判断の質の問題（subagent に委譲するかどうか）は CLAUDE.md で扱い、設定の上限（同時実行数・入れ子の深さ）で抑えない
+- subagent に委譲するかどうかはハーネスの既定（依頼が無ければ起動しない）に任せ、CLAUDE.md にも設定の上限（同時実行数・入れ子の深さ）にも置かない
 
 ## sandbox の基準
 
 - 読取は既定で閉じ、ツールが必要とする場所だけを開ける（`blockReadsOutsideWorkingDirectories` と `allowRead`）。丸ごと開けて例外を列挙する形は取らない。列挙から漏れたものが開いたままになる
-- 書込を開けるのは、ツールが自分の状態を書く場所だけ（`~/.azure` のトークンキャッシュ）。`~/.azure` の中でも、外の `az` が読み込んで実行する拡張（`cliextensions`）と、拡張の取得元やエンドポイントを決める設定（`config`・`clouds.config`）は `denyWrite` で塞ぐ。skill の出力は作業ディレクトリの `.scratch/` に置き、ホームに出力先を開けない。他のプロセスが後で実行する場所には開けない。`~/.cache` をツール単位で開けるのはこのため（ログインシェルが起動時に実行するキャッシュがあり、そこへ書ければ sandbox の外でコードを走らせられる）- Claude Code が読み込む・実行するファイル（`claude/` 全体）は、組込みの保護に頼らず `denyWrite` と `Edit` の ask で塞ぐ。組込みの保護が覆う範囲は版で変わり、symlink の先にある hook や statusline のスクリプトまで届くとは限らない。副作用として、`claude/` を変える `git switch` / `git merge` は sandbox 内で失敗する。Claude がこれらを変えるときは Edit / Write tool を使い、ask の確認で人が承認する（Bash は `denyWrite` で通らない）。リポジトリ側の `.claude/settings*.json` も同じ経路にするため ask に入れる。auto モードでは保護パスへの書込が classifier に回り、自己改変として拒否されることがあるが、ask は classifier より先に効いて確認になる
+- 書込を開けるのは、ツールが自分の状態を書く場所だけ（`~/.azure` のトークンキャッシュ）。`~/.azure` の中でも、外の `az` が読み込んで実行する拡張（`cliextensions`）と、拡張の取得元やエンドポイントを決める設定（`config`・`clouds.config`）は `denyWrite` で塞ぐ。skill の出力は作業ディレクトリの `.scratch/` に置き、ホームに出力先を開けない。他のプロセスが後で実行する場所には開けない。`~/.cache` をツール単位で開けるのはこのため（ログインシェルが起動時に実行するキャッシュがあり、そこへ書ければ sandbox の外でコードを走らせられる）
+- Claude Code が読み込む・実行するファイル（`claude/` 全体）は、組込みの保護に頼らず `denyWrite` と `Edit` の ask で塞ぐ。組込みの保護が覆う範囲は版で変わり、symlink の先にある hook や statusline のスクリプトまで届くとは限らない。副作用として、`claude/` を変える `git switch` / `git merge` は sandbox 内で失敗する。Edit / Write tool での変更は、ask の確認で人が承認する。リポジトリ側の `.claude/settings*.json` も同じ経路にするため ask に入れる。auto モードでは保護パスへの書込が classifier に回り、自己改変として拒否されることがあるが、ask は classifier より先に効いて確認になる
 - sandbox の外で動くコマンドが読み込んで実行するファイルも、`denyWrite` で塞ぐ。塞ぐかどうかは、書かれてから人が中身を見る前に、sandbox の外で実行されうるかで決める。commit やレビューを待たず、次の `git push`・`gh`、ターミナルや nvim を開く・プロンプトが出る・ディレクトリに入るといった日常の操作で実行される。このリポジトリでは次が当たる。塞ぐ単位はディレクトリにし、後から足されたファイルも覆う
   - git / gh: `core.hooksPath` の hook と git の config（`credential.helper` など）を持つ `.config/git`、alias を持つ `.config/gh`
   - シェルと端末: zsh が起動のたびに読む `.zshenv`・`.config/zsh`、PATH に載る `bin/`、起動するコマンドを設定できる `.config/ghostty`、プロンプトのたびにコマンドを実行できる `.config/starship`、herdr の設定・スクリプトとプラグイン（`.config/herdr`）
@@ -65,7 +66,7 @@
   - その他: nvim が起動時に実行する Lua とプラグインの取得元（`.config/nvim`）、`--pre` で前処理のコマンドを実行させられる `.config/ripgrep`、接続先と認証方法を決める `.config/snowflake`
 - 実行される設定を持たないもの（linter の設定 `.config/{rumdl,ryl,shuck}`・`.shuck.toml`）と、sandbox の中か CI でしか実行されないもの（`test/`・`.github/`）は塞がない。上の基準に当たるファイルを足したら、`denyWrite` にも足す
 - ファイルツールの側は、変更が人の目に届くかで分ける。`denyWrite` が塞ぐのは、script・formatter・リダイレクトのように Edit の diff に現れない書込で、Edit / Write tool の書込は transcript に diff が残り `git status` にも出る。そのため、日常的に編集する設定には `Edit` の ask を置かず、確認なしで書かせる。ask を置くのは、Claude 自身の次のコマンドで人の操作を待たずに実行されるもの（`.config/git`）と、gitignore されていて書き換えても `git status` に出ないもの（`.config/herdr/plugins/github`）だけ。認証情報を持つ `.config/gh` は deny にする
-- 副作用として、これらを変える `git switch` / `git merge` は `claude/` と同じく sandbox 内で失敗する。formatter も sandbox の中ではこれらを書き換えられないので、`mise run fmt` は差分のあるときだけ書く形にし、差分が出たら fmt-check の結果を Edit で当てる
+- 副作用として、これらを変える `git switch` / `git merge` は `claude/` と同じく sandbox 内で失敗する。formatter も sandbox の中ではこれらを書き換えられないので、`mise run fmt` は差分のあるときだけ書く形にする
 - ツールの data / state ディレクトリ（`~/.local/share/{mise,uv,bun}`・`~/.local/state/mise`）は読取だけを開け、書込は開けない。ここには PATH に載るバイナリ（mise の installs、`GOBIN`、uv の tools、`BUN_INSTALL_BIN`）と mise の trust（`trusted-configs`）があり、書ければ sandbox の外のコマンドやシェルが、コマンド名を打つだけ・ディレクトリに入るだけで差し替えたものを実行する。副作用として、インストール系の操作（mise の自動インストールと `mise trust`、`go install`、`bun add -g`、`uv tool install`、uv による Python の取得）は sandbox 内で失敗するので、ユーザーに `!` で頼む。mise を外でまだ使っていないリポジトリでは、mise が設定の追跡（`tracked-configs`）を書けずに WARN を出し、trust の記録が要るコマンド（`mise x` など）は失敗する。そのリポジトリで一度ユーザーに `! mise trust` を頼む
 - キャッシュは、sandbox の中のツールが自分で中身を作るものだけ書込を開ける。sandbox から取得元に届かず、外で埋めた中身を読むだけのもの（GOMODCACHE の `~/.cache/go/mod`）は読取だけにする。開けても使い道が無く、中の toolchain は外で `go` を打つだけで exec される
 - 外のシェルの PATH に直接効くキャッシュは分ける。mise の `bin_paths` のキャッシュは `mise activate` が PATH に足すので、Claude Code の `env` で `MISE_CACHE_DIR` を `~/.cache/claude-sandbox/mise` に向け、共有の `~/.cache/mise` は開けない。`.zshenv` は `MISE_CACHE_DIR` を設定しないので、`env` の値が sandbox 内まで届く。この `env` は sandbox の外で動く hook・status line にも付くが、そこから mise は呼ばない
@@ -87,7 +88,7 @@
 ## git / gh の基準
 
 - Claude が確認なしで進める範囲は、作業ブランチの作成から、そのブランチへの commit・push と PR の作成まで。auto モードの classifier は、作業中のリポジトリへの push と依頼に沿った PR の作成を既定で通すので、allow も ask も足さない
-- CLAUDE.md の Git の規則（自分の作業ブランチだけに push する・merge やガードの変更は名指しで指示されたときだけ・破壊的操作の事前確認）は、classifier の既定ルールと重なっても残す。既定ルールは、session のリポジトリのどのブランチへの push も通し（Git Push Destination）、人の承認後の merge・Azure DevOps の操作・agent が触ったファイルの復元を止めない（v2.1.289）
+- CLAUDE.md の Git の規則（自分の作業ブランチだけに push する・merge やガードの変更は名指しで指示されたときだけ）は、classifier の既定ルールと重なっても残す。既定ルールは、session のリポジトリのどのブランチへの push も通し（Git Push Destination）、人の承認後の merge・Azure DevOps の操作を止めない（v2.1.289）。破壊的操作の事前確認は CLAUDE.md に置かず、システムプロンプトの既定（取り返しのつかない操作は先に確認する）と `permissions.ask` に任せる
 - リモートを壊さないことは、コマンドの書き方に左右されない層で守る: GitHub の ruleset（main の最終保証。`bin/repo setup` が入れる）と、git の `pre-push` hook（push ごとの判定）。`permissions` のパターンは、git のオプションの省略形や結合（`--del`・`-uf`）を拾えないので、push の判定には使わない
 - `pre-push` は、Claude の push（`CLAUDE_CODE_CHILD_SESSION=1`）について、ref の削除・非 fast-forward・既存のタグの書換え・保護ブランチ（main・master・develop・release/*・リモートの既定ブランチ）への push を拒否する。classifier の既定ルール（Git Push Destination）は既定ブランチへの push も通す（v2.1.289）ので、ruleset の無いリポジトリではこれが唯一の歯止めになる。解除の手段は持たせない。必要なら人が Claude Code の外のターミナルで行う。自分のブランチでの作業が止まらないよう、push 済みのブランチは履歴を書き換えずに commit を積むことを CLAUDE.md に置く。人の push は main / master の force と削除だけを拒否し、`ALLOW_FORCE_PUSH=1` で解除できる
 - Claude の git には、`env` の `GIT_CONFIG_*` で `core.hooksPath` を全体の hook の置き場所に固定する。リポジトリ側の設定が hook を作業ツリー内（husky など）に向けていても、Claude の push では全体の `pre-push` が走り、sandbox 内から書き換えられる hook が sandbox の外で実行されることもない。副作用として、リポジトリ固有の hook は Claude の git では走らない。検証は Claude が明示的に実行する
@@ -97,7 +98,7 @@
 - gh のガードは、Claude 専用のトークンではなく `permissions` と classifier で持つ。merge と ref の更新は push と同じ Contents の書込権限で動くので、トークンの権限では分けられない。トークンで閉じられるのは Administration（branch protection・ruleset・リポジトリ設定）だけで、個人のリポジトリを自分が書いたコードで扱う範囲では、パターンをすり抜ける形が残っても許容する。他人が書いた内容（公開リポジトリの issue や PR、第三者のリポジトリ）を auto モードで扱う場面が増えたら、トークンで Administration を外すことを見直す
 - Azure DevOps（`az repos`）の merge とブランチポリシーの変更は、`permissions` にも classifier の既定ルールにも止められず、CLAUDE.md の Git の規則だけで守る。実測できる環境で問題が出たら、gh と同じく素直な形を ask に足す
 - 人の gh のトークンにも、Claude の作業に要らない scope（`admin:public_key`・`workflow`）は付けない。git の通信は SSH で、gh のトークンを使わない
-- git / gh のネットワーク系は、起動したリポジトリで単体のコマンドとして打つ。`excludedCommands` の除外はコマンドの形で外れ、外れると認証にも送信先にも届かない。外れる形の多くは `block-piped-excluded.sh` が拒否し、正しい形は拒否のメッセージが伝えるので、CLAUDE.md には置かない。hook を通り sandbox 内で失敗する `git pull`（除外の対象外）だけは、`git fetch` と `git merge` に分けることを CLAUDE.md に置く。他のリポジトリの GitHub 操作は `gh -R` で行い、push はそのリポジトリで起動したセッションから行う
+- git / gh のネットワーク系は、起動したリポジトリで単体のコマンドとして打つ。`excludedCommands` の除外はコマンドの形で外れ、外れると認証にも送信先にも届かない。外れる形の多くは `block-piped-excluded.sh` が拒否するが、拒否が繰り返されるので、単体で打つことと、hook を通り sandbox 内で失敗する `git pull`（除外の対象外）を `git fetch` と `git merge` に分けることを CLAUDE.md に置く。他のリポジトリの GitHub 操作は `gh -R` で行い、push はそのリポジトリで起動したセッションから行う
 
 ## worktree の基準
 
