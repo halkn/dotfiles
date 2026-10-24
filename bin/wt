@@ -87,15 +87,6 @@ _wt_list() {
   return 0
 }
 
-# mise prompts for trust on every new checkout path. Only code from a repository
-# the user already works in gets pre-trusted.
-_wt_trust_mise() {
-  local wt_path=$1
-  command -v mise >/dev/null 2>&1 || return 0
-  [[ -f $wt_path/mise.toml || -f $wt_path/.mise.toml || -f $wt_path/mise/config.toml ]] || return 0
-  mise trust --quiet "$wt_path" >/dev/null 2>&1 || true
-}
-
 # ── removal ──────────────────────────────────────────
 
 # Only a directory of the layout under $WT_ROOT is taken, which keeps out the
@@ -244,17 +235,15 @@ _wt_cmd_new() {
       git worktree add -b "$branch" "$wt_path" >&2 || return 1
     fi
   fi
-  _wt_trust_mise "$wt_path"
   print -r -- "$wt_path"
 }
 
 # `gh pr checkout` is the only thing that gets a fork's head right, so the
 # worktree is added detached and gh is run inside it. The directory is named
 # after the head branch, which a fork does not qualify by owner: two pull
-# requests proposing the same branch name collide. A fork's code is someone
-# else's, so its mise config is left for the user to trust.
+# requests proposing the same branch name collide.
 _wt_cmd_pr() {
-  local number=${1:-} main head branch cross wt_path
+  local number=${1:-} main branch wt_path
   number=${number#\#}
   [[ -n $number ]] || {
     print -u2 'usage: wt pr <number>'
@@ -263,9 +252,7 @@ _wt_cmd_pr() {
   _wt_require gh wt || return 1
   main=$(_wt_main) || return 1
 
-  head=$(gh pr view "$number" --json headRefName,isCrossRepository \
-    --jq '[.headRefName, (.isCrossRepository | tostring)] | @tsv') || return 1
-  IFS=$'\t' read -r branch cross <<<"$head"
+  branch=$(gh pr view "$number" --json headRefName --jq '.headRefName') || return 1
   [[ -n $branch ]] || {
     print -u2 "wt: could not resolve the head branch of #$number"
     return 1
@@ -282,7 +269,6 @@ _wt_cmd_pr() {
     rmdir -- "${wt_path:h}" 2>/dev/null
     return 1
   fi
-  [[ $cross == true ]] || _wt_trust_mise "$wt_path"
   print -r -- "$wt_path"
 }
 

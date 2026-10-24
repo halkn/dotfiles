@@ -162,7 +162,7 @@ in_main new >/dev/null 2>&1 && fail 'new (no branch) should fail'
 
 # ── pr ───────────────────────────────────────────────
 
-got=$(STUB_PR_VIEW=$'pr-branch\tfalse' in_main pr '#7' 2>/dev/null)
+got=$(STUB_PR_VIEW=pr-branch in_main pr '#7' 2>/dev/null)
 check 'pr' "$WT_ROOT/owner/proj/pr-branch" "$got"
 check 'pr (checked out by gh)' pr-branch \
   "$(git -C "$WT_ROOT/owner/proj/pr-branch" branch --show-current 2>/dev/null)"
@@ -170,9 +170,9 @@ check 'pr (checked out by gh)' pr-branch \
 STUB_PR_VIEW='' in_main pr 8 >/dev/null 2>&1 && fail 'pr (unresolved head) should fail'
 
 check 'pr (again)' "$WT_ROOT/owner/proj/pr-branch" \
-  "$(STUB_PR_VIEW=$'pr-branch\tfalse' in_main pr 7 2>/dev/null)"
+  "$(STUB_PR_VIEW=pr-branch in_main pr 7 2>/dev/null)"
 # Another pull request whose head folds to the same directory.
-STUB_PR_VIEW=$'pr/branch\ttrue' in_main pr 9 >/dev/null 2>&1 &&
+STUB_PR_VIEW=pr/branch in_main pr 9 >/dev/null 2>&1 &&
   fail 'pr (directory holds another branch) should fail'
 
 # ── list ─────────────────────────────────────────────
