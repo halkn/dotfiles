@@ -195,8 +195,7 @@
         "~/repos/github.com/halkn/dotfiles/.zshenv",
         "~/repos/github.com/halkn/dotfiles/bin",
         "~/repos/github.com/halkn/dotfiles/mise-tasks",
-        "~/repos/github.com/halkn/dotfiles/mise.toml",
-        "~/repos/github.com/halkn/dotfiles/mise.lock"
+        "~/repos/github.com/halkn/dotfiles/mise.toml"
       ],
       "allowRead": [
         "~/.azure",

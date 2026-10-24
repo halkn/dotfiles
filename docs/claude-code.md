@@ -62,7 +62,7 @@
 - sandbox の外で動くコマンドが読み込んで実行するファイルも、`denyWrite` で塞ぐ。塞ぐかどうかは、書かれてから人が中身を見る前に、sandbox の外で実行されうるかで決める。commit やレビューを待たず、次の `git push`・`gh`、ターミナルや nvim を開く・プロンプトが出る・ディレクトリに入るといった日常の操作で実行される。このリポジトリでは次が当たる。塞ぐ単位はディレクトリにし、後から足されたファイルも覆う
   - git / gh: `core.hooksPath` の hook と git の config（`credential.helper` など）を持つ `.config/git`、alias を持つ `.config/gh`
   - シェルと端末: zsh が起動のたびに読む `.zshenv`・`.config/zsh`、PATH に載る `bin/`、起動するコマンドを設定できる `.config/ghostty`、プロンプトのたびにコマンドを実行できる `.config/starship`、herdr の設定・スクリプトとプラグイン（`.config/herdr`）
-  - mise: どのディレクトリでも読み込まれ `[hooks]`・`[env]`・`[settings]` から任意のコマンドを実行させたり安全のための設定を戻したりできる `.config/mise`、このリポジトリで読み込まれ `mise bootstrap` の hook を持つ `mise.toml`、ツールの取得元と checksum を決める `mise.lock`、ユーザーが `mise run sync|update` で実行する `mise-tasks/`
+  - mise: どのディレクトリでも読み込まれ `[hooks]`・`[env]`・`[settings]` から任意のコマンドを実行させたり安全のための設定を戻したりできる `.config/mise`、このリポジトリで読み込まれ `mise bootstrap` の hook を持つ `mise.toml`、ユーザーが `mise run sync|update` で実行する `mise-tasks/`
   - その他: nvim が起動時に実行する Lua とプラグインの取得元（`.config/nvim`）、`--pre` で前処理のコマンドを実行させられる `.config/ripgrep`、接続先と認証方法を決める `.config/snowflake`
 - 実行される設定を持たないもの（linter の設定 `.config/{rumdl,ryl,shuck}`・`.shuck.toml`）と、sandbox の中か CI でしか実行されないもの（`test/`・`.github/`）は塞がない。上の基準に当たるファイルを足したら、`denyWrite` にも足す
 - ファイルツールの側は、変更が人の目に届くかで分ける。`denyWrite` が塞ぐのは、script・formatter・リダイレクトのように Edit の diff に現れない書込で、Edit / Write tool の書込は transcript に diff が残り `git status` にも出る。そのため、日常的に編集する設定には `Edit` の ask を置かず、確認なしで書かせる。ask を置くのは、Claude 自身の次のコマンドで人の操作を待たずに実行されるもの（`.config/git`）と、gitignore されていて書き換えても `git status` に出ないもの（`.config/herdr/plugins/github`）だけ。認証情報を持つ `.config/gh` は deny にする

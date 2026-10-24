@@ -43,4 +43,19 @@ tree-sitter = "latest"
 "github:ewhauser/shuck" = "latest"
 rumdl = "latest"
 "go:golang.org/x/tools/gopls" = "latest"
+stylua = "latest"
 # No yaml language server here: ryl covers both lint and format.
+
+[tool_alias]
+emmylua_ls = "github:EmmyLuaLs/emmylua-analyzer-rust"
+emmylua_check = "github:EmmyLuaLs/emmylua-analyzer-rust"
+
+[tools.emmylua_ls]
+version = "latest"
+matching = "emmylua_ls"
+rename_exe = "emmylua_ls"
+
+[tools.emmylua_check]
+version = "latest"
+matching = "emmylua_check"
+rename_exe = "emmylua_check"
