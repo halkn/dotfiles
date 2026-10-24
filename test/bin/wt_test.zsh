@@ -77,7 +77,8 @@ git -C "$main" update-ref -d refs/remotes/origin/remote-only
 
 # A stub gh: `pr list --state merged --head <b>` answers the head oid of each
 # merged PR recorded in $STUB_MERGED_DIR/<b>, `pr view` answers $STUB_PR_VIEW,
-# and `pr checkout` makes the branch.
+# and `pr checkout --worktree <path>` adds a worktree there on a branch named
+# $STUB_PR_LOCAL (default pr-branch), then fails if $STUB_PR_FAIL is set.
 stub=$scratch/stub
 mkdir -p "$stub"
 cat >"$stub/gh" <<'STUB'
@@ -93,7 +94,9 @@ case "$1 $2" in
     print -r -- "${STUB_PR_VIEW:-}"
     ;;
   'pr checkout')
-    git checkout -q -b pr-branch
+    at=${args[(i)--worktree]}
+    git worktree add -q -b "${STUB_PR_LOCAL:-pr-branch}" -- "${args[at + 1]-}" || exit 1
+    [[ -z ${STUB_PR_FAIL:-} ]] || exit 1
     ;;
 esac
 STUB
@@ -174,6 +177,20 @@ check 'pr (again)' "$WT_ROOT/owner/proj/pr-branch" \
 # Another pull request whose head folds to the same directory.
 STUB_PR_VIEW=pr/branch in_main pr 9 >/dev/null 2>&1 &&
   fail 'pr (directory holds another branch) should fail'
+
+# gh names the local branch <owner>/<head> when a fork's head is the default
+# branch, and that worktree is still the pull request's when asked again.
+STUB_PR_VIEW=main STUB_PR_LOCAL=someone/main in_main pr 10 >/dev/null 2>&1
+check 'pr (fork head on the default branch, again)' "$WT_ROOT/owner/proj/main" \
+  "$(STUB_PR_VIEW=main in_main pr 10 2>/dev/null)"
+git -C "$main" worktree remove "$WT_ROOT/owner/proj/main"
+git -C "$main" branch -D -q someone/main
+
+# A checkout gh gives up on part way leaves nothing under the root.
+STUB_PR_VIEW=broken STUB_PR_LOCAL=broken STUB_PR_FAIL=1 in_main pr 11 >/dev/null 2>&1 &&
+  fail 'pr (gh failed) should fail'
+[[ -e $WT_ROOT/owner/proj/broken ]] && fail 'pr (gh failed) left the worktree'
+git -C "$main" branch -D -q broken 2>/dev/null
 
 # ── list ─────────────────────────────────────────────
 

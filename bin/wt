@@ -189,11 +189,13 @@ _wt_cmd_list() {
 }
 
 # An existing directory is handed back only when it holds the branch asked for:
-# `/` folds to `-`, so another branch may be sitting there.
+# `/` folds to `-`, so another branch may be sitting there. With $3 set, a
+# branch qualified by an owner also counts, as gh names a fork's head that way.
 _wt_reuse() {
   local wt_path=$1 branch=$2 held
+  local -i qualified=${3:-0}
   held=$(git -C "$wt_path" symbolic-ref --short -q HEAD)
-  [[ $held == "$branch" ]] || {
+  [[ $held == "$branch" ]] || { ((qualified)) && [[ $held == */"$branch" ]]; } || {
     print -u2 "wt: $wt_path holds ${held:-a detached HEAD}, not $branch"
     return 1
   }
@@ -238,10 +240,11 @@ _wt_cmd_new() {
   print -r -- "$wt_path"
 }
 
-# `gh pr checkout` is the only thing that gets a fork's head right, so the
-# worktree is added detached and gh is run inside it. The directory is named
-# after the head branch, which a fork does not qualify by owner: two pull
-# requests proposing the same branch name collide.
+# `gh pr checkout` is the only thing that gets a fork's head right, so gh adds
+# the worktree and names its branch. The directory is named after the head
+# branch, which a fork does not qualify by owner: two pull requests proposing
+# the same branch name collide. gh does qualify the local branch when a fork's
+# head is the default branch, which would otherwise clash with the local one.
 _wt_cmd_pr() {
   local number=${1:-} main branch wt_path
   number=${number#\#}
@@ -260,15 +263,14 @@ _wt_cmd_pr() {
 
   wt_path=$(_wt_path "$main" "$branch")
   if [[ -d $wt_path ]]; then
-    _wt_reuse "$wt_path" "$branch"
+    _wt_reuse "$wt_path" "$branch" 1
     return
   fi
-  git worktree add -q --detach "$wt_path" HEAD >&2 || return 1
-  if ! (cd -- "$wt_path" && gh pr checkout "$number" >&2); then
-    git worktree remove --force -- "$wt_path" >&2
+  gh pr checkout "$number" --worktree "$wt_path" >&2 || {
+    [[ ! -d $wt_path ]] || git worktree remove --force -- "$wt_path" >&2
     rmdir -- "${wt_path:h}" 2>/dev/null
     return 1
-  fi
+  }
   print -r -- "$wt_path"
 }
 
