@@ -4,15 +4,16 @@
 
 ## 原則
 
-- マシンの状態（symlink の配置・ツール・OS パッケージ・clone するリポジトリ・ログインシェル）は、全て `mise.toml` に宣言し、`mise bootstrap` で収束させる。同じ状態を手順書やスクリプトに二重に書かない。インストールの入口も `mise bootstrap` だけにし、task の実行時に自動で入れない
+- マシンの状態（symlink の配置・ツール・OS パッケージ・clone するリポジトリ・ログインシェル）は、全て mise の設定（ツールは `.config/mise/config.toml`、それ以外は `mise.toml`）に宣言し、`mise bootstrap` で収束させる。同じ状態を手順書やスクリプトに二重に書かない。インストールの入口も `mise bootstrap` だけにし、task の実行時に自動で入れない
 - バージョンを動かす入口は `mise run update` だけにする。`mise run sync` は、pull した宣言に収束させるだけで、バージョンを動かさない
 - OS 固有の処理は必要な箇所に閉じ込め、macOS / WSL の分岐を設定全体に持ち込まない
 
 ## ツールの宣言先
 
-- mise で入れるツールは、全て `.config/mise/config.toml`（全プロジェクトに効く）に宣言し、版を固定しない。プロジェクトの `mise.toml` に `[tools]` を置かない。開発リポジトリは言語の標準（uv・bun・go）で版の固定・ツールの導入・task を持ち、mise に頼らない
-- このリポジトリの `mise.toml` は、マシンの状態（`[dotfiles]`・`[bootstrap]`）と task だけを持つ。このリポジトリでしか使わないツール（Lua の `stylua`・`emmylua_ls`・`emmylua_check`）もグローバルに置く
-- `lint` が使うツールの版がマシン間でずれ、`lint` の結果が変わることは許容する
+- mise で入れるツールは、全て `.config/mise/config.toml`（全プロジェクトに効く）に宣言し、版を固定しない。`mise.toml` には `[tools]` を置かず、このリポジトリでしか使わないツール（Lua の `stylua`・`emmylua_ls`・`emmylua_check`）もグローバルに置く
+- 固定しないことで起きる次の 2 つは許容する
+  - `lint` が使うツールの版がマシン間・CI と手元の間でずれ、`lint` の結果が変わる
+  - lockfile の checksum が無いので、既存のリリースの asset が差し替えられると、`minimum_release_age` を通り抜けてそのまま入る
 - ツールは、できるだけ他の依存が無い形で入れる。node や python に依存する配布（npm・pipx）は避ける。その上で registry の短縮名を優先し、registry に無いものや依存が増えるものだけ backend を明示する
 - LSP・formatter・linter は、その言語の toolchain と同じ場所に置く。Go はグローバルなので `gopls` も `.config/mise/config.toml` に、Python はプロジェクトの環境で固定するので `pyright`・`ruff` は mise で宣言せずそのプロジェクトの環境から起動する。TypeScript も同様に、`tsc`・`oxlint`・`oxfmt` はプロジェクトの `node_modules` から起動する
 - JavaScript の runtime は bun だけを入れ、node は入れない。npm の配布物は node の shebang を持つので、bun に `--bun` で実行させる。プロジェクトに無いツールを勝手に取得しないよう、`bunx` には `--no-install` を付ける
