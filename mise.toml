@@ -1,32 +1,9 @@
-# Only tools used inside this repository are declared here, so the lockfile pins just those; tools
-# called from any directory stay unpinned in the global config. Apple Silicon macOS and WSL are
-# the machines this repository is deployed on.
-[settings]
-lockfile = true
-lockfile_platforms = ["macos-arm64", "linux-x64"]
-
+# Tools are declared only in the global config (.config/mise/config.toml); this file holds the
+# machine setup and this repository's tasks.
 [settings.task]
 # Installation goes through `mise bootstrap` alone, which orders packages before tools.
 # Auto-installing before a task would unpack a zip on a fresh machine before unzip is there.
 run_auto_install = false
-
-[tools]
-# Lua toolchain, called only from this repository's `mise run` and from nvim opened inside it.
-stylua = "latest"
-
-[tool_alias]
-emmylua_ls = "github:EmmyLuaLs/emmylua-analyzer-rust"
-emmylua_check = "github:EmmyLuaLs/emmylua-analyzer-rust"
-
-[tools.emmylua_ls]
-version = "latest"
-matching = "emmylua_ls"
-rename_exe = "emmylua_ls"
-
-[tools.emmylua_check]
-version = "latest"
-matching = "emmylua_check"
-rename_exe = "emmylua_check"
 
 # ── Setup（mise bootstrap） ──────────────────────────
 

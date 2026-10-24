@@ -1,6 +1,6 @@
 # mise の設計
 
-対象は `mise.toml`・`mise.lock`・`.config/mise/`・`mise-tasks/`。
+対象は `mise.toml`・`.config/mise/`・`mise-tasks/`。
 
 ## 原則
 
@@ -10,13 +10,9 @@
 
 ## ツールの宣言先
 
-| 宣言先 | 置くもの | バージョン |
-| --- | --- | --- |
-| `.config/mise/config.toml`（全プロジェクトに効く） | どのディレクトリからでも呼ばれる CLI（shell から使うもの、Neovim が起動する formatter・LSP、全リポジトリで使う検査） | 固定しない |
-| `mise.toml` | このリポジトリの中でだけ使うもの（Lua toolchain） | `mise.lock` で固定する |
-
-- 宣言先は、どこから呼ばれるかより、対象のファイルがどこにあるかで決める。Lua はこのリポジトリでしか書かないので、Neovim から起動する `emmylua_ls` も `mise.toml` に置く
-- 固定するかどうかは宣言先の結果で、固定したいからといってグローバルのツールを `mise.toml` に移さない。`lint` が使うグローバルのツール（`rumdl`・`shuck`・`nvim`）の版がマシン間でずれ、`lint` の結果が変わることは許容する
+- mise で入れるツールは、全て `.config/mise/config.toml`（全プロジェクトに効く）に宣言し、版を固定しない。プロジェクトの `mise.toml` に `[tools]` を置かない。開発リポジトリは言語の標準（uv・bun・go）で版の固定・ツールの導入・task を持ち、mise に頼らない
+- このリポジトリの `mise.toml` は、マシンの状態（`[dotfiles]`・`[bootstrap]`）と task だけを持つ。このリポジトリでしか使わないツール（Lua の `stylua`・`emmylua_ls`・`emmylua_check`）もグローバルに置く
+- `lint` が使うツールの版がマシン間でずれ、`lint` の結果が変わることは許容する
 - ツールは、できるだけ他の依存が無い形で入れる。node や python に依存する配布（npm・pipx）は避ける。その上で registry の短縮名を優先し、registry に無いものや依存が増えるものだけ backend を明示する
 - LSP・formatter・linter は、その言語の toolchain と同じ場所に置く。Go はグローバルなので `gopls` も `.config/mise/config.toml` に、Python はプロジェクトの環境で固定するので `pyright`・`ruff` は mise で宣言せずそのプロジェクトの環境から起動する。TypeScript も同様に、`tsc`・`oxlint`・`oxfmt` はプロジェクトの `node_modules` から起動する
 - JavaScript の runtime は bun だけを入れ、node は入れない。npm の配布物は node の shebang を持つので、bun に `--bun` で実行させる。プロジェクトに無いツールを勝手に取得しないよう、`bunx` には `--no-install` を付ける

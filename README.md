@@ -13,7 +13,7 @@ the CLI tooling around them, set up by [mise](https://mise.jdx.dev/) from
 | `bin/` | Standalone commands (`repo`, `wt`) | `~/.local/bin/*` |
 | `claude/` | Claude Code user settings, hooks and global instructions | `~/.claude/*` |
 | `.claude/` | Claude Code settings for working on this repository | — |
-| `mise.toml`, `mise.lock`, `mise-tasks/` | What a machine gets, and the tasks below | — |
+| `mise.toml`, `mise-tasks/` | What a machine gets, and the tasks below | — |
 | `test/` | Tests for `bin/`, `.config/herdr/`, the Claude Code hooks and the git `pre-push` hook | — |
 | `docs/` | [Design notes](docs/README.md) for changing this repository | — |
 | `.github/` | The pull request template | — |
@@ -86,8 +86,7 @@ These files are gitignored and hold what differs per machine:
 | `mise run sync` | this repository changed and the machine should follow |
 | `mise run update` | mise, tools, OS packages, zsh plugins and Claude Code should move to newer versions |
 
-Only `update` moves versions, and it does not pull, so run `sync` first. Commit
-the `mise.lock` diff either task leaves behind.
+Only `update` moves versions, and it does not pull, so run `sync` first.
 
 ### Neovim plugins
 
