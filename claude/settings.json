@@ -37,6 +37,7 @@
       "Bash(mise task info*)"
     ],
     "deny": [
+      "Artifact",
       "Read(//**/.env)",
       "Read(//**/.env.*)",
       "Read(//**/secrets/**)",
@@ -122,7 +123,11 @@
     "baseRef": "head"
   },
   "disableRemoteControl": true,
-  "enableArtifact": false,
+  "skillOverrides": {
+    "artifact-design": "off",
+    "artifact-diagramming": "off",
+    "artifact-capabilities": "off"
+  },
   "statusLine": {
     "type": "command",
     "command": "~/.claude/statusline-command.sh"

@@ -49,7 +49,7 @@ sandbox.excludedCommands は、行頭に裸で置いた単体のコマンドに�
 `gh -R <owner>/<repo>` で行えます。clone は作業ディレクトリの中への相対パスにするか、`gh repo clone` を
 使ってください。出力を絞るときは `--json` / `--jq` などツール自身のオプションを使うか、まず裸で実行して
 から結果を読んでください。複数行の本文は `$(cat <<EOF ...)` やリダイレクトではなく、Write tool で
-`.scratch/` に書いたファイルを `--body-file` / `-F` で渡してください。
+scratchpad に書いたファイルを絶対パスで `--body-file` / `-F` に渡してください。
 
 git / gh を実行せず引数として書いただけ（`rg gh README.md` など）なら、その語を引用符で囲めば通ります。
 MSG
