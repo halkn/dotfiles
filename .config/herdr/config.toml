@@ -33,7 +33,7 @@ delay_seconds = 3
 # Moved out of the default ~/.herdr/worktrees to follow XDG. A worktree can hold uncommitted
 # work, so it belongs under data rather than cache or state, and it outlives herdr, so it is
 # not under a herdr-owned directory. `$WT_ROOT` (.config/zsh/.zshenv) holds the same path:
-# herdr and `wt` place worktrees in one tree, so the two move together.
+# herdr and `hw` place worktrees in one tree, so the two move together.
 [worktrees]
 directory = "~/.local/share/worktrees"
 
@@ -41,7 +41,7 @@ directory = "~/.local/share/worktrees"
 [keys]
 prefix = "ctrl+space"
 # The default is the chord prefix+shift+n (herdr 0.9.5); alt+w keeps "a workspace on
-# the current directory" one key away, next to alt+s which goes to an existing one.
+# the current directory" one key away, next to alt+n which opens one on a clone.
 new_workspace = "alt+w"
 split_vertical = "alt+;"
 split_horizontal = "alt+minus"
@@ -50,38 +50,47 @@ focus_pane_left = "alt+h"
 focus_pane_down = ["alt+j", "alt+down"]
 focus_pane_up = ["alt+k", "alt+up"]
 focus_pane_right = "alt+l"
+# Unbound: herdr's own worktree lands outside the <owner>/<repo>/<branch> layout `hw` keeps,
+# and forks a branch only origin has from HEAD (herdr 0.9.5). alt+g / alt+p create them instead.
+new_worktree = ""
 
 [[keys.command]]
 key = "alt+plus"
 type = "shell"
 command = "herdr pane split --direction right --ratio 0.3 --focus"
 
+# Clean-up only; going to a workspace is goto (prefix+g) and the sidebar.
 [[keys.command]]
 key = "alt+s"
 type = "popup"
 command = "~/.config/herdr/herdr-spaces.zsh"
-description = "go to a workspace, or remove / close one"
+description = "remove worktrees / close workspaces"
 width = "90%"
 height = "90%"
 
 [[keys.command]]
 key = "alt+n"
 type = "popup"
-command = "~/.config/herdr/herdr-open.zsh"
+command = "~/.config/herdr/herdr-repo.zsh"
 description = "open a workspace on a repository"
 width = "90%"
 height = "90%"
 
-# `wt new` rather than herdr's own new_worktree, which is left on its default chord: the
-# branch has to be picked up where it already is (locally, then on origin) before a new one
-# is created, and that decision lives in bin/wt.
 [[keys.command]]
 key = "alt+g"
 type = "popup"
-command = "~/.config/herdr/herdr-new.zsh"
-description = "create the worktree for a branch and open it"
-width = "60%"
-height = "20%"
+command = "~/.config/herdr/herdr-branch.zsh"
+description = "open the worktree of a branch"
+width = "90%"
+height = "90%"
+
+[[keys.command]]
+key = "alt+p"
+type = "popup"
+command = "~/.config/herdr/herdr-pr.zsh"
+description = "open the worktree of a pull request"
+width = "90%"
+height = "90%"
 
 [[keys.command]]
 key = "alt+t"
