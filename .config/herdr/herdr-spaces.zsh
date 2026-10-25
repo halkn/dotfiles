@@ -39,12 +39,13 @@ for line in "${lines[@]}"; do
 done
 _ui_confirm 'go ahead?' || exit 0
 
-# A refused rm is shown and offered once more with -f; nothing else is asked.
+# A refused rm is shown and offered once more with -f while the worktree is
+# still there; nothing else is asked.
 rc=0
 for line in "${lines[@]}"; do
   f=("${(@ps:\t:)line}")
   hw "${f[2]}" "${f[3]}" && continue
-  [[ ${f[2]} == rm ]] &&
+  [[ ${f[2]} == rm && -d ${f[3]} ]] &&
     _ui_confirm "remove ${f[1]} anyway, discarding its changes and what runs in it?" &&
     hw rm -f "${f[3]}" && continue
   rc=1

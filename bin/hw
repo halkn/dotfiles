@@ -19,7 +19,7 @@ usage: hw <command> [<args>]
   repo <spec|path>                open a workspace on the clone (`repo get` first)
   branch <name> [<base>]          create or reuse its worktree and open it
   pr <number>                     the same for a pull request (GitHub or Azure DevOps)
-  rm [-f] <branch|path|id>...     remove worktrees, close their workspaces, delete merged branches
+  rm [-f] <path|branch|id>...     remove worktrees, close their workspaces, delete merged branches
   close <id>...                   close workspaces only
   branches                        rows for the branch picker and completion
   prs                             rows for the pull request picker and completion
@@ -30,8 +30,8 @@ usage: hw <command> [<args>]
 
 Opening a workspace that is already open focuses it instead. rm refuses a
 worktree with local changes or a running process in one of its panes; -f
-removes it anyway. A branch is deleted when git or a merge-tree check says it
-is in origin's default branch, and kept otherwise.
+removes it anyway. A branch is deleted when it is in origin's default branch,
+squash merges included, and kept otherwise. Outside herdr, rm uses git alone.
 USAGE
 }
 
@@ -72,6 +72,46 @@ _hw_path() {
   print -r -- "$(_hw_root)/${${main:h}:t}/${main:t}/${branch//\//-}"
 }
 
+# The worktree, wherever it is, that has the branch checked out, into REPLY.
+_hw_checked_out() {
+  local main=$1 branch=$2 line at=
+  REPLY=
+  for line in ${(f)"$(git -C "$main" worktree list --porcelain)"}; do
+    case $line in
+      'worktree '*)
+        at=${line#worktree }
+        ;;
+      "branch refs/heads/$branch")
+        REPLY=$at
+        return 0
+        ;;
+    esac
+  done
+  return 1
+}
+
+# The branch a checkout is on, into REPLY: the name under refs/heads/, or the
+# short hash of a detached HEAD. Read off the HEAD file because the rows run it
+# once per worktree. A worktree's .git is a file naming its gitdir, relative to
+# the worktree when not absolute.
+_hw_head() {
+  local dir=$1 gitdir=$1/.git head=
+  REPLY=${1:t}
+  if [[ -f $gitdir ]]; then
+    read -r head <"$gitdir" || [[ -n $head ]] || return 1
+    gitdir=${head#gitdir: }
+    [[ $gitdir == /* ]] || gitdir=$dir/$gitdir
+    head=
+  fi
+  [[ -r $gitdir/HEAD ]] || return 1
+  read -r head <"$gitdir/HEAD" || [[ -n $head ]] || return 1
+  if [[ $head == 'ref: refs/heads/'* ]]; then
+    REPLY=${head#ref: refs/heads/}
+  else
+    REPLY=${head[1,7]}
+  fi
+}
+
 # Only a directory of the layout under $WT_ROOT is taken, which keeps out the
 # main checkout and Claude Code's .claude/worktrees (its lifecycle; an agent may
 # still be running there). The one thing git removes without complaint is the
@@ -95,41 +135,73 @@ _hw_removable() {
 
 # ── herdr ────────────────────────────────────────────
 
-# `<id>\t<number>\t<label>\t<checkout path>\t<focused>` per open workspace. A
-# workspace off a checkout, or one opened with `workspace create` on a worktree,
-# has no checkout path (herdr 0.9.5).
-_hw_workspaces() {
+# `<id>\t<number>\t<label>\t<checkout path>\t<focused>` per open workspace, read
+# once per invocation into _HW_WS. A workspace off a checkout, or one opened
+# with `workspace create` on a worktree, has no checkout path.
+typeset -g _HW_WS=
+typeset -gi _HW_WS_READ=0
+_hw_ws_load() {
   local out
+  ((_HW_WS_READ)) && return 0
+  _hw_require herdr || return 1
+  _hw_require jq || return 1
   out=$(herdr workspace list) || {
     print -u2 'hw: herdr could not list the workspaces'
     return 1
   }
-  print -r -- "$out" | jq -r '
+  _HW_WS=$(print -r -- "$out" | jq -r '
     .result.workspaces[]?
     | [.workspace_id, (.number | tostring), .label,
        (.worktree.checkout_path // ""), (.focused | tostring)]
     | @tsv
-  '
+  ') || return 1
+  _HW_WS_READ=1
 }
 
-# `<pane id>\t<cwd>` per pane of a workspace.
+# The workspace herdr ran the command over: the id it hands a custom command,
+# else the one marked focused.
+_hw_is_focused() {
+  local id=$1 flag=$2
+  if [[ -n ${HERDR_ACTIVE_WORKSPACE_ID:-} ]]; then
+    [[ $id == "$HERDR_ACTIVE_WORKSPACE_ID" ]]
+  else
+    [[ $flag == true ]]
+  fi
+}
+
+# `<pane id>\t<cwd>` per pane of a workspace, into REPLY, read once per
+# workspace.
+typeset -gA _HW_PANES
 _hw_panes() {
-  local out
-  out=$(herdr pane list --workspace "$1") || return 1
-  print -r -- "$out" | jq -r '.result.panes[]? | [.pane_id, .cwd] | @tsv'
+  local ws=$1 out
+  if ((${+_HW_PANES[$ws]})); then
+    REPLY=${_HW_PANES[$ws]}
+    return 0
+  fi
+  if ! out=$(herdr pane list --workspace "$ws") ||
+    ! REPLY=$(print -r -- "$out" | jq -r '.result.panes[]? | [.pane_id, .cwd] | @tsv'); then
+    print -u2 "hw: herdr could not list the panes of $ws"
+    return 1
+  fi
+  _HW_PANES[$ws]=$REPLY
 }
 
-# What a pane runs in front of its shell, empty when the shell itself has the
-# terminal. Read off the process group rather than the name, which differs
-# between a login shell (-zsh) and any other.
+# What a pane runs in front of its shell, into REPLY; empty when the shell
+# itself has the terminal. Decided by the process group, not by the names, which
+# herdr may not be able to read and which differ between a login shell (-zsh)
+# and any other.
 _hw_busy() {
   local out
-  out=$(herdr pane process-info --pane "$1") || return 1
-  print -r -- "$out" | jq -r '
-    .result.process_info
-    | select(.foreground_process_group_id != .shell_pid)
-    | [.foreground_processes[]?.cmdline] | join(", ")
-  '
+  if ! out=$(herdr pane process-info --pane "$1") ||
+    ! REPLY=$(print -r -- "$out" | jq -r '
+      .result.process_info
+      | select(.foreground_process_group_id != .shell_pid)
+      | ([.foreground_processes[]?.cmdline // empty] | join(", ")) as $c
+      | if $c == "" then "process group \(.foreground_process_group_id)" else $c end
+    '); then
+    print -u2 "hw: herdr could not tell what $1 runs"
+    return 1
+  fi
 }
 
 # herdr answers a refusal as JSON on stdout; the message is what a person reads.
@@ -139,13 +211,37 @@ _hw_herdr_error() {
   print -u2 -r -- "hw: ${msg:-$out}"
 }
 
-# `worktree open` rather than `workspace create`: only the former records the
-# repository, which is what groups the workspace under its clone, and it
-# focuses a workspace already open on the path instead of adding a second one
-# (herdr 0.9.5).
-_hw_open_worktree() {
-  local main=$1 wt_path=$2 out
-  out=$(herdr worktree open --cwd "$main" --path "$wt_path" --focus 2>&1) || {
+_hw_close() {
+  local out
+  out=$(herdr workspace close "$1" 2>&1) || {
+    _hw_herdr_error "$out"
+    return 1
+  }
+}
+
+# A clone gets a workspace of its own, focused when one is already open on it. A
+# worktree goes through `worktree open` rather than `workspace create`: only the
+# former records the repository, which groups the workspace under its clone,
+# and it focuses a workspace already open on the path.
+_hw_open() {
+  local dir=${1:A} main row out
+  local -a f
+  main=$(_hw_main "$dir") || return 1
+  _hw_ws_load || return 1
+  if [[ ${main:A} != "$dir" ]]; then
+    out=$(herdr worktree open --cwd "$main" --path "$dir" --focus 2>&1) || {
+      _hw_herdr_error "$out"
+      return 1
+    }
+    return 0
+  fi
+  for row in ${(f)_HW_WS}; do
+    f=("${(@ps:\t:)row}")
+    [[ -n ${f[4]-} && ${f[4]:A} == "$dir" ]] || continue
+    herdr workspace focus "${f[1]}" >/dev/null
+    return
+  done
+  out=$(herdr workspace create --cwd "$dir" --focus 2>&1) || {
     _hw_herdr_error "$out"
     return 1
   }
@@ -166,48 +262,90 @@ _hw_reuse() {
   }
 }
 
-# With no base, a branch is picked up where it already is - locally, then on
-# origin - so one that exists only on the remote is tracked instead of silently
-# forked; herdr's own `worktree create` forks it from HEAD (herdr 0.9.5). When
-# origin cannot be reached, what the last fetch knew of it still counts. A base
-# always means a new branch, and fails if it already exists. With $4 set, the
-# branch has to come from origin, as a pull request's head does.
+# A pull request's head moves on after its worktree is made, so what is
+# reopened is brought up to origin when that only moves it forward. A diverged
+# or dirty one is left at its own tip, with a word.
+_hw_forward() {
+  local main=$1 branch=$2 at=${3:-}
+  git -C "$main" merge-base --is-ancestor "refs/heads/$branch" "refs/remotes/origin/$branch" 2>/dev/null || {
+    git -C "$main" merge-base --is-ancestor "refs/remotes/origin/$branch" "refs/heads/$branch" 2>/dev/null ||
+      print -u2 "hw: $branch has diverged from origin; left at its own tip"
+    return 0
+  }
+  if [[ -n $at ]]; then
+    git -C "$at" merge --ff-only -q "refs/remotes/origin/$branch" >&2 ||
+      print -u2 "hw: could not bring $at up to origin/$branch; left at its own tip"
+  else
+    git -C "$main" branch -f -q -- "$branch" "refs/remotes/origin/$branch" >&2
+  fi
+}
+
+# A branch already checked out somewhere - the main checkout included - is
+# opened where it is. Otherwise, with no base, it is picked up where it already
+# is - locally, then on origin - so one that exists only on the remote is
+# tracked instead of silently forked from HEAD, which herdr's own `worktree
+# create` does. When origin cannot be reached, what the last fetch knew of it
+# still counts. A base always means a new branch, resolved like a fresh one
+# against the checkout the caller stands in. With $4 set, the branch has to come
+# from origin and is brought up to it, as a pull request's head is.
 _hw_add() {
-  local main=$1 branch=$2 base=$3 wt_path
+  local main=$1 branch=$2 base=$3 wt_path start
   local -i remote=${4:-0}
-  wt_path=$(_hw_path "$main" "$branch")
-  if [[ -d $wt_path ]]; then
-    [[ -z $base ]] || {
-      print -u2 "hw: $wt_path already exists, so <base> cannot apply"
+  if [[ -n $base ]]; then
+    start=$(git rev-parse -q --verify "$base^{commit}") || {
+      print -u2 "hw: no such commit: $base"
       return 1
     }
-    _hw_reuse "$wt_path" "$branch" || return 1
+  else
+    start=$(git rev-parse HEAD) || return 1
+  fi
+  if ((remote)); then
+    git -C "$main" fetch -q origin "+refs/heads/${branch}:refs/remotes/origin/${branch}" 2>/dev/null || {
+      print -u2 "hw: could not fetch $branch from origin"
+      return 1
+    }
+  fi
+
+  if _hw_checked_out "$main" "$branch"; then
+    [[ -z $base ]] || {
+      print -u2 "hw: $branch is already checked out at $REPLY, so <base> cannot apply"
+      return 1
+    }
+    ((remote)) && _hw_forward "$main" "$branch" "$REPLY"
+    print -r -- "$REPLY"
+    return 0
+  fi
+
+  wt_path=$(_hw_path "$main" "$branch")
+  if [[ -d $wt_path ]]; then
+    # Not checked out anywhere, so whatever sits here is another branch.
+    _hw_reuse "$wt_path" "$branch"
+    return 1
   elif [[ -n $base ]]; then
-    git -C "$main" worktree add -b "$branch" "$wt_path" "$base" >&2 || return 1
+    git -C "$main" worktree add -b "$branch" "$wt_path" "$start" >&2 || return 1
   elif git -C "$main" show-ref --verify --quiet "refs/heads/$branch"; then
+    ((remote)) && _hw_forward "$main" "$branch"
     git -C "$main" worktree add "$wt_path" "$branch" >&2 || return 1
   else
-    if ! git -C "$main" fetch -q origin "+refs/heads/${branch}:refs/remotes/origin/${branch}" 2>/dev/null; then
-      ((remote)) && {
-        print -u2 "hw: could not fetch $branch from origin"
-        return 1
-      }
+    if ((!remote)) && ! git -C "$main" fetch -q origin "+refs/heads/${branch}:refs/remotes/origin/${branch}" 2>/dev/null; then
       print -u2 "hw: could not fetch $branch from origin; using what is known of it"
     fi
     if git -C "$main" show-ref --verify --quiet "refs/remotes/origin/$branch"; then
       git -C "$main" worktree add --track -b "$branch" "$wt_path" "origin/$branch" >&2 || return 1
     else
-      # Forked from the checkout the caller stands in, not the main one.
-      git -C "$main" worktree add -b "$branch" "$wt_path" "$(git rev-parse HEAD)" >&2 || return 1
+      git -C "$main" worktree add -b "$branch" "$wt_path" "$start" >&2 || return 1
     fi
   fi
   print -r -- "$wt_path"
 }
 
-# What `git branch -d` cannot see: a squash merge leaves no commit of the branch
-# in the default branch, but merging the branch into it then changes nothing.
-_hw_squashed() {
+# A branch is merged when origin's default branch contains it, or - what a
+# squash merge leaves - when merging it there changes nothing. Its upstream
+# does not count: a pushed branch whose pull request is still open is not merged.
+_hw_merged() {
   local main=$1 branch=$2 tree
+  git -C "$main" merge-base --is-ancestor "refs/heads/$branch" refs/remotes/origin/HEAD 2>/dev/null &&
+    return 0
   tree=$(git -C "$main" merge-tree --write-tree refs/remotes/origin/HEAD "refs/heads/$branch" 2>/dev/null) ||
     return 1
   [[ $tree == "$(git -C "$main" rev-parse 'refs/remotes/origin/HEAD^{tree}' 2>/dev/null)" ]]
@@ -217,79 +355,103 @@ _hw_squashed() {
 _hw_drop_branch() {
   local main=$1 branch=$2 default
   [[ -n $branch ]] || return 0
-  default=$(git -C "$main" symbolic-ref --short -q refs/remotes/origin/HEAD)
+  default=$(git -C "$main" symbolic-ref --short -q refs/remotes/origin/HEAD) || {
+    print -u2 "hw: kept the branch $branch; origin/HEAD is not set (git remote set-head origin --auto)"
+    return 0
+  }
   [[ $branch != "${default#origin/}" ]] || return 0
-  git -C "$main" branch -d -q -- "$branch" 2>/dev/null && return 0
-  if _hw_squashed "$main" "$branch"; then
+  if _hw_merged "$main" "$branch"; then
     git -C "$main" branch -D -q -- "$branch" >&2
     return
   fi
-  print -u2 "hw: kept the branch $branch, which is not merged into ${default:-the default branch}"
+  print -u2 "hw: kept the branch $branch, which is not merged into $default"
 }
 
-# A target is a path, an open workspace's id, or a branch of the repository
-# here, tried in that order.
+# A target into REPLY: a path; else a branch of the repository here that has a
+# worktree under the root or exists at all; else an open workspace's id. A
+# branch comes before an id, which is herdr's to number (w1, w2, ...).
 _hw_resolve() {
-  local arg=$1 row main
+  local arg=$1 main= row
   local -a f
+  REPLY=
   if [[ $arg == */* && -d $arg ]]; then
-    print -r -- "${arg:A}"
+    REPLY=${arg:A}
     return 0
   fi
-  for row in ${(f)"$(_hw_workspaces 2>/dev/null)"}; do
-    f=("${(@ps:\t:)row}")
-    [[ ${f[1]} == "$arg" && -n ${f[4]-} ]] || continue
-    print -r -- "${f[4]:A}"
-    return 0
-  done
-  main=$(_hw_main) || return 1
-  _hw_path "$main" "$arg"
+  if main=$(_hw_main 2>/dev/null); then
+    REPLY=$(_hw_path "$main" "$arg")
+    [[ -d $REPLY ]] && return 0
+    git -C "$main" show-ref --verify --quiet "refs/heads/$arg" && return 0
+  fi
+  if _hw_ws_load 2>/dev/null; then
+    for row in ${(f)_HW_WS}; do
+      f=("${(@ps:\t:)row}")
+      [[ ${f[1]} == "$arg" && -n ${f[4]-} ]] || continue
+      REPLY=${f[4]:A}
+      return 0
+    done
+  fi
+  [[ -n $main ]] || {
+    print -u2 "hw: not a path, a workspace, or a branch of a repository here: $arg"
+    return 1
+  }
 }
 
-# One worktree: every workspace standing on it - by its checkout, or by a pane
-# inside it - is checked for running processes, then the worktree is removed
-# and the workspaces closed. herdr's `worktree remove` closes only the workspace
-# that carries the checkout and removes regardless of what runs in it (herdr
-# 0.9.5), so the rest is ours.
+# One worktree. herdr's `worktree remove` closes only the workspace that
+# carries the checkout and removes regardless of what runs in it, so the rest is
+# ours: a workspace with no checkout of its own whose panes are all inside the
+# worktree is closed with it (not the focused one); a pane of any other
+# workspace inside it is only checked and named. Every pane that would lose its
+# directory is checked for a running process first. Outside herdr there are no
+# panes to check, and git alone removes it.
 _hw_rm_one() {
-  local wt_path=$1 main branch row ws carrier= pane cwd busy out
-  local -i force=$2 rc=0
-  local -a f p on
+  local wt_path=$1 main branch row ws carrier= pane out
+  local -i force=$2 rc=0 outside
+  local -a f p here close check stranded flags
   main=$(_hw_main "$wt_path") || return 1
   branch=$(git -C "$wt_path" symbolic-ref --short -q HEAD)
 
-  # Without the list nothing can be checked for running processes.
-  out=$(_hw_workspaces) || return 1
-  for row in ${(f)out}; do
-    f=("${(@ps:\t:)row}")
-    ws=${f[1]}
-    if [[ -n ${f[4]-} && ${f[4]:A} == "$wt_path" ]]; then
-      on+=("$ws")
-      carrier=$ws
-      continue
-    fi
-    for pane in ${(f)"$(_hw_panes "$ws")"}; do
-      p=("${(@ps:\t:)pane}")
-      cwd=${p[2]-}
-      [[ -n $cwd && (${cwd:A} == "$wt_path" || ${cwd:A} == "$wt_path"/*) ]] || continue
-      on+=("$ws")
-      break
-    done
-  done
-
-  if ((!force)); then
-    for ws in "${on[@]}"; do
-      for pane in ${(f)"$(_hw_panes "$ws")"}; do
+  if ! _hw_ws_load; then
+    [[ ${HERDR_ENV:-} != 1 ]] || return 1
+    print -u2 'hw: not inside herdr; removing with git alone'
+  else
+    for row in ${(f)_HW_WS}; do
+      f=("${(@ps:\t:)row}")
+      ws=${f[1]}
+      _hw_panes "$ws" || return 1
+      if [[ -n ${f[4]-} && ${f[4]:A} == "$wt_path" ]]; then
+        carrier=$ws
+        for pane in ${(f)REPLY}; do check+=("${pane%%$'\t'*}"); done
+        continue
+      fi
+      here=() outside=0
+      for pane in ${(f)REPLY}; do
         p=("${(@ps:\t:)pane}")
-        busy=$(_hw_busy "${p[1]}") || return 1
-        [[ -z $busy ]] && continue
-        print -u2 -r -- "hw: ${p[1]} is running $busy; -f removes $wt_path anyway"
-        return 1
+        if [[ -n ${p[2]-} && (${p[2]:A} == "$wt_path" || ${p[2]:A} == "$wt_path"/*) ]]; then
+          here+=("${p[1]}")
+        else
+          ((outside += 1))
+        fi
       done
+      ((${#here} > 0)) || continue
+      check+=("${here[@]}")
+      if [[ -z ${f[4]-} ]] && ((outside == 0)) && ! _hw_is_focused "$ws" "${f[5]-}"; then
+        close+=("$ws")
+      else
+        stranded+=("${here[@]}")
+      fi
     done
   fi
 
-  local -a flags
+  if ((!force)); then
+    for pane in "${check[@]}"; do
+      _hw_busy "$pane" || return 1
+      [[ -z $REPLY ]] && continue
+      print -u2 -r -- "hw: $pane is running $REPLY; -f removes $wt_path anyway"
+      return 1
+    done
+  fi
+
   ((force)) && flags=(--force)
   if [[ -n $carrier ]]; then
     out=$(herdr worktree remove --workspace "$carrier" "${flags[@]}" 2>&1) || {
@@ -301,12 +463,11 @@ _hw_rm_one() {
   fi
   rmdir -- "${wt_path:h}" 2>/dev/null
 
-  for ws in "${on[@]}"; do
-    [[ $ws != "$carrier" ]] || continue
-    herdr workspace close "$ws" >/dev/null || {
-      print -u2 "hw: herdr could not close $ws"
-      rc=1
-    }
+  for ws in "${close[@]}"; do
+    _hw_close "$ws" || rc=1
+  done
+  for pane in "${stranded[@]}"; do
+    print -u2 "hw: $pane is left in the removed $wt_path"
   done
   _hw_drop_branch "$main" "$branch"
   return $rc
@@ -315,28 +476,19 @@ _hw_rm_one() {
 # ── commands ─────────────────────────────────────────
 
 _hw_cmd_repo() {
-  local spec=${1:-} dir row out
-  local -a f
+  local spec=${1:-} dir
   [[ -n $spec ]] || {
     print -u2 'usage: hw repo <spec|path>'
     return 1
   }
+  _hw_require herdr || return 1
   if [[ -e $spec/.git ]]; then
-    dir=${spec:A}
+    dir=$spec
   else
     _hw_require repo || return 1
     dir=$(repo get "$spec") || return
   fi
-  for row in ${(f)"$(_hw_workspaces)"}; do
-    f=("${(@ps:\t:)row}")
-    [[ -n ${f[4]-} && ${f[4]:A} == "${dir:A}" ]] || continue
-    herdr workspace focus "${f[1]}" >/dev/null
-    return
-  done
-  out=$(herdr workspace create --cwd "$dir" --focus 2>&1) || {
-    _hw_herdr_error "$out"
-    return 1
-  }
+  _hw_open "$dir"
 }
 
 _hw_cmd_branch() {
@@ -345,15 +497,18 @@ _hw_cmd_branch() {
     print -u2 'usage: hw branch <name> [<base>]'
     return 1
   }
+  # Checked before a worktree is made that could not be opened.
+  _hw_require herdr || return 1
+  _hw_require jq || return 1
   main=$(_hw_main) || return 1
   wt_path=$(_hw_add "$main" "$branch" "$base") || return 1
-  _hw_open_worktree "$main" "$wt_path"
+  _hw_open "$wt_path"
 }
 
-# The host is read off origin's URL.
+# The host is read off origin's URL as configured, before any insteadOf
+# rewrites it.
 _hw_host() {
   local url
-  # The configured URL, before any insteadOf rewrites it.
   url=$(git config --get remote.origin.url) || {
     print -u2 'hw: this repository has no origin'
     return 1
@@ -383,6 +538,8 @@ _hw_cmd_pr() {
     print -u2 'usage: hw pr <number>'
     return 1
   }
+  _hw_require herdr || return 1
+  _hw_require jq || return 1
   main=$(_hw_main) || return 1
   host=$(_hw_host) || return 1
   case $host in
@@ -394,7 +551,9 @@ _hw_cmd_pr() {
         return 1
       }
       wt_path=$(_hw_path "$main" "$branch")
-      if [[ -d $wt_path ]]; then
+      if _hw_checked_out "$main" "$branch"; then
+        wt_path=$REPLY
+      elif [[ -d $wt_path ]]; then
         _hw_reuse "$wt_path" "$branch" 1 || return 1
       else
         gh pr checkout "$number" --worktree "$wt_path" >&2 || {
@@ -415,12 +574,12 @@ _hw_cmd_pr() {
       wt_path=$(_hw_add "$main" "$branch" '' 1) || return 1
       ;;
   esac
-  _hw_open_worktree "$main" "$wt_path"
+  _hw_open "$wt_path"
 }
 
 # Every target is attempted, and the status is the last refusal's.
 _hw_cmd_rm() {
-  local arg wt_path
+  local arg
   local -i force=0 rc=0 st
   local -a targets
   for arg in "$@"; do
@@ -429,7 +588,7 @@ _hw_cmd_rm() {
         force=1
         ;;
       -h | --help)
-        print -r -- 'usage: hw rm [-f] <branch|path|id>...'
+        print -r -- 'usage: hw rm [-f] <path|branch|id>...'
         return 0
         ;;
       -*)
@@ -442,20 +601,20 @@ _hw_cmd_rm() {
     esac
   done
   ((${#targets} > 0)) || {
-    print -u2 'usage: hw rm [-f] <branch|path|id>...'
+    print -u2 'usage: hw rm [-f] <path|branch|id>...'
     return 1
   }
   for arg in "${targets[@]}"; do
     st=0
-    wt_path=$(_hw_resolve "$arg") || {
+    _hw_resolve "$arg" || {
       rc=1
       continue
     }
-    _hw_removable "$wt_path" || {
+    _hw_removable "$REPLY" || {
       rc=1
       continue
     }
-    _hw_rm_one "${wt_path:A}" "$force" || st=$?
+    _hw_rm_one "${REPLY:A}" "$force" || st=$?
     ((st == 0)) || rc=$st
   done
   return $rc
@@ -468,17 +627,17 @@ _hw_cmd_close() {
     print -u2 'usage: hw close <id>...'
     return 1
   }
+  _hw_require herdr || return 1
+  _hw_require jq || return 1
   for ws in "$@"; do
-    herdr workspace close "$ws" >/dev/null || {
-      print -u2 "hw: herdr could not close $ws"
-      rc=1
-    }
+    _hw_close "$ws" || rc=1
   done
   return $rc
 }
 
 # `<display>\t<branch>`: the branches checked out in a worktree, then the other
-# local ones, then those only origin has, each most recent first.
+# local ones, then those only origin has, each most recent first. lstrip rather
+# than short, which turns into heads/<name> when a tag shares the name.
 _hw_cmd_branches() {
   local main line b
   local -A held seen
@@ -487,7 +646,7 @@ _hw_cmd_branches() {
     [[ $line == 'branch refs/heads/'* ]] && held[${line#branch refs/heads/}]=1
   done
   {
-    for b in ${(f)"$(git -C "$main" for-each-ref --sort=-committerdate --format='%(refname:short)' refs/heads)"}; do
+    for b in ${(f)"$(git -C "$main" for-each-ref --sort=-committerdate --format='%(refname:lstrip=2)' refs/heads)"}; do
       seen[$b]=1
       ((${+held[$b]})) && printf '0\t%-8s %s\t%s\n' worktree "$b" "$b"
       ((${+held[$b]})) || printf '1\t%-8s %s\t%s\n' local "$b" "$b"
@@ -529,27 +688,27 @@ _hw_cmd_prs() {
 # once however many workspaces stand on it; any other workspace is only closed,
 # so a clone is never deleted from here.
 _hw_cmd_spaces() {
-  local rows row root dir branch shown focused=${HERDR_ACTIVE_WORKSPACE_ID:-}
+  local row root dir shown
   local -a f
   local -A listed
   root=${${:-$(_hw_root)}:A}
-  rows=$(_hw_workspaces) || return 1
+  _hw_ws_load || return 1
   # The focused worktree is left out whichever workspace stands on it.
-  for row in ${(f)rows}; do
+  for row in ${(f)_HW_WS}; do
     f=("${(@ps:\t:)row}")
-    [[ ${f[1]} == "$focused" || (-z $focused && ${f[5]-} == true) ]] || continue
+    _hw_is_focused "${f[1]}" "${f[5]-}" || continue
     [[ -z ${f[4]-} ]] || listed[${f[4]:A}]=1
   done
-  for row in ${(f)rows}; do
+  for row in ${(f)_HW_WS}; do
     f=("${(@ps:\t:)row}")
-    [[ ${f[1]} == "$focused" || (-z $focused && ${f[5]-} == true) ]] && continue
+    _hw_is_focused "${f[1]}" "${f[5]-}" && continue
     dir=${f[4]-}
     [[ -z $dir ]] || dir=${dir:A}
     if [[ $dir == "$root"/*/*/* && $dir != "$root"/*/*/*/* ]]; then
       [[ -z ${listed[$dir]-} ]] || continue
       listed[$dir]=1
-      branch=$(git -C "$dir" symbolic-ref --short -q HEAD) || branch=${dir:t}
-      printf '[%s] %s %s\t%s\t%s\t%s\n' "${f[2]}" "${${dir#"$root"/}%/*}" "$branch" rm "$dir" "$dir"
+      _hw_head "$dir"
+      printf '[%s] %s %s\t%s\t%s\t%s\n' "${f[2]}" "${${dir#"$root"/}%/*}" "$REPLY" rm "$dir" "$dir"
     else
       shown=${${dir/#$HOME/'~'}:-${f[3]}}
       printf '[%s] %s\t%s\t%s\t%s\n' "${f[2]}" "$shown" close "${f[1]}" "$dir"
@@ -558,31 +717,31 @@ _hw_cmd_spaces() {
   # Then the worktrees no workspace stands on, which nothing else lists.
   for dir in "$root"/*/*/*(N/); do
     [[ -z ${listed[$dir]-} ]] || continue
-    branch=$(git -C "$dir" symbolic-ref --short -q HEAD) || branch=${dir:t}
-    printf '[-] %s %s\t%s\t%s\t%s\n' "${${dir#"$root"/}%/*}" "$branch" rm "$dir" "$dir"
+    _hw_head "$dir"
+    printf '[-] %s %s\t%s\t%s\t%s\n' "${${dir#"$root"/}%/*}" "$REPLY" rm "$dir" "$dir"
   done
 }
 
 # `<owner>/<repo> <branch>\t<path>` per worktree under the root, read off the
 # layout rather than herdr, so it works outside herdr too.
 _hw_cmd_list() {
-  local root dir branch
+  local root dir
   root=${${:-$(_hw_root)}:A}
   for dir in "$root"/*/*/*(N/); do
-    branch=$(git -C "$dir" symbolic-ref --short -q HEAD) || branch=${dir:t}
-    printf '%s %s\t%s\n' "${${dir#"$root"/}%/*}" "$branch" "$dir"
+    _hw_head "$dir"
+    printf '%s %s\t%s\n' "${${dir#"$root"/}%/*}" "$REPLY" "$dir"
   done
 }
 
-# The workspace herdr ran the command over, by the id it hands a custom
-# command; the pane's cwd only stands in for a workspace off a checkout, as it
-# moves with every `cd` in that pane.
+# The focused workspace's checkout; the pane's cwd only stands in for a
+# workspace off a checkout, as it moves with every `cd` in that pane.
 _hw_cmd_focused() {
-  local row ws=${HERDR_ACTIVE_WORKSPACE_ID:-}
+  local row
   local -a f
-  for row in ${(f)"$(_hw_workspaces)"}; do
+  _hw_ws_load || return 1
+  for row in ${(f)_HW_WS}; do
     f=("${(@ps:\t:)row}")
-    [[ ${f[1]} == "$ws" || (-z $ws && ${f[5]-} == true) ]] || continue
+    _hw_is_focused "${f[1]}" "${f[5]-}" || continue
     if [[ -n ${f[4]-} ]]; then
       print -r -- "${f[4]}"
       return 0
@@ -603,26 +762,7 @@ cmd=${1:-}
 case $cmd in
   root)
     _hw_root
-    exit
     ;;
-  -h | --help | help)
-    _hw_usage
-    exit
-    ;;
-  '')
-    _hw_usage >&2
-    exit 1
-    ;;
-esac
-
-case $cmd in
-  repo | branch | pr | rm | close | spaces | focused)
-    _hw_require herdr || exit 1
-    _hw_require jq || exit 1
-    ;;
-esac
-
-case $cmd in
   repo)
     _hw_cmd_repo "$@"
     ;;
@@ -652,6 +792,13 @@ case $cmd in
     ;;
   focused)
     _hw_cmd_focused "$@"
+    ;;
+  -h | --help | help)
+    _hw_usage
+    ;;
+  '')
+    _hw_usage >&2
+    exit 1
     ;;
   *)
     print -u2 "hw: unknown subcommand: $cmd"

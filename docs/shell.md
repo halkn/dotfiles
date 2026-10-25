@@ -87,6 +87,7 @@ worktree は git で作り、`herdr worktree open --cwd <メイン checkout> --p
 - worktree を herdr の `worktree create` で作らない。origin にしか無いブランチを指定しても追跡せず、HEAD から新しいブランチを作る（herdr 0.9.5）
 - worktree の workspace は `worktree open --cwd <メイン checkout>` で開き、`workspace create` を使わない。`worktree open` は既に開いている workspace に移動し（`already_open`）、git で作った worktree もメイン checkout の下にまとめて表示する。`workspace create` は同じパスに 2 つ目の workspace を作り、それはまとまらない。`--cwd` が無いと `worktree_not_found` で失敗する（herdr 0.9.5）
 - `hw rm` は、worktree の上の workspace のペインでプロセスが動いていれば `-f` なしでは消さない。herdr の `worktree remove` は未コミットの変更は拒むが、動いているプロセスは確かめずに消す。動いているかは `pane process-info` の `foreground_process_group_id` が `shell_pid` と違うかで判定する（herdr 0.9.5）
-- `hw rm` は、同じパスの上の workspace を全て閉じる。`worktree remove` が閉じるのは worktree の情報を持つ workspace 1 つだけで、他は消えたディレクトリの上に残る（herdr 0.9.5）
-- ブランチの片付けに `git branch --delete-merged`（Git 2.56）を使わない。upstream から辿れるかで判定するため squash merge を検出できない。`hw rm` は `git branch -d` が通らなければ、`git merge-tree --write-tree` で既定ブランチに取り込んでも tree が変わらないかで判定する
+- `hw rm` は、worktree の情報を持たず、ペインが全てその worktree の中にある workspace も閉じる（focused なものを除く）。`worktree remove` が閉じるのは worktree の情報を持つ workspace 1 つだけで、他は消えたディレクトリの上に残る（herdr 0.9.5）。別の checkout の workspace や、ペインが外にもある workspace は閉じず、中のペインを確かめて名前を出すだけにする
+- `hw rm` は herdr の外（`HERDR_ENV` が無く、workspace の一覧を取れない）では git だけで消す。herdr の中で一覧を取れないときは、ペインを確かめられないので拒む
+- ブランチを消すかは origin の既定ブランチで判定する。`git branch -d` と `git branch --delete-merged`（Git 2.56）は使わない。前者は upstream にマージされていれば通り、PR が開いたままの push 済みのブランチを消す。後者は upstream から辿れるかで判定するため squash merge を検出できない。`hw rm` は、既定ブランチに含まれるか、`git merge-tree --write-tree` で既定ブランチに取り込んでも tree が変わらないなら消す。変更の無いコミットだけのブランチも後者で消える
 - herdr が custom command に渡す `HERDR_ACTIVE_WORKSPACE_ID` で focused な workspace を特定する。`HERDR_ACTIVE_PANE_CWD` はペインの `cd` で変わるので、workspace が checkout の上に無いときの代わりにだけ使う（herdr 0.9.5）

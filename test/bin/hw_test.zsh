@@ -79,10 +79,12 @@ git -C "$main" remote set-url origin https://github.com/owner/proj.git
 
 # The stubs: herdr answers from $STUB/ws (`<id>\t<number>\t<label>\t<path>\t
 # <focused>` per workspace), $STUB/panes/<ws> (`<pane>\t<cwd>`) and
-# $STUB/busy/<pane> (what the pane runs). `worktree remove` removes with git, as
-# herdr does. gh and az answer from $STUB_*. Every call is logged to $STUB/log.
+# $STUB/busy/<pane> (what the pane runs; `-` for a process herdr cannot name).
+# $STUB/fail/<call> makes a call fail: `workspace-list`, `panes-<ws>`,
+# `close-<ws>`. `worktree remove` removes with git, as herdr does. gh and az
+# answer from $STUB_*. Every call is logged to $STUB/log.
 export STUB=$scratch/stub
-mkdir -p "$STUB/bin" "$STUB/panes" "$STUB/busy"
+mkdir -p "$STUB/bin" "$STUB/panes" "$STUB/busy" "$STUB/fail"
 : >"$STUB/ws"
 cat >"$STUB/bin/herdr" <<'EOF'
 #!/bin/zsh
@@ -97,8 +99,15 @@ ws_json() {
   print -r -- "{\"result\":{\"workspaces\":[${(j:,:)j}]}}"
 }
 case "$1 $2" in
-  'workspace list') ws_json ;;
+  'workspace list')
+    [[ ! -f $STUB/fail/workspace-list ]] || exit 1
+    ws_json
+    ;;
+  'workspace close')
+    [[ ! -f $STUB/fail/close-$3 ]] || { print '{"error":{"code":"workspace_group_close_required","message":"close the group"}}'; exit 1; }
+    ;;
   'pane list')
+    [[ ! -f $STUB/fail/panes-$4 ]] || exit 1
     j=()
     [[ -f $STUB/panes/$4 ]] && for row in ${(f)"$(<"$STUB/panes/$4")"}; do
       f=("${(@ps:\t:)row}")
@@ -107,7 +116,9 @@ case "$1 $2" in
     print -r -- "{\"result\":{\"panes\":[${(j:,:)j}]}}"
     ;;
   'pane process-info')
-    if [[ -f $STUB/busy/$4 ]]; then
+    if [[ -f $STUB/busy/$4 && $(<"$STUB/busy/$4") == - ]]; then
+      print -r -- '{"result":{"process_info":{"foreground_process_group_id":2,"shell_pid":1,"foreground_processes":[]}}}'
+    elif [[ -f $STUB/busy/$4 ]]; then
       print -r -- "{\"result\":{\"process_info\":{\"foreground_process_group_id\":2,\"shell_pid\":1,\"foreground_processes\":[{\"cmdline\":\"$(<"$STUB/busy/$4")\"}]}}}"
     else
       print -r -- '{"result":{"process_info":{"foreground_process_group_id":1,"shell_pid":1,"foreground_processes":[{"cmdline":"-zsh"}]}}}'
@@ -164,7 +175,7 @@ reset_log() { : >"$STUB/log"; }
 ws() { print -r -- "$1"$'\t'"$2"$'\t'"$3"$'\t'"${4-}"$'\t'"${5:-false}" >>"$STUB/ws"; }
 no_ws() {
   : >"$STUB/ws"
-  rm -f -- "$STUB/panes/"*(N) "$STUB/busy/"*(N)
+  rm -f -- "$STUB/panes/"*(N) "$STUB/busy/"*(N) "$STUB/fail/"*(N)
 }
 
 wt=$WT_ROOT/owner/proj
@@ -202,6 +213,25 @@ logged "herdr worktree open --cwd $main --path $wt/feature-a --focus" >/dev/null
 hw branch feature-a >/dev/null 2>&1 && fail 'branch (directory holds another branch) should fail'
 hw branch >/dev/null 2>&1 && fail 'branch (no name) should fail'
 
+# A branch checked out anywhere is opened where it is: the main checkout's own
+# branch gets the clone's workspace, not a second worktree.
+no_ws
+reset_log
+hw branch main >/dev/null 2>&1 || fail 'branch (checked out in the main checkout) should succeed'
+logged "herdr workspace create --cwd $main --focus" >/dev/null || fail 'branch (main checkout) opens the clone'
+[[ -e $wt/main ]] && fail 'branch (main checkout) added a worktree'
+
+# A worktree handed to `hw repo` is opened as a worktree, grouped under its clone.
+reset_log
+hw repo "$wt/feature-a" >/dev/null 2>&1
+logged "herdr worktree open --cwd $main --path $wt/feature-a --focus" >/dev/null ||
+  fail 'repo (worktree path) opens it as a worktree'
+
+# A base is read in the checkout the caller stands in, as a fresh branch is.
+(cd -- "$wt/based" && "$hw_bin" branch spike HEAD >/dev/null 2>&1)
+check 'branch (base HEAD from a worktree)' "$(git -C "$wt/based" rev-parse HEAD)" \
+  "$(git -C "$wt/spike" rev-parse HEAD 2>/dev/null)"
+
 # ── pr ───────────────────────────────────────────────
 
 reset_log
@@ -228,6 +258,14 @@ for url in https://dev.azure.com/org/proj/_git/proj git@ssh.dev.azure.com:v3/org
 done
 check 'pr (azure tracks origin)' origin/az-topic \
   "$(git -C "$wt/az-topic" rev-parse --abbrev-ref '@{upstream}' 2>/dev/null)"
+
+# Reopened after its author pushed again, the worktree is brought up to origin.
+git -C "$wt/az-topic" commit -q --allow-empty -m 'pushed later'
+git -C "$wt/az-topic" push -q origin az-topic 2>/dev/null
+git -C "$wt/az-topic" reset -q --hard HEAD~1
+STUB_AZ_SOURCE=refs/heads/az-topic hw pr 12 >/dev/null 2>&1
+check 'pr (azure, reopened)' "$(git -C "$main" rev-parse refs/remotes/origin/az-topic)" \
+  "$(git -C "$wt/az-topic" rev-parse HEAD)"
 STUB_AZ_SOURCE=refs/heads/nowhere hw pr 13 >/dev/null 2>&1 && fail 'pr (azure, branch not on origin) should fail'
 [[ -e $wt/nowhere ]] && fail 'pr (azure, branch not on origin) left a worktree'
 check 'prs (azure)' $'!12  add a thing  (Some One)\t12' "$(hw prs 2>/dev/null)"
@@ -251,6 +289,8 @@ git -C "$main" remote set-url origin https://github.com/owner/proj.git
 # ── branches / spaces / focused ──────────────────────
 
 git -C "$main" branch spare
+# A tag of the same name must not turn the row into heads/spare.
+git -C "$main" tag spare
 got=$(hw branches 2>/dev/null)
 [[ $got == *$'worktree feature/a\tfeature/a'* ]] || fail "branches (worktree): $got"
 [[ $got == *$'local    spare\tspare'* ]] || fail "branches (local): $got"
@@ -370,6 +410,78 @@ no_ws
 ws w10 10 by-id "$wt/by-id"
 check 'rm (unknown, then an id)' 1 "$(status_of hw rm nowhere w10)"
 [[ -d $wt/by-id ]] && fail 'rm stopped at an unknown target'
+
+# A branch named like a workspace id is the branch.
+hw branch w11 >/dev/null 2>&1
+hw branch other-11 >/dev/null 2>&1
+no_ws
+ws w11 11 other "$wt/other-11"
+hw rm w11 >/dev/null 2>&1
+[[ -d $wt/w11 ]] && fail 'rm (branch named like an id) left its worktree'
+[[ -d $wt/other-11 ]] || fail 'rm (branch named like an id) removed the workspace worktree'
+
+# A pushed branch whose pull request is still open is not merged.
+hw branch pushed >/dev/null 2>&1
+print pushed >"$wt/pushed/pushed"
+git -C "$wt/pushed" add pushed
+git -C "$wt/pushed" commit -q -m pushed
+git -C "$wt/pushed" push -q -u origin pushed 2>/dev/null
+no_ws
+hw rm pushed >/dev/null 2>&1
+git -C "$main" show-ref -q --verify refs/heads/pushed || fail 'rm (pushed, unmerged) deleted the branch'
+
+# Only what stands on the worktree is closed: not a workspace on another
+# checkout, not one with a pane elsewhere, not the focused one. Those panes are
+# still checked for running processes.
+hw branch shared >/dev/null 2>&1
+no_ws
+ws w12 12 shared "$wt/shared"
+ws w13 13 other-checkout "$wt/feature-a"
+ws w14 14 mixed ''
+ws w15 15 focused '' true
+print -r -- $'w13:p1\t'"$wt/shared" >"$STUB/panes/w13"
+print -r -- $'w14:p1\t'"$wt/shared"$'\nw14:p2\t'"$HOME" >"$STUB/panes/w14"
+print -r -- $'w15:p1\t'"$wt/shared" >"$STUB/panes/w15"
+print -r -- - >"$STUB/busy/w14:p2"
+print -r -- - >"$STUB/busy/w13:p1"
+err=$(hw rm shared 2>&1 >/dev/null) && fail 'rm (busy, process herdr cannot name) should fail'
+[[ $err == *'w13:p1 is running process group 2'* ]] || fail "rm (busy, unnamed): $err"
+rm -f -- "$STUB/busy/"*(N)
+reset_log
+err=$(hw rm shared 2>&1 >/dev/null) || fail "rm (shared) should succeed: $err"
+for w in w13 w14 w15; do
+  logged "herdr workspace close $w" >/dev/null && fail "rm (shared) closed $w"
+done
+[[ $err == *'w13:p1 is left in the removed'* ]] || fail "rm (shared) names the stranded pane: $err"
+
+# A pane list herdr cannot give is a refusal, not a pass.
+hw branch blind >/dev/null 2>&1
+no_ws
+ws w16 16 blind "$wt/blind"
+: >"$STUB/fail/panes-w16"
+err=$(hw rm blind 2>&1 >/dev/null) && fail 'rm (no pane list) should fail'
+[[ $err == *'could not list the panes of w16'* ]] || fail "rm (no pane list): $err"
+[[ -d $wt/blind ]] || fail 'rm (no pane list) removed the worktree'
+
+# herdr's refusal to close is passed on, not swallowed.
+no_ws
+ws w17 17 stray ''
+print -r -- $'w17:p1\t'"$wt/blind" >"$STUB/panes/w17"
+: >"$STUB/fail/close-w17"
+err=$(hw rm blind 2>&1 >/dev/null) && fail 'rm (close refused) should fail'
+[[ $err == *'close the group'* ]] || fail "rm (close refused) passes herdr's message: $err"
+err=$(hw close w17 2>&1 >/dev/null) && fail 'close (refused) should fail'
+[[ $err == *'close the group'* ]] || fail "close (refused) passes herdr's message: $err"
+
+# Outside herdr, rm still removes with git; inside, a herdr that does not
+# answer is a refusal.
+hw branch offline >/dev/null 2>&1
+no_ws
+: >"$STUB/fail/workspace-list"
+HERDR_ENV=1 hw rm offline >/dev/null 2>&1 && fail 'rm (herdr down inside herdr) should fail'
+[[ -d $wt/offline ]] || fail 'rm (herdr down inside herdr) removed the worktree'
+HERDR_ENV= hw rm offline >/dev/null 2>&1 || fail 'rm (outside herdr) should succeed'
+[[ -d $wt/offline ]] && fail 'rm (outside herdr) left the worktree'
 no_ws
 
 # The default branch stays even when its worktree goes.
