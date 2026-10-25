@@ -96,6 +96,7 @@
       "Edit(~/repos/github.com/halkn/dotfiles/claude/**)",
       "Edit(~/repos/github.com/halkn/dotfiles/.config/git/**)",
       "Edit(~/repos/github.com/halkn/dotfiles/.config/herdr/plugins/github/**)",
+      "Edit(~/repos/github.com/halkn/dotfiles/.config/herdr/plugins/github-installations/**)",
       "Edit(//**/.claude/settings*.json)"
     ],
     "blockReadsOutsideWorkingDirectories": true,
