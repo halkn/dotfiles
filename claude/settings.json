@@ -225,10 +225,6 @@
         {
           "path": "~/.config/gh",
           "mode": "deny"
-        },
-        {
-          "path": "~/repos/github.com/halkn/dotfiles/.config/gh",
-          "mode": "deny"
         }
       ],
       "envVars": [

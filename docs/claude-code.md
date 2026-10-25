@@ -116,7 +116,7 @@
 
 ## 決定と理由
 
-- sandbox は symlink を解決した後の実体パスで判定する。読取を許可した場所に置いた symlink からでも、`denyRead` の下は読めない（v2.1.280）。そのため deny と `credentials.files` は実体パスで書く。`~/.config/gh`（このリポジトリへの symlink）経由の表記だけでは効かない。symlink でない環境のために、`~/.config/...` の表記も併記する
+- sandbox は symlink を解決した後の実体パスで判定する。読取を許可した場所に置いた symlink からでも、`denyRead` の下は読めない（v2.1.280）。そのため deny は実体パスで書く。`~/.config/gh`（このリポジトリへの symlink）の実体は、`Read` deny が sandbox の読取制限に合流して閉じるので、`credentials.files` には symlink でない環境のための `~/.config/gh` だけを書く（v2.1.310）
 - `allowRead` に書いたパス自体が symlink だと、許可されるのは解決後の実体パスだけで、symlink のパスはホームの読取拒否に残る。読取を開けていない場所に置いた symlink（`~/.zshenv`）も、先が作業ディレクトリでも読めない（v2.1.288）。ツールは `~/.config/...` の経路で設定を開くので、`~/.config` は実ディレクトリにし、`[dotfiles]` で中身をエントリごとに symlink にする。許可したディレクトリの中にある symlink は、その先も許可されていれば読める
 - sandbox は、作業ディレクトリの下にある `.zshrc` への書込を深さに関係なく拒否する（v2.1.280）。このリポジトリは `.config/zsh/.zshrc` を追跡しているので、Bash から worktree を作ると checkout の途中で失敗する
 - このリポジトリ（mise の追跡・trust 済み）の `mise run lint` は、mise・uv の data / state ディレクトリに書かず、`MISE_CACHE_DIR` を空のディレクトリにしても WARN を出さずに通る。`MISE_CACHE_DIR` の `~` は mise が展開する。未追跡の `mise.toml` があるディレクトリでは、`mise env` が `tracked-configs` を書けずに WARN を出し、`mise x` は `trusted-configs` を書けずに失敗する。GOMODCACHE を読取だけにしても、キャッシュにある module だけを使う `go build`・`go run` は通る。uv・bun は測っていない（mise 2026.10.4、go 1.27.1、v2.1.296、macOS）
