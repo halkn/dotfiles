@@ -57,7 +57,7 @@
 ## sandbox の基準
 
 - 読取は既定で閉じ、ツールが必要とする場所だけを開ける（`blockReadsOutsideWorkingDirectories` と `allowRead`）。丸ごと開けて例外を列挙する形は取らない。列挙から漏れたものが開いたままになる
-- 書込を開けるのは、ツールが自分の状態を書く場所だけ（`~/.azure` のトークンキャッシュ）。`~/.azure` の中でも、外の `az` が読み込んで実行する拡張（`cliextensions`）と、拡張の取得元やエンドポイントを決める設定（`config`・`clouds.config`）は `denyWrite` で塞ぐ。skill の出力は作業ディレクトリの `.scratch/` に置き、ホームに出力先を開けない。他のプロセスが後で実行する場所には開けない。`~/.cache` をツール単位で開けるのはこのため（ログインシェルが起動時に実行するキャッシュがあり、そこへ書ければ sandbox の外でコードを走らせられる）
+- 書込を開けるのは、ツールが自分の状態を書く場所だけ（`~/.azure` のトークンキャッシュ）。`~/.azure` の中でも、外の `az` が読み込んで実行する拡張（`cliextensions`）と、拡張の取得元やエンドポイントを決める設定（`config`・`clouds.config`）は `denyWrite` で塞ぐ。skill の出力は作業ディレクトリか scratchpad に置き、ホームに出力先を開けない。他のプロセスが後で実行する場所には開けない。`~/.cache` をツール単位で開けるのはこのため（ログインシェルが起動時に実行するキャッシュがあり、そこへ書ければ sandbox の外でコードを走らせられる）
 - Claude Code が読み込む・実行するファイル（`claude/` 全体）は、組込みの保護に頼らず `denyWrite` と `Edit` の ask で塞ぐ。組込みの保護が覆う範囲は版で変わり、symlink の先にある hook や statusline のスクリプトまで届くとは限らない。副作用として、`claude/` を変える `git switch` / `git merge` は sandbox 内で失敗する。Edit / Write tool での変更は、ask の確認で人が承認する。リポジトリ側の `.claude/settings*.json` も同じ経路にするため ask に入れる。auto モードでは保護パスへの書込が classifier に回り、自己改変として拒否されることがあるが、ask は classifier より先に効いて確認になる
 - sandbox の外で動くコマンドが読み込んで実行するファイルも、`denyWrite` で塞ぐ。塞ぐかどうかは、書かれてから人が中身を見る前に、sandbox の外で実行されうるかで決める。commit やレビューを待たず、次の `git push`・`gh`、ターミナルや nvim を開く・プロンプトが出る・ディレクトリに入るといった日常の操作で実行される。このリポジトリでは次が当たる。塞ぐ単位はディレクトリにし、後から足されたファイルも覆う
   - git / gh: `core.hooksPath` の hook と git の config（`credential.helper` など）を持つ `.config/git`、alias を持つ `.config/gh`
@@ -131,6 +131,7 @@
 - ユーザー設定に `sandbox.filesystem.denyRead: ["~/"]` を置かない。`blockReadsOutsideWorkingDirectories` と併用すると、sandbox が作業ディレクトリを開け直さず、Bash から作業中のリポジトリを読めなくなる。ホームは block 自体が閉じる（v2.1.288）
 - リポジトリ側の `permissions.additionalDirectories` は、`blockReadsOutsideWorkingDirectories` の下ではファイルツールにも sandbox にも効かない（v2.1.288、anthropics/claude-code#92582）。リポジトリ専用の場所もユーザー設定の `allowRead` に置き、後で実行されるプラグインの置き場所（nvim・zsh）には `allowWrite` を開けない
 - `blockReadsOutsideWorkingDirectories` が `~/.claude` の下で開け直すのは plugins・rules・agents・commands などで、skills は含まれない。`~/.claude/skills` は `allowRead` に足す（v2.1.296）
-- sandbox 内の `$TMPDIR`（`/tmp/claude-501`）は、Bash からは読めるが、`blockReadsOutsideWorkingDirectories` で Read tool からは読めない（v2.1.296）。後でファイルツールで扱う一時ファイルは、CLAUDE.md で作業ディレクトリ内の `.scratch/` に置かせる。`TMPDIR` を `.scratch/` に向けると、sandbox 内の全てのツールの一時ファイルがリポジトリに溜まるので向けない
+- sandbox 内の `$TMPDIR`（`/tmp/claude-501`）は、Bash からは読めるが、`blockReadsOutsideWorkingDirectories` で Read tool からは読めない（v2.1.296）。一時ファイルは、CLAUDE.md でセッションごとの scratchpad に置かせる。scratchpad は Write / Read tool・sandbox 内の Bash・sandbox の外の `gh`（絶対パスで渡す）のどれからも読み書きでき、transcript と一緒に消えるので、リポジトリに置き場所も gitignore も要らない（v2.1.310）。`CLAUDE_CODE_TMPDIR` は Claude Code 内部の一時ファイルの置き場を動かすだけで、sandbox の外のコマンドの `$TMPDIR` もファイルツールの読取制限も変えない
+- scratchpad は `enableArtifact: false` で作られなくなる。Artifact の公開は `permissions.deny` の `Artifact` で止め、deny で使えなくなった artifact 系の bundled skill は `skillOverrides` で一覧から外す（v2.1.310）
 - `.claude/rules/` を使わない。path-scoped rule が読み込まれるのは、Read / Write / Edit tool か、読取とみなされる Bash（単一ファイルの `cat`・`head` など）で一致するファイルを扱ったときに限られる。検索や複数ファイルの読取で触れても読み込まれる保証は無く、読み込まれなくてもエラーは出ない（v2.1.296 の docs）
 - `env.CLAUDE_CODE_SUBPROCESS_ENV_SCRUB` は使わない。有効にすると `defaultMode: "auto"` が効かず、セッションが manual mode で始まる（Shift+Tab で auto には切り替えられる）（v2.1.280）
