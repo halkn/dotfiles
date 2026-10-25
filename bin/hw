@@ -24,6 +24,7 @@ usage: hw <command> [<args>]
   branches                        rows for the branch picker and completion
   prs                             rows for the pull request picker and completion
   spaces                          rows for the clean-up picker (workspaces, then idle worktrees)
+  list                            rows of every worktree under $WT_ROOT
   focused                         the checkout of the focused workspace
   root                            print $WT_ROOT
 
@@ -562,6 +563,17 @@ _hw_cmd_spaces() {
   done
 }
 
+# `<owner>/<repo> <branch>\t<path>` per worktree under the root, read off the
+# layout rather than herdr, so it works outside herdr too.
+_hw_cmd_list() {
+  local root dir branch
+  root=${${:-$(_hw_root)}:A}
+  for dir in "$root"/*/*/*(N/); do
+    branch=$(git -C "$dir" symbolic-ref --short -q HEAD) || branch=${dir:t}
+    printf '%s %s\t%s\n' "${${dir#"$root"/}%/*}" "$branch" "$dir"
+  done
+}
+
 # The workspace herdr ran the command over, by the id it hands a custom
 # command; the pane's cwd only stands in for a workspace off a checkout, as it
 # moves with every `cd` in that pane.
@@ -634,6 +646,9 @@ case $cmd in
     ;;
   spaces)
     _hw_cmd_spaces "$@"
+    ;;
+  list)
+    _hw_cmd_list "$@"
     ;;
   focused)
     _hw_cmd_focused "$@"

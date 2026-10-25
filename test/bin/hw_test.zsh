@@ -266,6 +266,11 @@ ws w2 2 feature-a "$wt/feature-a"
 ws w3 3 dup ''
 ws w4 4 again "$wt/feature-a"
 ws w5 5 '~' "$HOME/else"
+check 'list' "$(printf '%s\t%s' 'owner/proj based' "$wt/based")" "$(hw list | rg -F "$wt/based")"
+check 'list (outside a repository, every worktree)' "$(hw list | wc -l)" \
+  "$(cd -- "$scratch" && "$hw_bin" list | wc -l)"
+check 'list (empty root)' '' "$(WT_ROOT=$scratch/nowhere hw list)"
+
 # The open workspaces first, then every worktree under the root with none.
 got=$(hw spaces 2>/dev/null)
 check 'spaces (workspaces)' "$(printf '%s\t%s\t%s\t%s\n' \
