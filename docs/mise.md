@@ -7,7 +7,7 @@
 - マシンの状態（symlink の配置・ツール・OS パッケージ・clone するリポジトリ・ログインシェル）は、全て mise の設定（ツールは `.config/mise/config.toml`、それ以外は `mise.toml`）に宣言し、`mise bootstrap` で収束させる。同じ状態を手順書やスクリプトに二重に書かない。インストールの入口も `mise bootstrap` だけにし、task の実行時に自動で入れない
 - バージョンを動かす入口は `mise run update` だけにする。`mise run sync` は、pull した宣言に収束させるだけで、バージョンを動かさない
 - OS 固有の処理は必要な箇所に閉じ込め、macOS / WSL の分岐を設定全体に持ち込まない
-- mise の役目は、macOS / WSL のマシン全体を同じ状態に揃えることだけにする。開発リポジトリには mise の設定を置かず、その版の固定は言語の標準（uv・bun・go）に任せる。mise の新しい機能は、上の宣言を収束させるのに使うものだけを採る。日々の操作や開発リポジトリを mise に依存させる機能（自動更新・`[doctor.checks]`・dotfiles の履歴の追跡・lockfile）は採らない
+- mise の役目は、macOS / WSL のマシン全体を同じ状態に揃えることだけにする。開発リポジトリには mise の設定を置かず、その版の固定は言語の標準（uv・bun・go）に任せる。mise の新しい機能は、上の宣言を収束させるのに使うものだけを採る。日々の操作や開発リポジトリを mise に依存させる機能（自動更新・`[doctor.checks]`・dotfiles の履歴の追跡・lockfile）は採らない。例外として、宣言を書くときの検査と補完（`mise config explain`・`mise lsp`）は採る。作用する対象が mise の設定ファイルだけで、他のリポジトリを mise に依存させないため
 
 ## ツールの宣言先
 
@@ -18,7 +18,7 @@
 - ツールは、できるだけ他の依存が無い形で入れる。node や python に依存する配布（npm・pipx）は避ける。その上で registry の短縮名を優先し、registry に無いものや依存が増えるものだけ backend を明示する
 - LSP・formatter・linter は、その言語の toolchain と同じ場所に置く。Go はグローバルなので `gopls` も `.config/mise/config.toml` に、Python はプロジェクトの環境で固定するので `pyright`・`ruff` は mise で宣言せずそのプロジェクトの環境から起動する。TypeScript も同様に、`tsc`・`oxlint`・`oxfmt` はプロジェクトの `node_modules` から起動する
 - JavaScript の runtime は bun だけを入れ、node は入れない。npm の配布物は node の shebang を持つので、bun に `--bun` で実行させる。プロジェクトに無いツールを勝手に取得しないよう、`bunx` には `--no-install` を付ける
-- shell の alias・関数は zsh に置く。追跡する mise 設定の `[env]` は、プロジェクト固有の環境変数だけに使う。マシン固有の値は追跡外の `*.local` に置く
+- shell の alias・関数と環境変数は zsh に置く。mise の `[env]` は、このリポジトリの task が使うものだけを `mise.toml` に置く。マシン固有の値は追跡外の `*.local` に置き、マシン固有のツールは `mise run update` の対象に入るよう `.config/mise/config.local.toml` に置く
 - 新しい CLI が設定ディレクトリや認証情報を読む場合は、Claude Code の sandbox 側の設定も要る（[claude-code.md](claude-code.md)）
 
 ## task
