@@ -1,15 +1,12 @@
 onboarding = false
 # Defaults: `herdr --default-config` / apply changes: `herdr server reload-config`
+# Only values that differ from the defaults are set, so a changed default applies on upgrade.
+# Guards against losing work are the exception and stay pinned even when they match the default.
 
 [experimental]
-kitty_graphics = true
 reveal_hidden_cursor_for_cjk_ime = true
 cjk_ime_agents = ["claude"]
 switch_ascii_input_source_in_prefix = true
-
-# ── Terminal ─────────────────────────────────────────
-[terminal]
-new_cwd = "follow"
 
 # ── Theme ────────────────────────────────────────────
 [theme]
@@ -17,14 +14,10 @@ name = "terminal"
 
 # ── UI ───────────────────────────────────────────────
 [ui]
-mouse_capture = true
-mouse_scroll_lines = 3
 confirm_close = true
 prompt_new_tab_name = false
-pane_borders = true
 pane_gaps = false
 show_agent_labels_on_pane_borders = true
-agent_panel_sort = "spaces"
 
 [ui.sidebar.agents]
 rows = [
@@ -44,42 +37,19 @@ delay_seconds = 3
 [worktrees]
 directory = "~/.local/share/worktrees"
 
-# ── Session ──────────────────────────────────────────
-[session]
-resume_agents_on_restore = true
-
 # ── Keybindings ──────────────────────────────────────
 [keys]
 prefix = "ctrl+space"
-# The default is the chord prefix+shift+n (herdr 0.8.2); alt+w keeps "a workspace on
+# The default is the chord prefix+shift+n (herdr 0.9.5); alt+w keeps "a workspace on
 # the current directory" one key away, next to alt+s which goes to an existing one.
 new_workspace = "alt+w"
 split_vertical = "alt+;"
 split_horizontal = "alt+minus"
+# No alt+left / alt+right: Ghostty binds them to word motion by default, so they never reach herdr.
 focus_pane_left = "alt+h"
-focus_pane_down = "alt+j"
-focus_pane_up = "alt+k"
+focus_pane_down = ["alt+j", "alt+down"]
+focus_pane_up = ["alt+k", "alt+up"]
 focus_pane_right = "alt+l"
-
-[[keys.command]]
-key = "alt+left"
-type = "shell"
-command = "herdr pane focus --direction left"
-
-[[keys.command]]
-key = "alt+down"
-type = "shell"
-command = "herdr pane focus --direction down"
-
-[[keys.command]]
-key = "alt+up"
-type = "shell"
-command = "herdr pane focus --direction up"
-
-[[keys.command]]
-key = "alt+right"
-type = "shell"
-command = "herdr pane focus --direction right"
 
 [[keys.command]]
 key = "alt+plus"

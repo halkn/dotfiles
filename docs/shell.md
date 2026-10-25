@@ -75,3 +75,4 @@ tool の cache・state・data は XDG の各ディレクトリに置く。消え
 ## 決定と理由
 
 - `wt` は mise の trust を扱わない。mise を使うリポジトリは少なく、使うリポジトリではメイン checkout の trust がディレクトリ単位で worktree に引き継がれる。そのため fork の pull request が足した設定も trust され、これはメイン checkout で `gh pr checkout` したときと変わらない。止めるときは、その worktree で `mise trust --ignore` を実行する（mise 2026.10.19）
+- herdr の Claude Code integration（`herdr integration install claude`）は入れない。書込先の `~/.claude/` の下は `claude/` へのリンクなので、追跡している設定を herdr が書き換え、追跡しない script がリポジトリに置かれる（herdr 0.9.5）。Codex の設定（`~/.codex`）はこのリポジトリが管理しないので、Codex の integration を入れるかはマシンごとに決める

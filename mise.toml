@@ -67,6 +67,7 @@ depends = [
   "lint:shell",
   "lint:actions",
   "lint:nvim",
+  "lint:herdr",
   "test:scripts",
 ]
 run = "git diff --check"
@@ -108,3 +109,11 @@ run = "shuck check ."
 description = "GitHub Actions workflow の静的検査"
 hide = true
 run = "jactionlint --shellcheck="
+
+# herdr ignores an unknown key or keybinding with only a warning, so a typo goes unnoticed.
+# `config check` reports a missing file as ok, hence the `test -f`.
+[tasks."lint:herdr"]
+description = "herdr 設定の未知のキー・不正な keybinding の検査"
+hide = true
+env = { HERDR_CONFIG_PATH = "{{config_root}}/.config/herdr/config.toml" }
+run = ["test -f \"$HERDR_CONFIG_PATH\"", "herdr config check"]

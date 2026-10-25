@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#MISE description="mise 本体・ツール・OS パッケージ・zsh プラグイン・Claude Code を更新"
+#MISE description="mise 本体・ツール・OS パッケージ・zsh プラグイン・herdr プラグイン・Claude Code を更新"
 # No `set -e`: every step is independent, so one failure must not skip the rest.
 set -uo pipefail
 
@@ -27,13 +27,10 @@ step "mise upgrade" mise upgrade --global
 step "bootstrap packages" mise bootstrap packages upgrade
 step "bootstrap repos" mise bootstrap repos update --yes
 optional_step "claude update" claude update
-# reviewr's documented update is uninstall then install; its config is keyed by plugin id and stays.
-if command -v herdr >/dev/null; then
-  # The install runs even when the uninstall fails, so a plugin missing here is put back.
-  step "reviewr" sh -c 'herdr plugin uninstall persiyanov.reviewr; herdr plugin install persiyanov/herdr-reviewr --yes'
-else
-  echo "skip: herdr is not installed"
-fi
+# `plugin update` rather than reviewr's documented uninstall and install: the plugin stays registered
+# throughout, so a failed install cannot leave it removed. Its config lives apart and stays either way.
+# A missing plugin fails here; `mise bootstrap` is what installs it.
+optional_step "reviewr" herdr plugin update persiyanov.reviewr --yes
 
 if ((${#failed[@]} > 0)); then
   printf 'failed: %s\n' "${failed[@]}" >&2
