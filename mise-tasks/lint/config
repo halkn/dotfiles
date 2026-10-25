@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+#MISE description="mise 設定の未知・非推奨キーの検査"
+#MISE hide=true
+set -uo pipefail
+
+rc=0
+# `mise config explain` exits 0 even when it marks a key, so its JSON decides the result.
+for f in mise.toml .config/mise/config.toml; do
+  if ! out="$(mise config explain --file "$f" --json | jq -r --arg f "$f" '
+    .[] | select((.known | not) or .deprecated)
+    | "\($f):\(.line): \(.key)" + (if .suggestion then " (did you mean \(.suggestion)?)" else "" end)
+  ')"; then
+    rc=1
+  elif [[ -n $out ]]; then
+    printf '%s\n' "$out" >&2
+    rc=1
+  fi
+done
+exit $rc

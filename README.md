@@ -1,8 +1,8 @@
 # dotfiles
 
 My personal dotfiles for macOS and WSL Ubuntu: zsh, Neovim, Claude Code, and
-the CLI tooling around them, set up by [mise](https://mise.jdx.dev/) from
-`mise.toml`.
+the CLI tooling around them, set up by [mise](https://mise.jdx.dev/):
+`mise.toml` declares the machine and `.config/mise/config.toml` the tools.
 
 ## Layout
 
@@ -13,7 +13,7 @@ the CLI tooling around them, set up by [mise](https://mise.jdx.dev/) from
 | `bin/` | Standalone commands (`repo`, `wt`) | `~/.local/bin/*` |
 | `claude/` | Claude Code user settings, hooks and global instructions | `~/.claude/*` |
 | `.claude/` | Claude Code settings for working on this repository | — |
-| `mise.toml`, `mise-tasks/` | What a machine gets, and the tasks below | — |
+| `mise.toml`, `mise-tasks/` | What a machine gets besides tools (links, OS packages, repositories, login shell), and the tasks below | — |
 | `test/` | Tests for `bin/`, `.config/herdr/`, the Claude Code hooks and the git `pre-push` hook | — |
 | `docs/` | [Design notes](docs/README.md) for changing this repository | — |
 | `.github/` | The pull request template | — |
