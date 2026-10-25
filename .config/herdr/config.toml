@@ -54,6 +54,13 @@ focus_pane_right = "alt+l"
 goto = ["prefix+g", "alt+s"]
 # Unbound: worktrees are created by alt+g / alt+p in the layout `hw` keeps (docs/shell.md).
 new_worktree = ""
+# j/k move the sidebar cursor in the prefix+w picker, as they do in the goto picker.
+# Navigate mode does not tell shift+j from j, so the pane moves cannot keep a shifted j/k (herdr 0.9.5);
+# panes stay on alt+j / alt+k.
+navigate_workspace_up = ["k", "up"]
+navigate_workspace_down = ["j", "down"]
+navigate_pane_up = ""
+navigate_pane_down = ""
 
 [[keys.command]]
 key = "alt+plus"
