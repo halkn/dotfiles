@@ -84,7 +84,7 @@ These files are gitignored and hold what differs per machine:
 | Task | Use it when |
 | --- | --- |
 | `mise run sync` | this repository changed and the machine should follow |
-| `mise run update` | mise, tools, OS packages, zsh plugins and Claude Code should move to newer versions |
+| `mise run update` | mise, tools, OS packages, zsh plugins, herdr plugins and Claude Code should move to newer versions |
 
 Only `update` moves versions, and it does not pull, so run `sync` first.
 

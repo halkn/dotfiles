@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#MISE description="mise 本体・ツール・OS パッケージ・zsh プラグイン・Claude Code を更新"
+#MISE description="mise 本体・ツール・OS パッケージ・zsh プラグイン・herdr プラグイン・Claude Code を更新"
 # No `set -e`: every step is independent, so one failure must not skip the rest.
 set -uo pipefail
 
