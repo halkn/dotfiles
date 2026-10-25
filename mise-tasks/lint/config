@@ -8,7 +8,11 @@ rc=0
 for f in mise.toml .config/mise/config.toml; do
   if ! out="$(mise config explain --file "$f" --json | jq -r --arg f "$f" '
     .[] | select((.known | not) or .deprecated)
-    | "\($f):\(.line): \(.key)" + (if .suggestion then " (did you mean \(.suggestion)?)" else "" end)
+    | "\($f):\(.line): \(.key)" + (
+      if .deprecated then " is deprecated" + (if .description then ": \(.description | sub("^\\[deprecated\\] "; ""))" else "" end)
+      elif .suggestion then " is unknown (did you mean \(.suggestion)?)"
+      else " is unknown" end
+    )
   ')"; then
     rc=1
   elif [[ -n $out ]]; then

@@ -74,8 +74,8 @@ These files are gitignored and hold what differs per machine:
 | --- | --- |
 | `.config/zsh/.zshenv.local` | Environment variables |
 | `.config/zsh/.zshrc.local` | Interactive shell settings |
-| `.config/mise/config.local.toml` | Global mise `[env]`, tools, settings |
-| `mise.local.toml` | Overrides for this repository's mise config |
+| `.config/mise/config.local.toml` | mise tools and settings for this machine only |
+| `mise.local.toml` | Overrides for this repository's mise config, except tools: `mise run update` only upgrades the global config |
 | `.config/git/config.local` | `user.name` / `user.email` |
 | `.config/nvim/lua/local.lua` | Neovim settings |
 

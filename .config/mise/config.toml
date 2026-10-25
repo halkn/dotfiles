@@ -2,9 +2,14 @@
 # [dotfiles] symlinks this file to ~/.config/mise/config.toml, so everything here applies to
 # every project on the machine, not just this repository. `lockfile` is left unset rather than
 # `false` for that reason: `false` would stop mise reading the lockfiles other repositories commit.
-# Long enough for a compromised release to be yanked upstream first; tools published from this
-# account opt out per tool.
-minimum_release_age = "3d"
+# Long enough for a compromised release to be yanked upstream first, short enough that security
+# fixes arrive the next day. Set explicitly so that a change to mise's default does not move it;
+# tools published from this account opt out per tool.
+minimum_release_age = "1d"
+# Tools are installed by `mise bootstrap` and moved by `mise run update` only (docs/mise.md), so a
+# task, `mise exec` or a missing command never installs one on its own. This applies in every
+# repository: a project that declares tools needs `mise install` first.
+auto_install = false
 
 [settings.github]
 credential_command = 'gh auth token --hostname "$MISE_CREDENTIAL_HOST"'
