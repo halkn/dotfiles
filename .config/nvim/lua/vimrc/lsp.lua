@@ -9,6 +9,7 @@ local servers = {
   'tsc',
   'oxlint',
   'oxfmt',
+  'mise',
 }
 
 -- formatting
