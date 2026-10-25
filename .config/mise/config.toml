@@ -44,6 +44,7 @@ tree-sitter = "latest"
 rumdl = "latest"
 "go:golang.org/x/tools/gopls" = "latest"
 stylua = "latest"
+jactionlint = "latest"
 # No yaml language server here: ryl covers both lint and format.
 
 [tool_alias]

@@ -67,7 +67,14 @@ run = ["git pull --ff-only", "mise bootstrap --yes"]
 
 [tasks.lint]
 description = "リポジトリ検証（整形チェックを含む）"
-depends = ["fmt-check", "lint:tasks", "lint:shell", "lint:nvim", "test:scripts"]
+depends = [
+  "fmt-check",
+  "lint:tasks",
+  "lint:shell",
+  "lint:actions",
+  "lint:nvim",
+  "test:scripts",
+]
 run = "git diff --check"
 
 # `mise fmt` rewrites every config even when nothing changes, and the configs are not writable
@@ -100,3 +107,10 @@ run = "mise tasks validate"
 description = "シェルスクリプトの静的検査"
 hide = true
 run = "shuck check ."
+
+# shellcheck is on the ubuntu runner but not on macOS, so leaving it to PATH would make CI fail
+# where the local lint passes. The run: steps are one-line commands; shell-syntax still parses them.
+[tasks."lint:actions"]
+description = "GitHub Actions workflow の静的検査"
+hide = true
+run = "jactionlint --shellcheck="
