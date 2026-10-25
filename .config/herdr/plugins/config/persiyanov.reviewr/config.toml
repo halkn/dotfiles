@@ -4,6 +4,8 @@ theme = "tokyo-night"
 default_scope = "branch"
 markdown_view = "rendered"
 diff_view = "split"
+# A split diff needs 137 columns; with the file list above, the diff gets the pane's full width.
+navigator_position = "top"
 # Opened by alt+r (.config/herdr/config.toml) only, not on every worktree.
 auto_open = false
 # $EDITOR is not set.
