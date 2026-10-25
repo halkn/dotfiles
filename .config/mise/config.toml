@@ -6,9 +6,9 @@
 # fixes arrive the next day. Set explicitly so that a change to mise's default does not move it;
 # tools published from this account opt out per tool.
 minimum_release_age = "1d"
-# Installation goes through `mise bootstrap` alone, which orders packages before tools. An
-# automatic install from a task, `mise exec` or a missing command would unpack a zip on a fresh
-# machine before unzip is there.
+# Tools are installed by `mise bootstrap` and moved by `mise run update` only (docs/mise.md), so a
+# task, `mise exec` or a missing command never installs one on its own. This applies in every
+# repository: a project that declares tools needs `mise install` first.
 auto_install = false
 
 [settings.github]
