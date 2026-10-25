@@ -10,14 +10,12 @@ run_auto_install = false
 # `~/.claude` cannot be linked as a whole directory because Claude Code writes its own state
 # there, so the glob links each entry of `claude/` instead. `claude/**/*` cannot replace it:
 # it matches both `hooks` and `hooks/*` and fails with a conflicting-declaration error.
-# `~/.config` is linked per entry too, so that it stays a real directory: the Claude Code sandbox
-# grants an `allowRead` path that is itself a symlink only at its target (docs/claude-code.md).
+# `~/.config` is linked per entry too, so that it stays a real directory (docs/claude-code.md).
 [dotfiles]
 "~/.config/*" = { source = ".config/*" }
 "~/.zshenv" = { source = ".zshenv" }
 "~/.claude/*" = { source = "claude/*" }
-# `bin/` holds the commands that are not shell functions. ~/.local/bin is already on PATH
-# (.config/zsh/.zshenv), and the glob is per entry because ~/.local/bin holds other tools too.
+# Per entry, because ~/.local/bin (already on PATH via .config/zsh/.zshenv) holds other tools too.
 "~/.local/bin/*" = { source = "bin/*" }
 
 # git and curl are already installed by the manual steps in README before the clone, but stay
@@ -55,10 +53,9 @@ run = "mise exec herdr jq -- sh -c 'herdr plugin list --plugin persiyanov.review
 
 # ── Maintenance ──────────────────────────────────────
 
-# Full convergence, not just `mise install`: a pulled commit can change any declaration
-# ([dotfiles], [bootstrap.packages], [bootstrap.repos], [bootstrap.user]), and installing tools
-# alone would leave the rest of the machine on the previous declaration. No `--update`, which
-# would fast-forward [bootstrap.repos]; moving versions belongs to `update` alone.
+# Full convergence, not just `mise install`: a pulled commit can change any declaration, and
+# installing tools alone would leave the rest of the machine on the previous one. No `--update`,
+# which would fast-forward [bootstrap.repos].
 [tasks.sync]
 description = "リポジトリの更新を取り込み、宣言状態へ収束"
 run = ["git pull --ff-only", "mise bootstrap --yes"]
