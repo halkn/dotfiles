@@ -165,6 +165,30 @@ if command -v fzf >/dev/null 2>&1 && [[ -t 0 ]]; then
   # Git has no `_fzf_complete_git` here: branch and commit pickers are
   # `git fz switch` / `git fz log` / `git fz stage`. Without the function,
   # `git **<TAB>` falls back to fzf's own path completion.
+
+  # `hw branch|pr|rm **<TAB>`: the rows `hw` serves, of which the last column is
+  # what goes on the command line. Anything else is a path, with the word being
+  # completed in $prefix, which fzf sets for the call.
+  _fzf_complete_hw() {
+    local -a words=(${(z)1})
+    case ${words[2]-} in
+      branch)
+        _fzf_complete --delimiter '\t' --with-nth 1 -- "$@" < <(hw branches 2>/dev/null)
+        ;;
+      pr)
+        _fzf_complete --delimiter '\t' --with-nth 1 -- "$@" < <(hw prs 2>/dev/null)
+        ;;
+      rm)
+        _fzf_complete --multi --delimiter '\t' --with-nth 1 -- "$@" < <(hw list 2>/dev/null)
+        ;;
+      *)
+        _fzf_path_completion "${prefix:-}" "$@"
+        ;;
+    esac
+  }
+  _fzf_complete_hw_post() {
+    cut -f2
+  }
 fi
 
 # ── eza ──────────────────────────────────────────────

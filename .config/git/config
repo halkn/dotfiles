@@ -36,7 +36,7 @@
   br = branch
   ba = branch -av
   sw = switch
-  # The default branch comes from origin/HEAD, as in bin/wt. Without it they stop rather than
+  # The default branch comes from origin/HEAD, as in bin/hw. Without it they stop rather than
   # assume `main`, which is the guess these used to hard-code.
   sm = "!f() { d=$(git symbolic-ref --short -q refs/remotes/origin/HEAD) || { echo 'origin/HEAD が未設定です。git remote set-head origin --auto で設定してください' >&2; return 1; }; git switch \"${d#origin/}\" && git pull && git pm; }; f"
   diff-split = -c delta.side-by-side=true diff

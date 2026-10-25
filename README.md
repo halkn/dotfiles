@@ -10,7 +10,7 @@ the CLI tooling around them, set up by [mise](https://mise.jdx.dev/):
 | --- | --- | --- |
 | `.config/` | Config for zsh, git, Neovim, mise, herdr and other tools | `~/.config/*` |
 | `.zshenv` | Points zsh at `.config/zsh` | `~/.zshenv` |
-| `bin/` | Standalone commands (`repo`, `wt`) | `~/.local/bin/*` |
+| `bin/` | Standalone commands (`repo`, `hw`) | `~/.local/bin/*` |
 | `claude/` | Claude Code user settings, hooks and global instructions | `~/.claude/*` |
 | `.claude/` | Claude Code settings for working on this repository | — |
 | `mise.toml`, `mise-tasks/` | What a machine gets besides tools (links, OS packages, repositories, login shell), and the tasks below | — |
@@ -55,7 +55,7 @@ the CLI tooling around them, set up by [mise](https://mise.jdx.dev/):
    `mise bootstrap --yes --update` again.
 
 1. Set your git identity and log in to GitHub. git authenticates to GitHub
-   through `gh`, and `repo` and `wt` call it too.
+   through `gh`, and `repo` and `hw` call it too.
 
    ```sh
    git config -f "${XDG_CONFIG_HOME:-$HOME/.config}/git/config.local" user.name "Your Name"
@@ -102,9 +102,10 @@ plugin change.
 ## Daily use
 
 - `repo` finds, clones and creates repositories under `~/repos`.
-- `wt` creates and removes worktrees under `$WT_ROOT`.
-- Neither changes your directory; the commands that land somewhere print the
-  path: `cd "$(repo list --full-path | fzf)"`, `cd "$(wt new <branch>)"`.
+- `hw` opens herdr workspaces on clones, branches and pull requests (a
+  worktree under `$WT_ROOT` for the latter two) and removes them again.
+- `repo` does not change your directory; it prints the path:
+  `cd "$(repo list --full-path | fzf)"`.
 - `repo setup` (which `repo create` also runs) installs a ruleset that
   **blocks direct pushes to the default branch for everyone, admins
   included**. Run `repo setup --dry-run` first.
