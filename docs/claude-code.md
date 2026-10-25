@@ -10,9 +10,9 @@
 
 - 作業の起点は、Claude Code を起動したリポジトリ。読取は `permissions.blockReadsOutsideWorkingDirectories` でそのリポジトリに限る。ファイルツールはその外を読まず、sandbox もホームを閉じてそのリポジトリを開け直すので、リポジトリごとに `allowRead: ["./"]` を書かない。セッション中に作業ディレクトリを動かさないため、`CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR` で Bash コマンドごとに起点へ戻す。git のリモートを作業ディレクトリから解決する hook も、この前提に立つ
 - ガードは、失敗やモードの切替で黙って外れないようにする。sandbox を起動できないときの素通り（`sandbox.failIfUnavailable`）、sandbox の外での再実行（`sandbox.allowUnsandboxedCommands`）、ask を飛ばすモード（`permissions.disableBypassPermissionsMode`）、hook スクリプトの欠落（「hook の基準」）を閉じる
-- セッションと外をつなぐ経路は、このリポジトリで管理しているものだけにする。外からセッションを操作・指示できる入口（Remote Control、claude.ai から同期される skill）と、セッションの内容を外へ出す経路（Artifact の公開、claude.ai の connector）は開けない
+- セッションと外をつなぐ経路は、このリポジトリで管理しているものだけにする。外からセッションを操作・指示できる入口（Remote Control、claude.ai から同期される skill とプラグイン）と、セッションの内容を外へ出す経路（Artifact の公開、claude.ai の connector）は開けない。他のマシンや cloud のセッションへの `SendMessage` は Anthropic のサーバーを経由するので、人の承認を挟む（`isolatePeerMachines`）
 - CLI の認証（`gh auth login`・`az login`）は、Claude Code の外のターミナルで行う。Claude Code は、認証済みのトークンキャッシュを使うだけにする
-- Claude Code 本体の更新は `mise run update` に一本化し、自動更新は止める。プラグインの更新は Claude Code に任せる
+- Claude Code 本体の更新は `mise run update` に一本化し、自動更新は止める。プラグインの更新は Claude Code に任せる。その代わり、skill を読み込むだけでコマンドが実行される inline shell（`` !`cmd` ``）は止める（`disableSkillShellExecution`）。更新で中身が変わっても、人の目を通らずに実行されるものが増えないようにする。自作の skill も inline shell を使わず、要る情報は skill の手順で Bash から取らせる
 - Claude Code が作った commit・PR もユーザーの成果物として扱い、Claude Code の署名とセッションへのリンク（`attribution`）を付けない
 
 ## 層の使い分け
@@ -29,7 +29,7 @@
 | GitHub の ruleset | サーバーが強制する | main の最終保証 |
 
 - 確実に止めたい読取・書込は、Bash（sandbox）と Read / Edit / Write tool（`permissions`）の両方の経路を塞ぐ。`permissions` の `Read` deny は sandbox の読取制限にも合流し、`allowRead` で開けた範囲の中でも効く。そのため、どこに置かれても閉じたい認証情報のファイル名（`.env`・鍵）は `Read` deny に、ホーム全体を閉じるのは、ファイルツールと sandbox の両方に効く `blockReadsOutsideWorkingDirectories` に置く。書込も同じで、鍵の置き場所（`~/.ssh`・`~/.gnupg`）は `denyWrite` と `Edit` deny の両方で閉じる
-- `autoMode` に足すルールは、ユーザーが対象を名指しして指示すれば通してよいもの（Snowflake の破壊的 DDL）を `soft_deny` に、指示があっても越えない境界（個人と仕事の間の転送）を `hard_deny` に置く
+- `autoMode` に足すルールは、ユーザーが対象を名指しして指示すれば通してよいもの（Snowflake の破壊的 DDL）を `soft_deny` に、指示があっても越えない境界（個人と仕事の間の転送）を `hard_deny` に置く。既定ルール（`claude auto-mode defaults`）が既に覆う範囲は書かず、差分だけを書く。`environment` には環境の事実だけを書き、ルールと同じ禁止を繰り返さない
 - auto モードでは、全ての shell コマンドを classifier に通す（`autoMode.classifyAllShell`）。allow のパターンは、想定していない引数や script のパスまで通すため。`permissions.allow` の Bash ルールは他のモードに切り替えたときの予備になるので、確認なしで通っても安全な read-only の形だけを、サブコマンドまで明示して書く（`Bash(git *)` は、書込や任意実行を取り込む形まで通してしまう）。組込みの read-only コマンド（`ls`・`cat` や `git` の read-only な形）は全モードで確認なしに通るので、allow に書かない
 
 ## CLAUDE.md の基準
@@ -116,7 +116,7 @@
 
 ## 決定と理由
 
-- sandbox は symlink を解決した後の実体パスで判定する。読取を許可した場所に置いた symlink からでも、`denyRead` の下は読めない（v2.1.280）。そのため deny と `credentials.files` は実体パスで書く。`~/.config/gh`（このリポジトリへの symlink）経由の表記だけでは効かない。symlink でない環境のために、`~/.config/...` の表記も併記する
+- sandbox は symlink を解決した後の実体パスで判定する。読取を許可した場所に置いた symlink からでも、`denyRead` の下は読めない（v2.1.280）。そのため deny は実体パスで書く。`~/.config/gh`（このリポジトリへの symlink）の実体は、`Read` deny が sandbox の読取制限に合流して閉じるので、`credentials.files` には symlink でない環境のための `~/.config/gh` だけを書く（v2.1.310）
 - `allowRead` に書いたパス自体が symlink だと、許可されるのは解決後の実体パスだけで、symlink のパスはホームの読取拒否に残る。読取を開けていない場所に置いた symlink（`~/.zshenv`）も、先が作業ディレクトリでも読めない（v2.1.288）。ツールは `~/.config/...` の経路で設定を開くので、`~/.config` は実ディレクトリにし、`[dotfiles]` で中身をエントリごとに symlink にする。許可したディレクトリの中にある symlink は、その先も許可されていれば読める
 - sandbox は、作業ディレクトリの下にある `.zshrc` への書込を深さに関係なく拒否する（v2.1.280）。このリポジトリは `.config/zsh/.zshrc` を追跡しているので、Bash から worktree を作ると checkout の途中で失敗する
 - このリポジトリ（mise の追跡・trust 済み）の `mise run lint` は、mise・uv の data / state ディレクトリに書かず、`MISE_CACHE_DIR` を空のディレクトリにしても WARN を出さずに通る。`MISE_CACHE_DIR` の `~` は mise が展開する。未追跡の `mise.toml` があるディレクトリでは、`mise env` が `tracked-configs` を書けずに WARN を出し、`mise x` は `trusted-configs` を書けずに失敗する。GOMODCACHE を読取だけにしても、キャッシュにある module だけを使う `go build`・`go run` は通る。uv・bun は測っていない（mise 2026.10.4、go 1.27.1、v2.1.296、macOS）
