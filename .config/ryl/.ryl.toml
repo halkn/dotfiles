@@ -1,4 +1,4 @@
-[rules]
+[lint.rules]
 anchors = "enable"
 colons = "enable"
 commas = "enable"
@@ -14,35 +14,35 @@ new-line-at-end-of-file = "enable"
 octal-values = "disable"
 trailing-spaces = "enable"
 
-[rules.indentation]
+[lint.rules.indentation]
 spaces = 2
 indent-sequences = true
 
-[rules.truthy]
+[lint.rules.truthy]
 allowed-values = ["true", "false"]
 check-keys = false
 
-[rules.comments]
+[lint.rules.comments]
 min-spaces-from-content = 1
 
-[rules.comments-indentation]
+[lint.rules.comments-indentation]
 level = "warning"
 
-[rules.braces]
+[lint.rules.braces]
 min-spaces-inside = 1
 max-spaces-inside = 1
 min-spaces-inside-empty = 0
 max-spaces-inside-empty = 0
 
-[rules.brackets]
+[lint.rules.brackets]
 min-spaces-inside = 0
 max-spaces-inside = 0
 
-[rules.new-lines]
+[lint.rules.new-lines]
 type = "unix"
 
-[rules.empty-lines]
+[lint.rules.empty-lines]
 max = 2
 
-[rules.quoted-strings]
+[lint.rules.quoted-strings]
 required = "only-when-needed"
