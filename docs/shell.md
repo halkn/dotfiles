@@ -74,4 +74,4 @@ tool の cache・state・data は XDG の各ディレクトリに置く。消え
 
 ## 決定と理由
 
-- `wt` は mise の trust を扱わない。mise を使うリポジトリは少なく、使うリポジトリではメイン checkout の trust がディレクトリ単位で worktree に引き継がれる。そのため fork の pull request が足した設定も trust され、これはメイン checkout で `gh pr checkout` したときと変わらない。止めるときは、その worktree で `mise trust --ignore` を実行する（mise 2026.10.17）
+- `wt` は mise の trust を扱わない。mise を使うリポジトリは少なく、使うリポジトリではメイン checkout の trust がディレクトリ単位で worktree に引き継がれる。そのため fork の pull request が足した設定も trust され、これはメイン checkout で `gh pr checkout` したときと変わらない。止めるときは、その worktree で `mise trust --ignore` を実行する（mise 2026.10.19）
