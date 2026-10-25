@@ -28,7 +28,7 @@ step "bootstrap packages" mise bootstrap packages upgrade
 step "bootstrap repos" mise bootstrap repos update --yes
 optional_step "claude update" claude update
 # `plugin update` rather than reviewr's documented uninstall and install: the plugin stays registered
-# throughout and an open reviewr pane keeps its files. Its config lives apart and stays either way.
+# throughout, so a failed install cannot leave it removed. Its config lives apart and stays either way.
 # A missing plugin fails here; `mise bootstrap` is what installs it.
 optional_step "reviewr" herdr plugin update persiyanov.reviewr --yes
 
