@@ -1,9 +1,5 @@
 # Tools are declared only in the global config (.config/mise/config.toml); this file holds the
 # machine setup and this repository's tasks.
-[settings.task]
-# Installation goes through `mise bootstrap` alone, which orders packages before tools.
-# Auto-installing before a task would unpack a zip on a fresh machine before unzip is there.
-run_auto_install = false
 
 # ── Setup（mise bootstrap） ──────────────────────────
 

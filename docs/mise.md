@@ -4,7 +4,7 @@
 
 ## 原則
 
-- マシンの状態（symlink の配置・ツール・OS パッケージ・clone するリポジトリ・ログインシェル）は、全て mise の設定（ツールは `.config/mise/config.toml`、それ以外は `mise.toml`）に宣言し、`mise bootstrap` で収束させる。同じ状態を手順書やスクリプトに二重に書かない。インストールの入口も `mise bootstrap` だけにし、task の実行時に自動で入れない
+- マシンの状態（symlink の配置・ツール・OS パッケージ・clone するリポジトリ・ログインシェル）は、全て mise の設定（ツールは `.config/mise/config.toml`、それ以外は `mise.toml`）に宣言し、`mise bootstrap` で収束させる。同じ状態を手順書やスクリプトに二重に書かない。インストールの入口も `mise bootstrap` だけにし、task・`mise exec`・未インストールのコマンドの実行時に自動で入れない
 - バージョンを動かす入口は `mise run update` だけにする。`mise run sync` は、pull した宣言に収束させるだけで、バージョンを動かさない
 - OS 固有の処理は必要な箇所に閉じ込め、macOS / WSL の分岐を設定全体に持ち込まない
 - mise の役目は、macOS / WSL のマシン全体を同じ状態に揃えることだけにする。開発リポジトリには mise の設定を置かず、その版の固定は言語の標準（uv・bun・go）に任せる。mise の新しい機能は、上の宣言を収束させるのに使うものだけを採る。日々の操作や開発リポジトリを mise に依存させる機能（自動更新・`[doctor.checks]`・dotfiles の履歴の追跡・lockfile）は採らない。例外として、宣言を書くときの検査と補完（`mise config explain`・`mise lsp`）は採る。作用する対象が mise の設定ファイルだけで、他のリポジトリを mise に依存させないため
