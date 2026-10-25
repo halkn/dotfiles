@@ -1,6 +1,9 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "syncClaudeAiSkills": false,
+  "syncClaudeAiPlugins": false,
+  "disableSkillShellExecution": true,
+  "isolatePeerMachines": true,
   "env": {
     "CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR": "1",
     "DISABLE_AUTOUPDATER": "1",
@@ -129,8 +132,7 @@
     "claude-md-management@claude-plugins-official": true,
     "ast-grep@ast-grep-marketplace": true,
     "cc-plugin-agents-md@builtin": true,
-    "cc-plugin-telemetry@builtin": false,
-    "cowork-plugin-management@synced": false
+    "cc-plugin-telemetry@builtin": false
   },
   "extraKnownMarketplaces": {
     "ast-grep-marketplace": {
