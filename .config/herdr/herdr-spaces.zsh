@@ -1,8 +1,8 @@
 #!/bin/zsh
-# alt+s in herdr: clean up the open workspaces. Tab selects several, Enter
-# takes them away after one confirmation: a worktree under $WT_ROOT is removed
-# with `hw rm`, any other workspace is only closed with `hw close`. Going to a
-# workspace is herdr's own Goto (prefix+g) and sidebar.
+# alt+x in herdr: clean up the open workspaces and the worktrees no workspace
+# stands on. Tab selects several, Enter takes them away after one confirmation:
+# a worktree under $WT_ROOT is removed with `hw rm`, any other workspace is only
+# closed with `hw close`. Going to a workspace is herdr's own goto (alt+s).
 set -uo pipefail
 
 ui_lib=${XDG_CONFIG_HOME:-$HOME/.config}/herdr/ui.zsh

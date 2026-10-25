@@ -23,7 +23,7 @@ usage: hw <command> [<args>]
   close <id>...                   close workspaces only
   branches                        rows for the branch picker and completion
   prs                             rows for the pull request picker and completion
-  spaces                          rows for the clean-up picker
+  spaces                          rows for the clean-up picker (workspaces, then idle worktrees)
   focused                         the checkout of the focused workspace
   root                            print $WT_ROOT
 
@@ -523,15 +523,23 @@ _hw_cmd_prs() {
 }
 
 # `<display>\t<subcommand>\t<argument>\t<directory>` per open workspace other
-# than the focused one, whose shells the picker was opened from. A worktree
-# under the root is removed by its path, once however many workspaces stand on
-# it; any other workspace is only closed, so a clone is never deleted from here.
+# than the focused one, whose shells the picker was opened from, and per
+# worktree under the root with no workspace. A worktree is removed by its path,
+# once however many workspaces stand on it; any other workspace is only closed,
+# so a clone is never deleted from here.
 _hw_cmd_spaces() {
-  local row root dir branch shown focused=${HERDR_ACTIVE_WORKSPACE_ID:-}
+  local rows row root dir branch shown focused=${HERDR_ACTIVE_WORKSPACE_ID:-}
   local -a f
   local -A listed
   root=${${:-$(_hw_root)}:A}
-  for row in ${(f)"$(_hw_workspaces)"}; do
+  rows=$(_hw_workspaces) || return 1
+  # The focused worktree is left out whichever workspace stands on it.
+  for row in ${(f)rows}; do
+    f=("${(@ps:\t:)row}")
+    [[ ${f[1]} == "$focused" || (-z $focused && ${f[5]-} == true) ]] || continue
+    [[ -z ${f[4]-} ]] || listed[${f[4]:A}]=1
+  done
+  for row in ${(f)rows}; do
     f=("${(@ps:\t:)row}")
     [[ ${f[1]} == "$focused" || (-z $focused && ${f[5]-} == true) ]] && continue
     dir=${f[4]-}
@@ -545,6 +553,12 @@ _hw_cmd_spaces() {
       shown=${${dir/#$HOME/'~'}:-${f[3]}}
       printf '[%s] %s\t%s\t%s\t%s\n' "${f[2]}" "$shown" close "${f[1]}" "$dir"
     fi
+  done
+  # Then the worktrees no workspace stands on, which nothing else lists.
+  for dir in "$root"/*/*/*(N/); do
+    [[ -z ${listed[$dir]-} ]] || continue
+    branch=$(git -C "$dir" symbolic-ref --short -q HEAD) || branch=${dir:t}
+    printf '[-] %s %s\t%s\t%s\t%s\n' "${${dir#"$root"/}%/*}" "$branch" rm "$dir" "$dir"
   done
 }
 

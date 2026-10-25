@@ -266,11 +266,18 @@ ws w2 2 feature-a "$wt/feature-a"
 ws w3 3 dup ''
 ws w4 4 again "$wt/feature-a"
 ws w5 5 '~' "$HOME/else"
-check 'spaces' "$(printf '%s\t%s\t%s\t%s\n' \
+# The open workspaces first, then every worktree under the root with none.
+got=$(hw spaces 2>/dev/null)
+check 'spaces (workspaces)' "$(printf '%s\t%s\t%s\t%s\n' \
   '[2] owner/proj feature/a' rm "$wt/feature-a" "$wt/feature-a" \
   '[3] dup' close w3 '' \
-  '[5] ~/else' close w5 "$HOME/else")" "$(hw spaces 2>/dev/null)"
-check 'spaces (focused by id)' 4 "$(HERDR_ACTIVE_WORKSPACE_ID=w2 hw spaces 2>/dev/null | wc -l | tr -d ' ')"
+  '[5] ~/else' close w5 "$HOME/else")" "$(print -r -- "$got" | sed -n 1,3p)"
+check 'spaces (idle worktree)' "$(printf '%s\t%s\t%s\t%s' '[-] owner/proj based' rm "$wt/based" "$wt/based")" \
+  "$(print -r -- "$got" | rg -F "$wt/based")"
+check 'spaces (each worktree once)' 1 "$(print -r -- "$got" | rg -c -F $'\t'"$wt/feature-a"$'\t')"
+# The focused workspace's worktree is neither a row of its own nor idle.
+check 'spaces (focused by id)' '' \
+  "$(HERDR_ACTIVE_WORKSPACE_ID=w2 hw spaces 2>/dev/null | rg -F $'\t'"$wt/feature-a"$'\t')"
 
 check 'focused' "$main" "$(hw focused 2>/dev/null)"
 check 'focused (by id)' "$wt/feature-a" "$(HERDR_ACTIVE_WORKSPACE_ID=w2 hw focused 2>/dev/null)"

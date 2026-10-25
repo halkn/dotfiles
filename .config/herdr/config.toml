@@ -50,6 +50,8 @@ focus_pane_left = "alt+h"
 focus_pane_down = ["alt+j", "alt+down"]
 focus_pane_up = ["alt+k", "alt+up"]
 focus_pane_right = "alt+l"
+# Going to a workspace on one key, beside alt+n / alt+g / alt+p which open one.
+goto = ["prefix+g", "alt+s"]
 # Unbound: herdr's own worktree lands outside the <owner>/<repo>/<branch> layout `hw` keeps,
 # and forks a branch only origin has from HEAD (herdr 0.9.5). alt+g / alt+p create them instead.
 new_worktree = ""
@@ -59,9 +61,8 @@ key = "alt+plus"
 type = "shell"
 command = "herdr pane split --direction right --ratio 0.3 --focus"
 
-# Clean-up only; going to a workspace is goto (prefix+g) and the sidebar.
 [[keys.command]]
-key = "alt+s"
+key = "alt+x"
 type = "popup"
 command = "~/.config/herdr/herdr-spaces.zsh"
 description = "remove worktrees / close workspaces"

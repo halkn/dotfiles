@@ -56,7 +56,7 @@ tool の cache・state・data は XDG の各ディレクトリに置く。消え
 | 用途 | 人が戻ってくる作業場（herdr の workspace） | セッションや subagent の一時的な隔離 |
 | 場所 | `$WT_ROOT/<owner>/<repo>/<branch の / を - にしたもの>` | `<repo>/.claude/worktrees/` |
 | 作るのは | 人（alt+g の `hw branch`・alt+p の `hw pr`） | Claude Code |
-| 消すのは | 人（alt+s・`hw rm`） | Claude Code |
+| 消すのは | 人（alt+x・`hw rm`） | Claude Code |
 
 両者を同じ場所に集約しない。Claude Code 側の設定は [claude-code.md](claude-code.md) にある。`hw rm` が消すのは `$WT_ROOT` の下のレイアウトに合う worktree だけで、メイン checkout と `.claude/worktrees/` は対象外にする。
 
