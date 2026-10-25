@@ -52,8 +52,7 @@ focus_pane_up = ["alt+k", "alt+up"]
 focus_pane_right = "alt+l"
 # Going to a workspace on one key, beside alt+n / alt+g / alt+p which open one.
 goto = ["prefix+g", "alt+s"]
-# Unbound: herdr's own worktree lands outside the <owner>/<repo>/<branch> layout `hw` keeps,
-# and forks a branch only origin has from HEAD (herdr 0.9.5). alt+g / alt+p create them instead.
+# Unbound: worktrees are created by alt+g / alt+p in the layout `hw` keeps (docs/shell.md).
 new_worktree = ""
 
 [[keys.command]]
