@@ -69,6 +69,7 @@ run = ["git pull --ff-only", "mise bootstrap --yes"]
 description = "リポジトリ検証（整形チェックを含む）"
 depends = [
   "fmt-check",
+  "lint:config",
   "lint:tasks",
   "lint:shell",
   "lint:actions",
