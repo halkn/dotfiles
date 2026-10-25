@@ -22,7 +22,8 @@ optional_step() {
 }
 
 step "mise self-update" mise self-update --yes
-step "mise upgrade" mise upgrade
+# Tools are declared only in the global config; `--global` keeps a mise.local.toml here out of it.
+step "mise upgrade" mise upgrade --global
 step "bootstrap packages" mise bootstrap packages upgrade
 step "bootstrap repos" mise bootstrap repos update --yes
 optional_step "claude update" claude update
