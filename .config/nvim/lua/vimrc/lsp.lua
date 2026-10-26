@@ -6,6 +6,7 @@ local servers = {
   'rumdl',
   'ryl',
   'gopls',
+  'rust_analyzer',
   'tsc',
   'oxlint',
   'oxfmt',

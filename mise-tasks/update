@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#MISE description="mise 本体・ツール・OS パッケージ・zsh プラグイン・herdr プラグイン・Claude Code を更新"
+#MISE description="mise 本体・ツール・OS パッケージ・zsh プラグイン・herdr プラグイン・Claude Code・Rust を更新"
 # No `set -e`: every step is independent, so one failure must not skip the rest.
 set -uo pipefail
 
@@ -27,6 +27,8 @@ step "mise upgrade" mise upgrade --global
 step "bootstrap packages" mise bootstrap packages upgrade
 step "bootstrap repos" mise bootstrap repos update --yes
 optional_step "claude update" claude update
+# Also updates rustup itself, as its self-update mode defaults to enabled.
+optional_step "rustup update" rustup update
 # `plugin update` rather than reviewr's documented uninstall and install: the plugin stays registered
 # throughout, so a failed install cannot leave it removed. Its config lives apart and stays either way.
 # A missing plugin fails here; `mise bootstrap` is what installs it.

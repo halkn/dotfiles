@@ -39,8 +39,14 @@ login_shell = "/bin/zsh"
 
 # Claude Code is in the mise registry, but `claude update` (run by `mise run update`) replaces it
 # in place behind mise's back, so it stays on its own installer.
+# rustup stays on its own installer rather than mise's `rust` (docs/mise.md). The two homes repeat
+# .config/zsh/.zshenv, which the first bootstrap runs without. `component add` returns at once
+# when rust-analyzer is there, so a rustup installed some other way converges too.
 [bootstrap.hooks.final]
-run = "command -v claude >/dev/null || curl -fsSL https://claude.ai/install.sh | bash"
+run = [
+  "command -v claude >/dev/null || curl -fsSL https://claude.ai/install.sh | bash",
+  "export CARGO_HOME=\"${XDG_DATA_HOME:-$HOME/.local/share}/cargo\" RUSTUP_HOME=\"${XDG_DATA_HOME:-$HOME/.local/share}/rustup\"; test -x \"$CARGO_HOME/bin/rustup\" || curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path; \"$CARGO_HOME/bin/rustup\" component add --toolchain stable rust-analyzer",
+]
 
 # herdr plugins have no declarative install; herdr itself is a tool, hence post-tools and `mise exec`.
 # `plugin list --plugin` exits 0 for a missing plugin too (herdr 0.9.5), so the JSON is checked.

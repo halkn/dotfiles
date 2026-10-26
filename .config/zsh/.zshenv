@@ -47,6 +47,11 @@ export GOENV=$XDG_CONFIG_HOME/go/env
 export GOPLSCACHE=$XDG_CACHE_HOME
 export STATICCHECK_CACHE=$XDG_CACHE_HOME/staticcheck
 
+# rust
+# mise.toml's rustup hook repeats these two: the first bootstrap runs before zsh reads this file.
+export CARGO_HOME=$XDG_DATA_HOME/cargo
+export RUSTUP_HOME=$XDG_DATA_HOME/rustup
+
 # bun
 export BUN_INSTALL_CACHE_DIR=$XDG_CACHE_HOME/bun/install/cache
 export BUN_INSTALL_GLOBAL_DIR=$XDG_DATA_HOME/bun/install/global
@@ -66,6 +71,7 @@ typeset -U path
 path=(
   $XDG_BIN_HOME(N-/)
   $GOPATH/bin(N-/)
+  $CARGO_HOME/bin(N-/)
   $BUN_INSTALL_BIN(N-/)
   $path
 )

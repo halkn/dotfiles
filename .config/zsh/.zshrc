@@ -45,6 +45,21 @@ zmodload -i zsh/complist
 
 _zcompdump="$zsh_cache_dir/.zcompdump"
 
+# rustup documents its completions as fpath files rather than scripts to source: the cargo one
+# loads the active toolchain's _cargo, which calls itself when sourced. `compinit -C` would not
+# see a regenerated file, so the dump is rebuilt along with it.
+if command -v rustup >/dev/null 2>&1; then
+  _rustup_fpath="$zsh_cache_dir/rustup-functions"
+  if [[ ! -s "$_rustup_fpath/_cargo" || "$(command -v rustup)" -nt "$_rustup_fpath/_cargo" ]]; then
+    mkdir -p "$_rustup_fpath"
+    rustup completions zsh rustup >|"$_rustup_fpath/_rustup"
+    rustup completions zsh cargo >|"$_rustup_fpath/_cargo"
+    rm -f "$_zcompdump"
+  fi
+  fpath=("$_rustup_fpath" $fpath)
+  unset _rustup_fpath
+fi
+
 # Rebuild the dump roughly daily; otherwise trust the cached dump for startup speed.
 if [[ ! -s "$_zcompdump" || -n "$_zcompdump"(#qN.mh+23) ]]; then
   compinit -d "$_zcompdump"
