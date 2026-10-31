@@ -298,7 +298,7 @@ _repo_cmd_list() {
 }
 
 _repo_cmd_get() {
-  local arg spec= dest
+  local arg spec= dest usage='usage: repo get [-u] <spec>'
   local -i update=0
   for arg in "$@"; do
     case $arg in
@@ -306,12 +306,12 @@ _repo_cmd_get() {
         update=1
         ;;
       -h | --help)
-        print -r -- 'usage: repo get [-u] <spec>'
+        print -r -- "$usage"
         return 0
         ;;
       -*)
         print -u2 "repo get: unknown option: $arg"
-        print -u2 'usage: repo get [-u] <spec>'
+        print -u2 -r -- "$usage"
         return 1
         ;;
       *)
@@ -324,7 +324,7 @@ _repo_cmd_get() {
     esac
   done
   [[ -n $spec ]] || {
-    print -u2 'usage: repo get [-u] <spec>'
+    print -u2 -r -- "$usage"
     return 1
   }
 
@@ -349,19 +349,19 @@ _repo_cmd_get() {
 }
 
 _repo_cmd_create() {
-  local arg name= visibility=--private nwo dest
+  local arg name= visibility=--private nwo dest usage='usage: repo create [--public] <name>'
   for arg in "$@"; do
     case $arg in
       --public | --private)
         visibility=$arg
         ;;
       -h | --help)
-        print -r -- 'usage: repo create [--public] <name>'
+        print -r -- "$usage"
         return 0
         ;;
       -*)
         print -u2 "repo create: unknown option: $arg"
-        print -u2 'usage: repo create [--public] <name>'
+        print -u2 -r -- "$usage"
         return 1
         ;;
       *)
@@ -374,7 +374,7 @@ _repo_cmd_create() {
     esac
   done
   [[ -n $name ]] || {
-    print -u2 'usage: repo create [--public] <name>'
+    print -u2 -r -- "$usage"
     return 1
   }
 
@@ -405,6 +405,7 @@ _repo_cmd_create() {
 
 _repo_cmd_setup() {
   local arg nwo= origin
+  local usage='usage: repo setup [--dry-run] [<owner>/<repo>] | repo setup --print-ruleset'
   local -i dry_run=0 print_ruleset=0
   for arg in "$@"; do
     case $arg in
@@ -415,12 +416,12 @@ _repo_cmd_setup() {
         print_ruleset=1
         ;;
       -h | --help)
-        print -r -- 'usage: repo setup [--dry-run] [<owner>/<repo>] | repo setup --print-ruleset'
+        print -r -- "$usage"
         return 0
         ;;
       -*)
         print -u2 "repo setup: unknown option: $arg"
-        print -u2 'usage: repo setup [--dry-run] [<owner>/<repo>]'
+        print -u2 -r -- "$usage"
         return 1
         ;;
       *)
