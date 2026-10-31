@@ -254,6 +254,9 @@ expect_fail 'repo setup: expected at most one repository' setup halkn/one halkn/
 expect_fail 'repo get: unknown option' get --nope halkn/dotfiles
 expect_fail 'usage: repo get' get
 expect_fail 'usage: repo create' create
+expect_fail 'repo list: expected at most one query' list a b
+# `--` is not an end-of-options marker here, so it is not taken as a query.
+expect_fail 'repo list: unknown option: --' list --
 
 # A repository this account cannot name is not a spec to resolve. Checked before
 # gh is reached for, so it is reported as the typo it is on a machine with no gh.
