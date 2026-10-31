@@ -52,6 +52,10 @@ export BUN_INSTALL_CACHE_DIR=$XDG_CACHE_HOME/bun/install/cache
 export BUN_INSTALL_GLOBAL_DIR=$XDG_DATA_HOME/bun/install/global
 export BUN_INSTALL_BIN=$XDG_DATA_HOME/bun/bin
 
+# rust
+export CARGO_HOME=$XDG_DATA_HOME/cargo
+export RUSTUP_HOME=$XDG_DATA_HOME/rustup
+
 # less
 export LESS='-g -i -M -R -S -W -z-4 -x4'
 export LESSHISTFILE=-
@@ -67,6 +71,7 @@ path=(
   $XDG_BIN_HOME(N-/)
   $GOPATH/bin(N-/)
   $BUN_INSTALL_BIN(N-/)
+  $CARGO_HOME/bin(N-/)
   $path
 )
 

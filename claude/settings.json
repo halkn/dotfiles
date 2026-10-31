@@ -222,6 +222,8 @@
         "~/.cache/staticcheck",
         "~/.local/share/uv",
         "~/.local/share/bun",
+        "~/.local/share/cargo",
+        "~/.local/share/rustup",
         "~/.local/share/mise",
         "~/.local/state/mise",
         "~/.local/bin",
