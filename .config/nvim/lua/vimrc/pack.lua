@@ -9,6 +9,7 @@ local ts_parsers = {
   'javascript',
   'json',
   'python',
+  'rust',
   'toml',
   'tsx',
   'typescript',
