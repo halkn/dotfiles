@@ -36,10 +36,13 @@ USAGE
 }
 
 _hw_require() {
-  command -v "$1" >/dev/null 2>&1 || {
-    print -u2 "hw: $1 is not installed"
-    return 1
-  }
+  local tool
+  for tool in "$@"; do
+    command -v "$tool" >/dev/null 2>&1 || {
+      print -u2 "hw: $tool is not installed"
+      return 1
+    }
+  done
 }
 
 # ── layout ───────────────────────────────────────────
@@ -112,14 +115,25 @@ _hw_head() {
   fi
 }
 
+# Exactly <owner>/<repo>/<branch> under the root, both already resolved.
+_hw_in_layout() {
+  [[ $1 == "$2"/*/*/* && $1 != "$2"/*/*/*/* ]]
+}
+
+# `<owner>/<repo> <branch>` of a worktree under the root, into REPLY.
+_hw_label() {
+  local dir=$1 root=$2
+  _hw_head "$dir"
+  REPLY="${${dir#"$root"/}%/*} $REPLY"
+}
+
 # Only a directory of the layout under $WT_ROOT is taken, which keeps out the
 # main checkout and Claude Code's .claude/worktrees (its lifecycle; an agent may
 # still be running there). The one thing git removes without complaint is the
 # worktree the caller stands in, so that is refused here as well.
 _hw_removable() {
-  local wt_path=$1 root resolved=${1:A}
-  root=${${:-$(_hw_root)}:A}
-  if [[ $resolved != "$root"/*/*/* || $resolved == "$root"/*/*/*/* ]]; then
+  local wt_path=$1 root=${$(_hw_root):A} resolved=${1:A}
+  if ! _hw_in_layout "$resolved" "$root"; then
     print -u2 "hw: not a worktree under $root: $wt_path"
     return 1
   fi
@@ -135,37 +149,45 @@ _hw_removable() {
 
 # ── herdr ────────────────────────────────────────────
 
-# `<id>\t<number>\t<label>\t<checkout path>\t<focused>` per open workspace, read
-# once per invocation into _HW_WS. A workspace off a checkout, or one opened
-# with `workspace create` on a worktree, has no checkout path.
-typeset -g _HW_WS=
+# The open workspaces, read once per invocation into parallel arrays indexed
+# alike. A workspace off a checkout, or one opened with `workspace create` on a
+# worktree, has an empty checkout path.
+typeset -ga _HW_WS_ID _HW_WS_NUM _HW_WS_LABEL _HW_WS_PATH _HW_WS_FOCUSED
 typeset -gi _HW_WS_READ=0
 _hw_ws_load() {
-  local out
+  local out row
+  local -a f
   ((_HW_WS_READ)) && return 0
-  _hw_require herdr || return 1
-  _hw_require jq || return 1
+  _hw_require herdr jq || return 1
   out=$(herdr workspace list) || {
     print -u2 'hw: herdr could not list the workspaces'
     return 1
   }
-  _HW_WS=$(print -r -- "$out" | jq -r '
+  out=$(print -r -- "$out" | jq -r '
     .result.workspaces[]?
     | [.workspace_id, (.number | tostring), .label,
        (.worktree.checkout_path // ""), (.focused | tostring)]
     | @tsv
   ') || return 1
+  for row in ${(f)out}; do
+    f=("${(@ps:\t:)row}")
+    _HW_WS_ID+=("${f[1]}")
+    _HW_WS_NUM+=("${f[2]-}")
+    _HW_WS_LABEL+=("${f[3]-}")
+    _HW_WS_PATH+=("${f[4]-}")
+    _HW_WS_FOCUSED+=("${f[5]-}")
+  done
   _HW_WS_READ=1
 }
 
-# The workspace herdr ran the command over: the id it hands a custom command,
-# else the one marked focused.
+# Whether workspace $1 (an index into _HW_WS_*) is the one herdr ran the
+# command over: the id it hands a custom command, else the one marked focused.
 _hw_is_focused() {
-  local id=$1 flag=$2
+  local -i i=$1
   if [[ -n ${HERDR_ACTIVE_WORKSPACE_ID:-} ]]; then
-    [[ $id == "$HERDR_ACTIVE_WORKSPACE_ID" ]]
+    [[ ${_HW_WS_ID[i]} == "$HERDR_ACTIVE_WORKSPACE_ID" ]]
   else
-    [[ $flag == true ]]
+    [[ ${_HW_WS_FOCUSED[i]} == true ]]
   fi
 }
 
@@ -204,19 +226,14 @@ _hw_busy() {
   fi
 }
 
-# herdr answers a refusal as JSON on stdout; the message is what a person reads.
-_hw_herdr_error() {
-  local out=$1 msg
+# A herdr command whose output is not wanted. herdr answers a refusal as JSON on
+# stdout; the message is what a person reads.
+_hw_herdr() {
+  local out msg
+  out=$(herdr "$@" 2>&1) && return 0
   msg=$(print -r -- "$out" | jq -r '.error.message? // empty' 2>/dev/null) || msg=
   print -u2 -r -- "hw: ${msg:-$out}"
-}
-
-_hw_close() {
-  local out
-  out=$(herdr workspace close "$1" 2>&1) || {
-    _hw_herdr_error "$out"
-    return 1
-  }
+  return 1
 }
 
 # A clone gets a workspace of its own, focused when one is already open on it. A
@@ -224,30 +241,30 @@ _hw_close() {
 # former records the repository, which groups the workspace under its clone,
 # and it focuses a workspace already open on the path.
 _hw_open() {
-  local dir=${1:A} main row out
-  local -a f
+  local dir=${1:A} main
+  local -i i
   main=$(_hw_main "$dir") || return 1
   _hw_ws_load || return 1
   if [[ ${main:A} != "$dir" ]]; then
-    out=$(herdr worktree open --cwd "$main" --path "$dir" --focus 2>&1) || {
-      _hw_herdr_error "$out"
-      return 1
-    }
-    return 0
+    _hw_herdr worktree open --cwd "$main" --path "$dir" --focus
+    return
   fi
-  for row in ${(f)_HW_WS}; do
-    f=("${(@ps:\t:)row}")
-    [[ -n ${f[4]-} && ${f[4]:A} == "$dir" ]] || continue
-    herdr workspace focus "${f[1]}" >/dev/null
+  for ((i = 1; i <= ${#_HW_WS_ID}; i++)); do
+    [[ -n ${_HW_WS_PATH[i]} && ${_HW_WS_PATH[i]:A} == "$dir" ]] || continue
+    herdr workspace focus "${_HW_WS_ID[i]}" >/dev/null
     return
   done
-  out=$(herdr workspace create --cwd "$dir" --focus 2>&1) || {
-    _hw_herdr_error "$out"
-    return 1
-  }
+  _hw_herdr workspace create --cwd "$dir" --focus
 }
 
 # ── worktrees ────────────────────────────────────────
+
+# Only the one branch, into its remote-tracking ref, even when origin's history
+# rewrote it.
+_hw_fetch() {
+  local main=$1 branch=$2
+  git -C "$main" fetch -q origin "+refs/heads/${branch}:refs/remotes/origin/${branch}" 2>/dev/null
+}
 
 # An existing directory is handed back only when it holds the branch asked for:
 # `/` folds to `-`, so another branch may be sitting there. With $3 set, a
@@ -300,7 +317,7 @@ _hw_add() {
     start=$(git rev-parse HEAD) || return 1
   fi
   if ((remote)); then
-    git -C "$main" fetch -q origin "+refs/heads/${branch}:refs/remotes/origin/${branch}" 2>/dev/null || {
+    _hw_fetch "$main" "$branch" || {
       print -u2 "hw: could not fetch $branch from origin"
       return 1
     }
@@ -327,7 +344,7 @@ _hw_add() {
     ((remote)) && _hw_forward "$main" "$branch"
     git -C "$main" worktree add "$wt_path" "$branch" >&2 || return 1
   else
-    if ((!remote)) && ! git -C "$main" fetch -q origin "+refs/heads/${branch}:refs/remotes/origin/${branch}" 2>/dev/null; then
+    if ((!remote)) && ! _hw_fetch "$main" "$branch"; then
       print -u2 "hw: could not fetch $branch from origin; using what is known of it"
     fi
     if git -C "$main" show-ref --verify --quiet "refs/remotes/origin/$branch"; then
@@ -371,8 +388,8 @@ _hw_drop_branch() {
 # worktree under the root or exists at all; else an open workspace's id. A
 # branch comes before an id, which is herdr's to number (w1, w2, ...).
 _hw_resolve() {
-  local arg=$1 main= row
-  local -a f
+  local arg=$1 main=
+  local -i i
   REPLY=
   if [[ $arg == */* && -d $arg ]]; then
     REPLY=${arg:A}
@@ -384,10 +401,9 @@ _hw_resolve() {
     git -C "$main" show-ref --verify --quiet "refs/heads/$arg" && return 0
   fi
   if _hw_ws_load 2>/dev/null; then
-    for row in ${(f)_HW_WS}; do
-      f=("${(@ps:\t:)row}")
-      [[ ${f[1]} == "$arg" && -n ${f[4]-} ]] || continue
-      REPLY=${f[4]:A}
+    for ((i = 1; i <= ${#_HW_WS_ID}; i++)); do
+      [[ ${_HW_WS_ID[i]} == "$arg" && -n ${_HW_WS_PATH[i]} ]] || continue
+      REPLY=${_HW_WS_PATH[i]:A}
       return 0
     done
   fi
@@ -405,9 +421,9 @@ _hw_resolve() {
 # directory is checked for a running process first. Outside herdr there are no
 # panes to check, and git alone removes it.
 _hw_rm_one() {
-  local wt_path=$1 main branch row ws carrier= pane out
-  local -i force=$2 rc=0 outside
-  local -a f p here close check stranded flags
+  local wt_path=$1 main branch ws carrier= pane
+  local -i force=$2 rc=0 outside i
+  local -a p here close check stranded flags
   main=$(_hw_main "$wt_path") || return 1
   branch=$(git -C "$wt_path" symbolic-ref --short -q HEAD)
 
@@ -415,11 +431,10 @@ _hw_rm_one() {
     [[ ${HERDR_ENV:-} != 1 ]] || return 1
     print -u2 'hw: not inside herdr; removing with git alone'
   else
-    for row in ${(f)_HW_WS}; do
-      f=("${(@ps:\t:)row}")
-      ws=${f[1]}
+    for ((i = 1; i <= ${#_HW_WS_ID}; i++)); do
+      ws=${_HW_WS_ID[i]}
       _hw_panes "$ws" || return 1
-      if [[ -n ${f[4]-} && ${f[4]:A} == "$wt_path" ]]; then
+      if [[ -n ${_HW_WS_PATH[i]} && ${_HW_WS_PATH[i]:A} == "$wt_path" ]]; then
         carrier=$ws
         for pane in ${(f)REPLY}; do check+=("${pane%%$'\t'*}"); done
         continue
@@ -435,7 +450,7 @@ _hw_rm_one() {
       done
       ((${#here} > 0)) || continue
       check+=("${here[@]}")
-      if [[ -z ${f[4]-} ]] && ((outside == 0)) && ! _hw_is_focused "$ws" "${f[5]-}"; then
+      if [[ -z ${_HW_WS_PATH[i]} ]] && ((outside == 0)) && ! _hw_is_focused "$i"; then
         close+=("$ws")
       else
         stranded+=("${here[@]}")
@@ -454,17 +469,14 @@ _hw_rm_one() {
 
   ((force)) && flags=(--force)
   if [[ -n $carrier ]]; then
-    out=$(herdr worktree remove --workspace "$carrier" "${flags[@]}" 2>&1) || {
-      _hw_herdr_error "$out"
-      return 1
-    }
+    _hw_herdr worktree remove --workspace "$carrier" "${flags[@]}" || return 1
   else
     git -C "$main" worktree remove "${flags[@]}" -- "$wt_path" >&2 || return
   fi
   rmdir -- "${wt_path:h}" 2>/dev/null
 
   for ws in "${close[@]}"; do
-    _hw_close "$ws" || rc=1
+    _hw_herdr workspace close "$ws" || rc=1
   done
   for pane in "${stranded[@]}"; do
     print -u2 "hw: $pane is left in the removed $wt_path"
@@ -498,8 +510,7 @@ _hw_cmd_branch() {
     return 1
   }
   # Checked before a worktree is made that could not be opened.
-  _hw_require herdr || return 1
-  _hw_require jq || return 1
+  _hw_require herdr jq || return 1
   main=$(_hw_main) || return 1
   wt_path=$(_hw_add "$main" "$branch" "$base") || return 1
   _hw_open "$wt_path"
@@ -538,8 +549,7 @@ _hw_cmd_pr() {
     print -u2 'usage: hw pr <number>'
     return 1
   }
-  _hw_require herdr || return 1
-  _hw_require jq || return 1
+  _hw_require herdr jq || return 1
   main=$(_hw_main) || return 1
   host=$(_hw_host) || return 1
   case $host in
@@ -627,10 +637,9 @@ _hw_cmd_close() {
     print -u2 'usage: hw close <id>...'
     return 1
   }
-  _hw_require herdr || return 1
-  _hw_require jq || return 1
+  _hw_require herdr jq || return 1
   for ws in "$@"; do
-    _hw_close "$ws" || rc=1
+    _hw_herdr workspace close "$ws" || rc=1
   done
   return $rc
 }
@@ -648,8 +657,11 @@ _hw_cmd_branches() {
   {
     for b in ${(f)"$(git -C "$main" for-each-ref --sort=-committerdate --format='%(refname:lstrip=2)' refs/heads)"}; do
       seen[$b]=1
-      ((${+held[$b]})) && printf '0\t%-8s %s\t%s\n' worktree "$b" "$b"
-      ((${+held[$b]})) || printf '1\t%-8s %s\t%s\n' local "$b" "$b"
+      if ((${+held[$b]})); then
+        printf '0\t%-8s %s\t%s\n' worktree "$b" "$b"
+      else
+        printf '1\t%-8s %s\t%s\n' local "$b" "$b"
+      fi
     done
     for b in ${(f)"$(git -C "$main" for-each-ref --sort=-committerdate --format='%(refname:lstrip=3)' refs/remotes/origin)"}; do
       [[ $b == HEAD || -n ${seen[$b]-} ]] && continue
@@ -688,62 +700,56 @@ _hw_cmd_prs() {
 # once however many workspaces stand on it; any other workspace is only closed,
 # so a clone is never deleted from here.
 _hw_cmd_spaces() {
-  local row root dir shown
-  local -a f
+  local root=${$(_hw_root):A} dir shown
+  local -i i
   local -A listed
-  root=${${:-$(_hw_root)}:A}
   _hw_ws_load || return 1
   # The focused worktree is left out whichever workspace stands on it.
-  for row in ${(f)_HW_WS}; do
-    f=("${(@ps:\t:)row}")
-    _hw_is_focused "${f[1]}" "${f[5]-}" || continue
-    [[ -z ${f[4]-} ]] || listed[${f[4]:A}]=1
+  for ((i = 1; i <= ${#_HW_WS_ID}; i++)); do
+    _hw_is_focused "$i" || continue
+    [[ -z ${_HW_WS_PATH[i]} ]] || listed[${_HW_WS_PATH[i]:A}]=1
   done
-  for row in ${(f)_HW_WS}; do
-    f=("${(@ps:\t:)row}")
-    _hw_is_focused "${f[1]}" "${f[5]-}" && continue
-    dir=${f[4]-}
+  for ((i = 1; i <= ${#_HW_WS_ID}; i++)); do
+    _hw_is_focused "$i" && continue
+    dir=${_HW_WS_PATH[i]}
     [[ -z $dir ]] || dir=${dir:A}
-    if [[ $dir == "$root"/*/*/* && $dir != "$root"/*/*/*/* ]]; then
+    if _hw_in_layout "$dir" "$root"; then
       [[ -z ${listed[$dir]-} ]] || continue
       listed[$dir]=1
-      _hw_head "$dir"
-      printf '[%s] %s %s\t%s\t%s\t%s\n' "${f[2]}" "${${dir#"$root"/}%/*}" "$REPLY" rm "$dir" "$dir"
+      _hw_label "$dir" "$root"
+      printf '[%s] %s\t%s\t%s\t%s\n' "${_HW_WS_NUM[i]}" "$REPLY" rm "$dir" "$dir"
     else
-      shown=${${dir/#$HOME/'~'}:-${f[3]}}
-      printf '[%s] %s\t%s\t%s\t%s\n' "${f[2]}" "$shown" close "${f[1]}" "$dir"
+      shown=${${dir/#$HOME/'~'}:-${_HW_WS_LABEL[i]}}
+      printf '[%s] %s\t%s\t%s\t%s\n' "${_HW_WS_NUM[i]}" "$shown" close "${_HW_WS_ID[i]}" "$dir"
     fi
   done
   # Then the worktrees no workspace stands on, which nothing else lists.
   for dir in "$root"/*/*/*(N/); do
     [[ -z ${listed[$dir]-} ]] || continue
-    _hw_head "$dir"
-    printf '[-] %s %s\t%s\t%s\t%s\n' "${${dir#"$root"/}%/*}" "$REPLY" rm "$dir" "$dir"
+    _hw_label "$dir" "$root"
+    printf '[-] %s\t%s\t%s\t%s\n' "$REPLY" rm "$dir" "$dir"
   done
 }
 
 # `<owner>/<repo> <branch>\t<path>` per worktree under the root, read off the
 # layout rather than herdr, so it works outside herdr too.
 _hw_cmd_list() {
-  local root dir
-  root=${${:-$(_hw_root)}:A}
+  local root=${$(_hw_root):A} dir
   for dir in "$root"/*/*/*(N/); do
-    _hw_head "$dir"
-    printf '%s %s\t%s\n' "${${dir#"$root"/}%/*}" "$REPLY" "$dir"
+    _hw_label "$dir" "$root"
+    printf '%s\t%s\n' "$REPLY" "$dir"
   done
 }
 
 # The focused workspace's checkout; the pane's cwd only stands in for a
 # workspace off a checkout, as it moves with every `cd` in that pane.
 _hw_cmd_focused() {
-  local row
-  local -a f
+  local -i i
   _hw_ws_load || return 1
-  for row in ${(f)_HW_WS}; do
-    f=("${(@ps:\t:)row}")
-    _hw_is_focused "${f[1]}" "${f[5]-}" || continue
-    if [[ -n ${f[4]-} ]]; then
-      print -r -- "${f[4]}"
+  for ((i = 1; i <= ${#_HW_WS_ID}; i++)); do
+    _hw_is_focused "$i" || continue
+    if [[ -n ${_HW_WS_PATH[i]} ]]; then
+      print -r -- "${_HW_WS_PATH[i]}"
       return 0
     fi
     break
