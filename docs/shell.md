@@ -4,7 +4,7 @@
 
 ## 原則
 
-zsh の設定は、どのツールが欠けたマシンでもエラーなく起動する形に保つ。tool の初期化と plugin の読込は、それぞれの存在を確かめてから行う。herdr があるマシンでは、interactive zsh を herdr の中で使う（止めるのは `.zshrc.local`）。
+zsh の設定は、どのツールが欠けたマシンでもエラーなく起動する形に保つ。tool の初期化と plugin の読込は、それぞれの存在を確かめてから行う。herdr があるマシンでは、Ghostty / Noctty で開いた interactive zsh を herdr の中で使う（止めるのは `.zshrc.local`）。端末は `TERM_PROGRAM=ghostty` で見分ける。Noctty はこの値を `WSLENV` で WSL にも渡す（Noctty の HEAD `26def42422` のソースで確認）。IDE の統合ターミナルなど他の端末と、Neovim の `:terminal`（`$NVIM` で見分ける）では herdr を起動しない。
 
 独自の機能はコマンドのサブコマンドとして作り、shell が要らないものは shell の外に置く。
 
