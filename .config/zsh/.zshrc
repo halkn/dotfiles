@@ -86,7 +86,7 @@ alias :q='exit'
 
 # ── mise ─────────────────────────────────────────────
 # Ahead of every tool below: activation sets PATH there and then, and the
-# `command -v` checks that follow find mise-installed tools through it.
+# checks for each tool that follow find mise-installed ones through it.
 if command -v mise >/dev/null 2>&1; then
   eval "$(mise activate zsh)"
 fi
@@ -101,10 +101,16 @@ for _comp in 'uv generate-shell-completion zsh' 'bun completions'; do
   _comp_cmd=(${(z)_comp})
   ((${+commands[${_comp_cmd[1]}]})) || continue
   _comp_cache=$zsh_cache_dir/${_comp_cmd[1]}_completion.zsh
+  # A failed run is not cached, or every new shell would source its output
+  # until the binary changes; the previous script, if any, stays.
   if [[ ! -s $_comp_cache || ${commands[${_comp_cmd[1]}]} -nt $_comp_cache ]]; then
-    "${_comp_cmd[@]}" >|"$_comp_cache"
+    if "${_comp_cmd[@]}" >|"$_comp_cache.new"; then
+      mv -f -- "$_comp_cache.new" "$_comp_cache"
+    else
+      rm -f -- "$_comp_cache.new"
+    fi
   fi
-  source "$_comp_cache"
+  [[ -s $_comp_cache ]] && source "$_comp_cache"
 done
 unset _comp _comp_cmd _comp_cache
 
