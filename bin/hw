@@ -127,24 +127,26 @@ _hw_label() {
   REPLY="${${dir#"$root"/}%/*} $REPLY"
 }
 
-# Only a directory of the layout under $WT_ROOT is taken, which keeps out the
-# main checkout and Claude Code's .claude/worktrees (its lifecycle; an agent may
-# still be running there). The one thing git removes without complaint is the
-# worktree the caller stands in, so that is refused here as well.
-_hw_removable() {
-  local wt_path=$1 root=${$(_hw_root):A} resolved=${1:A}
-  if ! _hw_in_layout "$resolved" "$root"; then
-    print -u2 "hw: not a worktree under $root: $wt_path"
-    return 1
-  fi
-  if [[ ${PWD:A} == "$resolved" || ${PWD:A} == "$resolved"/* ]]; then
-    print -u2 "hw: cannot remove the worktree you are standing in: $wt_path"
-    return 1
-  fi
-  [[ -d $wt_path ]] || {
-    print -u2 "hw: no such worktree: $wt_path"
+# The host is read off origin's URL as configured, before any insteadOf
+# rewrites it.
+_hw_host() {
+  local url
+  url=$(git config --get remote.origin.url) || {
+    print -u2 'hw: this repository has no origin'
     return 1
   }
+  case $url in
+    *github.com[:/]*)
+      print github
+      ;;
+    *dev.azure.com[:/]* | *.visualstudio.com[:/]* | *ssh.dev.azure.com[:/]*)
+      print azure
+      ;;
+    *)
+      print -u2 "hw: origin is neither GitHub nor Azure DevOps: $url"
+      return 1
+      ;;
+  esac
 }
 
 # ── herdr ────────────────────────────────────────────
@@ -356,33 +358,7 @@ _hw_add() {
   print -r -- "$wt_path"
 }
 
-# A branch is merged when origin's default branch contains it, or - what a
-# squash merge leaves - when merging it there changes nothing. Its upstream
-# does not count: a pushed branch whose pull request is still open is not merged.
-_hw_merged() {
-  local main=$1 branch=$2 tree
-  git -C "$main" merge-base --is-ancestor "refs/heads/$branch" refs/remotes/origin/HEAD 2>/dev/null &&
-    return 0
-  tree=$(git -C "$main" merge-tree --write-tree refs/remotes/origin/HEAD "refs/heads/$branch" 2>/dev/null) ||
-    return 1
-  [[ $tree == "$(git -C "$main" rev-parse 'refs/remotes/origin/HEAD^{tree}' 2>/dev/null)" ]]
-}
-
-# The worktree goes first and its branch only after; the default branch stays.
-_hw_drop_branch() {
-  local main=$1 branch=$2 default
-  [[ -n $branch ]] || return 0
-  default=$(git -C "$main" symbolic-ref --short -q refs/remotes/origin/HEAD) || {
-    print -u2 "hw: kept the branch $branch; origin/HEAD is not set (git remote set-head origin --auto)"
-    return 0
-  }
-  [[ $branch != "${default#origin/}" ]] || return 0
-  if _hw_merged "$main" "$branch"; then
-    git -C "$main" branch -D -q -- "$branch" >&2
-    return
-  fi
-  print -u2 "hw: kept the branch $branch, which is not merged into $default"
-}
+# ── rm ───────────────────────────────────────────────
 
 # A target into REPLY: a path; else a branch of the repository here that has a
 # worktree under the root or exists at all; else an open workspace's id. A
@@ -413,59 +389,121 @@ _hw_resolve() {
   }
 }
 
+# Only a directory of the layout under $WT_ROOT is taken, which keeps out the
+# main checkout and Claude Code's .claude/worktrees (its lifecycle; an agent may
+# still be running there). The one thing git removes without complaint is the
+# worktree the caller stands in, so that is refused here as well.
+_hw_removable() {
+  local wt_path=$1 root=${$(_hw_root):A} resolved=${1:A}
+  if ! _hw_in_layout "$resolved" "$root"; then
+    print -u2 "hw: not a worktree under $root: $wt_path"
+    return 1
+  fi
+  if [[ ${PWD:A} == "$resolved" || ${PWD:A} == "$resolved"/* ]]; then
+    print -u2 "hw: cannot remove the worktree you are standing in: $wt_path"
+    return 1
+  fi
+  [[ -d $wt_path ]] || {
+    print -u2 "hw: no such worktree: $wt_path"
+    return 1
+  }
+}
+
+# A branch is merged when origin's default branch contains it, or - what a
+# squash merge leaves - when merging it there changes nothing. Its upstream
+# does not count: a pushed branch whose pull request is still open is not merged.
+_hw_merged() {
+  local main=$1 branch=$2 tree
+  git -C "$main" merge-base --is-ancestor "refs/heads/$branch" refs/remotes/origin/HEAD 2>/dev/null &&
+    return 0
+  tree=$(git -C "$main" merge-tree --write-tree refs/remotes/origin/HEAD "refs/heads/$branch" 2>/dev/null) ||
+    return 1
+  [[ $tree == "$(git -C "$main" rev-parse 'refs/remotes/origin/HEAD^{tree}' 2>/dev/null)" ]]
+}
+
+# The worktree goes first and its branch only after; the default branch stays.
+_hw_drop_branch() {
+  local main=$1 branch=$2 default
+  [[ -n $branch ]] || return 0
+  default=$(git -C "$main" symbolic-ref --short -q refs/remotes/origin/HEAD) || {
+    print -u2 "hw: kept the branch $branch; origin/HEAD is not set (git remote set-head origin --auto)"
+    return 0
+  }
+  [[ $branch != "${default#origin/}" ]] || return 0
+  if _hw_merged "$main" "$branch"; then
+    git -C "$main" branch -D -q -- "$branch" >&2
+    return
+  fi
+  print -u2 "hw: kept the branch $branch, which is not merged into $default"
+}
+
+# What removing the worktree at $1 means for the open workspaces, written into
+# the caller's locals (zsh scopes them dynamically): `carrier`, the workspace
+# whose checkout it is, which herdr's `worktree remove` closes; `close`, the
+# workspaces with no checkout of their own whose panes are all inside it, closed
+# with it (not the focused one); `stranded`, the panes of any other workspace
+# inside it, only named; `check`, every pane that would lose its directory.
+_hw_rm_plan() {
+  local wt_path=$1 ws pane
+  local -i outside i
+  local -a p here
+  for ((i = 1; i <= ${#_HW_WS_ID}; i++)); do
+    ws=${_HW_WS_ID[i]}
+    _hw_panes "$ws" || return 1
+    if [[ -n ${_HW_WS_PATH[i]} && ${_HW_WS_PATH[i]:A} == "$wt_path" ]]; then
+      carrier=$ws
+      for pane in ${(f)REPLY}; do check+=("${pane%%$'\t'*}"); done
+      continue
+    fi
+    here=() outside=0
+    for pane in ${(f)REPLY}; do
+      p=("${(@ps:\t:)pane}")
+      if [[ -n ${p[2]-} && (${p[2]:A} == "$wt_path" || ${p[2]:A} == "$wt_path"/*) ]]; then
+        here+=("${p[1]}")
+      else
+        ((outside += 1))
+      fi
+    done
+    ((${#here} > 0)) || continue
+    check+=("${here[@]}")
+    if [[ -z ${_HW_WS_PATH[i]} ]] && ((outside == 0)) && ! _hw_is_focused "$i"; then
+      close+=("$ws")
+    else
+      stranded+=("${here[@]}")
+    fi
+  done
+}
+
+# Refuses when any of the panes $2... runs something in front of its shell.
+_hw_rm_idle() {
+  local wt_path=$1 pane
+  shift
+  for pane in "$@"; do
+    _hw_busy "$pane" || return 1
+    [[ -z $REPLY ]] && continue
+    print -u2 -r -- "hw: $pane is running $REPLY; -f removes $wt_path anyway"
+    return 1
+  done
+}
+
 # One worktree. herdr's `worktree remove` closes only the workspace that
 # carries the checkout and removes regardless of what runs in it, so the rest is
-# ours: a workspace with no checkout of its own whose panes are all inside the
-# worktree is closed with it (not the focused one); a pane of any other
-# workspace inside it is only checked and named. Every pane that would lose its
-# directory is checked for a running process first. Outside herdr there are no
-# panes to check, and git alone removes it.
+# ours (_hw_rm_plan). Outside herdr there are no panes to check, and git alone
+# removes it.
 _hw_rm_one() {
   local wt_path=$1 main branch ws carrier= pane
-  local -i force=$2 rc=0 outside i
-  local -a p here close check stranded flags
+  local -i force=$2 rc=0
+  local -a close check stranded flags
   main=$(_hw_main "$wt_path") || return 1
   branch=$(git -C "$wt_path" symbolic-ref --short -q HEAD)
 
-  if ! _hw_ws_load; then
+  if _hw_ws_load; then
+    _hw_rm_plan "$wt_path" || return 1
+  else
     [[ ${HERDR_ENV:-} != 1 ]] || return 1
     print -u2 'hw: not inside herdr; removing with git alone'
-  else
-    for ((i = 1; i <= ${#_HW_WS_ID}; i++)); do
-      ws=${_HW_WS_ID[i]}
-      _hw_panes "$ws" || return 1
-      if [[ -n ${_HW_WS_PATH[i]} && ${_HW_WS_PATH[i]:A} == "$wt_path" ]]; then
-        carrier=$ws
-        for pane in ${(f)REPLY}; do check+=("${pane%%$'\t'*}"); done
-        continue
-      fi
-      here=() outside=0
-      for pane in ${(f)REPLY}; do
-        p=("${(@ps:\t:)pane}")
-        if [[ -n ${p[2]-} && (${p[2]:A} == "$wt_path" || ${p[2]:A} == "$wt_path"/*) ]]; then
-          here+=("${p[1]}")
-        else
-          ((outside += 1))
-        fi
-      done
-      ((${#here} > 0)) || continue
-      check+=("${here[@]}")
-      if [[ -z ${_HW_WS_PATH[i]} ]] && ((outside == 0)) && ! _hw_is_focused "$i"; then
-        close+=("$ws")
-      else
-        stranded+=("${here[@]}")
-      fi
-    done
   fi
-
-  if ((!force)); then
-    for pane in "${check[@]}"; do
-      _hw_busy "$pane" || return 1
-      [[ -z $REPLY ]] && continue
-      print -u2 -r -- "hw: $pane is running $REPLY; -f removes $wt_path anyway"
-      return 1
-    done
-  fi
+  ((force)) || _hw_rm_idle "$wt_path" "${check[@]}" || return 1
 
   ((force)) && flags=(--force)
   if [[ -n $carrier ]]; then
@@ -514,28 +552,6 @@ _hw_cmd_branch() {
   main=$(_hw_main) || return 1
   wt_path=$(_hw_add "$main" "$branch" "$base") || return 1
   _hw_open "$wt_path"
-}
-
-# The host is read off origin's URL as configured, before any insteadOf
-# rewrites it.
-_hw_host() {
-  local url
-  url=$(git config --get remote.origin.url) || {
-    print -u2 'hw: this repository has no origin'
-    return 1
-  }
-  case $url in
-    *github.com[:/]*)
-      print github
-      ;;
-    *dev.azure.com[:/]* | *.visualstudio.com[:/]* | *ssh.dev.azure.com[:/]*)
-      print azure
-      ;;
-    *)
-      print -u2 "hw: origin is neither GitHub nor Azure DevOps: $url"
-      return 1
-      ;;
-  esac
 }
 
 # On GitHub, `gh pr checkout` is the only thing that gets a fork's head right,
