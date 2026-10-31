@@ -234,6 +234,8 @@ unset zsh_data_dir zsh_state_dir zsh_cache_dir zsh_plugins_dir
 # `exec` replaces the shell, so this stays the last thing .zshrc does - which is
 # also what lets .zshrc.local above turn the auto-start off.
 # HERDR_ENV is set inside herdr-managed shells and stops the recursion.
+# TERM_PROGRAM limits it to Ghostty and Noctty (which forwards the variable into
+# WSL), so IDE terminals stay plain shells. NVIM keeps Neovim's :terminal one too.
 HERDR_AUTO_START=${HERDR_AUTO_START:-1}
 
 if command -v herdr >/dev/null 2>&1 &&
@@ -241,6 +243,8 @@ if command -v herdr >/dev/null 2>&1 &&
   [[ -z $HERDR_ENV ]] &&
   [[ -t 0 ]] &&
   [[ -t 1 ]] &&
+  [[ $TERM_PROGRAM == ghostty ]] &&
+  [[ -z $NVIM ]] &&
   [[ $HERDR_AUTO_START == 1 ]]; then
   exec herdr
 fi
