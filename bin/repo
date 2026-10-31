@@ -31,11 +31,14 @@ USAGE
 }
 
 _repo_require() {
-  local tool=${1:-} cmd=${2:-}
-  command -v "$tool" >/dev/null 2>&1 || {
-    print -u2 "$cmd: $tool is not installed"
-    return 1
-  }
+  local cmd=${1:-} tool
+  shift
+  for tool in "$@"; do
+    command -v "$tool" >/dev/null 2>&1 || {
+      print -u2 "$cmd: $tool is not installed"
+      return 1
+    }
+  done
 }
 
 # ── layout ───────────────────────────────────────────
@@ -102,7 +105,7 @@ _repo_qualify() {
       return 0
       ;;
   esac
-  _repo_require gh repo || return 1
+  _repo_require repo gh || return 1
   login=$(gh api user --jq .login) || return 1
   [[ -n $login ]] || {
     print -u2 'repo: could not resolve your GitHub login'
@@ -272,20 +275,22 @@ _repo_settings_report() {
 # Each command lets `zparseopts -D -E` take the options it knows; what is left
 # comes here, into REPLY: at most one operand, and nothing that still looks like
 # an option. Not `zparseopts -F`, whose message names the shell function rather
-# than the subcommand, and which leaves `--` behind as an operand.
+# than the subcommand. zparseopts leaves `--` behind either way, and the `-*`
+# arm is what keeps it from becoming an operand.
 _repo_operand() {
   local cmd=$1 what=$2 usage=$3 arg
+  local -i seen=0
   shift 3
   REPLY=
   for arg in "$@"; do
     case $arg in
       -*)
         print -u2 "$cmd: unknown option: $arg"
-        [[ -z $usage ]] || print -u2 -r -- "$usage"
+        print -u2 -r -- "$usage"
         return 1
         ;;
     esac
-    [[ -z $REPLY ]] || {
+    ((seen++ == 0)) || {
       print -u2 "$cmd: expected at most one $what"
       return 1
     }
@@ -294,13 +299,14 @@ _repo_operand() {
 }
 
 _repo_cmd_list() {
+  local usage='usage: repo list [--full-path] [<query>]'
   local -a full help
   zparseopts -D -E -- p=full -full-path=full h=help -help=help
   if ((${#help})); then
-    print -r -- 'usage: repo list [--full-path] [<query>]'
+    print -r -- "$usage"
     return 0
   fi
-  _repo_operand 'repo list' query '' "$@" || return 1
+  _repo_operand 'repo list' query "$usage" "$@" || return 1
   _repo_list "$((${#full} > 0))" "$REPLY"
 }
 
@@ -342,21 +348,22 @@ _repo_cmd_get() {
 _repo_cmd_create() {
   local name visibility nwo dest usage='usage: repo create [--public] <name>'
   local -a vis help
-  zparseopts -D -E -- -public=vis -private=vis h=help -help=help
+  # `+=` keeps every occurrence in order; without it zparseopts keeps one per
+  # option at its first position, and the last one given would not win.
+  zparseopts -D -E -- -public+=vis -private+=vis h=help -help=help
   if ((${#help})); then
     print -r -- "$usage"
     return 0
   fi
   _repo_operand 'repo create' name "$usage" "$@" || return 1
   name=$REPLY
-  # The last of --public / --private wins.
   visibility=${vis[-1]:---private}
   [[ -n $name ]] || {
     print -u2 -r -- "$usage"
     return 1
   }
 
-  _repo_require gh 'repo create' || return 1
+  _repo_require 'repo create' gh || return 1
   nwo=$(_repo_qualify "$name") || return 1
   dest=$(_repo_dest "$nwo") || return 1
   [[ ! -e $dest ]] || {
@@ -405,7 +412,7 @@ _repo_cmd_setup() {
     return 1
   fi
 
-  _repo_require gh 'repo setup' || return 1
+  _repo_require 'repo setup' gh || return 1
 
   # Resolved from `origin` rather than from the working directory alone: in a
   # clone of a fork, gh's own default is the base repository, and this command
