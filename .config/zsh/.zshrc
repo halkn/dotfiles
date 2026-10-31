@@ -5,9 +5,7 @@
 zsh_data_dir=$XDG_DATA_HOME/zsh
 zsh_state_dir=$XDG_STATE_HOME/zsh
 zsh_cache_dir=$XDG_CACHE_HOME/zsh
-mkdir -p "$zsh_state_dir"
-mkdir -p "$zsh_cache_dir"
-mkdir -p "$zsh_cache_dir/zcompcache"
+mkdir -p "$zsh_state_dir" "$zsh_cache_dir/zcompcache"
 
 # ── History ──────────────────────────────────────────
 HISTFILE=$zsh_state_dir/history
@@ -96,31 +94,27 @@ zsh_plugins_dir=$zsh_data_dir/plugins
 [[ -f "$zsh_plugins_dir/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh" ]] &&
   source "$zsh_plugins_dir/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
 
+# ── mise ─────────────────────────────────────────────
 if command -v mise >/dev/null 2>&1; then
   eval "$(mise activate zsh)"
 fi
 
-# ── uv ───────────────────────────────────────────────
-if command -v uv >/dev/null 2>&1; then
-  _uv_comp="$zsh_cache_dir/uv_completion.zsh"
-  if [[ ! -s "$_uv_comp" || "$(command -v uv)" -nt "$_uv_comp" ]]; then
-    uv generate-shell-completion zsh >|"$_uv_comp"
-  fi
-  source "$_uv_comp"
-  unset _uv_comp
-fi
-
-# ── bun ──────────────────────────────────────────────
+# ── generated completions (uv, bun) ──────────────────
+# Each entry is the command that prints a tool's completion script, cached
+# until the tool's binary is newer. Sourced at the top level rather than from a
+# function, where the script's typesets would turn local.
 # `bun completions` prints the script only when stdout is not a TTY; on a TTY it
 # installs the file itself and appends a source line to .zshrc.
-if command -v bun >/dev/null 2>&1; then
-  _bun_comp="$zsh_cache_dir/bun_completion.zsh"
-  if [[ ! -s "$_bun_comp" || "$(command -v bun)" -nt "$_bun_comp" ]]; then
-    bun completions >|"$_bun_comp"
+for _comp in 'uv generate-shell-completion zsh' 'bun completions'; do
+  _comp_cmd=(${(z)_comp})
+  ((${+commands[${_comp_cmd[1]}]})) || continue
+  _comp_cache=$zsh_cache_dir/${_comp_cmd[1]}_completion.zsh
+  if [[ ! -s $_comp_cache || ${commands[${_comp_cmd[1]}]} -nt $_comp_cache ]]; then
+    "${_comp_cmd[@]}" >|"$_comp_cache"
   fi
-  source "$_bun_comp"
-  unset _bun_comp
-fi
+  source "$_comp_cache"
+done
+unset _comp _comp_cmd _comp_cache
 
 # ── fzf ──────────────────────────────────────────────
 # The shell-wide bits: the widgets, the look, and the per-command completion
@@ -220,6 +214,9 @@ fi
 
 # ── machine-local overrides (not tracked in git) ─────
 [[ -f "$ZDOTDIR/.zshrc.local" ]] && source "$ZDOTDIR/.zshrc.local"
+
+# After .zshrc.local, which may still use them.
+unset zsh_data_dir zsh_state_dir zsh_cache_dir zsh_plugins_dir
 
 # ── herdr ────────────────────────────────────────────
 # `exec` replaces the shell, so this stays the last thing .zshrc does - which is
