@@ -253,7 +253,7 @@ _hw_open() {
   fi
   for ((i = 1; i <= ${#_HW_WS_ID}; i++)); do
     [[ -n ${_HW_WS_PATH[i]} && ${_HW_WS_PATH[i]:A} == "$dir" ]] || continue
-    herdr workspace focus "${_HW_WS_ID[i]}" >/dev/null
+    _hw_herdr workspace focus "${_HW_WS_ID[i]}"
     return
   done
   _hw_herdr workspace create --cwd "$dir" --focus
@@ -394,7 +394,7 @@ _hw_resolve() {
 # still be running there). The one thing git removes without complaint is the
 # worktree the caller stands in, so that is refused here as well.
 _hw_removable() {
-  local wt_path=$1 root=${$(_hw_root):A} resolved=${1:A}
+  local wt_path=$1 root=${"$(_hw_root)":A} resolved=${1:A}
   if ! _hw_in_layout "$resolved" "$root"; then
     print -u2 "hw: not a worktree under $root: $wt_path"
     return 1
@@ -474,7 +474,6 @@ _hw_rm_plan() {
   done
 }
 
-# Refuses when any of the panes $2... runs something in front of its shell.
 _hw_rm_idle() {
   local wt_path=$1 pane
   shift
@@ -531,7 +530,8 @@ _hw_cmd_repo() {
     print -u2 'usage: hw repo <spec|path>'
     return 1
   }
-  _hw_require herdr || return 1
+  # Checked before a clone is made that could not be opened.
+  _hw_require herdr jq || return 1
   if [[ -e $spec/.git ]]; then
     dir=$spec
   else
@@ -716,7 +716,7 @@ _hw_cmd_prs() {
 # once however many workspaces stand on it; any other workspace is only closed,
 # so a clone is never deleted from here.
 _hw_cmd_spaces() {
-  local root=${$(_hw_root):A} dir shown
+  local root=${"$(_hw_root)":A} dir shown
   local -i i
   local -A listed
   _hw_ws_load || return 1
@@ -750,7 +750,7 @@ _hw_cmd_spaces() {
 # `<owner>/<repo> <branch>\t<path>` per worktree under the root, read off the
 # layout rather than herdr, so it works outside herdr too.
 _hw_cmd_list() {
-  local root=${$(_hw_root):A} dir
+  local root=${"$(_hw_root)":A} dir
   for dir in "$root"/*/*/*(N/); do
     _hw_label "$dir" "$root"
     printf '%s\t%s\n' "$REPLY" "$dir"
