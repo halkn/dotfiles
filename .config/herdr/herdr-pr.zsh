@@ -4,12 +4,11 @@
 set -uo pipefail
 
 ui_lib=${XDG_CONFIG_HOME:-$HOME/.config}/herdr/ui.zsh
-if [[ -r $ui_lib ]]; then
-  source "$ui_lib"
-fi
-
+# zsh names the reason when the source fails. _ui_die is what failed to load,
+# so this one pauses by hand.
+source "$ui_lib"
 whence _ui_require >/dev/null || {
-  print -u2 "herdr-pr: $ui_lib not found"
+  print -u2 "herdr-pr: cannot load $ui_lib"
   print -n 'press any key '
   read -rsk1 || true
   exit 1
