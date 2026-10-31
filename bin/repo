@@ -31,11 +31,14 @@ USAGE
 }
 
 _repo_require() {
-  local tool=${1:-} cmd=${2:-}
-  command -v "$tool" >/dev/null 2>&1 || {
-    print -u2 "$cmd: $tool is not installed"
-    return 1
-  }
+  local cmd=${1:-} tool
+  shift
+  for tool in "$@"; do
+    command -v "$tool" >/dev/null 2>&1 || {
+      print -u2 "$cmd: $tool is not installed"
+      return 1
+    }
+  done
 }
 
 # ── layout ───────────────────────────────────────────
@@ -102,7 +105,7 @@ _repo_qualify() {
       return 0
       ;;
   esac
-  _repo_require gh repo || return 1
+  _repo_require repo gh || return 1
   login=$(gh api user --jq .login) || return 1
   [[ -n $login ]] || {
     print -u2 'repo: could not resolve your GitHub login'
@@ -269,62 +272,56 @@ _repo_settings_report() {
 
 # ── commands ─────────────────────────────────────────
 
-_repo_cmd_list() {
-  local arg query=
-  local -i full=0
+# Each command lets `zparseopts -D -E` take the options it knows; what is left
+# comes here, into REPLY: at most one operand, and nothing that still looks like
+# an option. Not `zparseopts -F`, whose message names the shell function rather
+# than the subcommand. zparseopts leaves `--` behind either way, and the `-*`
+# arm is what keeps it from becoming an operand.
+_repo_operand() {
+  local cmd=$1 what=$2 usage=$3 arg
+  local -i seen=0
+  shift 3
+  REPLY=
   for arg in "$@"; do
     case $arg in
-      -p | --full-path)
-        full=1
-        ;;
-      -h | --help)
-        print -r -- 'usage: repo list [--full-path] [<query>]'
-        return 0
-        ;;
       -*)
-        print -u2 "repo list: unknown option: $arg"
+        print -u2 "$cmd: unknown option: $arg"
+        print -u2 -r -- "$usage"
         return 1
         ;;
-      *)
-        [[ -z $query ]] || {
-          print -u2 'repo list: expected at most one query'
-          return 1
-        }
-        query=$arg
-        ;;
     esac
+    ((seen++ == 0)) || {
+      print -u2 "$cmd: expected at most one $what"
+      return 1
+    }
+    REPLY=$arg
   done
-  _repo_list "$full" "$query"
+}
+
+_repo_cmd_list() {
+  local usage='usage: repo list [--full-path] [<query>]'
+  local -a full help
+  zparseopts -D -E -- p=full -full-path=full h=help -help=help
+  if ((${#help})); then
+    print -r -- "$usage"
+    return 0
+  fi
+  _repo_operand 'repo list' query "$usage" "$@" || return 1
+  _repo_list "$((${#full} > 0))" "$REPLY"
 }
 
 _repo_cmd_get() {
-  local arg spec= dest
-  local -i update=0
-  for arg in "$@"; do
-    case $arg in
-      -u | --update)
-        update=1
-        ;;
-      -h | --help)
-        print -r -- 'usage: repo get [-u] <spec>'
-        return 0
-        ;;
-      -*)
-        print -u2 "repo get: unknown option: $arg"
-        print -u2 'usage: repo get [-u] <spec>'
-        return 1
-        ;;
-      *)
-        [[ -z $spec ]] || {
-          print -u2 'repo get: expected at most one repository'
-          return 1
-        }
-        spec=$arg
-        ;;
-    esac
-  done
+  local spec dest usage='usage: repo get [-u] <spec>'
+  local -a update help
+  zparseopts -D -E -- u=update -update=update h=help -help=help
+  if ((${#help})); then
+    print -r -- "$usage"
+    return 0
+  fi
+  _repo_operand 'repo get' repository "$usage" "$@" || return 1
+  spec=$REPLY
   [[ -n $spec ]] || {
-    print -u2 'usage: repo get [-u] <spec>'
+    print -u2 -r -- "$usage"
     return 1
   }
 
@@ -339,7 +336,7 @@ _repo_cmd_get() {
     # branch with no upstream, a diverged one and a dirty tree, and none of
     # those is a reason to withhold the path that was asked for. git writes its
     # summary to stdout, where the path has to be the only thing.
-    if ((update)) && ! git -C "$dest" pull --ff-only >&2; then
+    if ((${#update})) && ! git -C "$dest" pull --ff-only >&2; then
       print -u2 "repo get: could not update $dest"
     fi
   else
@@ -349,36 +346,24 @@ _repo_cmd_get() {
 }
 
 _repo_cmd_create() {
-  local arg name= visibility=--private nwo dest
-  for arg in "$@"; do
-    case $arg in
-      --public | --private)
-        visibility=$arg
-        ;;
-      -h | --help)
-        print -r -- 'usage: repo create [--public] <name>'
-        return 0
-        ;;
-      -*)
-        print -u2 "repo create: unknown option: $arg"
-        print -u2 'usage: repo create [--public] <name>'
-        return 1
-        ;;
-      *)
-        [[ -z $name ]] || {
-          print -u2 'repo create: expected at most one name'
-          return 1
-        }
-        name=$arg
-        ;;
-    esac
-  done
+  local name visibility nwo dest usage='usage: repo create [--public] <name>'
+  local -a vis help
+  # `+=` keeps every occurrence in order; without it zparseopts keeps one per
+  # option at its first position, and the last one given would not win.
+  zparseopts -D -E -- -public+=vis -private+=vis h=help -help=help
+  if ((${#help})); then
+    print -r -- "$usage"
+    return 0
+  fi
+  _repo_operand 'repo create' name "$usage" "$@" || return 1
+  name=$REPLY
+  visibility=${vis[-1]:---private}
   [[ -n $name ]] || {
-    print -u2 'usage: repo create [--public] <name>'
+    print -u2 -r -- "$usage"
     return 1
   }
 
-  _repo_require gh 'repo create' || return 1
+  _repo_require 'repo create' gh || return 1
   nwo=$(_repo_qualify "$name") || return 1
   dest=$(_repo_dest "$nwo") || return 1
   [[ ! -e $dest ]] || {
@@ -404,36 +389,18 @@ _repo_cmd_create() {
 }
 
 _repo_cmd_setup() {
-  local arg nwo= origin
-  local -i dry_run=0 print_ruleset=0
-  for arg in "$@"; do
-    case $arg in
-      --dry-run)
-        dry_run=1
-        ;;
-      --print-ruleset)
-        print_ruleset=1
-        ;;
-      -h | --help)
-        print -r -- 'usage: repo setup [--dry-run] [<owner>/<repo>] | repo setup --print-ruleset'
-        return 0
-        ;;
-      -*)
-        print -u2 "repo setup: unknown option: $arg"
-        print -u2 'usage: repo setup [--dry-run] [<owner>/<repo>]'
-        return 1
-        ;;
-      *)
-        [[ -z $nwo ]] || {
-          print -u2 'repo setup: expected at most one repository'
-          return 1
-        }
-        nwo=$arg
-        ;;
-    esac
-  done
+  local nwo origin
+  local usage='usage: repo setup [--dry-run] [<owner>/<repo>] | repo setup --print-ruleset'
+  local -a dry_run print_ruleset help
+  zparseopts -D -E -- -dry-run=dry_run -print-ruleset=print_ruleset h=help -help=help
+  if ((${#help})); then
+    print -r -- "$usage"
+    return 0
+  fi
+  _repo_operand 'repo setup' repository "$usage" "$@" || return 1
+  nwo=$REPLY
 
-  if ((print_ruleset)); then
+  if ((${#print_ruleset})); then
     _repo_ruleset_payload
     return 0
   fi
@@ -445,7 +412,7 @@ _repo_cmd_setup() {
     return 1
   fi
 
-  _repo_require gh 'repo setup' || return 1
+  _repo_require 'repo setup' gh || return 1
 
   # Resolved from `origin` rather than from the working directory alone: in a
   # clone of a fork, gh's own default is the base repository, and this command
@@ -458,7 +425,7 @@ _repo_cmd_setup() {
     nwo=$(gh repo view "$origin" --json nameWithOwner --jq '.nameWithOwner') || return 1
   fi
 
-  if ((dry_run)); then
+  if ((${#dry_run})); then
     _repo_settings_report "$nwo"
     return
   fi

@@ -72,5 +72,23 @@ for args want in \
   }
 done
 
+# _ui_require <cmd> <tool>...: every tool is checked, and the first missing one
+# is named after the command.
+require() {
+  zsh -df -c 'source "$1"; shift; _ui_require "$@"' -- "$ui_lib" "$@" 2>&1
+}
+got=$(require herdr-x zsh git) || {
+  print -u2 "FAIL require (all present): $got"
+  ((failures++))
+}
+got=$(require herdr-x zsh no-such-tool-a no-such-tool-b) && {
+  print -u2 'FAIL require (missing) should fail'
+  ((failures++))
+}
+[[ $got == 'herdr-x: no-such-tool-a is not installed' ]] || {
+  print -u2 "FAIL require (missing): got $got"
+  ((failures++))
+}
+
 ((failures == 0)) || exit 1
 print 'ui_test: ok'

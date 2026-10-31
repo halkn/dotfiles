@@ -106,6 +106,9 @@ case "$1 $2" in
   'workspace close')
     [[ ! -f $STUB/fail/close-$3 ]] || { print '{"error":{"code":"workspace_group_close_required","message":"close the group"}}'; exit 1; }
     ;;
+  'workspace focus')
+    [[ ! -f $STUB/fail/focus-$3 ]] || { print '{"error":{"code":"workspace_not_found","message":"no such workspace"}}'; exit 1; }
+    ;;
   'pane list')
     [[ ! -f $STUB/fail/panes-$4 ]] || exit 1
     j=()
@@ -310,6 +313,11 @@ check 'list' "$(printf '%s\t%s' 'owner/proj based' "$wt/based")" "$(hw list | rg
 check 'list (outside a repository, every worktree)' "$(hw list | wc -l)" \
   "$(cd -- "$scratch" && "$hw_bin" list | wc -l)"
 check 'list (empty root)' '' "$(WT_ROOT=$scratch/nowhere hw list)"
+# A root with a space in it is one path, not two words.
+spaced=$scratch/wt\ root
+git init -q "$spaced/o/r/b"
+check 'list (root with a space)' "$(printf '%s\t%s' 'o/r main' "$spaced/o/r/b")" \
+  "$(WT_ROOT=$spaced hw list)"
 
 # The open workspaces first, then every worktree under the root with none.
 got=$(hw spaces 2>/dev/null)
@@ -328,6 +336,12 @@ check 'focused' "$main" "$(hw focused 2>/dev/null)"
 check 'focused (by id)' "$wt/feature-a" "$(HERDR_ACTIVE_WORKSPACE_ID=w2 hw focused 2>/dev/null)"
 check 'focused (off a checkout)' /x "$(HERDR_ACTIVE_WORKSPACE_ID=w3 HERDR_ACTIVE_PANE_CWD=/x hw focused 2>/dev/null)"
 HERDR_ACTIVE_WORKSPACE_ID=w3 hw focused >/dev/null 2>&1 && fail 'focused (no checkout, no cwd) should fail'
+
+# A clone already open is focused, and a refusal says why.
+touch "$STUB/fail/focus-w1"
+err=$(hw repo "$main" 2>&1 >/dev/null) && fail 'repo (focus refused) should fail'
+check 'repo (focus refused)' 'hw: no such workspace' "$err"
+rm -f -- "$STUB/fail/focus-w1"
 
 # ── rm ───────────────────────────────────────────────
 

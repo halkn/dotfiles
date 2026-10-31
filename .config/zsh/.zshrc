@@ -5,9 +5,7 @@
 zsh_data_dir=$XDG_DATA_HOME/zsh
 zsh_state_dir=$XDG_STATE_HOME/zsh
 zsh_cache_dir=$XDG_CACHE_HOME/zsh
-mkdir -p "$zsh_state_dir"
-mkdir -p "$zsh_cache_dir"
-mkdir -p "$zsh_cache_dir/zcompcache"
+mkdir -p "$zsh_state_dir" "$zsh_cache_dir/zcompcache"
 
 # ── History ──────────────────────────────────────────
 HISTFILE=$zsh_state_dir/history
@@ -80,47 +78,41 @@ zstyle ':completion:*' completer \
   _prefix
 
 # ── aliases ──────────────────────────────────────────
-alias ll='ls -lhF'
-alias la='ls -lhAF'
 alias du='du -h'
 alias df='df -h'
 alias ..='cd ..'
 alias zs='exec zsh'
 alias :q='exit'
 
-# ── plugins (git clone) ───────────────────────────────
-zsh_plugins_dir=$zsh_data_dir/plugins
-[[ -f "$zsh_plugins_dir/zsh-autosuggestions/zsh-autosuggestions.zsh" ]] &&
-  source "$zsh_plugins_dir/zsh-autosuggestions/zsh-autosuggestions.zsh"
-
-[[ -f "$zsh_plugins_dir/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh" ]] &&
-  source "$zsh_plugins_dir/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
-
+# ── mise ─────────────────────────────────────────────
+# Ahead of every tool below: activation sets PATH there and then, and the
+# checks for each tool that follow find mise-installed ones through it.
 if command -v mise >/dev/null 2>&1; then
   eval "$(mise activate zsh)"
 fi
 
-# ── uv ───────────────────────────────────────────────
-if command -v uv >/dev/null 2>&1; then
-  _uv_comp="$zsh_cache_dir/uv_completion.zsh"
-  if [[ ! -s "$_uv_comp" || "$(command -v uv)" -nt "$_uv_comp" ]]; then
-    uv generate-shell-completion zsh >|"$_uv_comp"
-  fi
-  source "$_uv_comp"
-  unset _uv_comp
-fi
-
-# ── bun ──────────────────────────────────────────────
+# ── generated completions (uv, bun) ──────────────────
+# Each entry is the command that prints a tool's completion script, cached
+# until the tool's binary is newer. Sourced at the top level rather than from a
+# function, where the script's typesets would turn local.
 # `bun completions` prints the script only when stdout is not a TTY; on a TTY it
 # installs the file itself and appends a source line to .zshrc.
-if command -v bun >/dev/null 2>&1; then
-  _bun_comp="$zsh_cache_dir/bun_completion.zsh"
-  if [[ ! -s "$_bun_comp" || "$(command -v bun)" -nt "$_bun_comp" ]]; then
-    bun completions >|"$_bun_comp"
+for _comp in 'uv generate-shell-completion zsh' 'bun completions'; do
+  _comp_cmd=(${(z)_comp})
+  ((${+commands[${_comp_cmd[1]}]})) || continue
+  _comp_cache=$zsh_cache_dir/${_comp_cmd[1]}_completion.zsh
+  # A failed run is not cached, or every new shell would source its output
+  # until the binary changes; the previous script, if any, stays.
+  if [[ ! -s $_comp_cache || ${commands[${_comp_cmd[1]}]} -nt $_comp_cache ]]; then
+    if "${_comp_cmd[@]}" >|"$_comp_cache.new"; then
+      mv -f -- "$_comp_cache.new" "$_comp_cache"
+    else
+      rm -f -- "$_comp_cache.new"
+    fi
   fi
-  source "$_bun_comp"
-  unset _bun_comp
-fi
+  [[ -s $_comp_cache ]] && source "$_comp_cache"
+done
+unset _comp _comp_cmd _comp_cache
 
 # ── fzf ──────────────────────────────────────────────
 # The shell-wide bits: the widgets, the look, and the per-command completion
@@ -199,6 +191,9 @@ if command -v eza >/dev/null 2>&1; then
   alias ltr='eza -l --icons --git --no-user --time-style=iso --sort=modified --group-directories-first'
   alias lst='eza -l --icons --git --no-user --time-style=iso --sort=modified --reverse --group-directories-first'
   alias tree='eza --tree --icons -I ".git" --group-directories-first'
+else
+  alias ll='ls -lhF'
+  alias la='ls -lhAF'
 fi
 
 # ── nvim ─────────────────────────────────────────────
@@ -218,8 +213,22 @@ if command -v starship >/dev/null 2>&1; then
   eval "$(starship init zsh)"
 fi
 
+# ── plugins (git clone) ───────────────────────────────
+# Last of the widgets: fast-syntax-highlighting wraps only the widgets that
+# exist when it is sourced, so one defined after it (fzf's) would leave the
+# line unhighlighted once it runs.
+zsh_plugins_dir=$zsh_data_dir/plugins
+[[ -f "$zsh_plugins_dir/zsh-autosuggestions/zsh-autosuggestions.zsh" ]] &&
+  source "$zsh_plugins_dir/zsh-autosuggestions/zsh-autosuggestions.zsh"
+
+[[ -f "$zsh_plugins_dir/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh" ]] &&
+  source "$zsh_plugins_dir/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
+
 # ── machine-local overrides (not tracked in git) ─────
 [[ -f "$ZDOTDIR/.zshrc.local" ]] && source "$ZDOTDIR/.zshrc.local"
+
+# After .zshrc.local, which may still use them.
+unset zsh_data_dir zsh_state_dir zsh_cache_dir zsh_plugins_dir
 
 # ── herdr ────────────────────────────────────────────
 # `exec` replaces the shell, so this stays the last thing .zshrc does - which is

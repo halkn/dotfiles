@@ -116,6 +116,19 @@ run_stubbed() {
   PATH=$tools STUB_LOG=$scratch/log REPO_ROOT=$stub_root "$repo_bin" "$@"
 }
 
+# The last of --public / --private is the visibility gh is asked for.
+typeset -i n=0
+for args want in \
+  '' --private \
+  '--public' --public \
+  '--private --public --private' --private \
+  '--public --private --public' --public; do
+  ((n++))
+  run_stubbed create ${(z)args} "vis$n" >/dev/null 2>&1
+  [[ $(<"$scratch/log") == *"gh repo create halkn/vis$n $want --add-readme"* ]] ||
+    fail_arg "create $args: expected $want"
+done
+
 # An existing clone is not re-cloned, and the path is the only thing on stdout.
 mkdir -p "$stub_root/github.com/halkn/present/.git"
 check 'get (already cloned)' "$stub_root/github.com/halkn/present" \
@@ -254,6 +267,24 @@ expect_fail 'repo setup: expected at most one repository' setup halkn/one halkn/
 expect_fail 'repo get: unknown option' get --nope halkn/dotfiles
 expect_fail 'usage: repo get' get
 expect_fail 'usage: repo create' create
+expect_fail 'repo list: expected at most one query' list a b
+# `--` is not an end-of-options marker here, so it is not taken as a query.
+expect_fail 'repo list: unknown option: --' list --
+expect_fail 'usage: repo list' list --nope
+
+# An empty operand still counts as the one. Against the stubs: a regression
+# here would go on to clone and to apply settings.
+for sub in get setup; do
+  err=$(run_stubbed "$sub" '' halkn/x 2>&1 >/dev/null) && fail_arg "$sub '' halkn/x: expected a non-zero status"
+  [[ $err == *"repo $sub: expected at most one repository"* ]] ||
+    fail_arg "$sub '' halkn/x: got '$err'"
+done
+
+# -h wins over whatever else is on the line, and short options may be bundled.
+for args in 'create --nope -h' 'list a b -h' 'get -uh'; do
+  out=$(run_stubbed ${(z)args} 2>/dev/null) || fail_arg "repo $args: expected success"
+  [[ $out == 'usage: repo '* ]] || fail_arg "repo $args: expected usage, got '$out'"
+done
 
 # A repository this account cannot name is not a spec to resolve. Checked before
 # gh is reached for, so it is reported as the typo it is on a machine with no gh.
