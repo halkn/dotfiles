@@ -7,14 +7,17 @@
 
 _UI_LIB=${${(%):-%x}:A}
 
-# The command name is passed in so the message names what the user typed, not
-# the file the check lives in.
+# `_ui_require <cmd> <tool>...`. The command name is passed in so the message
+# names what the user typed, not the file the check lives in.
 _ui_require() {
-  local tool=${1:-} cmd=${2:-}
-  command -v "$tool" >/dev/null 2>&1 || {
-    print "$cmd: $tool is not installed" >&2
-    return 1
-  }
+  local cmd=${1:-} tool
+  shift
+  for tool in "$@"; do
+    command -v "$tool" >/dev/null 2>&1 || {
+      print -u2 "$cmd: $tool is not installed"
+      return 1
+    }
+  done
 }
 
 # A popup closes as soon as its command ends, taking what was printed with it.

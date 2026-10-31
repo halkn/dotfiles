@@ -14,8 +14,7 @@ whence _ui_require >/dev/null || {
   read -rsk1 || true
   exit 1
 }
-_ui_require hw herdr-pr || _ui_die
-_ui_require fzf herdr-pr || _ui_die
+_ui_require herdr-pr hw fzf || _ui_die
 
 dir=$(hw focused) || _ui_die
 cd "$dir" || _ui_die herdr-pr "cannot enter $dir"

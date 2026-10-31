@@ -16,9 +16,7 @@ whence _ui_require >/dev/null || {
   read -rsk1 || true
   exit 1
 }
-_ui_require repo herdr-repo || _ui_die
-_ui_require hw herdr-repo || _ui_die
-_ui_require fzf herdr-repo || _ui_die
+_ui_require herdr-repo repo hw fzf || _ui_die
 
 # Fetched before the picker opens rather than from inside it, so a failure is
 # reported instead of showing an empty list.

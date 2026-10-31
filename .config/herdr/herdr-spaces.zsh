@@ -16,8 +16,7 @@ whence _ui_require >/dev/null || {
   read -rsk1 || true
   exit 1
 }
-_ui_require hw herdr-spaces || _ui_die
-_ui_require fzf herdr-spaces || _ui_die
+_ui_require herdr-spaces hw fzf || _ui_die
 
 # Standing in the focused checkout is what makes `hw rm` refuse it.
 dir=$(hw focused) || _ui_die
