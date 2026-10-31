@@ -78,23 +78,15 @@ zstyle ':completion:*' completer \
   _prefix
 
 # ── aliases ──────────────────────────────────────────
-alias ll='ls -lhF'
-alias la='ls -lhAF'
 alias du='du -h'
 alias df='df -h'
 alias ..='cd ..'
 alias zs='exec zsh'
 alias :q='exit'
 
-# ── plugins (git clone) ───────────────────────────────
-zsh_plugins_dir=$zsh_data_dir/plugins
-[[ -f "$zsh_plugins_dir/zsh-autosuggestions/zsh-autosuggestions.zsh" ]] &&
-  source "$zsh_plugins_dir/zsh-autosuggestions/zsh-autosuggestions.zsh"
-
-[[ -f "$zsh_plugins_dir/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh" ]] &&
-  source "$zsh_plugins_dir/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
-
 # ── mise ─────────────────────────────────────────────
+# Ahead of every tool below: activation sets PATH there and then, and the
+# `command -v` checks that follow find mise-installed tools through it.
 if command -v mise >/dev/null 2>&1; then
   eval "$(mise activate zsh)"
 fi
@@ -193,6 +185,9 @@ if command -v eza >/dev/null 2>&1; then
   alias ltr='eza -l --icons --git --no-user --time-style=iso --sort=modified --group-directories-first'
   alias lst='eza -l --icons --git --no-user --time-style=iso --sort=modified --reverse --group-directories-first'
   alias tree='eza --tree --icons -I ".git" --group-directories-first'
+else
+  alias ll='ls -lhF'
+  alias la='ls -lhAF'
 fi
 
 # ── nvim ─────────────────────────────────────────────
@@ -211,6 +206,17 @@ if command -v starship >/dev/null 2>&1; then
   export STARSHIP_CACHE=$XDG_CACHE_HOME/starship/cache
   eval "$(starship init zsh)"
 fi
+
+# ── plugins (git clone) ───────────────────────────────
+# Last of the widgets: fast-syntax-highlighting wraps only the widgets that
+# exist when it is sourced, so one defined after it (fzf's) would leave the
+# line unhighlighted once it runs.
+zsh_plugins_dir=$zsh_data_dir/plugins
+[[ -f "$zsh_plugins_dir/zsh-autosuggestions/zsh-autosuggestions.zsh" ]] &&
+  source "$zsh_plugins_dir/zsh-autosuggestions/zsh-autosuggestions.zsh"
+
+[[ -f "$zsh_plugins_dir/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh" ]] &&
+  source "$zsh_plugins_dir/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
 
 # ── machine-local overrides (not tracked in git) ─────
 [[ -f "$ZDOTDIR/.zshrc.local" ]] && source "$ZDOTDIR/.zshrc.local"
