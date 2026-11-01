@@ -68,42 +68,16 @@ local mode_names = {
 local severity = vim.diagnostic.severity
 -- Ordered by severity so the narrow layout can keep the first entry only.
 local diagnostic_levels = {
-  { key = 'errors', severity = severity.ERROR, hl = 'VimrcStatuslineDiagError', fallback = 'E' },
-  { key = 'warns', severity = severity.WARN, hl = 'VimrcStatuslineDiagWarn', fallback = 'W' },
-  { key = 'info', severity = severity.INFO, hl = 'VimrcStatuslineDiagInfo', fallback = 'I' },
-  { key = 'hints', severity = severity.HINT, hl = 'VimrcStatuslineDiagHint', fallback = 'H' },
+  { severity = severity.ERROR, hl = 'VimrcStatuslineDiagError', fallback = 'E' },
+  { severity = severity.WARN, hl = 'VimrcStatuslineDiagWarn', fallback = 'W' },
+  { severity = severity.INFO, hl = 'VimrcStatuslineDiagInfo', fallback = 'I' },
+  { severity = severity.HINT, hl = 'VimrcStatuslineDiagHint', fallback = 'H' },
 }
 local diagnostic_icons = {}
 local diagnostic_icon_width = 1
 
-local function normalize_mode(mode)
-  local c = mode:sub(1, 1)
-  if c == '\22' then
-    return '\22'
-  end
-  if c == 'n' then
-    return 'n'
-  end
-  if c == 'i' then
-    return 'i'
-  end
-  if c == 'v' or c == 'V' then
-    return c
-  end
-  if c == 'c' then
-    return 'c'
-  end
-  if c == 'r' or c == 'R' then
-    return c
-  end
-  if c == 't' then
-    return 't'
-  end
-  return mode
-end
-
 -- The result of a `%!` statusline is parsed again, so literal `%` coming from a
--- buffer name or from vim.lsp.status() ("%3d%%: ...") has to be escaped.
+-- buffer name has to be escaped.
 local function hl(group, text)
   if text == nil or text == '' then
     return ''
@@ -130,10 +104,8 @@ local function section(parts)
 end
 
 local function set_hl_from(group, source, opts)
-  local ok, base = pcall(vim.api.nvim_get_hl, 0, { name = source, link = false })
-  if not ok or type(base) ~= 'table' then
-    base = {}
-  end
+  -- An undefined group comes back as an empty table.
+  local base = vim.api.nvim_get_hl(0, { name = source, link = false })
   local spec = vim.tbl_extend('force', base, opts or {})
   vim.api.nvim_set_hl(0, group, spec)
 end
@@ -191,19 +163,14 @@ local function diagnostic_entry(level, count)
   return hl(level.hl, ('%s%s%d'):format(icon, string.rep(' ', pad), count))
 end
 
-local function diagnostics_counts(bufnr)
-  local counts = {}
-  for _, level in ipairs(diagnostic_levels) do
-    counts[level.key] = #vim.diagnostic.get(bufnr, { severity = level.severity })
-  end
-  return counts
-end
-
-local function diagnostics_summary(counts, compact)
+local function diagnostics_summary(bufnr, compact)
+  -- Keyed by severity; a severity with no diagnostics has no entry.
+  local counts = vim.diagnostic.count(bufnr)
   local entries = {}
   for _, level in ipairs(diagnostic_levels) do
-    if counts[level.key] > 0 then
-      table.insert(entries, diagnostic_entry(level, counts[level.key]))
+    local count = counts[level.severity] or 0
+    if count > 0 then
+      table.insert(entries, diagnostic_entry(level, count))
       if compact then
         break
       end
@@ -260,29 +227,23 @@ local function file_label(filename, flags, compact)
 end
 
 local function redraw_statusline()
-  if type(vim.api.nvim__redraw) == 'function' then
-    vim.api.nvim__redraw({ statusline = true })
-    return
-  end
-
-  vim.cmd.redrawstatus()
+  vim.api.nvim__redraw({ statusline = true })
 end
 
+-- vim.ui.progress_status() is already escaped for a statusline ("40%%(1) ");
+-- vim.lsp.status() is not. vim.lsp.status() raises on a $/progress report whose
+-- token never had a begin, and an error in a `%!` statusline makes Neovim reset
+-- 'statusline', so it is called under pcall.
 local function progress_summary()
-  local pieces = {}
-  if type(vim.ui.progress_status) == 'function' then
-    local status = vim.ui.progress_status()
-    if status ~= '' then
-      table.insert(pieces, status)
-    end
-  end
-
   local ok, lsp_status = pcall(vim.lsp.status)
-  if ok and lsp_status ~= '' then
-    table.insert(pieces, lsp_status)
+  local summary = join({
+    vim.trim(vim.ui.progress_status()),
+    ok and (lsp_status:gsub('%%', '%%%%')) or '',
+  }, ' ')
+  if summary == '' then
+    return ''
   end
-
-  return table.concat(pieces, ' ')
+  return hl_item('VimrcStatuslineSection', summary)
 end
 
 local function lsp_clients_summary(bufnr)
@@ -347,7 +308,7 @@ function M.render()
   local winid = vim.g.statusline_winid or vim.api.nvim_get_current_win()
   local bufnr = vim.api.nvim_win_get_buf(winid)
   local raw_mode = vim.fn.mode(1)
-  local mode_code = normalize_mode(raw_mode)
+  local mode_code = raw_mode:sub(1, 1)
   local compact = statusline_width(winid) < narrow_width
   local lsp_clients = lsp_clients_summary(bufnr)
 
@@ -357,13 +318,13 @@ function M.render()
     -- truncates from the very start of the statusline.
     '%<'
       .. hl('VimrcStatuslineSection', file_label(buffer_name(bufnr), buffer_flags(bufnr), compact)),
-    diagnostics_summary(diagnostics_counts(bufnr), compact),
+    diagnostics_summary(bufnr, compact),
   }
 
   -- The right side always renders every item: sections that appear and vanish
   -- with buffer state make the line hard to read at a glance.
   local right = {
-    hl('VimrcStatuslineSection', progress_summary()),
+    progress_summary(),
     hl('VimrcStatuslineSection', filetype_summary(bufnr, lsp_clients)),
     hl('VimrcStatuslineMuted', file_encoding(bufnr)),
     hl('VimrcStatuslineMuted', vim.bo[bufnr].fileformat),
@@ -380,7 +341,6 @@ function M.setup(opts)
 
   setup_highlights()
   resolve_diagnostic_icons()
-  vim.o.laststatus = 3
   vim.o.statusline = M.config.statusline
 
   local group = vim.api.nvim_create_augroup('vimrc_statusline', { clear = true })
@@ -407,7 +367,7 @@ function M.setup(opts)
     callback = redraw_statusline,
   })
 
-  vim.api.nvim_create_autocmd({ 'LspAttach', 'LspDetach', 'LspProgress' }, {
+  vim.api.nvim_create_autocmd({ 'LspAttach', 'LspDetach', 'LspProgress', 'Progress' }, {
     group = group,
     callback = redraw_statusline,
   })

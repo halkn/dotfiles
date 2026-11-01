@@ -5,6 +5,6 @@ return {
   root_markers = {
     '.shuck.toml',
     'shuck.toml',
-    '.git/',
+    '.git',
   },
 }

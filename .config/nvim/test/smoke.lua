@@ -126,6 +126,30 @@ check('statusline', function()
   assert(type(require('vimrc.statusline').render()) == 'string')
 end)
 
+check('statusline shows a running progress message once escaped', function()
+  scratch({ 'alpha' })
+  local statusline = require('vimrc.statusline')
+  local function rendered()
+    return vim.api.nvim_eval_statusline(statusline.render(), { maxwidth = 200 }).str
+  end
+  vim.ui.progress_status() -- registers the Progress tracker before the first message
+  local id = vim.api.nvim_echo({ { 'smoke' } }, false, {
+    kind = 'progress',
+    source = 'smoke',
+    status = 'running',
+    percent = 40,
+  })
+  local text = rendered()
+  vim.api.nvim_echo({ { 'smoke' } }, false, {
+    id = id,
+    kind = 'progress',
+    source = 'smoke',
+    status = 'success',
+    percent = 100,
+  })
+  assert(text:find('40%(1) |', 1, true), 'progress not rendered: ' .. text)
+end)
+
 check('quickfix autocmd and ftplugin', function()
   vim.fn.setqflist({ { filename = 'init.lua', lnum = 1, text = 'smoke' } })
   vim.api.nvim_exec_autocmds('QuickFixCmdPost', { pattern = 'vimgrep' })
@@ -165,17 +189,46 @@ check('gitcommit ftplugin', function()
   assert(vim.bo.spelllang == 'cjk,en', 'wrong spelllang: ' .. vim.bo.spelllang)
 end)
 
+-- gitsigns maps ]c / [c globally; in a diff they must still jump between
+-- changes and honour the count.
+check('gitsigns ]c [c keep the diff jump in diff mode', function()
+  vim.cmd('tabnew')
+  local ok, err = pcall(function()
+    scratch({ 'a', 'b', 'c', 'd', 'e', 'f', 'g' })
+    vim.cmd('diffthis')
+    vim.cmd('vnew')
+    scratch({ 'a', 'X', 'c', 'Y', 'e', 'Z', 'g' })
+    vim.cmd('diffthis')
+    local function jump(keys, from)
+      vim.api.nvim_win_set_cursor(0, { from, 0 })
+      feed(keys)
+      return vim.api.nvim_win_get_cursor(0)[1]
+    end
+    local row = jump(']c', 1)
+    assert(row == 2, ']c: cursor at line ' .. row)
+    row = jump('2]c', 1)
+    assert(row == 4, '2]c: cursor at line ' .. row)
+    row = jump('2[c', 7)
+    assert(row == 4, '2[c: cursor at line ' .. row)
+  end)
+  vim.cmd('diffoff!')
+  vim.cmd('tabclose!')
+  assert(ok, err)
+end)
+
+-- The window options come from nvim's own TermOpen autocmd (nvim.terminal); only
+-- the config's part is checked. A real terminal is not opened because it needs a
+-- pty, which the Claude Code sandbox refuses.
 check('terminal autocmd', function()
   scratch({ '' })
-  vim.wo.number = true
-  vim.wo.relativenumber = true
-  vim.wo.signcolumn = 'yes'
-  vim.api.nvim_exec_autocmds('TermOpen', { buffer = 0 })
-  vim.cmd('stopinsert')
-  assert(not vim.wo.number, 'number is enabled')
-  assert(not vim.wo.relativenumber, 'relativenumber is enabled')
-  local signcolumn = vim.api.nvim_get_option_value('signcolumn', { scope = 'local', win = 0 })
-  assert(signcolumn == 'no', 'wrong signcolumn: ' .. signcolumn)
+  local called = false
+  vim.cmd.startinsert = function()
+    called = true
+  end
+  local ok, err = pcall(vim.api.nvim_exec_autocmds, 'TermOpen', { buffer = 0 })
+  vim.cmd.startinsert = nil
+  assert(ok, err)
+  assert(called, 'TermOpen did not start insert mode')
 end)
 
 -- vim.lsp.enable() loads lsp/<name>.lua only once a matching filetype appears,

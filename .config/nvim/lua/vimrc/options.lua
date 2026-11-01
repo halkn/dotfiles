@@ -21,7 +21,6 @@ g.loaded_zip = 1
 g.loaded_zipPlugin = 1
 
 opt.fileencodings = 'utf-8,sjis,iso-2022-jp,cp932,euc-jp'
-opt.fileencoding = 'utf-8'
 
 -- Appearance
 opt.number = true
@@ -53,7 +52,7 @@ opt.switchbuf = 'useopen'
 opt.undofile = true
 opt.swapfile = false
 
-opt.diffopt = opt.diffopt + 'vertical'
+opt.diffopt:append('vertical')
 
 -- edit
 opt.expandtab = true

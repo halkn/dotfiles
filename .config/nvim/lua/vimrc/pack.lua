@@ -16,12 +16,16 @@ local ts_parsers = {
   'yaml',
 }
 
+-- install() reloads the parser table and fires `User TSUpdate` even when every
+-- parser is installed, so it is only called for the missing ones.
 local ensure_ts_parsers = function()
+  local ts = require('nvim-treesitter')
+  local installed = ts.get_installed()
   local missing = vim.tbl_filter(function(lang)
-    return not vim.tbl_contains(require('nvim-treesitter').get_installed(), lang)
+    return not vim.tbl_contains(installed, lang)
   end, ts_parsers)
   if #missing > 0 then
-    require('nvim-treesitter').install(missing)
+    ts.install(missing)
   end
 end
 
@@ -134,11 +138,20 @@ local plugs = {
         },
         attach_to_untracked = true,
       })
+      -- In diff mode ]c / [c keep their built-in jump between changes.
       vim.keymap.set('n', ']c', function()
-        gs.nav_hunk('next')
+        if vim.wo.diff then
+          vim.cmd.normal({ vim.v.count1 .. ']c', bang = true })
+        else
+          gs.nav_hunk('next')
+        end
       end, { desc = 'Next hunk' })
       vim.keymap.set('n', '[c', function()
-        gs.nav_hunk('prev')
+        if vim.wo.diff then
+          vim.cmd.normal({ vim.v.count1 .. '[c', bang = true })
+        else
+          gs.nav_hunk('prev')
+        end
       end, { desc = 'Prev hunk' })
       vim.keymap.set('n', ']C', function()
         gs.nav_hunk('last')
