@@ -16,13 +16,9 @@ local ts_parsers = {
   'yaml',
 }
 
+-- install() is a no-op for parsers that are already installed.
 local ensure_ts_parsers = function()
-  local missing = vim.tbl_filter(function(lang)
-    return not vim.tbl_contains(require('nvim-treesitter').get_installed(), lang)
-  end, ts_parsers)
-  if #missing > 0 then
-    require('nvim-treesitter').install(missing)
-  end
+  require('nvim-treesitter').install(ts_parsers)
 end
 
 -- hooks --------------------------------------------------------------------
