@@ -57,7 +57,6 @@ map('n', 'ZQ', '<Nop>')
 
 -- Clear search highlight
 map('n', '<Esc><Esc>', '<cmd>nohlsearch<CR><Esc>')
-map('n', '<C-l>', '<cmd>nohlsearch<CR><C-l>')
 
 -- Toggle options
 map('n', '<Leader>on', '<cmd>setlocal number! number?<CR>')
@@ -72,12 +71,6 @@ map('n', '<Leader>ts', '<cmd>horizontal terminal<CR>')
 map('n', '<Leader>tv', '<cmd>vertical terminal<CR>')
 map('n', '<Leader>tt', '<cmd>tab terminal<CR>')
 map('n', '<Leader>tw', '<cmd>terminal<CR>')
-
--- quickfix/loclist
-map('n', '[q', '<cmd>cprev<CR>')
-map('n', ']q', '<cmd>cnext<CR>')
-map('n', '[l', '<cmd>lprevious<CR>')
-map('n', ']l', '<cmd>lnext<CR>')
 
 -- commenting
 remap('n', '<Leader>c', 'gcc')
