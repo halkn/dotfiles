@@ -165,17 +165,21 @@ check('gitcommit ftplugin', function()
   assert(vim.bo.spelllang == 'cjk,en', 'wrong spelllang: ' .. vim.bo.spelllang)
 end)
 
+-- The window options come from nvim's own TermOpen autocmd (nvim.terminal), which
+-- the config relies on instead of repeating, so a real terminal is opened here.
 check('terminal autocmd', function()
   scratch({ '' })
   vim.wo.number = true
   vim.wo.relativenumber = true
   vim.wo.signcolumn = 'yes'
-  vim.api.nvim_exec_autocmds('TermOpen', { buffer = 0 })
+  vim.cmd.terminal('cat')
   vim.cmd('stopinsert')
+  assert(vim.bo.buftype == 'terminal', 'terminal did not open')
   assert(not vim.wo.number, 'number is enabled')
   assert(not vim.wo.relativenumber, 'relativenumber is enabled')
   local signcolumn = vim.api.nvim_get_option_value('signcolumn', { scope = 'local', win = 0 })
   assert(signcolumn == 'no', 'wrong signcolumn: ' .. signcolumn)
+  vim.cmd('bwipeout!')
 end)
 
 -- vim.lsp.enable() loads lsp/<name>.lua only once a matching filetype appears,

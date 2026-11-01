@@ -12,13 +12,10 @@ autocmd('QuickFixCmdPost', {
   end,
 })
 
--- terminal
+-- terminal: nvim's own TermOpen autocmd already turns off number and signcolumn.
 autocmd('TermOpen', {
   group = group_name,
   callback = function()
-    vim.opt_local.relativenumber = false
-    vim.opt_local.number = false
-    vim.opt_local.signcolumn = 'no'
     vim.cmd.startinsert()
   end,
 })
