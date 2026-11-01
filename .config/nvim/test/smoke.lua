@@ -165,20 +165,31 @@ check('gitcommit ftplugin', function()
   assert(vim.bo.spelllang == 'cjk,en', 'wrong spelllang: ' .. vim.bo.spelllang)
 end)
 
--- gitsigns maps ]c globally; in a diff it must still jump to the next change.
-check('gitsigns ]c keeps the diff jump in diff mode', function()
+-- gitsigns maps ]c / [c globally; in a diff they must still jump between
+-- changes and honour the count.
+check('gitsigns ]c [c keep the diff jump in diff mode', function()
   vim.cmd('tabnew')
-  scratch({ 'a', 'b', 'c', 'd' })
-  vim.cmd('diffthis')
-  vim.cmd('vnew')
-  scratch({ 'a', 'X', 'c', 'd' })
-  vim.cmd('diffthis')
-  vim.api.nvim_win_set_cursor(0, { 1, 0 })
-  feed(']c')
-  local row = vim.api.nvim_win_get_cursor(0)[1]
+  local ok, err = pcall(function()
+    scratch({ 'a', 'b', 'c', 'd', 'e', 'f', 'g' })
+    vim.cmd('diffthis')
+    vim.cmd('vnew')
+    scratch({ 'a', 'X', 'c', 'Y', 'e', 'Z', 'g' })
+    vim.cmd('diffthis')
+    local function jump(keys, from)
+      vim.api.nvim_win_set_cursor(0, { from, 0 })
+      feed(keys)
+      return vim.api.nvim_win_get_cursor(0)[1]
+    end
+    local row = jump(']c', 1)
+    assert(row == 2, ']c: cursor at line ' .. row)
+    row = jump('2]c', 1)
+    assert(row == 4, '2]c: cursor at line ' .. row)
+    row = jump('2[c', 7)
+    assert(row == 4, '2[c: cursor at line ' .. row)
+  end)
   vim.cmd('diffoff!')
   vim.cmd('tabclose!')
-  assert(row == 2, 'cursor at line ' .. row)
+  assert(ok, err)
 end)
 
 -- The window options come from nvim's own TermOpen autocmd (nvim.terminal), which
