@@ -85,9 +85,9 @@ opt.pumborder = 'rounded'
 opt.clipboard = 'unnamedplus'
 opt.updatetime = 250
 
--- 'grepformat' already defaults to the rg format when rg is found.
 if vim.fn.executable('rg') == 1 then
   opt.grepprg = 'rg --vimgrep --hidden --glob "!**/.git/*"'
+  opt.grepformat = '%f:%l:%c:%m'
 end
 
 -- lsp/gopls.lua only attaches under the 'gotmpl' filetype.
