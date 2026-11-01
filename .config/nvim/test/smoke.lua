@@ -126,6 +126,30 @@ check('statusline', function()
   assert(type(require('vimrc.statusline').render()) == 'string')
 end)
 
+check('statusline shows a running progress message once escaped', function()
+  scratch({ 'alpha' })
+  local statusline = require('vimrc.statusline')
+  local function rendered()
+    return vim.api.nvim_eval_statusline(statusline.render(), { maxwidth = 200 }).str
+  end
+  vim.ui.progress_status() -- registers the Progress tracker before the first message
+  local id = vim.api.nvim_echo({ { 'smoke' } }, false, {
+    kind = 'progress',
+    source = 'smoke',
+    status = 'running',
+    percent = 40,
+  })
+  local text = rendered()
+  vim.api.nvim_echo({ { 'smoke' } }, false, {
+    id = id,
+    kind = 'progress',
+    source = 'smoke',
+    status = 'success',
+    percent = 100,
+  })
+  assert(text:find('40%(1) |', 1, true), 'progress not rendered: ' .. text)
+end)
+
 check('quickfix autocmd and ftplugin', function()
   vim.fn.setqflist({ { filename = 'init.lua', lnum = 1, text = 'smoke' } })
   vim.api.nvim_exec_autocmds('QuickFixCmdPost', { pattern = 'vimgrep' })

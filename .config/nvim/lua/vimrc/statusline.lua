@@ -77,7 +77,7 @@ local diagnostic_icons = {}
 local diagnostic_icon_width = 1
 
 -- The result of a `%!` statusline is parsed again, so literal `%` coming from a
--- buffer name or from vim.lsp.status() ("%3d%%: ...") has to be escaped.
+-- buffer name has to be escaped.
 local function hl(group, text)
   if text == nil or text == '' then
     return ''
@@ -230,8 +230,20 @@ local function redraw_statusline()
   vim.api.nvim__redraw({ statusline = true })
 end
 
+-- vim.ui.progress_status() is already escaped for a statusline ("40%%(1) ");
+-- vim.lsp.status() is not. vim.lsp.status() raises on a $/progress report whose
+-- token never had a begin, and an error in a `%!` statusline makes Neovim reset
+-- 'statusline', so it is called under pcall.
 local function progress_summary()
-  return join({ vim.ui.progress_status(), vim.lsp.status() }, ' ')
+  local ok, lsp_status = pcall(vim.lsp.status)
+  local summary = join({
+    vim.trim(vim.ui.progress_status()),
+    ok and (lsp_status:gsub('%%', '%%%%')) or '',
+  }, ' ')
+  if summary == '' then
+    return ''
+  end
+  return hl_item('VimrcStatuslineSection', summary)
 end
 
 local function lsp_clients_summary(bufnr)
@@ -312,7 +324,7 @@ function M.render()
   -- The right side always renders every item: sections that appear and vanish
   -- with buffer state make the line hard to read at a glance.
   local right = {
-    hl('VimrcStatuslineSection', progress_summary()),
+    progress_summary(),
     hl('VimrcStatuslineSection', filetype_summary(bufnr, lsp_clients)),
     hl('VimrcStatuslineMuted', file_encoding(bufnr)),
     hl('VimrcStatuslineMuted', vim.bo[bufnr].fileformat),
@@ -355,7 +367,7 @@ function M.setup(opts)
     callback = redraw_statusline,
   })
 
-  vim.api.nvim_create_autocmd({ 'LspAttach', 'LspDetach', 'LspProgress' }, {
+  vim.api.nvim_create_autocmd({ 'LspAttach', 'LspDetach', 'LspProgress', 'Progress' }, {
     group = group,
     callback = redraw_statusline,
   })
