@@ -135,18 +135,10 @@ local function setup_document_highlight(client, bufnr)
   })
 end
 
-local function setup_codelens(client, bufnr)
-  if not client:supports_method('textDocument/codeLens') then
-    return
-  end
-  vim.lsp.codelens.enable(true, { bufnr = bufnr })
-end
-
-local function setup_inlay_hint(client, bufnr)
-  if client:supports_method('textDocument/inlayHint') then
-    vim.lsp.inlay_hint.enable(true, { bufnr = bufnr })
-  end
-end
+-- Enabled once for every buffer: both only request from clients that support
+-- the method, so no capability check per attach is needed.
+vim.lsp.inlay_hint.enable(true)
+vim.lsp.codelens.enable(true)
 
 local attach_group = vim.api.nvim_create_augroup('vimrc_lspconfig', { clear = true })
 vim.api.nvim_create_autocmd('LspAttach', {
@@ -157,9 +149,7 @@ vim.api.nvim_create_autocmd('LspAttach', {
       return
     end
     setup_keymaps(client, ev.buf)
-    setup_inlay_hint(client, ev.buf)
     setup_document_highlight(client, ev.buf)
-    setup_codelens(client, ev.buf)
     setup_formatting(client, ev.buf)
   end,
 })

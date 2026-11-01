@@ -316,6 +316,59 @@ check('lsp format applies the server-declared code actions', function()
   )
 end)
 
+-- Inlay hints and code lens are enabled once for every buffer, so a server
+-- without the capability must still be skipped without errors.
+check('lsp inlay hints and code lens reach only the servers that support them', function()
+  local requested = {}
+  local function start(name, capabilities)
+    requested[name] = {}
+    local id = assert(vim.lsp.start({
+      name = name,
+      cmd = function()
+        return {
+          request = function(method, _, callback)
+            table.insert(requested[name], method)
+            callback(nil, method == 'initialize' and { capabilities = capabilities } or {})
+            return true, 1
+          end,
+          notify = function()
+            return true
+          end,
+          is_closing = function()
+            return false
+          end,
+          terminate = function() end,
+        }
+      end,
+    }))
+    local client = assert(vim.lsp.get_client_by_id(id), name .. ' did not start')
+    return client
+  end
+  scratch({ 'alpha' })
+  vim.api.nvim_buf_set_name(0, vim.fn.tempname())
+  -- Globally enabled inlay hints are first requested on didOpen, which needs textDocumentSync.
+  local clients = {
+    start('smoke-hints', { textDocumentSync = 1, inlayHintProvider = true, codeLensProvider = {} }),
+    start('smoke-plain', { textDocumentSync = 1 }),
+  }
+  vim.wait(1000, function()
+    return #vim.lsp.get_clients({ bufnr = 0 }) == 2
+  end)
+  vim.wait(1000, function()
+    return vim.tbl_contains(requested['smoke-hints'], 'textDocument/inlayHint')
+      and vim.tbl_contains(requested['smoke-hints'], 'textDocument/codeLens')
+  end)
+  for _, client in ipairs(clients) do
+    client:stop(true)
+  end
+  for _, method in ipairs({ 'textDocument/inlayHint', 'textDocument/codeLens' }) do
+    assert(vim.tbl_contains(requested['smoke-hints'], method), method .. ' was not requested')
+    assert(not vim.tbl_contains(requested['smoke-plain'], method), method .. ' reached smoke-plain')
+  end
+  assert(vim.lsp.inlay_hint.is_enabled(), 'inlay hints are not enabled globally')
+  assert(vim.lsp.codelens.is_enabled(), 'code lens is not enabled globally')
+end)
+
 check('treesitter parsers declared are installable', function()
   local ts_parsers = require('vimrc.pack').ts_parsers
   local available = require('nvim-treesitter').get_available()
