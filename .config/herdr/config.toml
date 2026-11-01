@@ -54,12 +54,11 @@ focus_pane_up = ["alt+k", "alt+up"]
 focus_pane_right = "alt+l"
 # Going to a workspace on one key, beside alt+n / alt+g / alt+p which open one.
 goto = ["prefix+g", "alt+s"]
-# Stepping through agents without opening goto; comma and period are the < and > keys.
-# Not alt+[ / alt+]: alt+[ is ESC [, the start of every CSI sequence.
-previous_agent = "alt+comma"
-next_agent = "alt+period"
-# Unbound by default. Behind the prefix so that ctrl+k still reaches the shell and editors.
-clear_pane = "prefix+ctrl+k"
+# Comma and period are the < and > keys; behind the prefix, as alt+. is zsh's insert-last-word.
+previous_agent = "prefix+comma"
+next_agent = "prefix+period"
+# Shifted, since ctrl is often still held after the ctrl+space prefix.
+clear_pane = "prefix+shift+k"
 # Unbound: worktrees are created by alt+g / alt+p in the layout `hw` keeps (docs/shell.md).
 new_worktree = ""
 # j/k move the sidebar cursor in the prefix+w picker, as they do in the goto picker.
