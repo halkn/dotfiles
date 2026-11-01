@@ -99,7 +99,7 @@
 - gh のガードは、Claude 専用のトークンではなく `permissions` と classifier で持つ。merge と ref の更新は push と同じ Contents の書込権限で動くので、トークンの権限では分けられない。トークンで閉じられるのは Administration（branch protection・ruleset・リポジトリ設定）だけで、個人のリポジトリを自分が書いたコードで扱う範囲では、パターンをすり抜ける形が残っても許容する。他人が書いた内容（公開リポジトリの issue や PR、第三者のリポジトリ）を auto モードで扱う場面が増えたら、トークンで Administration を外すことを見直す
 - Azure DevOps（`az repos`）の merge とブランチポリシーの変更は、`permissions` にも classifier の既定ルールにも止められず、CLAUDE.md の Git の規則だけで守る。実測できる環境で問題が出たら、gh と同じく素直な形を ask に足す
 - 人の gh のトークンにも、Claude の作業に要らない scope（`admin:public_key`・`workflow`）は付けない。git の通信は SSH で、gh のトークンを使わない
-- git / gh のネットワーク系は、起動したリポジトリで単体のコマンドとして打つ。`excludedCommands` の除外はコマンドの形で外れ、外れると認証にも送信先にも届かない。外れる形の多くは `block-piped-excluded.sh` が拒否するが、拒否が繰り返されるので、単体で打つことと、hook を通り sandbox 内で失敗する `git pull`（除外の対象外）を `git fetch` と `git merge` に分けることを CLAUDE.md に置く。他のリポジトリの GitHub 操作は `gh -R` で行い、push はそのリポジトリで起動したセッションから行う
+- git / gh のネットワーク系は、起動したリポジトリで単体のコマンドとして打つ。`excludedCommands` の除外はコマンドの形で外れ、外れると認証にも送信先にも届かない。外れる形の多くは `block-piped-excluded.sh` が拒否するが、拒否が繰り返されるので、単体で打つことと、hook を通り sandbox 内で失敗する `git pull`（除外の対象外）を `git fetch` と `git merge` に分けることを CLAUDE.md に置く。CLAUDE.md では対象を `gh` の全サブコマンドと git の push・fetch・clone・ls-remote と名指しする。「ネットワーク系」とだけ書くと、`gh` の読取（`gh issue view` のループ、`gh api … | head`）が対象外と読まれ、拒否が続いた（v2.1.316）。他のリポジトリの GitHub 操作は `gh -R` で行い、push はそのリポジトリで起動したセッションから行う
 
 ## worktree の基準
 
@@ -133,6 +133,7 @@
 - リポジトリ側の `permissions.additionalDirectories` は、`blockReadsOutsideWorkingDirectories` の下ではファイルツールにも sandbox にも効かない（v2.1.288、anthropics/claude-code#92582）。リポジトリ専用の場所もユーザー設定の `allowRead` に置き、後で実行されるプラグインの置き場所（nvim・zsh）には `allowWrite` を開けない
 - `blockReadsOutsideWorkingDirectories` が `~/.claude` の下で開け直すのは plugins・rules・agents・commands などで、skills は含まれない。`~/.claude/skills` は `allowRead` に足す（v2.1.296）
 - sandbox 内の `$TMPDIR`（`/tmp/claude-501`）は、Bash からは読めるが、`blockReadsOutsideWorkingDirectories` で Read tool からは読めない（v2.1.296）。Claude が扱う一時ファイルは、CLAUDE.md でセッションごとの scratchpad に置かせる。scratchpad は Write / Read tool・sandbox 内の Bash・sandbox の外の `gh`（絶対パスで渡す）のどれからも読み書きでき、transcript と一緒に消えるので、リポジトリに置き場所も gitignore も要らない（v2.1.310）。`CLAUDE_CODE_TMPDIR` は Claude Code 内部の一時ファイルの置き場を動かすだけで、sandbox の外のコマンドの `$TMPDIR` もファイルツールの読取制限も変えない
+- auto モードでも、`blockReadsOutsideWorkingDirectories` の下では、作業ディレクトリの外を読まないと判定しきれない Bash コマンドが安全チェック（`circuitBreaker: outsideReadsBlocked`）で確認になる。auto モードの確認の約 3 分の 1 がこれで、多くは `sed -i`・`python3` の heredoc による書き換え、`cd` での移動、sandbox の外で動く `gh` の読取だった（v2.1.316）。auto モードのシステムプロンプトは shell での小さな編集を Claude の選択に任せるので、CLAUDE.md で Edit / Write tool に寄せる。`cd` を避けることは Bash ツールの説明が既に言うので、CLAUDE.md には置かない
 - `$TMPDIR` と scratchpad は役割で分ける。`$TMPDIR` は sandbox 内のツールが自分で使う一時ファイル用で、block の下でも sandbox 内からは読める。Claude がファイルツールで扱うものや sandbox の外へ渡すものは scratchpad に置く。ハーネスの指示はどちらも「一時ファイルは常にこれ」と書くので、CLAUDE.md で分け方を決める
 - scratchpad が作られるのは、claude.ai のアカウントでログインし、Anthropic API を使い、`enableArtifact` が `false` でないときだけ（v2.1.310 の docs）。API キーや Bedrock などで動く端末では作られないので、その端末では作業ディレクトリ内の gitignore された場所に置く。Artifact の公開は `enableArtifact` ではなく `permissions.deny` の `Artifact` で止め、deny で使えなくなった artifact 系の bundled skill は `skillOverrides` で一覧から外す（v2.1.310）
 - `.claude/rules/` を使わない。path-scoped rule が読み込まれるのは、Read / Write / Edit tool か、読取とみなされる Bash（単一ファイルの `cat`・`head` など）で一致するファイルを扱ったときに限られる。検索や複数ファイルの読取で触れても読み込まれる保証は無く、読み込まれなくてもエラーは出ない（v2.1.296 の docs）

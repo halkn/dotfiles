@@ -19,7 +19,7 @@
 ## 判断とスコープ
 
 - 曖昧な要求は非破壊・狭い側で進め、採らなかった解釈は「関連」として添える。破壊的な解釈や範囲の拡張を採るときだけ承認を取る
-- 確認は 1 問ずつ、答えが設計を変えるものから
+- 確認は 1 問ずつ、答えが設計を変えるものから。前の答えで次の質問が要らなくなることがある
 - 実装計画は後から変わりやすい決定（データモデル・型・公開インターフェース・UX）を先頭に置く
 - 計画から軽微に外れたら保守的な選択を採って続行する。計画の前提が崩れたら、場当たりに直さず Plan mode に戻る
 - ツール・依存・独自ガードを足す前に、既存構成と標準機能で足りるか確かめる
@@ -30,7 +30,7 @@
 - 整理を頼まれたら、差分の小ささより置き場所の正しさと重複の解消を優先する
 - 実測を設定の理由として書くときは、確認したバージョンを添える。規約や手順の指示には添えない
 - 対象を限定した方針はリポジトリの設計ドキュメント（`docs/` など）に置き、AGENTS.md / CLAUDE.md からは「何を触る前に読むか」で参照する（`@import` しない）
-- `.claude/rules/` は使わない。skill は複数のリポジトリで繰り返す手順にだけ使う
+- `.claude/rules/` は使わない。Bash tool などでの操作では読み込まれないことがある。skill は複数のリポジトリで繰り返す手順にだけ使う
 - `~/.claude/plans/*.md` はマージ後に消してよい。残す判断は設計ドキュメントへ移す
 
 ## 仕様の確認
@@ -43,6 +43,7 @@
 
 - 検索は `rg`、構文を条件にする検索・変換は `ast-grep`。値の確認は `jq` / `yq`、YAML 構文は `ryl`
 - Claude が読み返す・編集する・git / gh に渡すファイルは scratchpad に置き、絶対パスで扱う（`$TMPDIR` は Read / Edit tool から読めず、変数のまま渡すと sandbox の外では別の場所に展開される）
+- 既存ファイルの書き換えは、auto モードでも `sed -i`・`python3` の heredoc・リダイレクトではなく Edit / Write tool で行う。shell での書き込みは `blockReadsOutsideWorkingDirectories` の安全チェックで確認になる
 - sandbox・`blockReadsOutsideWorkingDirectories` の拒否と依存の取得（`mise install` など）は、`/add-dir` か `!` での実行をユーザーに頼む。hook・`pre-push` の拒否は、メッセージに従って自分で直す
 
 ## Git
@@ -50,9 +51,9 @@
 - リモートのホストは push 先の URL で判断する。GitHub は `gh`、Azure DevOps は `az repos` で操作する
 - PR の依頼は、そのブランチへの以後の push を含む
 - push は自分の作業ブランチ（セッション開始時のブランチか自分が作成したブランチ）だけに行う。push 済みのブランチは履歴を書き換えず commit を積む
-- git / gh のネットワーク系は、他のコマンドとパイプ・`;`・`&&` で繋がず単体で打つ。`git pull` は `git fetch` と `git merge` に分ける
+- `gh` の全サブコマンド（読取を含む）と git の push・fetch・clone・ls-remote は、他のコマンドとパイプ・`;`・`&&`・ループで繋がず単体で打ち、出力は `--jq` で絞る。`git pull` は `git fetch` と `git merge` に分ける
 - merge・main/master を変える操作・ガードの変更（branch protection / ruleset / branch policy・default branch・公開範囲・alias）は、GitHub・Azure DevOps・ローカルのどれでも、対象を名指しされたときだけ行う
-- 他の worktree には触れない
+- 他の worktree では書込・switch・削除をしない。別のセッションが並行して作業している
 
 ## 報告
 
