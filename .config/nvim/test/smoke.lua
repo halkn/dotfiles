@@ -165,6 +165,22 @@ check('gitcommit ftplugin', function()
   assert(vim.bo.spelllang == 'cjk,en', 'wrong spelllang: ' .. vim.bo.spelllang)
 end)
 
+-- gitsigns maps ]c globally; in a diff it must still jump to the next change.
+check('gitsigns ]c keeps the diff jump in diff mode', function()
+  vim.cmd('tabnew')
+  scratch({ 'a', 'b', 'c', 'd' })
+  vim.cmd('diffthis')
+  vim.cmd('vnew')
+  scratch({ 'a', 'X', 'c', 'd' })
+  vim.cmd('diffthis')
+  vim.api.nvim_win_set_cursor(0, { 1, 0 })
+  feed(']c')
+  local row = vim.api.nvim_win_get_cursor(0)[1]
+  vim.cmd('diffoff!')
+  vim.cmd('tabclose!')
+  assert(row == 2, 'cursor at line ' .. row)
+end)
+
 -- The window options come from nvim's own TermOpen autocmd (nvim.terminal), which
 -- the config relies on instead of repeating, so a real terminal is opened here.
 check('terminal autocmd', function()

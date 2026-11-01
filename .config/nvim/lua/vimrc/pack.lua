@@ -134,11 +134,20 @@ local plugs = {
         },
         attach_to_untracked = true,
       })
+      -- In diff mode ]c / [c keep their built-in jump between changes.
       vim.keymap.set('n', ']c', function()
-        gs.nav_hunk('next')
+        if vim.wo.diff then
+          vim.cmd.normal({ ']c', bang = true })
+        else
+          gs.nav_hunk('next')
+        end
       end, { desc = 'Next hunk' })
       vim.keymap.set('n', '[c', function()
-        gs.nav_hunk('prev')
+        if vim.wo.diff then
+          vim.cmd.normal({ '[c', bang = true })
+        else
+          gs.nav_hunk('prev')
+        end
       end, { desc = 'Prev hunk' })
       vim.keymap.set('n', ']C', function()
         gs.nav_hunk('last')
