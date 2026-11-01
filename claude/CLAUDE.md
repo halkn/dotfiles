@@ -43,6 +43,7 @@
 
 - 検索は `rg`、構文を条件にする検索・変換は `ast-grep`。値の確認は `jq` / `yq`、YAML 構文は `ryl`
 - Claude が読み返す・編集する・git / gh に渡すファイルは scratchpad に置き、絶対パスで扱う（`$TMPDIR` は Read / Edit tool から読めず、変数のまま渡すと sandbox の外では別の場所に展開される）
+- 既存ファイルの書き換えは、auto モードでも `sed -i`・`python3` の heredoc・リダイレクトではなく Edit / Write tool で行う。shell での書き込みは `blockReadsOutsideWorkingDirectories` の安全チェックで確認になる
 - sandbox・`blockReadsOutsideWorkingDirectories` の拒否と依存の取得（`mise install` など）は、`/add-dir` か `!` での実行をユーザーに頼む。hook・`pre-push` の拒否は、メッセージに従って自分で直す
 
 ## Git
