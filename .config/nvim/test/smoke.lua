@@ -48,22 +48,6 @@ do
   end
 end
 
--- configure_plugins() only reaches this on a real plugin failure, and the smoke
--- run's own early exit above means VimEnter itself never fires here either;
--- drive the deferred notify directly with a fake failure to cover it.
-check('plugin config failure notify (deferred to VimEnter)', function()
-  local captured
-  require('vimrc.pack').schedule_failure_notify(function(msg, level)
-    captured = { msg = msg, level = level }
-  end, { 'smoke-probe: boom' })
-  vim.api.nvim_exec_autocmds('VimEnter', {})
-  if not captured then
-    error('deferred notify did not fire')
-  end
-  assert(captured.msg:match('smoke%-probe: boom'), 'wrong message: ' .. tostring(captured.msg))
-  assert(captured.level == vim.log.levels.ERROR, 'wrong level: ' .. tostring(captured.level))
-end)
-
 check('yank highlight', function()
   scratch({ 'alpha', 'beta', 'gamma' })
   vim.cmd('normal! yy')

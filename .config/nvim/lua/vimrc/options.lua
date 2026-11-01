@@ -66,6 +66,9 @@ opt.splitbelow = true
 opt.splitright = true
 opt.laststatus = 3
 opt.cmdheight = 0
+-- The default 'cmd' target keeps messages in a cmdline that is hidden at
+-- cmdheight=0; 'msg' shows them in a window that outlives the startup redraws.
+require('vim._core.ui2').enable({ msg = { targets = 'msg' } })
 opt.pumheight = 10
 opt.previewheight = 10
 opt.winwidth = 30

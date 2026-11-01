@@ -38,4 +38,5 @@
 ## 決定と理由
 
 - `.emmyrc.json` では `lua/` を `workspace.library` ではなく `workspaceRoots` に置く。library に入れると自分の設定が外部ライブラリ扱いになり、型エラーを入れても `emmylua_check` が「No issues found」を返す（emmylua_check 0.25.1）
+- experimental の ui2 を有効にし、メッセージの出し先を `msg` にする。`cmdheight=0` のとき、ui2 を使わない場合や既定の出し先 `cmd` では、起動中に出したメッセージが画面に残らない。`msg` なら起動直後のエラーも浮動ウィンドウに出るので、VimEnter まで遅らせる回避策が要らない。`vim.notify` を差し替える kago.notify とは競合しない（Neovim 0.12.6）
 - markdown のコードフェンスに書く言語に parser を足す。treesitter で描画しているバッファに埋め込まれた言語は、parser が無いと標準の syntax に戻らず、フェンスの中が素のテキストになる（Neovim 0.12.5）
