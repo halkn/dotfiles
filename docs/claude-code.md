@@ -99,7 +99,7 @@
 - gh のガードは、Claude 専用のトークンではなく `permissions` と classifier で持つ。merge と ref の更新は push と同じ Contents の書込権限で動くので、トークンの権限では分けられない。トークンで閉じられるのは Administration（branch protection・ruleset・リポジトリ設定）だけで、個人のリポジトリを自分が書いたコードで扱う範囲では、パターンをすり抜ける形が残っても許容する。他人が書いた内容（公開リポジトリの issue や PR、第三者のリポジトリ）を auto モードで扱う場面が増えたら、トークンで Administration を外すことを見直す
 - Azure DevOps（`az repos`）の merge とブランチポリシーの変更は、`permissions` にも classifier の既定ルールにも止められず、CLAUDE.md の Git の規則だけで守る。実測できる環境で問題が出たら、gh と同じく素直な形を ask に足す
 - 人の gh のトークンにも、Claude の作業に要らない scope（`admin:public_key`・`workflow`）は付けない。git の通信は SSH で、gh のトークンを使わない
-- git / gh のネットワーク系は、起動したリポジトリで単体のコマンドとして打つ。`excludedCommands` の除外はコマンドの形で外れ、外れると認証にも送信先にも届かない。外れる形の多くは `block-piped-excluded.sh` が拒否するが、拒否が繰り返されるので、単体で打つことと、hook を通り sandbox 内で失敗する `git pull`（除外の対象外）を `git fetch` と `git merge` に分けることを CLAUDE.md に置く。他のリポジトリの GitHub 操作は `gh -R` で行い、push はそのリポジトリで起動したセッションから行う
+- git / gh のネットワーク系は、起動したリポジトリで単体のコマンドとして打つ。`excludedCommands` の除外はコマンドの形で外れ、外れると認証にも送信先にも届かない。外れる形の多くは `block-piped-excluded.sh` が拒否するが、拒否が繰り返されるので、単体で打つことと、hook を通り sandbox 内で失敗する `git pull`（除外の対象外）を `git fetch` と `git merge` に分けることを CLAUDE.md に置く。CLAUDE.md では対象を `gh` の全サブコマンドと git の push・fetch・clone・ls-remote と名指しする。「ネットワーク系」とだけ書くと、`gh` の読取（`gh issue view` のループ、`gh api … | head`）が対象外と読まれ、拒否が続いた（v2.1.316）。他のリポジトリの GitHub 操作は `gh -R` で行い、push はそのリポジトリで起動したセッションから行う
 
 ## worktree の基準
 

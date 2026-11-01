@@ -51,7 +51,7 @@
 - リモートのホストは push 先の URL で判断する。GitHub は `gh`、Azure DevOps は `az repos` で操作する
 - PR の依頼は、そのブランチへの以後の push を含む
 - push は自分の作業ブランチ（セッション開始時のブランチか自分が作成したブランチ）だけに行う。push 済みのブランチは履歴を書き換えず commit を積む
-- git / gh のネットワーク系は、他のコマンドとパイプ・`;`・`&&` で繋がず単体で打つ。`git pull` は `git fetch` と `git merge` に分ける
+- `gh` の全サブコマンド（読取を含む）と git の push・fetch・clone・ls-remote は、他のコマンドとパイプ・`;`・`&&`・ループで繋がず単体で打ち、出力は `--jq` で絞る。`git pull` は `git fetch` と `git merge` に分ける
 - merge・main/master を変える操作・ガードの変更（branch protection / ruleset / branch policy・default branch・公開範囲・alias）は、GitHub・Azure DevOps・ローカルのどれでも、対象を名指しされたときだけ行う
 - 他の worktree には触れない
 
