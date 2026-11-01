@@ -238,19 +238,6 @@ local add_plugins = function()
   end, plugs))
 end
 
--- Deferred to VimEnter: startup keeps redrawing until then, clearing an immediate notify at cmdheight=0.
-local schedule_failure_notify = function(notify, failures)
-  vim.api.nvim_create_autocmd('VimEnter', {
-    once = true,
-    callback = function()
-      notify(
-        '[plugins] failed to configure:\n' .. table.concat(failures, '\n'),
-        vim.log.levels.ERROR
-      )
-    end,
-  })
-end
-
 local configure_plugins = function()
   -- A failing config may have already swapped vim.notify for its own half-initialized one.
   local notify = vim.notify
@@ -265,7 +252,7 @@ local configure_plugins = function()
     end
   end
   if #failures > 0 then
-    schedule_failure_notify(notify, failures)
+    notify('[plugins] failed to configure:\n' .. table.concat(failures, '\n'), vim.log.levels.ERROR)
   end
   return failures
 end
@@ -342,5 +329,4 @@ local config_failures = configure_plugins()
 return {
   ts_parsers = ts_parsers,
   config_failures = config_failures,
-  schedule_failure_notify = schedule_failure_notify,
 }
