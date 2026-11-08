@@ -1,14 +1,6 @@
 # 設計ドキュメント
 
-このリポジトリを変更する人と agent のための設計方針。変更する前に、触る対象の doc を読む。
-
-| 触る対象 | doc |
-| --- | --- |
-| `mise.toml`・`mise-tasks/`・`.config/mise/`、ツールの追加 | [mise.md](mise.md) |
-| `.zshenv`・`.config/zsh/`・`bin/`・`.config/herdr/`・`test/` | [shell.md](shell.md) |
-| `.config/nvim/` | [neovim.md](neovim.md) |
-| `claude/`・`.claude/` | [claude-code.md](claude-code.md) |
-| 上記以外（`.config/git/`・その他の `.config/*`・`.github/`） | 専用の doc は無い。ファイルにコメントがあればそれに従う。git の `pre-push` hook と `.config/git` は [claude-code.md](claude-code.md) の「git / gh の基準」と「sandbox の基準」も読む |
+このリポジトリを変更する人と agent のための設計方針。変更する前に、触る対象の doc を読む。どの対象にどの doc が対応するかは、agent が常に読み込む [AGENTS.md](../AGENTS.md) の「Design docs」にある。
 
 ## doc の書き方
 
