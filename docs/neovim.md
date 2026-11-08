@@ -25,7 +25,7 @@
 
 - server の設定は `lsp/<name>.lua` に 1 server 1 ファイルで完結させ（数行の重複は共通化しない）、有効にするものを `lua/vimrc/lsp.lua` の `servers` で選ぶ。`servers` に入れない server のファイルは置かない（必要になったら git の履歴から戻す）。server 本体をどこで導入するかは [mise.md](mise.md) に従う
 - server ごとに決まる調整は、その server の `lsp/<name>.lua` に置く。`lua/vimrc/lsp.lua` は server 名で分岐しない
-  - capability の変更は `on_init` に置き、attach の順序に依存させない
+  - capability の変更は `on_init` に置き、attach の順序に依存させない。全 server に共通する補完の trigger character だけは、`lua/vimrc/lsp.lua` の LspAttach で `vim.lsp.completion.enable()` の直前に足す。共通の `on_init` は、自分の `on_init` を持つ server で置き換えられる
   - 保存前の整形で適用する code action の kind は `format_code_actions`（型は `vimrc.lsp.Config`）に書く
 
 ## 検査とテスト
@@ -39,4 +39,6 @@
 
 - `.emmyrc.json` では `lua/` を `workspace.library` ではなく `workspaceRoots` に置く。library に入れると自分の設定が外部ライブラリ扱いになり、型エラーを入れても `emmylua_check` が「No issues found」を返す（emmylua_check 0.25.1）
 - experimental の ui2 を有効にし、メッセージの出し先を `msg` にする。`cmdheight=0` のとき、ui2 を使わない場合や既定の出し先 `cmd` では、起動中に出したメッセージが画面に残らない。`msg` なら起動直後のエラーも浮動ウィンドウに出るので、VimEnter まで遅らせる回避策が要らない。`vim.notify` を差し替える kago.notify とは競合しない（Neovim 0.12.6）
+- 補完は plugin を使わず、`'autocomplete'` と `vim.lsp.completion` で組む。completion を持つ server が付いたバッファでは `'autocomplete'` を切り、識別子の文字を trigger character に足して、1 文字目から LSP の候補だけを出す。autotrigger は trigger character にしか反応せず、`'autocomplete'` のメニューが開いている間は要求しないため、両方を有効にすると識別子の途中で LSP の候補が出ない。markdown だけは `'autocomplete'` のバッファの単語を残す。rumdl は本文の単語を返さない（Neovim 0.12.6、rumdl 0.3.2）
+- `.emmyrc.json` の `completion.callSnippet` を有効にする。関数の候補を確定すると、引数の placeholder まで snippet として展開される（emmylua_ls 0.25.1）
 - markdown のコードフェンスに書く言語に parser を足す。treesitter で描画しているバッファに埋め込まれた言語は、parser が無いと標準の syntax に戻らず、フェンスの中が素のテキストになる（Neovim 0.12.5）

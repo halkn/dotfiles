@@ -77,31 +77,6 @@ local plugs = {
     end,
   },
   {
-    src = 'saghen/blink.cmp',
-    version = 'v1.10.2',
-    config = function()
-      local opts = {
-        keymap = {
-          preset = 'super-tab',
-        },
-        cmdline = { enabled = true },
-        appearance = {
-          nerd_font_variant = 'mono',
-        },
-        signature = { enabled = true },
-        completion = {
-          documentation = { auto_show = true, auto_show_delay_ms = 500 },
-        },
-        sources = {
-          default = { 'lsp', 'path', 'snippets', 'buffer' },
-        },
-      }
-      -- blink.cmp declares every field of its *ConfigPartial types as required,
-      -- so the table is built outside the call and cast: the check cannot pass.
-      require('blink.cmp').setup(opts --[[@as blink.cmp.Config]])
-    end,
-  },
-  {
     src = 'monaqa/dial.nvim',
     config = function()
       local augend = require('dial.augend')

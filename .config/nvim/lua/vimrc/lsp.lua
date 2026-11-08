@@ -140,6 +140,32 @@ end
 vim.lsp.inlay_hint.enable(true)
 vim.lsp.codelens.enable(true)
 
+-- LSP items replace the buffer words of 'autocomplete' (lua/vimrc/options.lua)
+-- from the first letter. autotrigger fires only on the server's trigger
+-- characters and never while the 'autocomplete' menu is open, so the identifier
+-- characters are added and 'autocomplete' is turned off for the buffer.
+-- The trigger characters change here rather than in on_init: a shared on_init
+-- would be replaced by the servers that define their own, and enable() below
+-- reads them right after.
+-- Markdown keeps the buffer words: prose is written from the words already in
+-- the file, and rumdl completes only fence languages and links, on its own
+-- trigger characters.
+local identifier_chars =
+  vim.split('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_', '')
+
+local function setup_completion(client, bufnr)
+  local provider = client.server_capabilities.completionProvider
+  if not provider then
+    return
+  end
+  if vim.bo[bufnr].filetype ~= 'markdown' then
+    provider.triggerCharacters =
+      vim.list.unique(vim.list_extend(provider.triggerCharacters or {}, identifier_chars))
+    vim.bo[bufnr].autocomplete = false
+  end
+  vim.lsp.completion.enable(true, client.id, bufnr, { autotrigger = true })
+end
+
 local attach_group = vim.api.nvim_create_augroup('vimrc_lspconfig', { clear = true })
 vim.api.nvim_create_autocmd('LspAttach', {
   group = attach_group,
@@ -151,6 +177,7 @@ vim.api.nvim_create_autocmd('LspAttach', {
     setup_keymaps(client, ev.buf)
     setup_document_highlight(client, ev.buf)
     setup_formatting(client, ev.buf)
+    setup_completion(client, ev.buf)
   end,
 })
 
@@ -167,6 +194,12 @@ vim.api.nvim_create_autocmd('LspDetach', {
     local remaining = vim.tbl_filter(function(client)
       return client.id ~= ev.data.client_id
     end, vim.lsp.get_clients({ bufnr = ev.buf }))
+    local completes = vim.tbl_filter(function(client)
+      return client:supports_method('textDocument/completion')
+    end, remaining)
+    if #completes == 0 then
+      vim.bo[ev.buf].autocomplete = vim.go.autocomplete
+    end
     if #remaining > 0 then
       return
     end
