@@ -85,6 +85,17 @@ opt.wildoptions = 'pum'
 opt.pumblend = 10
 opt.pumborder = 'rounded'
 
+-- completion: buffer words as you type, until an LSP server with completion
+-- attaches and vim.lsp.completion takes over (lua/vimrc/lsp.lua).
+opt.autocomplete = true
+opt.complete = '.,w'
+-- Without "menuone" a single match shows no menu, and <Tab> (lua/vimrc/keymaps.lua)
+-- cannot accept it. "noselect" keeps an LSP answer, which opens the menu by its
+-- own complete() call, from inserting its first item.
+opt.completeopt = 'menu,menuone,noselect,popup,fuzzy'
+-- "match 1 of N" would pop up as a message on every <Tab> accept.
+opt.shortmess:append('c')
+
 opt.clipboard = 'unnamedplus'
 opt.updatetime = 250
 

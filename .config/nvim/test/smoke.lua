@@ -294,6 +294,105 @@ check('lsp format applies the server-declared code actions', function()
   )
 end)
 
+local completion_results = {
+  initialize = { capabilities = { completionProvider = {} } },
+  ['textDocument/completion'] = {
+    { label = 'smoke_fn', insertTextFormat = 2, insertText = 'smoke_fn(${1:arg})' },
+  },
+}
+
+local completion_stubs = 0
+
+-- Attaches a stub completion server to a new buffer of `filetype`.
+---@param filetype string
+---@return integer client_id
+local function start_completion_stub(filetype)
+  -- A fresh name each time: the stub's is_closing() never turns true, so
+  -- vim.lsp.start() would reuse a stopped stub of the same name.
+  completion_stubs = completion_stubs + 1
+  scratch({ '' })
+  vim.api.nvim_buf_set_name(0, vim.fn.tempname())
+  -- Without autocmds, so the configured servers for the filetype stay out.
+  vim.cmd('noautocmd setlocal filetype=' .. filetype)
+  local client_id = assert(
+    vim.lsp.start({
+      name = ('smoke-completion-%d'):format(completion_stubs),
+      cmd = function()
+        return {
+          request = function(method, _, callback)
+            -- A real server answers later; a synchronous answer reaches complete()
+            -- while the completion function still holds the textlock (E565).
+            vim.schedule(function()
+              callback(nil, completion_results[method])
+            end)
+            return true, 1
+          end,
+          notify = function()
+            return true
+          end,
+          is_closing = function()
+            return false
+          end,
+          terminate = function() end,
+        }
+      end,
+    }),
+    'stub server did not start'
+  )
+  assert(
+    vim.wait(1000, function()
+      return #vim.lsp.get_clients({ id = client_id, bufnr = 0 }) > 0
+    end),
+    'stub server did not attach'
+  )
+  return client_id
+end
+
+-- The stub's terminate() never reports an exit, so stopping alone would not
+-- fire LspDetach.
+---@param client_id integer
+local function stop_completion_stub(client_id)
+  vim.lsp.buf_detach_client(0, client_id)
+  assert(vim.lsp.get_client_by_id(client_id)):stop(true)
+end
+
+check("lsp completion replaces 'autocomplete' outside markdown", function()
+  for filetype, want in pairs({ lua = false, markdown = true }) do
+    local client_id = start_completion_stub(filetype)
+    -- vim.o reads the effective value; vim.bo is nil while no local value is set.
+    local attached = vim.o.autocomplete
+    stop_completion_stub(client_id)
+    local detached = vim.o.autocomplete
+    assert(attached == want, ("%s: 'autocomplete' while attached: %s"):format(filetype, attached))
+    assert(detached, ("%s: 'autocomplete' after detach: %s"):format(filetype, detached))
+  end
+end)
+
+-- Accepting through <Tab> has to reach vim.lsp.completion's CompleteDone
+-- handler, which is what expands the snippet a plain insert would leave raw.
+check('lsp completion accepted with <Tab> expands the snippet', function()
+  local client_id = start_completion_stub('lua')
+  -- The wait sits inside the key sequence: the menu only opens once the
+  -- scheduled response is processed, still in Insert mode.
+  -- The asynchronous answer starts its own complete() call, which must not
+  -- insert an item before <Tab> accepts one.
+  local shown
+  vim.keymap.set('i', '<Plug>(smoke-wait-pum)', function()
+    vim.wait(1000, function()
+      return vim.fn.pumvisible() == 1
+    end)
+    shown = vim.api.nvim_get_current_line()
+  end)
+  -- The server declares no trigger characters, so the menu has to come from
+  -- the identifier characters added on attach.
+  feed('Asmo<Plug>(smoke-wait-pum)<Tab><Esc>')
+  vim.keymap.del('i', '<Plug>(smoke-wait-pum)')
+  stop_completion_stub(client_id)
+  assert(shown == 'smo', 'item inserted before accepting: ' .. tostring(shown))
+  local line = vim.api.nvim_get_current_line()
+  assert(line == 'smoke_fn(arg)', 'wrong line: ' .. line)
+end)
+
 check('treesitter parsers declared are installable', function()
   local ts_parsers = require('vimrc.pack').ts_parsers
   local available = require('nvim-treesitter').get_available()

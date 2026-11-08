@@ -20,8 +20,25 @@ map({ 'n', 'v' }, 'L', '$')
 map('i', '<C-b>', '<Left>')
 map('i', '<C-f>', '<Right>')
 map('i', '<C-a>', '<C-o>^')
-map('i', '<C-e>', '<End>')
+-- <C-e> keeps dismissing the completion menu.
+map('i', '<C-e>', function()
+  return vim.fn.pumvisible() == 1 and '<C-e>' or '<End>'
+end, { expr = true })
 map('i', '<C-d>', '<Del>')
+
+-- Completion
+-- Nothing is preselected ("noselect" in 'completeopt'), so <Tab> picks the first
+-- item itself. Mapping <Tab> replaces the default one that jumps through an
+-- active snippet, which is kept here as the fallback.
+map('i', '<Tab>', function()
+  if vim.fn.pumvisible() == 1 then
+    return vim.fn.complete_info({ 'selected' }).selected == -1 and '<C-n><C-y>' or '<C-y>'
+  end
+  if vim.snippet.active({ direction = 1 }) then
+    return '<Cmd>lua vim.snippet.jump(1)<CR>'
+  end
+  return '<Tab>'
+end, { expr = true, desc = 'Accept completion or jump in snippet' })
 
 -- Emacs-style motions in cmdline mode
 map('c', '<C-b>', '<Left>')
