@@ -1,6 +1,18 @@
 # Repository Guidelines
 
-個人用 dotfiles。ディレクトリ構成とセットアップは `README.md`、設計方針は `docs/` にある。ファイルを変更する前に、`docs/README.md` の対応表で該当する doc を読む。
+個人用 dotfiles。ディレクトリ構成とセットアップは `README.md`、設計方針は `docs/` にある。
+
+## Design docs
+
+最初の Edit の前に、触る対象の doc を読む。issue から始めた作業や小さな修正でも省かない。
+
+| 触る対象 | doc |
+| --- | --- |
+| `mise.toml`・`mise-tasks/`・`.config/mise/`、ツールの追加 | `docs/mise.md` |
+| `.zshenv`・`.config/zsh/`・`bin/`・`.config/herdr/`・`test/` | `docs/shell.md` |
+| `.config/nvim/` | `docs/neovim.md` |
+| `claude/`・`.claude/` | `docs/claude-code.md` |
+| 上記以外（`.config/git/`・その他の `.config/*`・`.github/`） | 専用の doc は無い。ファイルにコメントがあればそれに従う。git の `pre-push` hook と `.config/git` は `docs/claude-code.md` の「git / gh の基準」と「sandbox の基準」も読む |
 
 ## Verification
 
