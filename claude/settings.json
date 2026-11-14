@@ -6,6 +6,8 @@
   "isolatePeerMachines": true,
   "env": {
     "CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR": "1",
+    "CLAUDE_CODE_ARTIFACT_COMMENTS": "0",
+    "CLAUDE_CODE_ARTIFACT_PUBLISH_EDITS": "0",
     "DISABLE_AUTOUPDATER": "1",
     "FORCE_AUTOUPDATE_PLUGINS": "1",
     "GIT_CONFIG_COUNT": "1",
@@ -38,7 +40,6 @@
       "Bash(mise config explain*)"
     ],
     "deny": [
-      "Artifact",
       "Read(//**/.env)",
       "Read(//**/.env.*)",
       "Read(//**/secrets/**)",
@@ -79,6 +80,7 @@
       "Bash(az devops invoke *--http-method=*)"
     ],
     "ask": [
+      "Artifact*",
       "Bash(git config *alias.*)",
       "Bash(gh pr merge*)",
       "Bash(gh repo edit*)",
@@ -123,11 +125,6 @@
     "baseRef": "head"
   },
   "disableRemoteControl": true,
-  "skillOverrides": {
-    "artifact-design": "off",
-    "artifact-diagramming": "off",
-    "artifact-capabilities": "off"
-  },
   "statusLine": {
     "type": "command",
     "command": "~/.claude/statusline-command.sh"
