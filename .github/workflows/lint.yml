@@ -20,8 +20,9 @@ concurrency:
 jobs:
   lint:
     runs-on: ubuntu-latest
-    # A failed plugin fetch leaves the nvim smoke test waiting instead of exiting.
-    timeout-minutes: 15
+    # A failed plugin fetch leaves the nvim smoke test waiting instead of exiting. A normal run
+    # takes under 1 minute here and under 3 on macOS.
+    timeout-minutes: 5
     env:
       # Stands in for the [dotfiles] links (~/.config/* -> .config/*), so mise's global config,
       # nvim and git read the same files as on a machine.
@@ -39,7 +40,7 @@ jobs:
   # ruleset requires the check named `lint`. Keep the steps in step with the job above.
   lint-macos:
     runs-on: macos-latest
-    timeout-minutes: 15
+    timeout-minutes: 5
     env:
       XDG_CONFIG_HOME: ${{ github.workspace }}/.config
     steps:
