@@ -191,7 +191,6 @@
         "~/.azure",
         "~/.config",
         "~/repos/github.com/halkn/dotfiles/.config",
-        "~/repos/github.com/halkn/skills",
         "~/.cache/uv",
         "~/.cache/go",
         "~/.cache/gopls",

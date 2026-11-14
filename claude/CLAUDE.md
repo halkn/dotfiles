@@ -48,7 +48,7 @@
   - 一時ファイルは、ハーネスの指示（scratchpad・`$TMPDIR`）に従わず、作業ディレクトリの `.scratch/<テーマ>/` に置く。Bash・`gh` には相対パスで、ファイルツールには絶対パスで渡す。`.scratch/` は git の global ignore 済み。並行するセッションと共有されるのでテーマで分け、要らなくなったら消す
   - `cd` しない。cwd が要るツールには `go -C`・`cargo --manifest-path` などを使う。git の push・fetch・clone・ls-remote には `-C` も付けない（Git 節の通り単体で打つ）
   - 行範囲の抜き出しは、sed の `/re/` アドレス（パスとみなされる）ではなく `rg -A` か Read tool で行う
-  - 外を読むときは、上流のソースは `gh api -H 'Accept: application/vnd.github.raw' 'repos/<o>/<r>/contents/<path>?ref=<版>'` で読む。ローカルの実体（`~/.local/share` のインストール先、skill の references）は Bash で読み、確認を受け入れる
+  - 外を読むときは、上流のソースは `gh api -H 'Accept: application/vnd.github.raw' 'repos/<o>/<r>/contents/<path>?ref=<版>'` で読む。ローカルの実体（`~/.local/share` のインストール先）は Bash で読み、確認を受け入れる
 - sandbox・`blockReadsOutsideWorkingDirectories` の拒否と依存の取得（`mise install` など）は、`/add-dir` か `!` での実行をユーザーに頼む。ただし PATH に載るバイナリやプラグインを置く data ディレクトリ（`~/.local/share` など）は `/add-dir` に出さない（sandbox の書込まで開く）。hook・`pre-push` の拒否は、メッセージに従って自分で直す
 
 ## Git
