@@ -28,6 +28,12 @@ min-spaces-from-content = 1
 [lint.rules.comments-indentation]
 level = "warning"
 
+[format]
+# Matches the braces rule below, which the formatter's default (no padding) would violate.
+brace-spacing = true
+# One space, as in the `@<sha> # vX.Y.Z` pins that Dependabot maintains; the default is 2.
+comment-spacing = 1
+
 [lint.rules.braces]
 min-spaces-inside = 1
 max-spaces-inside = 1

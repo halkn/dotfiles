@@ -7,7 +7,7 @@ on:
   # Tools follow `latest`, so an upstream release can break lint with no change here. A weekly run
   # surfaces that on its own instead of on the next unrelated pull request.
   schedule:
-    - cron: "17 0 * * 1"
+    - cron: '17 0 * * 1'
 
 # No secret is used, so a pull request from a fork runs with the same rights.
 permissions:
@@ -23,7 +23,7 @@ concurrency:
 env:
   LINT_TOOLS: >-
     jq ripgrep herdr aqua:neovim/neovim tree-sitter github:ewhauser/shuck rumdl stylua jactionlint
-    emmylua_check
+    emmylua_check aqua:owenlamont/ryl
 
 jobs:
   lint:

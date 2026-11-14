@@ -72,6 +72,7 @@ depends = [
   "lint:config",
   "lint:tasks",
   "lint:shell",
+  "lint:yaml",
   "lint:actions",
   "lint:nvim",
   "lint:herdr",
@@ -88,6 +89,7 @@ run = [
   "rumdl fmt .",
   "shuck format .",
   "stylua .config/nvim",
+  "ryl format .",
 ]
 
 [tasks.fmt-check]
@@ -97,6 +99,7 @@ run = [
   "rumdl check .",
   "shuck format --check .",
   "stylua --check .config/nvim",
+  "ryl format --check .",
 ]
 
 # A task file that lost its executable bit disappears from `mise tasks ls` without an error.
@@ -109,6 +112,11 @@ run = "mise tasks validate"
 description = "シェルスクリプトの静的検査"
 hide = true
 run = "shuck check ."
+
+[tasks."lint:yaml"]
+description = "YAML の静的検査"
+hide = true
+run = "ryl check ."
 
 # shellcheck is on the ubuntu runner but not on macOS, so leaving it to PATH would make CI fail
 # where the local lint passes. The run: steps are one-line commands; shell-syntax still parses them.
