@@ -22,7 +22,6 @@ color_for_pct() {
   fi
 }
 
-# Braille progress bar: 4 cells, each filled in 8 steps.
 braille_bar() {
   pct=$1
   width=4
