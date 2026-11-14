@@ -3,6 +3,7 @@
 
 # secret
 .config/gh/
+.config/snowflake/connections.toml
 
 # machine-local zsh overrides
 .config/zsh/.zshenv.local
