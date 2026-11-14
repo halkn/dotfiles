@@ -37,15 +37,18 @@
 
 - 版で変わる仕様（Claude Code の設定・CLI のフラグ・API）を名指しするときは、公式 docs か `--help` を引いてから書く。リポジトリ内の実測メモで代えられるのは、記録された版が現行と一致するときだけ
 - ツールの設定を変える・新しい版に追従するときは、変更の前に公式 docs の該当ページを読み、変更点に加えて docs から見て直すべき点も挙げる。`--help` とリリースノートからは変わった箇所しか分からない
-- `allowedDomains` にある docs は `curl` で取得して `rg` で原文を確かめる。それ以外は WebFetch
+- `allowedDomains` にある docs は `curl` で取得して `rg` で原文を確かめる。それ以外は WebFetch（tool が無いセッションでは `web-fetch` agent）
 - 仕様に由来する表や定数（プロトコルの符号表など）は記憶で書かず、一次資料か既存の実装から取り出して照合する。記憶の誤りは一部の項目にだけ混ざり、見た目では気付けない
 
 ## 環境
 
 - 検索は `rg`、構文を条件にする検索・変換は `ast-grep`。値の確認は `jq` / `yq`、YAML 構文は `ryl`
-- Claude が読み返す・編集する・git / gh に渡すファイルは scratchpad に置き、絶対パスで扱う（`$TMPDIR` は Read / Edit tool から読めず、変数のまま渡すと sandbox の外では別の場所に展開される）
-- 既存ファイルの書き換えは、auto モードでも `sed -i`・`python3` の heredoc・リダイレクトではなく Edit / Write tool で行う。shell での書き込みは `blockReadsOutsideWorkingDirectories` の安全チェックで確認になる
-- sandbox・`blockReadsOutsideWorkingDirectories` の拒否と依存の取得（`mise install` など）は、`/add-dir` か `!` での実行をユーザーに頼む。hook・`pre-push` の拒否は、メッセージに従って自分で直す
+- Bash は作業ディレクトリの中で動かす。作業ディレクトリの外に触れる Bash（外のパス、`cd` の後の相対パス、追えない展開、パスに見える引数）は、auto モードでも `blockReadsOutsideWorkingDirectories` の確認になる
+  - 一時ファイルは、ハーネスの指示（scratchpad・`$TMPDIR`）に従わず、作業ディレクトリの `.scratch/<テーマ>/` に置く。Bash・`gh` には相対パスで、ファイルツールには絶対パスで渡す。`.scratch/` は git の global ignore 済み。並行するセッションと共有されるのでテーマで分け、要らなくなったら消す
+  - `cd` しない。cwd が要るツールには `go -C`・`cargo --manifest-path` などを使う。git の push・fetch・clone・ls-remote には `-C` も付けない（Git 節の通り単体で打つ）
+  - 行範囲の抜き出しは、sed の `/re/` アドレス（パスとみなされる）ではなく `rg -A` か Read tool で行う
+  - 外を読むときは、上流のソースは `gh api -H 'Accept: application/vnd.github.raw' 'repos/<o>/<r>/contents/<path>?ref=<版>'` で読む。ローカルの実体（`~/.local/share` のインストール先、skill の references）は Bash で読み、確認を受け入れる
+- sandbox・`blockReadsOutsideWorkingDirectories` の拒否と依存の取得（`mise install` など）は、`/add-dir` か `!` での実行をユーザーに頼む。ただし PATH に載るバイナリやプラグインを置く data ディレクトリ（`~/.local/share` など）は `/add-dir` に出さない（sandbox の書込まで開く）。hook・`pre-push` の拒否は、メッセージに従って自分で直す
 
 ## Git
 
@@ -53,6 +56,7 @@
 - PR の依頼は、そのブランチへの以後の push を含む
 - push は自分の作業ブランチ（セッション開始時のブランチか自分が作成したブランチ）だけに行う。push 済みのブランチは履歴を書き換えず commit を積む
 - `gh` の全サブコマンド（読取を含む）と git の push・fetch・clone・ls-remote は、他のコマンドとパイプ・`;`・`&&`・ループで繋がず単体で打ち、出力は `--jq` で絞る。`git pull` は `git fetch` と `git merge` に分ける
+  - `gh` は sandbox の外で動き、追えない引数は確認になる。`--jq` の中で配列を組まず（`[.a, .b] | @tsv` も `[.a] | join(…)` も確認になる）、複数の値は文字列補間（`.[] | "\(.a)\t\(.b)"`）で並べる
 - merge・main/master を変える操作・ガードの変更（branch protection / ruleset / branch policy・default branch・公開範囲・alias）は、GitHub・Azure DevOps・ローカルのどれでも、対象を名指しされたときだけ行う
 - 他の worktree では書込・switch・削除をしない。別のセッションが並行して作業している
 
