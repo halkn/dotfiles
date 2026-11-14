@@ -17,7 +17,7 @@ zero_sha='0000000000000000000000000000000000000000'
 remote="${1:-}"
 
 refuse() {
-  echo "pre-push: $1" >&2
+  printf 'pre-push: %s\n' "$@" >&2
   exit 1
 }
 
@@ -65,13 +65,13 @@ if [ "${ALLOW_FORCE_PUSH:-}" = "1" ]; then
   exit 0
 fi
 
+allow_hint='意図的な操作なら ALLOW_FORCE_PUSH=1 を付けて再実行してください。'
+
 while read -r _ local_sha remote_ref remote_sha; do
   [[ "$remote_ref" =~ ^refs/heads/(main|master)$ ]] || continue
 
   if [ "$local_sha" = "$zero_sha" ]; then
-    echo "pre-push: 保護ブランチ ($remote_ref) の削除は拒否されました。" >&2
-    echo "pre-push: 意図的な操作なら ALLOW_FORCE_PUSH=1 を付けて再実行してください。" >&2
-    exit 1
+    refuse "保護ブランチ ($remote_ref) の削除は拒否されました。" "$allow_hint"
   fi
 
   if [ "$remote_sha" = "$zero_sha" ]; then
@@ -79,9 +79,7 @@ while read -r _ local_sha remote_ref remote_sha; do
   fi
 
   if is_rewrite "$remote_sha" "$local_sha"; then
-    echo "pre-push: 保護ブランチ ($remote_ref) への force push (非 fast-forward) は拒否されました。" >&2
-    echo "pre-push: 意図的な操作なら ALLOW_FORCE_PUSH=1 を付けて再実行してください。" >&2
-    exit 1
+    refuse "保護ブランチ ($remote_ref) への force push (非 fast-forward) は拒否されました。" "$allow_hint"
   fi
 done
 
