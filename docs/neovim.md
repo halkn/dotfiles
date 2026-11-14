@@ -13,7 +13,7 @@
 
 - plugin manager は標準の `vim.pack` を使い、lazy load はしない
 - 標準の plugin・provider は、使わないものを無効にする。treesitter の parser は、同梱のものと標準の syntax では足りない言語だけを足す
-- markdown のコードフェンスに書く言語は、標準の syntax で足りても parser を足す。treesitter で描画しているバッファに埋め込まれた言語は、parser が無いと標準の syntax に戻らず素のテキストになる（Neovim 0.12.5）。フェンスに書かず標準の syntax で足りる言語（zsh・SQL など）は足さない
+- markdown のコードフェンスに書く言語は、標準の syntax で足りても parser を足す。treesitter で描画しているバッファに埋め込まれた言語は、parser が無いと標準の syntax に戻らず素のテキストになる（Neovim 0.12.6）。フェンスに書かず標準の syntax で足りる言語（zsh・SQL など）は足さない
 - plugin と treesitter の parser は Neovim 自身が導入・更新し、`nvim-pack-lock.json` で固定する。[mise.md](mise.md) の「インストールの入口は `mise bootstrap` だけ」の例外
 - どの plugin を使うか、何を自作するか（statusline・[kago.nvim](https://github.com/halkn/kago.nvim)）は好みで決め、この doc の対象外
 
