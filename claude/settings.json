@@ -189,6 +189,7 @@
       ],
       "allowRead": [
         "~/.azure",
+        "~/.claude/skills",
         "~/.config",
         "~/repos/github.com/halkn/dotfiles/.config",
         "~/repos/github.com/halkn/skills",
