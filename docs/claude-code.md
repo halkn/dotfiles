@@ -10,7 +10,7 @@
 
 - 作業の起点は、Claude Code を起動したリポジトリ。読取は `permissions.blockReadsOutsideWorkingDirectories` でそのリポジトリに限る。ファイルツールはその外を読まず、sandbox もホームを閉じてそのリポジトリを開け直すので、リポジトリごとに `allowRead: ["./"]` を書かない。セッション中に作業ディレクトリを動かさないため、`CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR` で Bash コマンドごとに起点へ戻す。git のリモートを作業ディレクトリから解決する hook も、この前提に立つ
 - ガードは、失敗やモードの切替で黙って外れないようにする。sandbox を起動できないときの素通り（`sandbox.failIfUnavailable`）、sandbox の外での再実行（`sandbox.allowUnsandboxedCommands`）、ask を飛ばすモード（`permissions.disableBypassPermissionsMode`）、hook スクリプトの欠落と異常終了（「hook の基準」）を閉じる
-- セッションと外をつなぐ経路は、このリポジトリで管理しているものだけにする。外からセッションを操作・指示できる入口（Remote Control、claude.ai から同期される skill とプラグイン）と、セッションの内容を外へ出す経路（Artifact の公開、claude.ai の connector）は開けない。他のマシンや cloud のセッションへの `SendMessage` は Anthropic のサーバーを経由するので、人の承認を挟む（`isolatePeerMachines`）
+- セッションと外をつなぐ経路は、このリポジトリで管理しているものだけにする。外からセッションを操作・指示できる入口（Remote Control、claude.ai から同期される skill とプラグイン、Artifact へのコメント）と、セッションの内容を外へ出す経路（claude.ai の connector）は開けない。Anthropic のサーバーを経由して、送り先を人が選ぶ経路は、開けても人の承認を挟む。他のマシンや cloud のセッションへの `SendMessage`（`isolatePeerMachines`）と Artifact（`permissions.ask` の `Artifact*`）がこれに当たる。新しい Artifact は自分にだけ見えるが、共有済みの Artifact や編集権限をもらった他人の Artifact への公開は、そのまま他の閲覧者に届く
 - CLI の認証（`gh auth login`・`az login`）は、Claude Code の外のターミナルで行う。Claude Code は、認証済みのトークンキャッシュを使うだけにする
 - Claude Code 本体の更新は `mise run update` に一本化し、自動更新は止める。プラグインの更新は Claude Code に任せる。その代わり、skill を読み込むだけでコマンドが実行される inline shell（`` !`cmd` ``）は止める（`disableSkillShellExecution`）。更新で中身が変わっても、人の目を通らずに実行されるものが増えないようにする。自作の skill も inline shell を使わず、要る情報は skill の手順で Bash から取らせる
 - Claude Code が作った commit・PR もユーザーの成果物として扱い、Claude Code の署名とセッションへのリンク（`attribution`）を付けない
@@ -135,7 +135,10 @@
 - Claude が扱う一時ファイルは、作業ディレクトリの `.scratch/` に置く。scratchpad と sandbox 内の `$TMPDIR`（`/tmp/claude-501`）は作業ディレクトリの外にあり、Bash から読み書きすると、sandbox 内のコマンドでも上の確認になる（v2.1.325）。`$TMPDIR` は Read tool からも読めない（v2.1.325）。`.scratch/` は git の global ignore（`.config/git/ignore`）で追跡から外れ、Bash・ファイルツール・`gh`（相対パス）のどれからも確認なしで扱える。代わりに、並行するセッションと共有されるのでテーマごとに分ける。global ignore は git にしか効かないので、自前の ignore しか読まないツール（`docker build`・`npm publish`・`.` を対象にする formatter）を使うリポジトリでは、その ignore に `.scratch/` を足す。`$TMPDIR` は、テストや script が `mktemp` で使う一時ファイルにだけ残る。`CLAUDE_CODE_TMPDIR` は Claude Code 内部の置き場を動かすだけで、この問題を解かない
 - sandbox の外で動く `gh` では、`--jq` の中で配列を組む形が確認になり、文字列補間の形は通った（v2.1.325）
 - 作業ディレクトリの外にあるローカルの実体を読むときは、確認を受け入れる。`/add-dir` は sandbox の書込まで開く（v2.1.325）ので、data ディレクトリには使わない。上流のソースは `gh api` の contents を raw で受け取る。base64 を解くパイプは `block-piped-excluded.sh` が拒否する
-- Artifact の公開は `enableArtifact` ではなく `permissions.deny` の `Artifact` で止め、deny で使えなくなった artifact 系の bundled skill は `skillOverrides` で一覧から外す（v2.1.310）
+- Artifact の確認は `permissions.ask` で挟む。Claude は頼まれなくても公開し、入力したプロンプトに応じた新しい artifact は確認も classifier の審査も通らず、ask だけが auto モードでも確認を出す（v2.1.325 の docs）。Artifact の機能は `Artifact` 以外の tool（`ArtifactData`・`ArtifactCheck` など）にも分かれて現れ、版ごとに増えるので、tool 名の glob `Artifact*` で覆う。ask は tool 単位なので、公開だけでなく read・list・open にも確認が出る
+- Artifact へのコメントは `CLAUDE_CODE_ARTIFACT_COMMENTS=0` で止める。公開した artifact のコメントを監視し、届いたコメントをセッションに渡すので、外から指示できる入口になる。設定すると `ArtifactComments` tool が一覧から消える（v2.1.325）
+- 公開と同時にファイルを書き換える one-step update は `CLAUDE_CODE_ARTIFACT_PUBLISH_EDITS=0` で止める。Edit tool を通らないので、`Edit(//**/.claude/settings*.json)` の ask と、`denyWrite` で塞いだパスを Edit / Write tool に寄せる規約（AGENTS.md）を迂回する
+- Artifact が公開のために読むローカルファイルに `permissions` の `Read` deny が効くかは、docs に無く確かめていない。認証情報が添付されていないかは、ask の確認で人が見る
 - `.claude/rules/` を使わない。path-scoped rule が読み込まれるのは、Read / Write / Edit tool か、読取とみなされる Bash（単一ファイルの `cat`・`head` など）で一致するファイルを扱ったときに限られる。検索や複数ファイルの読取で触れても読み込まれる保証は無く、読み込まれなくてもエラーは出ない（v2.1.325 の docs）
 - CLAUDE.md の `ast-grep` は、構文を条件にする検索の一般論だけでは使われず、plugin の skill も呼ばれなかった（v2.1.325、ast-grep 0.51.2）。検索全般は `rg` のままにし（shell・Lua では精度の差が小さい）、差が出る書き換えだけを名指しする。`ast-grep outline` は Lua・bash で何も返さない
 - `env.CLAUDE_CODE_SUBPROCESS_ENV_SCRUB` は使わない。有効にすると `defaultMode: "auto"` が効かず、セッションが manual mode で始まる（Shift+Tab で auto には切り替えられる）（v2.1.280）
