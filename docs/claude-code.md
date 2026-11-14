@@ -31,6 +31,7 @@
 - 確実に止めたい読取・書込は、Bash（sandbox）と Read / Edit / Write tool（`permissions`）の両方の経路を塞ぐ。`permissions` の `Read` deny は sandbox の読取制限にも合流し、`allowRead` で開けた範囲の中でも効く。そのため、どこに置かれても閉じたい認証情報のファイル名（`.env`・鍵）は `Read` deny に、ホーム全体を閉じるのは、ファイルツールと sandbox の両方に効く `blockReadsOutsideWorkingDirectories` に置く。書込も同じで、`Edit` deny は sandbox の `denyWrite` にも合流するので、鍵の置き場所（`~/.ssh`・`~/.gnupg`）と `.config/gh` は `Edit` deny だけで両方の経路を閉じ、`denyWrite` に重ねない（v2.1.325）
 - `autoMode` に足すルールは、ユーザーが対象を名指しして指示すれば通してよいもの（Snowflake の破壊的 DDL）を `soft_deny` に、指示があっても越えない境界（個人と仕事の間の転送）を `hard_deny` に置く。既定ルール（`claude auto-mode defaults`）が既に覆う範囲は書かず、差分だけを書く。`environment` には環境の事実だけを書き、ルールと同じ禁止を繰り返さない
 - auto モードでは、全ての shell コマンドを classifier に通す（`autoMode.classifyAllShell`）。allow のパターンは、想定していない引数や script のパスまで通すため。`permissions.allow` の Bash ルールは他のモードに切り替えたときの予備になるので、確認なしで通っても安全な read-only の形だけを、サブコマンドまで明示して書く（`Bash(git *)` は、書込や任意実行を取り込む形まで通してしまう）。組込みの read-only コマンド（`ls`・`cat` や `git` の read-only な形）は全モードで確認なしに通るので、allow に書かない
+- `sandbox.autoAllowBashIfSandboxed` は書かず、既定の `false`（sandbox 内のコマンドも通常の許可フローを通る）にする。auto モードで server 側の classifier が審査するセッションでは、sandbox 内のコマンドも審査を待つので、`true` にしても確認は減らない（v2.1.325 の docs）。`true` が効くのは、他のモードと、server の審査が無く手元の classifier に頼るセッションで、sandbox 内のコマンドが確認も classifier も通らずに走る。sandbox は読み書きの範囲と送信先を閉じるが、作業ディレクトリの中の破壊的な書込や、classifier が文脈で止める操作（`autoMode` の `soft_deny`）は閉じない。モードの切替やセッションの種類で審査が黙って外れないよう、`true` を書かない
 
 ## CLAUDE.md の基準
 
