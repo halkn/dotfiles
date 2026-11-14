@@ -146,7 +146,9 @@ _repo_list() {
 #
 # Not included: `required_linear_history`, which contradicts the merge commits
 # this account's repositories carry, and `required_status_checks`, which needs a
-# check to name.
+# check to name. A repository that requires a check keeps it in a ruleset of its
+# own (dotfiles: `ci`): `setup` replaces this one whole with PUT, so a rule added
+# here by hand would vanish on the next run.
 #
 # The name is a variable because _repo_ruleset_id finds the ruleset to update by
 # it: written twice, a rename would silently turn an update into a second,
