@@ -1,3 +1,12 @@
+local S = vim.diagnostic.severity
+
+local sign_hl = {
+  [S.ERROR] = 'DiagnosticSignError',
+  [S.WARN] = 'DiagnosticSignWarn',
+  [S.HINT] = 'DiagnosticSignHint',
+  [S.INFO] = 'DiagnosticSignInfo',
+}
+
 vim.diagnostic.config({
   virtual_text = {
     current_line = true,
@@ -5,22 +14,12 @@ vim.diagnostic.config({
   severity_sort = true,
   signs = {
     text = {
-      [vim.diagnostic.severity.ERROR] = '󰅚',
-      [vim.diagnostic.severity.WARN] = '󰀪',
-      [vim.diagnostic.severity.HINT] = '󰌶',
-      [vim.diagnostic.severity.INFO] = '󰋽',
+      [S.ERROR] = '󰅚',
+      [S.WARN] = '󰀪',
+      [S.HINT] = '󰌶',
+      [S.INFO] = '󰋽',
     },
-    linehl = {
-      [vim.diagnostic.severity.ERROR] = 'DiagnosticSignError',
-      [vim.diagnostic.severity.WARN] = 'DiagnosticSignWarn',
-      [vim.diagnostic.severity.HINT] = 'DiagnosticSignHint',
-      [vim.diagnostic.severity.INFO] = 'DiagnosticSignInfo',
-    },
-    numhl = {
-      [vim.diagnostic.severity.ERROR] = 'DiagnosticSignError',
-      [vim.diagnostic.severity.WARN] = 'DiagnosticSignWarn',
-      [vim.diagnostic.severity.HINT] = 'DiagnosticSignHint',
-      [vim.diagnostic.severity.INFO] = 'DiagnosticSignInfo',
-    },
+    linehl = sign_hl,
+    numhl = sign_hl,
   },
 })

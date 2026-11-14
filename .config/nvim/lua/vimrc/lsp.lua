@@ -89,28 +89,23 @@ end
 -- Jumps reuse the global defaults (`grr` `gri` `grt`) so no buffer-local `gr`
 -- shadows them and makes every `gr` chord wait for 'timeoutlen'; `gd` and `gD`
 -- have no default. The rest sits on <F2> and <LocalLeader>.
+local keymaps = {
+  { 'textDocument/definition', 'n', 'gd', vim.lsp.buf.definition },
+  { 'textDocument/declaration', 'n', 'gD', vim.lsp.buf.declaration },
+  { 'textDocument/rename', 'n', '<F2>', vim.lsp.buf.rename },
+  { 'textDocument/signatureHelp', 'i', '<C-k>', vim.lsp.buf.signature_help },
+  { 'textDocument/documentSymbol', 'n', '<LocalLeader>s', vim.lsp.buf.document_symbol },
+  { 'workspace/symbol', 'n', '<LocalLeader>S', vim.lsp.buf.workspace_symbol },
+  { 'textDocument/codeAction', 'n', '<LocalLeader>c', vim.lsp.buf.code_action },
+}
+
 local function setup_keymaps(client, bufnr)
   local bufopts = { silent = true, buffer = bufnr }
-  if client:supports_method('textDocument/definition') then
-    vim.keymap.set('n', 'gd', vim.lsp.buf.definition, bufopts)
-  end
-  if client:supports_method('textDocument/declaration') then
-    vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, bufopts)
-  end
-  if client:supports_method('textDocument/rename') then
-    vim.keymap.set('n', '<F2>', vim.lsp.buf.rename, bufopts)
-  end
-  if client:supports_method('textDocument/signatureHelp') then
-    vim.keymap.set('i', '<C-k>', vim.lsp.buf.signature_help, bufopts)
-  end
-  if client:supports_method('textDocument/documentSymbol') then
-    vim.keymap.set('n', '<LocalLeader>s', vim.lsp.buf.document_symbol, bufopts)
-  end
-  if client:supports_method('workspace/symbol') then
-    vim.keymap.set('n', '<LocalLeader>S', vim.lsp.buf.workspace_symbol, bufopts)
-  end
-  if client:supports_method('textDocument/codeAction') then
-    vim.keymap.set('n', '<LocalLeader>c', vim.lsp.buf.code_action, bufopts)
+  for _, map in ipairs(keymaps) do
+    local method, mode, lhs, rhs = unpack(map)
+    if client:supports_method(method) then
+      vim.keymap.set(mode, lhs, rhs, bufopts)
+    end
   end
 end
 

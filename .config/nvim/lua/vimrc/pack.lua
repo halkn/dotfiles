@@ -44,7 +44,6 @@ end
 -- plugins ------------------------------------------------------------------
 ---@class vimrc.pack.Spec
 ---@field src string
----@field version string?
 ---@field config fun()?
 
 ---@type vimrc.pack.Spec[]
@@ -209,7 +208,7 @@ local plugs = {
 
 local add_plugins = function()
   vim.pack.add(vim.tbl_map(function(spec)
-    return { src = 'https://github.com/' .. spec.src, version = spec.version }
+    return { src = 'https://github.com/' .. spec.src }
   end, plugs))
 end
 
