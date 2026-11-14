@@ -4,6 +4,10 @@ on:
   pull_request:
   push:
     branches: [main]
+  # Tools follow `latest`, so an upstream release can break lint with no change here. A weekly run
+  # surfaces that on its own instead of on the next unrelated pull request.
+  schedule:
+    - cron: "17 0 * * 1"
 
 # No secret is used, so a pull request from a fork runs with the same rights.
 permissions:
