@@ -29,18 +29,8 @@
       "denyWrite": [
         "./claude",
         "./.config/git",
-        "./.config/herdr",
-        "./.config/zsh",
-        "./.config/mise",
-        "./.config/nvim",
-        "./.config/ghostty",
-        "./.config/starship",
-        "./.config/ripgrep",
-        "./.config/snowflake",
-        "./.zshenv",
-        "./bin",
-        "./mise-tasks",
-        "./mise.toml"
+        "./.config/herdr/plugins/github",
+        "./.config/herdr/plugins/github-installations"
       ]
     }
   }
