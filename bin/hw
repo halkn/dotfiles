@@ -606,7 +606,7 @@ _hw_cmd_pr() {
 # Every target is attempted, and the status is the last refusal's.
 _hw_cmd_rm() {
   local arg
-  local -i force=0 rc=0 st
+  local -i force=0 rc=0
   local -a targets
   for arg in "$@"; do
     case $arg in
@@ -631,17 +631,11 @@ _hw_cmd_rm() {
     return 1
   }
   for arg in "${targets[@]}"; do
-    st=0
-    _hw_resolve "$arg" || {
+    if ! _hw_resolve "$arg" || ! _hw_removable "$REPLY"; then
       rc=1
       continue
-    }
-    _hw_removable "$REPLY" || {
-      rc=1
-      continue
-    }
-    _hw_rm_one "${REPLY:A}" "$force" || st=$?
-    ((st == 0)) || rc=$st
+    fi
+    _hw_rm_one "${REPLY:A}" "$force" || rc=$?
   done
   return $rc
 }
