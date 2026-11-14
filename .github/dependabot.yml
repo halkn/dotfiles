@@ -1,0 +1,17 @@
+# Keeps the commit-pinned actions in .github/workflows/ moving. Tools and Neovim plugins have
+# their own update path (`mise run update`, :PackUpdate), so only GitHub Actions is listed.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    # Long enough for a compromised release to be pulled first, like minimum_release_age in
+    # .config/mise/config.toml. Longer than that 1d because an action runs in CI with the repository
+    # token, and 7 is jactionlint's dependabot-cooldown minimum. Set explicitly so that a change to
+    # Dependabot's default does not move it.
+    cooldown:
+      default-days: 7
+    commit-message:
+      # Dependabot adds the colon after a prefix that ends with a letter.
+      prefix: chore
