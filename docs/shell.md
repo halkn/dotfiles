@@ -82,5 +82,6 @@ worktree は git で作り、`herdr worktree open --cwd <メイン checkout> --p
 
 ## 決定と理由
 
+- `hw rm` は、ブランチがマージ済みかを自分で判定する（「原則」の例外）。origin の既定ブランチがブランチを含むか、既定ブランチへマージしても tree が変わらない（squash merge の後）ときに、`git branch -D` で消す。git の `branch -d` と `--merged` は squash merge を未マージとみなし、upstream の `[gone]` は閉じた未マージの pull request でも立つので、どちらも判定に使えない。`git pm`（`.config/git/config`）は `--merged` だけを見るので、squash merge したブランチは残る
 - `hw` は mise の trust を扱わない。mise を使うリポジトリは少なく、使うリポジトリではメイン checkout で trust した設定ファイルが、worktree の同じパスでも trust される（`mise trust --help`）。trust は中身に結び付かないので、fork の pull request がその設定ファイルに足した設定も trust され、これはメイン checkout で `gh pr checkout` したときと変わらない。止めるときは、その worktree で `mise trust --ignore` を実行する
 - herdr の Claude Code integration（`herdr integration install claude`）は入れない。書込先の `~/.claude/` の下は `claude/` へのリンクなので、追跡している設定を herdr が書き換え、追跡しない script がリポジトリに置かれる（herdr 0.9.5）
