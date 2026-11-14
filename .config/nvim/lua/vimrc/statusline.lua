@@ -144,7 +144,8 @@ local function resolve_diagnostic_icons()
 end
 
 local function diagnostic_entry(level, count)
-  local icon = diagnostic_icons[level.severity]
+  -- render() is public and may run before setup() has resolved the icons.
+  local icon = diagnostic_icons[level.severity] or level.fallback
   local pad = math.max(1, diagnostic_icon_width - width(icon) + 1)
   return hl(level.hl, ('%s%s%d'):format(icon, string.rep(' ', pad), count))
 end
