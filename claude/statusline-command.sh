@@ -3,7 +3,6 @@
 
 input=$(cat)
 
-# Colors
 GREEN='\033[38;2;98;198;99m'
 YELLOW='\033[38;2;229;192;123m'
 ORANGE='\033[38;2;210;130;50m'
@@ -23,55 +22,22 @@ color_for_pct() {
   fi
 }
 
-# Braille progress bar (8 segments)
-# BRAILLE: ' ⣀⣄⣤⣦⣶⣷⣿' (indices 0-7)
 braille_bar() {
   pct=$1
   width=4
-  # Clamp 0-100
-  [ "$pct" -lt 0 ] && pct=0
-  [ "$pct" -gt 100 ] && pct=100
 
   bar=''
   i=0
   while [ $i -lt $width ]; do
-    # seg_start = i * 100 / width, seg_end = (i+1) * 100 / width  (integer math, *100 to avoid floats)
     seg_start=$((i * 100 / width))
     seg_end=$(((i + 1) * 100 / width))
-
-    if [ "$pct" -ge "$seg_end" ]; then
-      bar="${bar}⣿"
-    elif [ "$pct" -le "$seg_start" ]; then
-      bar="${bar} "
-    else
-      frac=$(((pct - seg_start) * 7 / (seg_end - seg_start)))
-      case $frac in
-        0)
-          bar="${bar} "
-          ;;
-        1)
-          bar="${bar}⣀"
-          ;;
-        2)
-          bar="${bar}⣄"
-          ;;
-        3)
-          bar="${bar}⣤"
-          ;;
-        4)
-          bar="${bar}⣦"
-          ;;
-        5)
-          bar="${bar}⣶"
-          ;;
-        6)
-          bar="${bar}⣷"
-          ;;
-        *)
-          bar="${bar}⣿"
-          ;;
-      esac
-    fi
+    # Clamping to 0..7 also covers the empty and full cells.
+    frac=$(((pct - seg_start) * 7 / (seg_end - seg_start)))
+    [ "$frac" -lt 0 ] && frac=0
+    [ "$frac" -gt 7 ] && frac=7
+    set -- ' ' ⣀ ⣄ ⣤ ⣦ ⣶ ⣷ ⣿
+    shift "$frac"
+    bar="${bar}$1"
     i=$((i + 1))
   done
 
@@ -182,9 +148,6 @@ if [ -n "$effort" ]; then
   case "$effort" in
     low)
       effort_col="$DIM"
-      ;;
-    medium)
-      effort_col="$GREEN"
       ;;
     high)
       effort_col="$YELLOW"

@@ -1,13 +1,5 @@
 local M = {}
 
----@class vimrc.statusline.Config
----@field statusline string
-
----@type vimrc.statusline.Config
-M.config = {
-  statusline = "%!v:lua.require'vimrc.statusline'.render()",
-}
-
 -- Below this width the left side shortens the file name and keeps only the most
 -- severe diagnostic. The right side is never dropped.
 local narrow_width = 80
@@ -27,31 +19,21 @@ local mode_style_names = {
   t = 'VimrcStatuslineModeTerminal',
 }
 
+-- Modes missing here fall back to the entry for their first character.
 local mode_names = {
   n = 'NORMAL',
   no = 'N-PENDING',
   nov = 'N-PENDING',
   noV = 'N-PENDING',
   ['no\22'] = 'N-PENDING',
-  niI = 'NORMAL',
-  niR = 'NORMAL',
-  niV = 'NORMAL',
-  nt = 'NORMAL',
   v = 'VISUAL',
-  vs = 'VISUAL',
   V = 'V-LINE',
-  Vs = 'V-LINE',
   ['\22'] = 'V-BLOCK',
-  ['\22s'] = 'V-BLOCK',
   s = 'SELECT',
   S = 'S-LINE',
   ['\19'] = 'S-BLOCK',
   i = 'INSERT',
-  ic = 'INSERT',
-  ix = 'INSERT',
   R = 'REPLACE',
-  Rc = 'REPLACE',
-  Rx = 'REPLACE',
   Rv = 'V-REPLACE',
   Rvc = 'V-REPLACE',
   Rvx = 'V-REPLACE',
@@ -78,16 +60,20 @@ local diagnostic_icon_width = 1
 
 -- The result of a `%!` statusline is parsed again, so literal `%` coming from a
 -- buffer name has to be escaped.
+local function escape(text)
+  return (text:gsub('%%', '%%%%'))
+end
+
+-- For text that is meant to be a statusline item rather than a literal.
+local function hl_item(group, item)
+  return ('%%#%s#%s%%*'):format(group, item)
+end
+
 local function hl(group, text)
   if text == nil or text == '' then
     return ''
   end
-  return ('%%#%s#%s%%*'):format(group, (text:gsub('%%', '%%%%')))
-end
-
--- Same, for text that is meant to be a statusline item rather than a literal.
-local function hl_item(group, item)
-  return ('%%#%s#%s%%*'):format(group, item)
+  return hl_item(group, escape(text))
 end
 
 local function join(parts, separator)
@@ -148,16 +134,17 @@ local function resolve_diagnostic_icons()
   diagnostic_icon_width = 1
   for _, level in ipairs(diagnostic_levels) do
     local icon = type(text) == 'table' and text[level.severity] or nil
-    if type(icon) ~= 'string' or vim.trim(icon) == '' then
+    icon = type(icon) == 'string' and vim.trim(icon) or ''
+    if icon == '' then
       icon = level.fallback
     end
-    icon = vim.trim(icon)
     diagnostic_icons[level.severity] = icon
     diagnostic_icon_width = math.max(diagnostic_icon_width, width(icon))
   end
 end
 
 local function diagnostic_entry(level, count)
+  -- render() is public and may run before setup() has resolved the icons.
   local icon = diagnostic_icons[level.severity] or level.fallback
   local pad = math.max(1, diagnostic_icon_width - width(icon) + 1)
   return hl(level.hl, ('%s%s%d'):format(icon, string.rep(' ', pad), count))
@@ -181,7 +168,6 @@ end
 
 local function buffer_name(bufnr)
   local bt = vim.bo[bufnr].buftype
-  local ft = vim.bo[bufnr].filetype
   local raw_name = vim.api.nvim_buf_get_name(bufnr)
 
   if bt == '' then
@@ -189,9 +175,8 @@ local function buffer_name(bufnr)
     return filename ~= '' and filename or '[No Name]'
   end
 
-  local kind = bt ~= '' and bt or (ft ~= '' and ft or 'buffer')
   if raw_name == '' then
-    return ('[%s]'):format(kind)
+    return ('[%s]'):format(bt)
   end
 
   local short = vim.fn.fnamemodify(raw_name, ':t')
@@ -202,7 +187,7 @@ local function buffer_name(bufnr)
     short = raw_name
   end
 
-  return ('[%s] %s'):format(kind, truncate_tail(short, 28))
+  return ('[%s] %s'):format(bt, truncate_tail(short, 28))
 end
 
 local function buffer_flags(bufnr)
@@ -238,7 +223,7 @@ local function progress_summary()
   local ok, lsp_status = pcall(vim.lsp.status)
   local summary = join({
     vim.trim(vim.ui.progress_status()),
-    ok and (lsp_status:gsub('%%', '%%%%')) or '',
+    ok and escape(lsp_status) or '',
   }, ' ')
   if summary == '' then
     return ''
@@ -248,10 +233,6 @@ end
 
 local function lsp_clients_summary(bufnr)
   local clients = vim.lsp.get_clients({ bufnr = bufnr })
-  if #clients == 0 then
-    return ''
-  end
-
   local names = {}
   local seen = {}
   for _, client in ipairs(clients) do
@@ -335,13 +316,10 @@ function M.render()
   return (' %s %%= %s '):format(section(left), section(right))
 end
 
----@param opts vimrc.statusline.Config?
-function M.setup(opts)
-  M.config = vim.tbl_deep_extend('force', M.config, opts or {})
-
+function M.setup()
   setup_highlights()
   resolve_diagnostic_icons()
-  vim.o.statusline = M.config.statusline
+  vim.o.statusline = "%!v:lua.require'vimrc.statusline'.render()"
 
   local group = vim.api.nvim_create_augroup('vimrc_statusline', { clear = true })
   -- BufWritePost clears the [+] flag when writing an otherwise idle buffer;
