@@ -17,7 +17,21 @@
       "Bash(mise bootstrap --force-dotfiles*)",
       "Bash(mise bootstrap * --yes*)",
       "Bash(mise bootstrap * -y*)",
-      "Bash(mise bootstrap * --force-dotfiles*)"
+      "Bash(mise bootstrap * --force-dotfiles*)",
+      "Edit(/claude/**)",
+      "Edit(/.config/git/**)",
+      "Edit(/.config/herdr/plugins/github/**)",
+      "Edit(/.config/herdr/plugins/github-installations/**)"
     ]
+  },
+  "sandbox": {
+    "filesystem": {
+      "denyWrite": [
+        "./claude",
+        "./.config/git",
+        "./.config/herdr/plugins/github",
+        "./.config/herdr/plugins/github-installations"
+      ]
+    }
   }
 }
