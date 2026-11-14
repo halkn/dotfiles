@@ -17,6 +17,14 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+# Only the tools that `mise run lint` calls, named by their keys in .config/mise/config.toml: the
+# rest of the global config would only grow the cache. A tool that lint starts to use goes here
+# too; missing, it fails CI with "command not found".
+env:
+  LINT_TOOLS: >-
+    jq ripgrep herdr aqua:neovim/neovim tree-sitter github:ewhauser/shuck rumdl stylua jactionlint
+    emmylua_check
+
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -34,6 +42,11 @@ jobs:
           persist-credentials: false
       - run: sudo apt-get update && sudo apt-get install -y zsh
       - uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
+        with:
+          install_args: ${{ env.LINT_TOOLS }}
+          # The cache key hashes the config, which says `latest` and so never changes; a cache hit
+          # keeps the cached versions. Rebuilding weekly lets the scheduled run meet new releases.
+          cache_max_age_days: 7
       - run: mise run lint
 
   # A separate job rather than a matrix: a matrix renames the check to `lint (<os>)`, and the `ci`
@@ -49,4 +62,7 @@ jobs:
           persist-credentials: false
       # zsh ships with macOS.
       - uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
+        with:
+          install_args: ${{ env.LINT_TOOLS }}
+          cache_max_age_days: 7
       - run: mise run lint
