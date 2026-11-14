@@ -17,7 +17,7 @@
 ## Verification
 
 - 変更後は `mise run fmt` → `mise run lint`。`lint` は整形チェック・各言語の検査・テストを全て含む
-- PR では GitHub Actions（ubuntu）でも同じ `mise run lint` が走る。必須チェックではないので、マージ前に `gh pr checks` で結果を確かめる。macOS 固有の差は CI では検出されないので、手元の `lint` は省かない
+- PR では GitHub Actions（ubuntu）でも同じ `mise run lint` が走る。この job（`lint`）は ruleset `ci` の必須チェックで、通るまでマージできない。job 名を変えるときは `ci` の `context` も同時に直す（古い名前のチェックは pending のまま残り、マージできなくなる）。`ci` は `bin/repo setup` が管理する ruleset `main` と分けてあり、`repo setup` を再実行しても消えない。macOS 固有の差は CI では検出されないので、手元の `lint` は省かない
 - ツールが無ければ、先にユーザーに `mise install` を頼む
 - `mise run sync` / `update` と `mise bootstrap` はユーザーが手で実行する
 
