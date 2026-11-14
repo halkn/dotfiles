@@ -93,10 +93,6 @@
       "Bash(git worktree remove*)",
       "Bash(uv tool uninstall*)",
       "Bash(uv python uninstall*)",
-      "Edit(~/repos/github.com/halkn/dotfiles/claude/**)",
-      "Edit(~/repos/github.com/halkn/dotfiles/.config/git/**)",
-      "Edit(~/repos/github.com/halkn/dotfiles/.config/herdr/plugins/github/**)",
-      "Edit(~/repos/github.com/halkn/dotfiles/.config/herdr/plugins/github-installations/**)",
       "Edit(//**/.claude/settings*.json)"
     ],
     "blockReadsOutsideWorkingDirectories": true,
@@ -187,30 +183,12 @@
         "~/.cache/staticcheck"
       ],
       "denyWrite": [
-        "~/.ssh",
-        "~/.gnupg",
         "~/.azure/cliextensions",
         "~/.azure/config",
-        "~/.azure/clouds.config",
-        "~/repos/github.com/halkn/dotfiles/claude",
-        "~/repos/github.com/halkn/dotfiles/.config/git",
-        "~/repos/github.com/halkn/dotfiles/.config/gh",
-        "~/repos/github.com/halkn/dotfiles/.config/herdr",
-        "~/repos/github.com/halkn/dotfiles/.config/zsh",
-        "~/repos/github.com/halkn/dotfiles/.config/mise",
-        "~/repos/github.com/halkn/dotfiles/.config/nvim",
-        "~/repos/github.com/halkn/dotfiles/.config/ghostty",
-        "~/repos/github.com/halkn/dotfiles/.config/starship",
-        "~/repos/github.com/halkn/dotfiles/.config/ripgrep",
-        "~/repos/github.com/halkn/dotfiles/.config/snowflake",
-        "~/repos/github.com/halkn/dotfiles/.zshenv",
-        "~/repos/github.com/halkn/dotfiles/bin",
-        "~/repos/github.com/halkn/dotfiles/mise-tasks",
-        "~/repos/github.com/halkn/dotfiles/mise.toml"
+        "~/.azure/clouds.config"
       ],
       "allowRead": [
         "~/.azure",
-        "~/.claude/skills",
         "~/.config",
         "~/repos/github.com/halkn/dotfiles/.config",
         "~/repos/github.com/halkn/skills",

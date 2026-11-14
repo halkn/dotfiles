@@ -17,7 +17,31 @@
       "Bash(mise bootstrap --force-dotfiles*)",
       "Bash(mise bootstrap * --yes*)",
       "Bash(mise bootstrap * -y*)",
-      "Bash(mise bootstrap * --force-dotfiles*)"
+      "Bash(mise bootstrap * --force-dotfiles*)",
+      "Edit(/claude/**)",
+      "Edit(/.config/git/**)",
+      "Edit(/.config/herdr/plugins/github/**)",
+      "Edit(/.config/herdr/plugins/github-installations/**)"
     ]
+  },
+  "sandbox": {
+    "filesystem": {
+      "denyWrite": [
+        "./claude",
+        "./.config/git",
+        "./.config/herdr",
+        "./.config/zsh",
+        "./.config/mise",
+        "./.config/nvim",
+        "./.config/ghostty",
+        "./.config/starship",
+        "./.config/ripgrep",
+        "./.config/snowflake",
+        "./.zshenv",
+        "./bin",
+        "./mise-tasks",
+        "./mise.toml"
+      ]
+    }
   }
 }
