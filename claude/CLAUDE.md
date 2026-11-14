@@ -43,6 +43,7 @@
 ## 環境
 
 - 検索は `rg`、構文を条件にする検索・変換は `ast-grep`。値の確認は `jq` / `yq`、YAML 構文は `ryl`
+  - 呼出しの引数・形を複数箇所で変える書き換えは、Edit の繰り返しや `sed` ではなく `ast-grep run -p '<pattern>' -r '<rewrite>' -l <lang>` で行う。`-U` の前に一度 `-U` 無しで一致を確かめる。テキスト置換は改行や入れ子の呼出しで漏れる
 - Bash は作業ディレクトリの中で動かす。作業ディレクトリの外に触れる Bash（外のパス、`cd` の後の相対パス、追えない展開、パスに見える引数）は、auto モードでも `blockReadsOutsideWorkingDirectories` の確認になる
   - 一時ファイルは、ハーネスの指示（scratchpad・`$TMPDIR`）に従わず、作業ディレクトリの `.scratch/<テーマ>/` に置く。Bash・`gh` には相対パスで、ファイルツールには絶対パスで渡す。`.scratch/` は git の global ignore 済み。並行するセッションと共有されるのでテーマで分け、要らなくなったら消す
   - `cd` しない。cwd が要るツールには `go -C`・`cargo --manifest-path` などを使う。git の push・fetch・clone・ls-remote には `-C` も付けない（Git 節の通り単体で打つ）
