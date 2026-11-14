@@ -4,6 +4,10 @@ on:
   pull_request:
   push:
     branches: [main]
+  # Tools follow `latest`, so an upstream release can break lint with no change here. A weekly run
+  # surfaces that on its own instead of on the next unrelated pull request.
+  schedule:
+    - cron: "17 0 * * 1"
 
 # No secret is used, so a pull request from a fork runs with the same rights.
 permissions:
@@ -28,5 +32,20 @@ jobs:
         with:
           persist-credentials: false
       - run: sudo apt-get update && sudo apt-get install -y zsh
+      - uses: jdx/mise-action@8418fedb1110381a0d3ba51a7a415d7c1b884550 # v5.2.2
+      - run: mise run lint
+
+  # A separate job rather than a matrix: a matrix renames the check to `lint (<os>)`, and the `ci`
+  # ruleset requires the check named `lint`. Keep the steps in step with the job above.
+  lint-macos:
+    runs-on: macos-latest
+    timeout-minutes: 15
+    env:
+      XDG_CONFIG_HOME: ${{ github.workspace }}/.config
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # zsh ships with macOS.
       - uses: jdx/mise-action@8418fedb1110381a0d3ba51a7a415d7c1b884550 # v5.2.2
       - run: mise run lint
