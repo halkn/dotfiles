@@ -100,7 +100,9 @@ opt.clipboard = 'unnamedplus'
 opt.updatetime = 250
 
 if vim.fn.executable('rg') == 1 then
-  opt.grepprg = 'rg --vimgrep --hidden --glob "!**/.git/*"'
+  -- Repeats .config/ripgrep/config: RIPGREP_CONFIG_PATH is unset when nvim is not
+  -- started from zsh.
+  opt.grepprg = 'rg --vimgrep --hidden --glob "!.git"'
   opt.grepformat = '%f:%l:%c:%m'
 end
 
