@@ -49,9 +49,20 @@ fmt() {
   pct=$2
   pct_int=$(printf '%.0f' "$pct" 2>/dev/null || echo "${pct%%.*}")
   col=$(color_for_pct "$pct_int")
+  if [ "$compact" = 1 ]; then
+    printf '%b%s%b %b%d%%%b' "$DIM" "$label" "$R" "$col" "$pct_int" "$R"
+    return
+  fi
   bar=$(braille_bar "$pct_int")
   printf '%b%s%b %b%s%b %d%%' "$DIM" "$label" "$R" "$col" "$bar" "$R" "$pct_int"
 }
+
+# Claude Code captures stdout, so the terminal width only arrives via COLUMNS.
+# An unset or zero COLUMNS keeps the full layout.
+compact=0
+if [ "${COLUMNS:-0}" -gt 0 ] && [ "$COLUMNS" -lt 100 ]; then
+  compact=1
+fi
 
 # One value per line, read back with `IFS= read -r` so that empty values keep
 # their position instead of collapsing the way IFS splitting would.
@@ -67,6 +78,10 @@ fmt() {
   IFS= read -r week_resets_at
   IFS= read -r lines_added
   IFS= read -r lines_removed
+  IFS= read -r cache_observed
+  IFS= read -r cache_warm
+  IFS= read -r cache_expires_at
+  IFS= read -r worktree
 } <<EOF
 $(printf '%s' "$input" | jq -r '
   [
@@ -80,7 +95,11 @@ $(printf '%s' "$input" | jq -r '
     (.rate_limits.seven_day.used_percentage // ""),
     (.rate_limits.seven_day.resets_at // ""),
     (.cost.total_lines_added // ""),
-    (.cost.total_lines_removed // "")
+    (.cost.total_lines_removed // ""),
+    (.prompt_cache.caching_observed // false),
+    (.prompt_cache.warm // false),
+    (.prompt_cache.expires_at // ""),
+    (.worktree.name // .workspace.git_worktree // "")
   ] | map(tostring) | .[]
 ')
 EOF
@@ -180,6 +199,7 @@ reset_in() {
   # $1 = resets_at epoch seconds (may be empty/float)
   resets_at=$1
   [ -z "$resets_at" ] && return
+  [ "$compact" = 1 ] && return
   resets_at=${resets_at%%.*}
   diff=$((resets_at - now))
   [ "$diff" -le 0 ] && return
@@ -187,6 +207,19 @@ reset_in() {
   m=$(((diff % 3600) / 60))
   printf ' %dh%dm' "$h" "$m"
 }
+
+# The TTL is at most 1h, so minutes are enough. caching_observed separates a
+# cache that went cold from a provider that never reports cache tokens.
+if [ "$cache_warm" = "true" ] && [ -n "$cache_expires_at" ]; then
+  cache_left=$(((${cache_expires_at%%.*} - now) / 60))
+  if [ "$cache_left" -ge 0 ]; then
+    cache_col=$GREEN
+    [ "$cache_left" -lt 5 ] && cache_col=$YELLOW
+    parts="${parts} ${DIM}│ cache${R} ${cache_col}${cache_left}m${R}"
+  fi
+elif [ "$cache_observed" = "true" ]; then
+  parts="${parts} ${DIM}│ cache${R} ${GRAY}cold${R}"
+fi
 
 if [ -n "$five" ]; then
   five_reset_str=$(reset_in "$five_resets_at")
@@ -198,11 +231,15 @@ if [ -n "$week" ]; then
   parts="${parts} ${DIM}│${R} $(fmt '7d' "$week")${DIM}${week_reset_str}${R}"
 fi
 
+if [ -n "$worktree" ]; then
+  parts="${parts} ${DIM}│ wt${R} ${worktree}"
+fi
+
 if [ -n "$git_branch" ]; then
   parts="${parts} ${DIM}│${R}${GRAY}${git_branch}${git_status_str}${R}"
 fi
 
-if [ -n "$lines_added" ] || [ -n "$lines_removed" ]; then
+if [ "$compact" = 0 ] && { [ -n "$lines_added" ] || [ -n "$lines_removed" ]; }; then
   added=${lines_added:-0}
   removed=${lines_removed:-0}
   parts="${parts} ${DIM}│${R} ${GREEN}+${added}${R}${GRAY}/${R}${RED}-${removed}${R}"

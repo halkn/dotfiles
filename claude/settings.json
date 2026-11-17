@@ -132,7 +132,8 @@
   "disableRemoteControl": true,
   "statusLine": {
     "type": "command",
-    "command": "~/.claude/statusline-command.sh"
+    "command": "~/.claude/statusline-command.sh",
+    "refreshInterval": 60
   },
   "enabledPlugins": {
     "skill-creator@claude-plugins-official": true,
