@@ -12,12 +12,16 @@
 # `sandbox.excludedCommands`, rather than on shell syntax, which is not.
 set -euo pipefail
 
-# Drops the contents of quoted strings (keeping `$(` and backquotes from double-quoted ones since
-# those still substitute) and descriptor duplications such as `2>&1`.
+# Drops the contents of quoted strings and descriptor duplications such as `2>&1`. A quoted string
+# keeps a mark when it still breaks the exclusion: `$(` or a backquote substitutes inside double
+# quotes, and a newline or a backquote inside any quotes takes the call into the sandbox. The
+# second mark is `;`, not a newline, since `$(…)` drops a newline at the end of the command.
 read -r -d '' filter <<'JQ' || true
 .tool_input.command // ""
 | gsub("(?<q>'[^']*'|\"(?:[^\"\\\\]|\\\\.)*\")";
-    if (.q | startswith("\"")) and (.q | test("\\$\\(|`")) then "$(" else "''" end)
+    if (.q | startswith("\"")) and (.q | test("\\$\\(|`")) then "$("
+    elif (.q | test("\n|`")) then ";"
+    else "''" end)
 | gsub("[<>]&[0-9-]"; "")
 JQ
 command="$(jq -r "$filter")"
@@ -40,7 +44,8 @@ if [[ "$command" =~ $git_opts ]] || [[ "$command" =~ $clone_path ]] ||
 git / gh を、sandbox の除外が当てにできない形で実行しようとしています。
 
 sandbox.excludedCommands は、行頭に裸で置いた単体のコマンドにしか確実には効きません。前置き
-（`cd`・`env`・`nice`・`VAR=…` など）、パイプ・`&`・`&&`・`;`・改行・コマンド置換、ファイルへのリダイレクト
+（`cd`・`env`・`nice`・`VAR=…` など）、パイプ・`&`・`&&`・`;`・改行（引用符の中を含む）・引用符の中のバッククォート・
+コマンド置換、ファイルへのリダイレクト
 （`2>/dev/null` を含む）、`git -C` などサブコマンドの前のオプション、絶対パス・`~`・`..` を含む
 `git clone` の行き先があると、sandbox 内で動いて GitHub や gh の設定に届かない（CONNECT 403 や設定
 読取エラーになる）か、push の判定（pre-push）を当てにできない環境で動きます。

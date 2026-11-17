@@ -116,6 +116,11 @@
             "type": "command",
             "command": "h=~/.claude/hooks/block-piped-excluded.sh; [ -x \"$h\" ] || { echo \"PreToolUse hook missing: $h\" >&2; exit 2; }; exec \"$h\"",
             "onFailure": "block"
+          },
+          {
+            "type": "command",
+            "command": "h=~/.claude/hooks/block-prompting-shapes.sh; [ -x \"$h\" ] || { echo \"PreToolUse hook missing: $h\" >&2; exit 2; }; exec \"$h\"",
+            "onFailure": "block"
           }
         ]
       }
