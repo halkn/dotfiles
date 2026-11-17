@@ -28,21 +28,28 @@ expect 2 "sed --in-place 's/a/b/' x.md"
 expect 2 "git diff && sed -i '' -e '1s/a/b/' x.md"
 expect 2 "perl -pi -e 's/a/b/' x.md"
 expect 2 "perl -i.bak -pe 's/a/b/' x.md"
+expect 2 'find . -name x -exec sed -i s/a/b/ {} +'
+expect 2 'if true; then sed -i s/a/b/ x; fi'
 # Address ranges.
 expect 2 "sed -n '/fn a/,/^}/p' x.rs"
 expect 2 "sed -n '10,/^}/p' x.rs"
 expect 2 "rg -l x | xargs sed -n '/a/p'"
+expect 2 "sed -n '\\#a#p' x"
 # cd.
 expect 2 'cd .scratch/x && rg a'
 expect 2 'cd sub; ls'
 expect 2 'git status && cd sub'
 expect 2 "ls${nl}cd sub"
 expect 2 'pushd sub'
+expect 2 'CDPATH= cd sub && ls'
+expect 2 '{ cd sub; ls; }'
 # Temp paths outside the working directory.
 expect 2 'cat "$TMPDIR/x/scratchpad/a.md"'
 expect 2 'ls ${TMPDIR}/x'
 expect 2 'jq . /private/tmp/claude-501/p/s/scratchpad/a.json'
 expect 2 'bash x.sh > /tmp/claude-501/p/s/scratchpad/out.md'
+expect 2 'ls /tmp/claude/x'
+expect 2 'gh pr create --title x --body-file "$TMPDIR/x.md"'
 
 expect 0 "sed -n '1,40p' x.md"
 expect 0 "sed 's/a/b/' x.md"
@@ -57,6 +64,11 @@ expect 0 'git commit -m "cd into it"'
 expect 0 'gh pr create --title x --body-file /private/tmp/claude-501/p/s/scratchpad/pr.md'
 expect 0 'gh issue comment 1 -F /tmp/claude-501/p/s/scratchpad/c.md'
 expect 0 "rg -n 'TMPDIR' docs/claude-code.md"
+expect 0 "rg -n '\$TMPDIR' docs/claude-code.md"
+expect 0 "perl -Mstrict -ne 'print' x"
+expect 0 "perl -MList::Util=sum -ne 'print' x"
+expect 0 "sed -n '1,5p' a.md${nl}rg '/api' b.md"
+expect 0 'undo-cd x'
 expect 0 'echo ok'
 
 [ "$rc" -eq 0 ] && echo 'block-prompting-shapes_test: ok'

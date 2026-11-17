@@ -11,21 +11,27 @@ set -euo pipefail
 raw="$(jq -r '.tool_input.command // ""')"
 
 # Words inside quotes are data (`rg 'sed -i'`, `git commit -m "cd x"`), so the command-name rules
-# match against the command with quoted strings emptied.
+# match against the command with quoted strings emptied. A variable is data only inside single
+# quotes (`rg '$TMPDIR'`); "$TMPDIR/x" still expands.
 read -r -d '' strip <<'JQ' || true
-gsub("'[^']*'|\"(?:[^\"\\\\]|\\\\.)*\""; "''")
+gsub("(?<q>'[^']*'|\"(?:[^\"\\\\]|\\\\.)*\")"; if $all or (.q | startswith("'")) then "''" else .q end)
 JQ
-unquoted="$(jq -Rrs "${strip}" <<<"${raw}")"
+unquoted="$(jq -Rrs --argjson all true "${strip}" <<<"${raw}")"
+unquoted_single="$(jq -Rrs --argjson all false "${strip}" <<<"${raw}")"
 
 s='[[:space:]]'
-at=$'(^|[;&|(\n])'"${s}*"
-xargs="(xargs(${s}+-[^[:space:]]+)*${s}+)?"
-in_place="${at}${xargs}(sed|perl)(${s}+[^;&|[:space:]]+)*${s}+(-[[:alpha:]]*i|--in-place)"
-cd_cmd="${at}(cd|pushd)(${s}|$)"
-# A sed script that opens with an address range is read as a path.
-address="${at}${xargs}sed${s}[^;&|]*['\"][0-9,\$]*/"
-temp_path='\$\{?TMPDIR|/tmp/claude-'
-# gh reads a --body-file / -F path outside the sandbox without the prompt.
+nl=$'\n'
+at="(^|[;&|({${nl}]|(then|do|else)${s}|-exec(dir)?${s})${s}*"
+prefix="([[:alpha:]_][[:alnum:]_]*=[^[:space:]]*${s}+)*(xargs(${s}+-[^[:space:]]+)*${s}+)?"
+# Only clusters of flags that take no argument, so perl's `-Mstrict` is not read as `-i`.
+in_place="${at}${prefix}(sed|perl)(${s}+[^;&|[:space:]]+)*${s}+(-[EnrsuzplawF]*i|--in-place)"
+cd_cmd="${at}${prefix}(cd|pushd)(${s}|$)"
+# A sed script that opens with an address range (`/re/` or `\#re#`) is read as a path.
+address="${at}${prefix}sed${s}[^;&|${nl}]*['\"][0-9,\$]*(/|\\\\)"
+temp_var='\$\{?TMPDIR'
+temp_path="(^|[[:space:]=:'\"<>])(/private)?/tmp/claude[-/]"
+# gh reads an absolute --body-file / -F path outside the sandbox without the prompt. $TMPDIR is
+# refused for gh too, since it expands to another directory outside the sandbox.
 bare_gh="^${s}*gh${s}"
 
 refuse() {
@@ -48,9 +54,10 @@ if [[ "${unquoted}" =~ ${cd_cmd} ]]; then
 作業ディレクトリからの相対パスで指定してください。cwd が要るツールには `go -C`・`cargo --manifest-path`・`git -C`（push・fetch・clone・ls-remote を除く）などを使ってください。'
 fi
 
-if [[ "${raw}" =~ ${temp_path} ]] && ! [[ "${unquoted}" =~ ${bare_gh} ]]; then
+if [[ "${unquoted_single}" =~ ${temp_var} ]] ||
+  { [[ "${raw}" =~ ${temp_path} ]] && ! [[ "${unquoted}" =~ ${bare_gh} ]]; }; then
   refuse 'scratchpad・`$TMPDIR` は作業ディレクトリの外にあり、Bash のコマンドに書くと確認になるため止めました。
-scratchpad のファイルは Read / Write / Edit tool で扱い、Bash の出力はファイルに書かずパイプで絞ってください。Bash で読み書きするファイルが要るなら、作業ディレクトリの `.scratch/<テーマ>/` に置いて相対パスで渡してください。`gh` の `--body-file` / `-F` には scratchpad の絶対パスを渡せます。'
+scratchpad のファイルは Read / Write / Edit tool で扱い、Bash の出力はファイルに書かずパイプで絞ってください。Bash で読み書きするファイルが要るなら、作業ディレクトリの `.scratch/<テーマ>/` に置いて相対パスで渡してください。`gh` の `--body-file` / `-F` には scratchpad の絶対パスを渡せます（`$TMPDIR` は `gh` の動く sandbox の外では別の場所を指すので使えません）。'
 fi
 
 exit 0

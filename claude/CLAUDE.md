@@ -58,7 +58,8 @@
 - PR の依頼は、そのブランチへの以後の push を含む
 - push は自分の作業ブランチ（セッション開始時のブランチか自分が作成したブランチ）だけに行う。push 済みのブランチは履歴を書き換えず commit を積む
 - `gh` の全サブコマンド（読取を含む）と git の push・fetch・clone・ls-remote は、他のコマンドとパイプ・`;`・`&&`・ループで繋がず単体で打ち、出力は `--jq` で絞る。`git pull` は `git fetch` と `git merge` に分ける
-  - `gh` は sandbox の外で動き、追えない引数は確認になる。`--jq` は `.[] | "\(.a)\t\(.b)"` のような文字列補間の形にし、配列の構築（`[.a, .b] | @tsv`・`[.a] | join(…)`）・スライス（`.sha[0:7]`）・`select(.a=="b")` を入れない- merge・main/master を変える操作・ガードの変更（branch protection / ruleset / branch policy・default branch・公開範囲・alias）は、GitHub・Azure DevOps・ローカルのどれでも、対象を名指しされたときだけ行う
+  - `gh` は sandbox の外で動き、追えない引数は確認になる。`--jq` は `.[] | "\(.a)\t\(.b)"` のような文字列補間の形にし、配列の構築（`[.a, .b] | @tsv`・`[.a] | join(…)`）・スライス（`.sha[0:7]`）・`select(.a=="b")` を入れない
+- merge・main/master を変える操作・ガードの変更（branch protection / ruleset / branch policy・default branch・公開範囲・alias）は、GitHub・Azure DevOps・ローカルのどれでも、対象を名指しされたときだけ行う
 - 他の worktree では書込・switch・削除をしない。別のセッションが並行して作業している
 
 ## 報告
