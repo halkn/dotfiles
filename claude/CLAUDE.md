@@ -44,12 +44,14 @@
 
 - 検索は `rg`、構文を条件にする検索・変換は `ast-grep`。値の確認は `jq` / `yq`、YAML 構文は `ryl`
   - 呼出しの引数・形を複数箇所で変える書き換えは、Edit の繰り返しや `sed` ではなく `ast-grep run -p '<pattern>' -r '<rewrite>' -l <lang>` で行う。`-U` の前に一度 `-U` 無しで一致を確かめる。テキスト置換は改行や入れ子の呼出しで漏れる
-- Bash は作業ディレクトリの中で動かす。作業ディレクトリの外に触れる Bash（外のパス、`cd` の後の相対パス、追えない展開、パスに見える引数）は、auto モードでも `blockReadsOutsideWorkingDirectories` の確認になる
-  - 一時ファイルはハーネスの指示どおり scratchpad に置き、ファイルツールで扱う。Bash から scratchpad・`$TMPDIR` のパスに触れると確認になるため、Bash の出力はファイルに書かずパイプで絞り、Bash に渡す入力ファイル（`gh` の `--body-file` など）だけを作業ディレクトリの `.scratch/<テーマ>/` に置いて相対パスで渡す。使い終えたら消し、commit に含めない
+- Bash は作業ディレクトリの中で動かす。作業ディレクトリの外に触れる Bash（外のパス、`$TMPDIR` から組んだパス、`cd` の後の相対パス、追えない展開）は、auto モードでも `blockReadsOutsideWorkingDirectories` の確認になる。作業ディレクトリの中で完結しても、パスに見える引数（`/` や `#` を区切りにした sed・awk・grep のスクリプト）と、パスを入れた変数（`d=…; mv $d/…`）は確認になる
+  - ファイルの書き換えは Edit / Write tool で行い、`sed -i`・heredoc・python では書き換えない。ハーネスは auto モードで Bash での書き換えを勧めるが、それが確認の主な原因になっている
+  - 一時ファイルはハーネスの指示どおり scratchpad に置く。中身の読み書きは Read / Write / Edit tool で行い、Bash のコマンドに scratchpad・`$TMPDIR` のパスを書かない（確認になる）。Bash の出力はファイルに書かずパイプで絞る。`gh` の `--body-file` / `-F` だけは scratchpad の絶対パスを渡してよい（確認にならない）
+  - `~/.claude` の下（skills・plugins など）も Read tool で読む。Bash で読むと確認になる
   - `cd` しない。cwd が要るツールには `go -C`・`cargo --manifest-path` などを使う。git の push・fetch・clone・ls-remote には `-C` も付けない（Git 節の通り単体で打つ）
   - Bash は zsh で動き、`=` で始まる語はコマンドのパスに展開される。出力の区切りは `echo '===='` のように引用符で囲むか `echo ---` にする
   - 行範囲の抜き出しは、sed の `/re/` アドレス（パスとみなされる）ではなく `rg -A` か Read tool で行う
-  - 外を読むときは、上流のソースは `gh api -H 'Accept: application/vnd.github.raw' 'repos/<o>/<r>/contents/<path>?ref=<版>'` で読む。応答は JSON ではないので `--jq` を付けず裸で打つ（Git 節の `--jq` で絞る指示の例外）。ローカルの実体（`~/.local/share` のインストール先）は Bash で読み、確認を受け入れる
+  - 外を読むときは、上流のソースは `gh api -H 'Accept: application/vnd.github.raw' 'repos/<o>/<r>/contents/<path>?ref=<版>'` で読む。応答は JSON ではないので `--jq` を付けず裸で打つ（Git 節の `--jq` で絞る指示の例外）。他のリポジトリのファイルを読む作業は、読み始める前に `/add-dir` をユーザーに頼む。ローカルの実体（`~/.local/share` のインストール先）は Bash で読み、確認を受け入れる
 - sandbox・`blockReadsOutsideWorkingDirectories` の拒否と依存の取得（`mise install` など）は、`/add-dir` か `!` での実行をユーザーに頼む。ただし PATH に載るバイナリやプラグインを置く data ディレクトリ（`~/.local/share` など）は `/add-dir` に出さない（sandbox の書込まで開く）。hook・`pre-push` の拒否は、メッセージに従って自分で直す
 
 ## Git
@@ -58,7 +60,8 @@
 - PR の依頼は、そのブランチへの以後の push を含む
 - push は自分の作業ブランチ（セッション開始時のブランチか自分が作成したブランチ）だけに行う。push 済みのブランチは履歴を書き換えず commit を積む
 - `gh` の全サブコマンド（読取を含む）と git の push・fetch・clone・ls-remote は、他のコマンドとパイプ・`;`・`&&`・ループで繋がず単体で打ち、出力は `--jq` で絞る。`git pull` は `git fetch` と `git merge` に分ける
-  - `gh` は sandbox の外で動き、追えない引数は確認になる。`--jq` の中で配列を組まず（`[.a, .b] | @tsv` も `[.a] | join(…)` も確認になる）、複数の値は文字列補間（`.[] | "\(.a)\t\(.b)"`）で並べる
+  - `gh` は sandbox の外で動き、追えない引数は確認になる。`--jq` は `.[] | "\(.a)\t\(.b)"` のような文字列補間の形にし、配列の構築（`[.a, .b] | @tsv`・`[.a] | join(…)`）・スライス（`.sha[0:7]`）・`select(.a=="b")` を入れない
+  - `gh` の引数（`--title` など）にバッククォートを書かない。引用符の中でも sandbox の除外が外れ、`gh` が設定を読めずに失敗する。Markdown の本文は `--body-file` で渡す
 - merge・main/master を変える操作・ガードの変更（branch protection / ruleset / branch policy・default branch・公開範囲・alias）は、GitHub・Azure DevOps・ローカルのどれでも、対象を名指しされたときだけ行う
 - 他の worktree では書込・switch・削除をしない。別のセッションが並行して作業している
 
