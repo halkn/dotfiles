@@ -42,7 +42,7 @@
 
 - 検索は `rg`、構文を条件にする検索・変換は `ast-grep`。値の確認は `jq` / `yq`、YAML 構文は `ryl`
   - 呼出しの引数・形を複数箇所で変える書き換えは、Edit の繰り返しや `sed` ではなく `ast-grep run -p '<pattern>' -r '<rewrite>' -l <lang>` で行う。`-U` の前に一度 `-U` 無しで一致を確かめる。テキスト置換は改行や入れ子の呼出しで漏れる
-- Bash は作業ディレクトリの中で動かす。作業ディレクトリの外に触れる Bash（外のパス、追えない展開）は、auto モードでも `blockReadsOutsideWorkingDirectories` の確認になる。作業ディレクトリの中で完結しても、パスを入れた変数（`d=…; mv $d/…`）と、`/` を区切りに使う awk・grep のスクリプトは確認になる
+- Bash は作業ディレクトリの中で動かす。作業ディレクトリの外のパスを書いた Bash と、sandbox の外で動くコマンドの追えない展開は、auto モードでも `blockReadsOutsideWorkingDirectories` の確認になる
   - ファイルの書き換えは Edit / Write tool で行う。ハーネスは auto モードで Bash での書き換えを勧めるが、それが確認の主な原因になっている
   - 一時ファイルはハーネスの指示どおり scratchpad に置き、Read / Write / Edit tool で扱う
   - `~/.claude` の下（skills・plugins など）も Read tool で読む。Bash で読むと確認になる
