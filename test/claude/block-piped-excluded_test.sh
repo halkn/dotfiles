@@ -87,6 +87,12 @@ expect 2 'git clone https://github.com/x/y /tmp/claude/y'
 expect 2 'git clone --depth 1 https://github.com/x/y ~/y'
 expect 2 'git clone https://github.com/x/y ../y'
 expect 2 $'gh\tpr view | cat'
+# A newline or a backquote inside quotes takes the call into the sandbox.
+expect 2 "gh pr create --body \"a | b; c${nl}d\""
+expect 2 "gh pr create --body 'a${nl}b'"
+expect 2 "gh pr list --search 'a \`b\`'"
+expect 2 "gh pr create --title 'fix \`x\`' --body-file x.md"
+expect 2 "git push origin 'a${nl}b'"
 # Long enough to overflow a pipe buffer after an early match.
 expect 2 "git push${nl}$(printf 'echo %0100d\n' $(seq 1000))"
 
@@ -111,12 +117,14 @@ expect 0 'git log --oneline > log.txt'
 expect 0 'gh api repos/x -f title=a'
 expect 0 'FOO=1 git status'
 expect 0 'environment-check gh-like'
-expect 0 "gh pr create --body \"a | b; c${nl}d\""
 expect 0 "gh pr create --body \"say \\\"a | b\\\" here\""
 expect 0 "gh api repos/x --jq '.[] | .name'"
 expect 0 "gh api repos/x --jq '.[] | select(.n > 1)'"
 expect 0 "gh api repos/x --jq \"it's | fine\""
 expect 0 "rg 'git push' README.md | head"
+expect 0 "gh pr create --title 'fix x' --body-file /tmp/claude-1/s/scratchpad/pr.md"
+expect 0 "rg 'a \`b\`' README.md"
+expect 0 "rg 'a${nl}b' README.md"
 expect 0 'git status | head'
 expect 0 'git log --oneline | head -5'
 expect 0 'echo high | cat'
