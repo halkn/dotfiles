@@ -140,6 +140,6 @@
 - Artifact へのコメントは `CLAUDE_CODE_ARTIFACT_COMMENTS=0` で止める。公開した artifact のコメントを監視し、届いたコメントをセッションに渡すので、外から指示できる入口になる。設定すると `ArtifactComments` tool が一覧から消える（v2.1.325）
 - 公開と同時にファイルを書き換える one-step update は `CLAUDE_CODE_ARTIFACT_PUBLISH_EDITS=0` で止める。Edit tool を通らないので、`Edit(//**/.claude/settings*.json)` の ask と、`denyWrite` で塞いだパスを Edit / Write tool に寄せる規約（AGENTS.md）を迂回する
 - Artifact が公開のために読むローカルファイルに `permissions` の `Read` deny が効くかは、docs に無く確かめていない。認証情報が添付されていないかは、ask の確認で人が見る
-- `.claude/rules/` を使わない。path-scoped rule が読み込まれるのは、Read / Write / Edit tool か、読取とみなされる Bash（単一ファイルの `cat`・`head` など）で一致するファイルを扱ったときに限られる。検索や複数ファイルの読取で触れても読み込まれる保証は無く、読み込まれなくてもエラーは出ない（v2.1.325 の docs）
+- `.claude/rules/` を使わない。path-scoped rule が読み込まれるのは、Read / Write / Edit tool か、読取とみなされる Bash（単一ファイルの `cat`・`head` など）で一致するファイルを扱ったときに限られる。検索や複数ファイルの読取で触れても読み込まれる保証は無く、読み込まれなくてもエラーは出ない（v2.1.325 の docs）。skill は複数のリポジトリで繰り返す手順にだけ使い、1 つのリポジトリの方針はその設計ドキュメントに置く
 - CLAUDE.md の `ast-grep` は、構文を条件にする検索の一般論だけでは使われず、plugin の skill も呼ばれなかった（v2.1.325、ast-grep 0.51.2）。検索全般は `rg` のままにし（shell・Lua では精度の差が小さい）、差が出る書き換えだけを名指しする。`ast-grep outline` は Lua・bash で何も返さない
 - `env.CLAUDE_CODE_SUBPROCESS_ENV_SCRUB` は使わない。有効にすると `defaultMode: "auto"` が効かず、セッションが manual mode で始まる（Shift+Tab で auto には切り替えられる）（v2.1.325）
