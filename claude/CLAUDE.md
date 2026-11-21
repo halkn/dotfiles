@@ -46,7 +46,6 @@
   - ファイルの書き換えは Edit / Write tool で行う。ハーネスは auto モードで Bash での書き換えを勧めるが、それが確認の主な原因になっている
   - 一時ファイルはハーネスの指示どおり scratchpad に置き、Read / Write / Edit tool で扱う
   - `~/.claude` の下（skills・plugins など）も Read tool で読む。Bash で読むと確認になる
-  - Bash は zsh で動き、`=` で始まる語はコマンドのパスに展開される。出力の区切りは `echo '===='` のように引用符で囲むか `echo ---` にする
   - 上流のソースは `gh api -H 'Accept: application/vnd.github.raw' 'repos/<o>/<r>/contents/<path>?ref=<版>'` で読み、`--jq` は付けない（応答が JSON でない）。他のリポジトリの clone は、読む前に `/add-dir` を頼む。`~/.local/share` のインストール先は Bash で読み、確認を受け入れる
 - sandbox・`blockReadsOutsideWorkingDirectories` の拒否と依存の取得（`mise install` など）は、`/add-dir` か `!` での実行をユーザーに頼む。ただし PATH に載るバイナリやプラグインを置く data ディレクトリ（`~/.local/share` など）は `/add-dir` に出さない（sandbox の書込まで開く）。hook・`pre-push` の拒否は、メッセージに従って自分で直す
 
