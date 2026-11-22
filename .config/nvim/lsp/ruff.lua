@@ -32,10 +32,6 @@ local config = {
     client.server_capabilities.hoverProvider = false
   end,
   format_code_actions = { 'source.organizeImports.ruff', 'source.fixAll.ruff' },
-  settings = {
-    organizeImports = true,
-    fixAll = true,
-  },
 }
 
 return config

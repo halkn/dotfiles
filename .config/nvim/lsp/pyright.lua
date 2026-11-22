@@ -27,18 +27,13 @@ local config = {
     '.git',
   },
   settings = {
-    pyright = {
-      disableOrganizeImports = false,
-    },
     python = {
       pythonPath = '.venv/bin/python',
       venvPath = '.',
-      venv = '.venv',
       analysis = {
+        -- Unlike the other keys, this one turns false when absent from an analysis table.
         autoSearchPaths = true,
-        useLibraryCodeForTypes = true,
         diagnosticMode = 'workspace',
-        typeCheckingMode = 'standard',
       },
     },
   },
