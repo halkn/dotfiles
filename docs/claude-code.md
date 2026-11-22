@@ -129,6 +129,7 @@
 - Artifact へのコメントは `CLAUDE_CODE_ARTIFACT_COMMENTS=0` で止める。届いたコメントがセッションに渡り、外から指示できる入口になる
 - 公開と同時にファイルを書き換える one-step update は `CLAUDE_CODE_ARTIFACT_PUBLISH_EDITS=0` で止める。Edit tool を通らず、`Edit` の ask と、塞いだパスを Edit / Write tool に寄せる規約を迂回する
 - `herdr` は sandbox 内で動かないので、Claude Code の外のターミナルで実行する
+- herdr のプラグインの checkout（`.config/herdr/plugins/github*`）の CLAUDE.md・rules は、`.claude/settings.json` の `claudeMdExcludes` で読み込ませない。サブディレクトリの CLAUDE.md はそこのファイルを扱った時点で context に入り、第三者が書いた指示がセッションに混ざる
 - CLAUDE.md の `ast-grep` は、構文を条件にする検索の一般論では使われないので、差が出る書き換えだけを名指しする。検索全般は `rg` のままにする
 - 採らないもの
   - ユーザー設定の `sandbox.filesystem.denyRead: ["~/"]`: block と併用すると作業ディレクトリが開け直されず、Bash から作業中のリポジトリを読めなくなる
