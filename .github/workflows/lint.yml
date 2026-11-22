@@ -41,7 +41,7 @@ jobs:
         with:
           persist-credentials: false
       - run: sudo apt-get update && sudo apt-get install -y zsh
-      - uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
+      - uses: jdx/mise-action@236a21c3b91f5db6d4e174b348674a0f0caac06d # v5.2.9
         with:
           install_args: ${{ env.LINT_TOOLS }}
           # The cache key hashes the config, which says `latest` and so never changes; a cache hit
@@ -61,7 +61,7 @@ jobs:
         with:
           persist-credentials: false
       # zsh ships with macOS.
-      - uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
+      - uses: jdx/mise-action@236a21c3b91f5db6d4e174b348674a0f0caac06d # v5.2.9
         with:
           install_args: ${{ env.LINT_TOOLS }}
           cache_max_age_days: 7
