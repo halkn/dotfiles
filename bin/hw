@@ -139,7 +139,7 @@ _hw_host() {
     *github.com[:/]*)
       print github
       ;;
-    *dev.azure.com[:/]* | *.visualstudio.com[:/]* | *ssh.dev.azure.com[:/]*)
+    *dev.azure.com[:/]* | *.visualstudio.com[:/]*)
       print azure
       ;;
     *)
