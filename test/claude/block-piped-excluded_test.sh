@@ -129,5 +129,19 @@ expect 0 'git status | head'
 expect 0 'git log --oneline | head -5'
 expect 0 'echo high | cat'
 
+# The hook mirrors sandbox.excludedCommands by hand, so an entry it does not cover would run
+# outside the sandbox in any shape. Every entry has to be refused once it is no longer bare.
+settings="$hooks/../settings.json"
+entries=0
+while IFS= read -r entry; do
+  entries=$((entries + 1))
+  sample="${entry% \*}"
+  sample="${sample%\*} x"
+  expect 0 "$sample"
+  expect 2 "true && $sample"
+  expect 2 "$sample | cat"
+done < <(jq -r '.sandbox.excludedCommands[]' "$settings")
+[ "$entries" -gt 0 ] || fail excludedCommands '>0 entries' 0 "$settings"
+
 [ "$rc" -eq 0 ] && echo 'block-piped-excluded_test: ok'
 exit $rc
