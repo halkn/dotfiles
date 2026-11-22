@@ -1,8 +1,6 @@
 #!/bin/sh
 # Claude Code status line
 
-input=$(cat)
-
 GREEN='\033[38;2;98;198;99m'
 YELLOW='\033[38;2;229;192;123m'
 ORANGE='\033[38;2;210;130;50m'
@@ -82,8 +80,9 @@ fi
   IFS= read -r cache_warm
   IFS= read -r cache_expires_at
   IFS= read -r worktree
+  IFS= read -r now
 } <<EOF
-$(printf '%s' "$input" | jq -r '
+$(jq -r '
   [
     (.workspace.current_dir // .cwd // ""),
     (.model.display_name // "Claude"),
@@ -99,7 +98,8 @@ $(printf '%s' "$input" | jq -r '
     (.prompt_cache.caching_observed // false),
     (.prompt_cache.warm // false),
     (.prompt_cache.expires_at // ""),
-    (.worktree.name // .workspace.git_worktree // "")
+    (.worktree.name // .workspace.git_worktree // ""),
+    (now | floor)
   ] | map(tostring) | .[]
 ')
 EOF
@@ -191,9 +191,6 @@ fi
 if [ -n "$ctx" ]; then
   parts="${parts} ${DIM}│${R} $(fmt 'ctx' "$ctx")"
 fi
-
-# Epoch seconds; date +%s works on both GNU and BSD date.
-now=$(date +%s)
 
 reset_in() {
   # $1 = resets_at epoch seconds (may be empty/float)
