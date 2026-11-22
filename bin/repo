@@ -192,13 +192,14 @@ _repo_ruleset_id() {
 }
 
 _repo_apply_ruleset() {
-  local nwo=${1:-} id
+  local nwo=${1:-} id method=POST endpoint
   id=$(_repo_ruleset_id "$nwo") || return 1
+  endpoint="repos/$nwo/rulesets"
   if [[ -n $id ]]; then
-    _repo_ruleset_payload | gh api --silent --method PUT "repos/$nwo/rulesets/$id" --input -
-  else
-    _repo_ruleset_payload | gh api --silent --method POST "repos/$nwo/rulesets" --input -
+    method=PUT
+    endpoint+="/$id"
   fi
+  _repo_ruleset_payload | gh api --silent --method "$method" "$endpoint" --input -
 }
 
 # Two PATCHes rather than one: the endpoint applies a body atomically, and
