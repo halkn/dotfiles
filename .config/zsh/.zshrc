@@ -187,9 +187,9 @@ fi
 if command -v eza >/dev/null 2>&1; then
   alias ls='eza --icons --group-directories-first'
   alias ll='eza -l --icons --git --no-user --time-style=iso --group-directories-first'
-  alias la='eza -la --icons --git --no-user --time-style=iso --group-directories-first'
-  alias ltr='eza -l --icons --git --no-user --time-style=iso --sort=modified --group-directories-first'
-  alias lst='eza -l --icons --git --no-user --time-style=iso --sort=modified --reverse --group-directories-first'
+  alias la='ll -a'
+  alias ltr='ll --sort=modified'
+  alias lst='ltr --reverse'
   alias tree='eza --tree --icons -I ".git" --group-directories-first'
 else
   alias ll='ls -lhF'

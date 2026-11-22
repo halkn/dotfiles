@@ -30,6 +30,7 @@ deny_path() {
 # classes around the path, so a match at a line boundary is caught all the same.
 env_re='\$\{?(AZURE|SNOWFLAKE|SNOWSQL|GH|GITHUB)_'
 dot_re='/\./'
+lead_dot_re='^((.*[[:space:]<>|;&=(])?)\./(.*)$'
 # A preceding alphanumeric or underscore excludes the match, so hostnames such as
 # `management.azure.com` are not caught.
 path_re='(^|[^[:alnum:]_])(\.(azure|snowflake|snowsql)|\.config/(gh|snowflake))(/|[[:space:];|&<>)]|$)'
@@ -42,13 +43,20 @@ fi
 
 # Quoting (`~/".azure"`), repeated slashes, `/./` and a leading `./` are all equivalent to
 # the shell but distinct to a plain string match, so fold them before comparing.
-normalized="$(printf '%s' "$command" | tr -d "\"'" | sed -E 's#/{2,}#/#g')"
-# Overlaps such as `/././` need repeated passes, and BSD sed does not accept label branches
-# (`:a; ...; ta`) in a one-liner, so the loop lives in the shell.
-while [[ "$normalized" =~ $dot_re ]]; do
-  normalized="$(printf '%s' "$normalized" | sed -E 's#/\./#/#g')"
+# Folded with builtins: the hook runs on every Bash call, and each sed or tr is a process.
+# Overlaps such as `/././` and `///` need repeated passes. The slash sits in a variable because
+# bash 3.2 (macOS) keeps the backslash of an escaped `\/` in the replacement.
+sl=/
+normalized="${command//[\"\']/}"
+while [[ "$normalized" == *//* ]]; do
+  normalized="${normalized//$sl$sl/$sl}"
 done
-normalized="$(printf '%s' "$normalized" | sed -E 's#(^|[[:space:]<>|;&=(])\./#\1#g')"
+while [[ "$normalized" =~ $dot_re ]]; do
+  normalized="${normalized//$sl.$sl/$sl}"
+done
+while [[ "$normalized" =~ $lead_dot_re ]]; do
+  normalized="${BASH_REMATCH[1]}${BASH_REMATCH[3]}"
+done
 
 if [[ "$normalized" =~ $path_re ]]; then
   deny_path

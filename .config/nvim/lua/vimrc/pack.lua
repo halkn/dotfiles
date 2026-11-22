@@ -54,12 +54,7 @@ local plugs = {
       vim.cmd.colorscheme('kanagawa')
     end,
   },
-  {
-    src = 'nvim-tree/nvim-web-devicons',
-    config = function()
-      require('nvim-web-devicons').setup()
-    end,
-  },
+  { src = 'nvim-tree/nvim-web-devicons' },
   {
     src = 'nvim-treesitter/nvim-treesitter',
     config = function()
