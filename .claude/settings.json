@@ -1,4 +1,7 @@
 {
+  "claudeMdExcludes": [
+    "**/.config/herdr/plugins/github*/**"
+  ],
   "permissions": {
     "allow": [
       "Bash(mise bootstrap status*)",

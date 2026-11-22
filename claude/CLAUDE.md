@@ -36,6 +36,7 @@
 - 版で変わる仕様（Claude Code の設定・CLI のフラグ・API）を名指しするときは、公式 docs か `--help` を引いてから書く。commit や PR に残した実測で代えられるのは、記録された版が現行と一致するときだけ
 - ツールの設定を変える・新しい版に追従するときは、変更の前に公式 docs の該当ページを読み、変更点に加えて、docs から見て直すべき点と、新機能で置き換えられる既存の設定も挙げる。`--help` とリリースノートからは変わった箇所しか分からない
 - `allowedDomains` にある docs は `curl` で取得して `rg` で原文を確かめる。それ以外は WebFetch（tool が無いセッションでは `web-fetch` agent）
+  - Bash に `allowed_domains` を付けない（`strictAllowlist` で拒否される）。allowlist に無いホストへの通信が要るコマンドは、`!` での実行を頼む
 - 仕様に由来する表や定数（プロトコルの符号表など）は記憶で書かず、一次資料か既存の実装から取り出して照合する。記憶の誤りは一部の項目にだけ混ざり、見た目では気付けない
 
 ## 環境
@@ -45,8 +46,10 @@
 - Bash は作業ディレクトリの中で動かす。作業ディレクトリの外のパスを書いた Bash と、sandbox の外で動くコマンドの追えない展開は、auto モードでも `blockReadsOutsideWorkingDirectories` の確認になる
   - ファイルの書き換えは Edit / Write tool で行う。ハーネスは auto モードで Bash での書き換えを勧めるが、それが確認の主な原因になっている
   - 一時ファイルはハーネスの指示どおり scratchpad に置き、Read / Write / Edit tool で扱う
-  - `~/.claude` の下（skills・plugins など）も Read tool で読む。Bash で読むと確認になる
-  - 上流のソースは `gh api -H 'Accept: application/vnd.github.raw' 'repos/<o>/<r>/contents/<path>?ref=<版>'` で読み、`--jq` は付けない（応答が JSON でない）。他のリポジトリの clone は、読む前に `/add-dir` を頼む。`~/.local/share` のインストール先は Bash で読み、確認を受け入れる
+  - `~/.claude` の skills・plugins・agents・commands・rules は Read tool で読む。Bash で読むと確認になる
+  - 他のリポジトリでは `~/.claude/CLAUDE.md`・`settings.json` を Read でも読めない。CLAUDE.md は会話に読み込まれた本文を使い、settings.json が要るなら halkn/dotfiles のセッションに引き継ぐ
+  - 上流のソースは `gh api -H 'Accept: application/vnd.github.raw' 'repos/<o>/<r>/contents/<path>?ref=<版>'` で読み、`--jq` は付けない（応答が JSON でない）
+  - 手元にある他のリポジトリの clone（`~/repos` の下）は、読む前に `/add-dir` を頼む。`~/.local/share` のインストール先は Bash で読み、確認を受け入れる
 - sandbox・`blockReadsOutsideWorkingDirectories` の拒否と依存の取得（`mise install` など）は、`/add-dir` か `!` での実行をユーザーに頼む。ただし PATH に載るバイナリやプラグインを置く data ディレクトリ（`~/.local/share` など）は `/add-dir` に出さない（sandbox の書込まで開く）。hook・`pre-push` の拒否は、メッセージに従って自分で直す
 
 ## Git
