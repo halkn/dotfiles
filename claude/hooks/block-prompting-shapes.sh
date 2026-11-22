@@ -8,16 +8,20 @@
 # prompt.
 set -euo pipefail
 
-raw="$(jq -r '.tool_input.command // ""')"
-
 # Words inside quotes are data (`rg 'sed -i'`, `git commit -m "cd x"`), so the command-name rules
 # match against the command with quoted strings emptied. A variable is data only inside single
 # quotes (`rg '$TMPDIR'`); "$TMPDIR/x" still expands.
-read -r -d '' strip <<'JQ' || true
-gsub("(?<q>'[^']*'|\"(?:[^\"\\\\]|\\\\.)*\")"; if $all or (.q | startswith("'")) then "''" else .q end)
+# One jq run for all three forms, NUL-separated: the hook runs on every Bash call. A NUL inside
+# the command would shift the fields, so it is dropped, as bash drops it from a $(...).
+read -r -d '' split <<'JQ' || true
+def strip($all): gsub("(?<q>'[^']*'|\"(?:[^\"\\\\]|\\\\.)*\")"; if $all or (.q | startswith("'")) then "''" else .q end);
+(.tool_input.command // "" | gsub("\u0000"; "")) | ., strip(true), strip(false) | ., "\u0000"
 JQ
-unquoted="$(jq -Rrs --argjson all true "${strip}" <<<"${raw}")"
-unquoted_single="$(jq -Rrs --argjson all false "${strip}" <<<"${raw}")"
+{
+  IFS= read -r -d '' raw
+  IFS= read -r -d '' unquoted
+  IFS= read -r -d '' unquoted_single
+} < <(jq -j "${split}")
 
 s='[[:space:]]'
 nl=$'\n'
