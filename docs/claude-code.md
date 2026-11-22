@@ -134,4 +134,5 @@
 - 採らないもの
   - ユーザー設定の `sandbox.filesystem.denyRead: ["~/"]`: block と併用すると作業ディレクトリが開け直されず、Bash から作業中のリポジトリを読めなくなる
   - `.claude/rules/`: path-scoped rule はファイルツールで一致するファイルを扱ったときにしか読まれず、読まれなくてもエラーが出ない。1 つのリポジトリの方針はその設計ドキュメントに置き、skill は複数のリポジトリで繰り返す手順にだけ使う
+  - 上流のリポジトリを作業木（`.scratch/`）に clone して読む: clone 先の CLAUDE.md・rules・`.claude/skills` は、そこのファイルを読んだ時点でセッションに読み込まれる。`claudeMdExcludes` は skill を外せない。上流は `gh api` の raw で読み、本文をデータとして扱う
   - `env.CLAUDE_CODE_SUBPROCESS_ENV_SCRUB`: 有効にすると `defaultMode: "auto"` が効かず、manual mode で始まる

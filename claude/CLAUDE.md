@@ -48,7 +48,7 @@
   - 一時ファイルはハーネスの指示どおり scratchpad に置き、Read / Write / Edit tool で扱う
   - `~/.claude` の skills・plugins・agents・commands・rules は Read tool で読む。Bash で読むと確認になる
   - 他のリポジトリでは `~/.claude/CLAUDE.md`・`settings.json` を Read でも読めない。CLAUDE.md は会話に読み込まれた本文を使い、settings.json が要るなら halkn/dotfiles のセッションに引き継ぐ
-  - 上流のソースは `gh api -H 'Accept: application/vnd.github.raw' 'repos/<o>/<r>/contents/<path>?ref=<版>'` で読み、`--jq` は付けない（応答が JSON でない）。多くのファイルを読む・`rg` で探すときは、`gh repo clone <o>/<r> .scratch/<テーマ>/<r> -- --depth 1` で作業木の中に clone する
+  - 上流のソースは `gh api -H 'Accept: application/vnd.github.raw' 'repos/<o>/<r>/contents/<path>?ref=<版>'` で読み、`--jq` は付けない（応答が JSON でない）
   - 手元にある他のリポジトリの clone（`~/repos` の下）は、読む前に `/add-dir` を頼む。`~/.local/share` のインストール先は Bash で読み、確認を受け入れる
 - sandbox・`blockReadsOutsideWorkingDirectories` の拒否と依存の取得（`mise install` など）は、`/add-dir` か `!` での実行をユーザーに頼む。ただし PATH に載るバイナリやプラグインを置く data ディレクトリ（`~/.local/share` など）は `/add-dir` に出さない（sandbox の書込まで開く）。hook・`pre-push` の拒否は、メッセージに従って自分で直す
 
