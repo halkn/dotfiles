@@ -97,10 +97,16 @@ opt.clipboard = 'unnamedplus'
 opt.updatetime = 250
 
 if vim.fn.executable('rg') == 1 then
-  -- Repeats .config/ripgrep/config: RIPGREP_CONFIG_PATH is unset when nvim is not
-  -- started from zsh.
-  opt.grepprg = 'rg --vimgrep --hidden --glob "!.git"'
-  opt.grepformat = '%f:%l:%c:%m'
+  -- .zshenv sets this, but nvim is not always started from zsh. Pointing rg at
+  -- the same config keeps :grep and the shell's rg from drifting apart.
+  if not vim.env.RIPGREP_CONFIG_PATH then
+    vim.env.RIPGREP_CONFIG_PATH = vim.fs.joinpath(
+      vim.env.XDG_CONFIG_HOME or vim.fs.joinpath(vim.env.HOME, '.config'),
+      'ripgrep/config'
+    )
+  end
+  -- The default appends -uu, which overrides the config's ignore rules.
+  opt.grepprg = 'rg --vimgrep'
 end
 
 -- lsp/gopls.lua only attaches under the 'gotmpl' filetype.
