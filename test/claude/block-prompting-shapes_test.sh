@@ -50,6 +50,20 @@ expect 2 'jq . /private/tmp/claude-501/p/s/scratchpad/a.json'
 expect 2 'bash x.sh > /tmp/claude-501/p/s/scratchpad/out.md'
 expect 2 'ls /tmp/claude/x'
 expect 2 'gh pr create --title x --body-file "$TMPDIR/x.md"'
+# Arrays built inside gh --jq.
+expect 2 "gh run list --json a,b --jq '.[] | [.a, .b] | @tsv'"
+expect 2 "gh issue list --json labels --jq '.[] | \"\\(.number)\\t\\([.labels[].name] | join(\",\"))\"'"
+expect 2 "gh pr view 1 --json a --jq='[.a]'"
+expect 2 "gh pr view 1 --json a -q '{a: [.b[]]}'"
+expect 2 'gh pr view 1 --json a,b --jq "[.a, .b]"'
+expect 2 "gh api repos/o/r/commits --jq '\"PRs: \" + ([.[].sha] | join(\",\"))'"
+expect 2 "gh pr view 1 --json title,labels --jq '\"[\\(.title)] \\([.labels[].name] | join(\",\"))\"'"
+expect 2 'gh pr view 1 --json labels --jq "\"\\([.labels[].name] | join(\",\"))\""'
+expect 2 "gh pr view 1 --json a,b --jq '.a//[.b]'"
+expect 2 "gh pr view 1 --json a,b --jq '.a=[.b]'"
+# --jq on a raw response.
+expect 2 "gh api -H 'Accept: application/vnd.github.raw' 'repos/o/r/contents/a.md?ref=v1' --jq ."
+expect 2 "gh api -H 'Accept: application/vnd.github.raw' repos/o/r/contents/a.ts -q '.a'"
 
 expect 0 "sed -n '1,40p' x.md"
 expect 0 "sed 's/a/b/' x.md"
@@ -69,6 +83,22 @@ expect 0 "perl -Mstrict -ne 'print' x"
 expect 0 "perl -MList::Util=sum -ne 'print' x"
 expect 0 "sed -n '1,5p' a.md${nl}rg '/api' b.md"
 expect 0 'undo-cd x'
+expect 0 "gh pr checks 1 --json name,bucket --jq '.[] | \"\\(.bucket)\\t\\(.name)\"'"
+expect 0 "gh api repos/o/r --jq '.[\"\$defs\"].a, .jobs[0].steps[].name'"
+expect 0 "gh pr view 1 --json sha --jq '.sha[0:7]'"
+expect 0 "gh pr view 1 --json labels --jq '.labels | map(.name) | join(\",\")'"
+expect 0 "gh pr view 1 --json title --jq .title"
+expect 0 "gh pr view 1 --json title,state --jq '\"\\(.title) [\\(.state)]\"'"
+expect 0 "gh issue view 1 --json title,comments --jq '\"\\(.title) [\\(.comments | length) comments]\"'"
+expect 0 'gh pr view 1 --json title --jq "\"[draft] \\(.title)\""'
+expect 0 "gh pr view 1 --json a --jq '.[] as [\$x] | \$x'"
+expect 0 "gh pr create --title 'x --jq [.a]' --body y --jq .url"
+expect 0 "echo x${nl}gh pr view 1 --jq '[.a]'"
+expect 0 "gh api -H 'Accept: application/vnd.github.raw+json' repos/o/r/issues/1 --jq .body"
+expect 0 "gh api -H 'Accept: application/vnd.github.raw' 'repos/o/r/contents/a.md?ref=v1'"
+expect 0 "gh api -H 'Accept: application/vnd.github.raw' 'repos/o/r/contents/s.json?ref=v1' --jq '.a'"
+expect 0 "jq '[.a, .b]' x.json"
+expect 0 "rg -n \"--jq '[.a]'\" docs/claude-code.md"
 expect 0 'echo ok'
 
 [ "$rc" -eq 0 ] && echo 'block-prompting-shapes_test: ok'

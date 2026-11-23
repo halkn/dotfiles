@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # PreToolUse(Bash): refuse command shapes that permissions.blockReadsOutsideWorkingDirectories turns
-# into a permission prompt even in auto mode, when a file tool or another plain form does the job.
+# into a permission prompt even in auto mode, or that are known to fail, when a file tool or another
+# plain form does the job.
 #
 # The hook runs before that prompt, so a refusal costs one retry instead of a human approval. Only
 # shapes with a mechanical replacement are listed. Reads that need an outside path, and shapes this
@@ -11,16 +12,47 @@ set -euo pipefail
 # Words inside quotes are data (`rg 'sed -i'`, `git commit -m "cd x"`), so the command-name rules
 # match against the command with quoted strings emptied. A variable is data only inside single
 # quotes (`rg '$TMPDIR'`); "$TMPDIR/x" still expands.
-# One jq run for all three forms, NUL-separated: the hook runs on every Bash call. A NUL inside
+# The fourth form is the code of a gh --jq program: the program as gh receives it, with the text of
+# its jq strings replaced by `x` and the code of `\(...)` kept (`"\(.title) [draft]"` holds no `[`
+# of code). A regex cannot pair the parens, since `\(...)` can hold strings that hold `\(...)`
+# again, so jq_code walks the program with a stack. gh keeps the last --jq, and one inside a
+# quoted argument (`--title 'x --jq [.a]'`) is data.
+# One jq run for all four forms, NUL-separated: the hook runs on every Bash call. A NUL inside
 # the command would shift the fields, so it is dropped, as bash drops it from a $(...).
 read -r -d '' split <<'JQ' || true
-def strip($all): gsub("(?<q>'[^']*'|\"(?:[^\"\\\\]|\\\\.)*\")"; if $all or (.q | startswith("'")) then "''" else .q end);
-(.tool_input.command // "" | gsub("\u0000"; "")) | ., strip(true), strip(false) | ., "\u0000"
+def quoted: "'[^']*'|\"(?:[^\"\\\\]|\\\\.)*\"";
+def strip($all): gsub("(?<q>" + quoted + ")"; if $all or (.q | startswith("'")) then "''" else .q end);
+def jq_prog: [match(quoted; "g") | [.offset, .offset + .length]] as $spans
+  | [match("\\s(?:--jq|-q)(?:=|\\s+)(" + quoted + "|[^\\s'\"]+)"; "g")
+      | .offset as $o | select(all($spans[]; $o < .[0] or $o >= .[1])) | .captures[0].string]
+  | (last // "")
+  | if startswith("'") then .[1:-1]
+    elif startswith("\"") then .[1:-1] | gsub("\\\\(?<c>[\\\\\"$`])"; .c)
+    else . end;
+def jq_code: reduce (explode[] | [.] | implode) as $c ({o: "", st: [0], esc: false};
+  .st[-1] as $t
+  | if $t == "s" then
+      if .esc then .esc = false | if $c == "(" then .st += [1] | .o += "(" else .o += "xx" end
+      elif $c == "\\" then .esc = true
+      elif $c == "\"" then .st |= .[:-1] | .o += "\""
+      else .o += "x" end
+    else
+      (if $c == "\"" then .st += ["s"]
+       elif $c == "(" then .st[-1] = $t + 1
+       elif $c == ")" and $t == 1 and (.st | length) > 1 then .st |= .[:-1]
+       elif $c == ")" and $t > 0 then .st[-1] = $t - 1
+       else . end)
+      | .o += $c
+    end) | .o;
+(.tool_input.command // "" | gsub("\u0000"; ""))
+| ., strip(true), strip(false), (if test("\\A\\s*gh\\s") then jq_prog | jq_code | gsub("\\bas\\s+\\["; "as (") else "" end)
+| ., "\u0000"
 JQ
 {
   IFS= read -r -d '' raw
   IFS= read -r -d '' unquoted
   IFS= read -r -d '' unquoted_single
+  IFS= read -r -d '' jq_code
 } < <(jq -j "${split}")
 
 s='[[:space:]]'
@@ -37,6 +69,17 @@ temp_path="(^|[[:space:]=:'\"<>])(/private)?/tmp/claude[-/]"
 # gh reads an absolute --body-file / -F path outside the sandbox without the prompt. $TMPDIR is
 # refused for gh too, since it expands to another directory outside the sandbox.
 bare_gh="^${s}*gh${s}"
+# gh runs outside the sandbox, where the safety check prompts on a --jq that builds an array
+# (`[.a, .b]`, `[.x[] | ...]`) but not on indexing (`.x[0]`, `.[]`, `.["k"]`). A `[` right after a
+# name, `.`, `]`, `)`, `?` or a string indexes; anywhere else it opens an array. The pattern after
+# `as` (`as [$x]`) destructures and builds nothing, so jq_code is fed with it turned into `as (`.
+jq_flag="${s}(--jq|-q)(=|${s})"
+jq_array="(^|[^][:alnum:]_.)?\"])\\["
+# A raw response is the file itself, so --jq works only on a JSON file; the path suffix stands in
+# for that. Refusing saves no retry over the gh error, but its message says what to do instead.
+# `vnd.github.raw+json` is a JSON response whose markdown fields come raw, so it is left alone.
+raw_accept='vnd\.github\.raw([^+]|$)'
+json_path="\\.json([?'\"[:space:]]|$)"
 
 refuse() {
   printf '%s\n' "$1" >&2
@@ -62,6 +105,17 @@ if [[ "${unquoted_single}" =~ ${temp_var} ]] ||
   { [[ "${raw}" =~ ${temp_path} ]] && ! [[ "${unquoted}" =~ ${bare_gh} ]]; }; then
   refuse 'scratchpad・`$TMPDIR` は作業ディレクトリの外にあり、Bash のコマンドに書くと確認になるため止めました。
 scratchpad のファイルは Read / Write / Edit tool で扱い、Bash の出力はファイルに書かずパイプで絞ってください。Bash で読み書きするファイルが要るなら、作業ディレクトリの `.scratch/<テーマ>/` に置いて相対パスで渡してください。`gh` の `--body-file` / `-F` には scratchpad の絶対パスを渡せます（`$TMPDIR` は `gh` の動く sandbox の外では別の場所を指すので使えません）。'
+fi
+
+if [[ "${unquoted}" =~ ${bare_gh} ]] && [[ "${unquoted}" =~ ${jq_flag} ]]; then
+  if [[ "${raw}" =~ ${raw_accept} ]] && ! [[ "${raw}" =~ ${json_path} ]]; then
+    refuse '`Accept: application/vnd.github.raw` の応答はファイルそのもので、JSON ファイル以外に `--jq` を付けると失敗するため止めました（JSON かどうかはパスの拡張子 `.json` で判定しています）。
+`--jq` を外して本文をそのまま受け取ってください。'
+  fi
+  if [[ "${jq_code}" =~ ${jq_array} ]]; then
+    refuse 'gh の `--jq` で配列を組む形（`[.a, .b]`・`[.x[] | …]`）は shell parser が追えず確認になるため止めました。
+複数の値は文字列補間（`.[] | "\(.a)\t\(.b)"`）で並べ、配列の要素をまとめるときは `.x | map(.name) | join(",")` を使ってください。添字（`.x[0]`・`.[]`）はそのまま使えます。'
+  fi
 fi
 
 exit 0
