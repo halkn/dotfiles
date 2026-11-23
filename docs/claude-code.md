@@ -82,7 +82,7 @@
 
 ## hook の基準
 
-- hook は、`permissions` のパターンが取りこぼす形を拾うためにある。もう 1 つの用途は、安全チェックの確認や sandbox 内の失敗になると分かっている形を、代わりの形を添えて先に拒否すること（`block-prompting-shapes.sh`、`block-piped-excluded.sh`）。拒否のメッセージが代わりを教えるので、その形は CLAUDE.md に書かない。拒否するのは、機械で判定でき、代わりの形が決まるものだけにする。正当な用途と区別できない形（`~/.claude` の下の読取など）まで拒否すると、承認で通す道が無くなるので、CLAUDE.md に置く。`matcher` は tool 名だけにし、`if` フィルタを付けない。コマンドの分解はスクリプト側で行う
+- hook は、`permissions` のパターンが取りこぼす形を拾うためにある。もう 1 つの用途は、安全チェックの確認や sandbox 内の失敗になると分かっている形を、代わりの形を添えて先に拒否すること（`block-prompting-shapes.sh`、`block-piped-excluded.sh`）。拒否のメッセージが代わりを教えるので、その形は CLAUDE.md に書かない。拒否するのは、機械で判定でき、代わりの形が決まるものだけにする。確認を避けるための拒否は、確認になることが多い形に限る。確認になる割合の低い形（gh の `--jq` のスライスや `select`）まで拒否すると、確認の出ない呼び出しまで止まって再試行が増えるので、出たときの承認に任せる。正当な用途と区別できない形（`~/.claude` の下の読取など）まで拒否すると、承認で通す道が無くなるので、CLAUDE.md に置く。`matcher` は tool 名だけにし、`if` フィルタを付けない。コマンドの分解はスクリプト側で行う
 - `command` にはスクリプトのパスを直接書かず、スクリプトが無いときは `exit 2` で止める形で包む。直接書くと、スクリプトが無くなったときにガードが黙って外れる。包む形は `-x` で存在を確かめるので、スクリプトには実行ビットを付ける
 - ガードの hook には `onFailure: "block"` を付ける。付けないと、異常終了やタイムアウトで tool の呼び出しが通る。付けると判定できない入力でも拒否になるので、判定が通すべき入力は `exit 0` まで届くようにする
 - `claude/hooks/` の hook と git の `pre-push` の判定を変えたら、テストを足す。置き場所は [shell.md](shell.md) の「テスト」に従う
@@ -112,7 +112,7 @@
 ## 一時ファイルと確認
 
 - auto モードで ask 以外に出る確認のほとんどは、`blockReadsOutsideWorkingDirectories` の安全チェック（作業ディレクトリの外のパスを書いた Bash と、sandbox の外で動く Bash のうち shell parser が追えないもの）で、allow でも hook の `allow` でも外せない。避け方は、判定できる形を `block-prompting-shapes.sh` で先に拒否し、判定できない形を CLAUDE.md に置く
-- 先に拒否するのは、確認になることが多い形に限る。確認になる割合の低い形（gh の `--jq` のスライスや `select`）まで拒否すると、確認の出ない呼び出しまで止まって再試行が増えるので、出たときの承認に任せる。どの形が確認になるかは、transcript の `permissionDecision`（`reasonCode: safetyCheck`）とコマンドを突き合わせて決める
+- どの形が確認になるかは、transcript の `permissionDecision`（`reasonCode: safetyCheck`）とコマンドを突き合わせて決める
 - 一時ファイルはハーネスの指示どおり scratchpad に置き、ファイルツールで扱う。scratchpad と `$TMPDIR` は作業ディレクトリの外なので、Bash のコマンドにそのパスを書くと確認になる。Bash の出力はファイルに書かずパイプで絞る。例外は `gh` の `--body-file`・`-F` で、sandbox の外で読むので `$TMPDIR` ではなく scratchpad の絶対パスを渡す
 - scratchpad が無いセッション（API キー・Bedrock など）では、作業ディレクトリの `.scratch/<テーマ>/` に置いて相対パスで渡す。並行するセッションと共有されるのでテーマで分け、使い終えたら消し、commit に含めない。自前の ignore しか読まないツールを使うリポジトリでは、その ignore に `.scratch/` を足す
 - temp のルートを `additionalDirectories` に足す案は採らない。パスが OS と uid に依存し、全セッションの temp をファイルツールに開く

@@ -57,6 +57,7 @@ expect 2 "gh pr view 1 --json a --jq='[.a]'"
 expect 2 "gh pr view 1 --json a -q '{a: [.b[]]}'"
 expect 2 'gh pr view 1 --json a,b --jq "[.a, .b]"'
 expect 2 "gh api repos/o/r/commits --jq '\"PRs: \" + ([.[].sha] | join(\",\"))'"
+expect 2 "gh pr view 1 --json title,labels --jq '\"[\\(.title)] \\([.labels[].name] | join(\",\"))\"'"
 # --jq on a raw response.
 expect 2 "gh api -H 'Accept: application/vnd.github.raw' 'repos/o/r/contents/a.md?ref=v1' --jq ."
 expect 2 "gh api -H 'Accept: application/vnd.github.raw' repos/o/r/contents/a.ts -q '.a'"
@@ -83,13 +84,12 @@ expect 0 "gh pr checks 1 --json name,bucket --jq '.[] | \"\\(.bucket)\\t\\(.name
 expect 0 "gh api repos/o/r --jq '.[\"\$defs\"].a, .jobs[0].steps[].name'"
 expect 0 "gh pr view 1 --json sha --jq '.sha[0:7]'"
 expect 0 "gh pr view 1 --json labels --jq '.labels | map(.name) | join(\",\")'"
-expect 0 "gh api -H 'Accept: application/vnd.github.raw' 'repos/o/r/contents/a.md?ref=v1'"
 expect 0 "gh pr view 1 --json title --jq .title"
-expect 0 "gh api -H 'Accept: application/vnd.github.raw' 'repos/o/r/contents/s.json?ref=v1' --jq '.a'"
 expect 0 "gh pr view 1 --json title,state --jq '\"\\(.title) [\\(.state)]\"'"
 expect 0 "gh issue view 1 --json title,comments --jq '\"\\(.title) [\\(.comments | length) comments]\"'"
 expect 0 'gh pr view 1 --json title --jq "\"[draft] \\(.title)\""'
-expect 2 "gh pr view 1 --json title,labels --jq '\"[\\(.title)] \\([.labels[].name] | join(\",\"))\"'"
+expect 0 "gh api -H 'Accept: application/vnd.github.raw' 'repos/o/r/contents/a.md?ref=v1'"
+expect 0 "gh api -H 'Accept: application/vnd.github.raw' 'repos/o/r/contents/s.json?ref=v1' --jq '.a'"
 expect 0 "jq '[.a, .b]' x.json"
 expect 0 "rg -n \"--jq '[.a]'\" docs/claude-code.md"
 expect 0 'echo ok'
