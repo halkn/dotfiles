@@ -2,7 +2,14 @@
 
 `claude/settings.json`（全リポジトリ共通）と `.claude/settings.json`（このリポジトリ専用）は JSON でコメントを書けないため、設定の理由はこの doc が持つ。各 hook の理由は `claude/hooks/*.sh` の冒頭コメントにある。
 
-`claude/` の中身は `~/.claude/` にリンクされ、全てのプロジェクトの Claude Code に効く。全プロジェクト共通の指示は `claude/CLAUDE.md` に、このリポジトリ専用の指示は `AGENTS.md` に書く。
+`claude/` の中身は `~/.claude/` にリンクされ、全てのプロジェクトの Claude Code に効く。全プロジェクト共通の指示は `claude/preferences.md` と `claude/CLAUDE.md` に、このリポジトリ専用の指示は `AGENTS.md` に書く。
+
+指示は、読まれる場所で 2 つのファイルに分ける。claude.ai の preferences は claude.ai のチャットとクラウドの Claude Code に読まれ、ローカルの Claude Code には読まれない。`~/.claude/CLAUDE.md` はローカルにだけ読まれ、クラウドには届かない。
+
+- `claude/preferences.md`: どの場所でも効かせたい指示。claude.ai の preferences には、このファイルの全文を貼る。正本はこのファイルで、preferences だけを直さない（リポジトリから preferences を読めないので、ずれを検知できない）。`claude/CLAUDE.md` が `@preferences.md` で読み込む
+- `claude/CLAUDE.md`: ローカルの `settings.json`（sandbox・`blockReadsOutsideWorkingDirectories`）を前提にする指示だけ。クラウドには別のハーネスの規則があるので、届かなくてよい
+- 特定の場所だけに当てる指示（「claude.ai のチャットでは」など）は `preferences.md` に置かない。全ての場所で読まれるので、置くなら読み手を限定して書く
+- クラウドに `~/.claude/CLAUDE.md` を setup script で配る方法は採らない。setup script の結果は環境のキャッシュに残り、直した内容がすぐには届かない。環境ごとに設定が要る
 
 好みの設定（表示・言語・エディタ操作・output style・statusline・プラグインの選択）は対象外。既定値と同じ値は書かない。前提は macOS（Seatbelt）で、WSL（bubblewrap）には当てはめない。
 
@@ -35,7 +42,7 @@
 
 ## CLAUDE.md の基準
 
-`claude/CLAUDE.md` は全セッションで読まれ、行が増えるほど個々の規則が守られにくくなる。そのため、迷ったときに結論を変える判断基準だけを置く。
+`claude/CLAUDE.md` と `claude/preferences.md` は全セッションで読まれ、行が増えるほど個々の規則が守られにくくなる。そのため、迷ったときに結論を変える判断基準だけを置く。
 
 - 置くもの: ユーザーの好みのうち既定と違うもの、ガードが事前に教えない環境の罠、ハーネスの既定（システムプロンプト・ツールの説明）から意図して外れる点。外れる点は、外れることと理由を書く。書かないと既定が採られるか、どちらが採られるか不定になる
 - 置かないもの: システムプロンプトやツールの説明が既に言うこと、hook・`pre-push` が拒否のメッセージで教えること（拒否は実行前に起き、次の呼び出しで直る）、手順（skill へ）、理由（この doc へ）、実測（commit へ）
