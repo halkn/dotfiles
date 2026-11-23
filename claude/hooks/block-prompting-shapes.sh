@@ -12,15 +12,23 @@ set -euo pipefail
 # Words inside quotes are data (`rg 'sed -i'`, `git commit -m "cd x"`), so the command-name rules
 # match against the command with quoted strings emptied. A variable is data only inside single
 # quotes (`rg '$TMPDIR'`); "$TMPDIR/x" still expands.
-# The fourth form is the code of a gh --jq program: the program unquoted, with the text of its jq
-# strings replaced by `x` and the code of `\(...)` kept (`"\(.title) [draft]"` holds no `[` of
-# code). jq_code keeps a stack of `s` (inside a string) or the paren depth of each code level.
+# The fourth form is the code of a gh --jq program: the program as gh receives it, with the text of
+# its jq strings replaced by `x` and the code of `\(...)` kept (`"\(.title) [draft]"` holds no `[`
+# of code). A regex cannot pair the parens, since `\(...)` can hold strings that hold `\(...)`
+# again, so jq_code walks the program with a stack. gh keeps the last --jq, and one inside a
+# quoted argument (`--title 'x --jq [.a]'`) is data.
 # One jq run for all four forms, NUL-separated: the hook runs on every Bash call. A NUL inside
 # the command would shift the fields, so it is dropped, as bash drops it from a $(...).
 read -r -d '' split <<'JQ' || true
-def strip($all): gsub("(?<q>'[^']*'|\"(?:[^\"\\\\]|\\\\.)*\")"; if $all or (.q | startswith("'")) then "''" else .q end);
-def jq_prog: (first(capture("\\s(--jq|-q)(=|\\s+)(?<p>'[^']*'|\"(?:[^\"\\\\]|\\\\.)*\"|[^\\s'\"]+)")) | .p) // ""
-  | if startswith("'") then .[1:-1] elif startswith("\"") then .[1:-1] | gsub("\\\\\""; "\"") else . end;
+def quoted: "'[^']*'|\"(?:[^\"\\\\]|\\\\.)*\"";
+def strip($all): gsub("(?<q>" + quoted + ")"; if $all or (.q | startswith("'")) then "''" else .q end);
+def jq_prog: [match(quoted; "g") | [.offset, .offset + .length]] as $spans
+  | [match("\\s(?:--jq|-q)(?:=|\\s+)(" + quoted + "|[^\\s'\"]+)"; "g")
+      | .offset as $o | select(all($spans[]; $o < .[0] or $o >= .[1])) | .captures[0].string]
+  | (last // "")
+  | if startswith("'") then .[1:-1]
+    elif startswith("\"") then .[1:-1] | gsub("\\\\(?<c>[\\\\\"$`])"; .c)
+    else . end;
 def jq_code: reduce (explode[] | [.] | implode) as $c ({o: "", st: [0], esc: false};
   .st[-1] as $t
   | if $t == "s" then
@@ -37,7 +45,7 @@ def jq_code: reduce (explode[] | [.] | implode) as $c ({o: "", st: [0], esc: fal
       | .o += $c
     end) | .o;
 (.tool_input.command // "" | gsub("\u0000"; ""))
-| ., strip(true), strip(false), (if test("^\\s*gh\\s") then jq_prog | jq_code else "" end)
+| ., strip(true), strip(false), (if test("\\A\\s*gh\\s") then jq_prog | jq_code | gsub("\\bas\\s+\\["; "as (") else "" end)
 | ., "\u0000"
 JQ
 {
@@ -63,12 +71,14 @@ temp_path="(^|[[:space:]=:'\"<>])(/private)?/tmp/claude[-/]"
 bare_gh="^${s}*gh${s}"
 # gh runs outside the sandbox, where the safety check prompts on a --jq that builds an array
 # (`[.a, .b]`, `[.x[] | ...]`) but not on indexing (`.x[0]`, `.[]`, `.["k"]`). A `[` right after a
-# name, `.`, `]` or `)` indexes; anywhere else it opens an array.
+# name, `.`, `]`, `)`, `?` or a string indexes; anywhere else it opens an array. The pattern after
+# `as` (`as [$x]`) destructures and builds nothing, so jq_code is fed with it turned into `as (`.
 jq_flag="${s}(--jq|-q)(=|${s})"
-jq_array="(^|[[:space:](|,+:])\\["
+jq_array="(^|[^][:alnum:]_.)?\"])\\["
 # A raw response is the file itself, so --jq works only on a JSON file; the path suffix stands in
 # for that. Refusing saves no retry over the gh error, but its message says what to do instead.
-raw_accept='vnd\.github\.raw'
+# `vnd.github.raw+json` is a JSON response whose markdown fields come raw, so it is left alone.
+raw_accept='vnd\.github\.raw([^+]|$)'
 json_path="\\.json([?'\"[:space:]]|$)"
 
 refuse() {
@@ -99,12 +109,12 @@ fi
 
 if [[ "${unquoted}" =~ ${bare_gh} ]] && [[ "${unquoted}" =~ ${jq_flag} ]]; then
   if [[ "${raw}" =~ ${raw_accept} ]] && ! [[ "${raw}" =~ ${json_path} ]]; then
-    refuse '`Accept: application/vnd.github.raw` の応答はファイルそのもので、JSON ファイル以外に `--jq` を付けると失敗するため止めました。
+    refuse '`Accept: application/vnd.github.raw` の応答はファイルそのもので、JSON ファイル以外に `--jq` を付けると失敗するため止めました（JSON かどうかはパスの拡張子 `.json` で判定しています）。
 `--jq` を外して本文をそのまま受け取ってください。'
   fi
   if [[ "${jq_code}" =~ ${jq_array} ]]; then
     refuse 'gh の `--jq` で配列を組む形（`[.a, .b]`・`[.x[] | …]`）は shell parser が追えず確認になるため止めました。
-複数の値は文字列補間（`.[] | "\(.a)\t\(.b)"`）で並べ、配列の要素をまとめるときは `.x | map(.name) | join(",")` を使ってください。添字（`.x[0]`・`.[]`・`.sha[0:7]`）はそのまま使えます。'
+複数の値は文字列補間（`.[] | "\(.a)\t\(.b)"`）で並べ、配列の要素をまとめるときは `.x | map(.name) | join(",")` を使ってください。添字（`.x[0]`・`.[]`）はそのまま使えます。'
   fi
 fi
 
