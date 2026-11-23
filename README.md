@@ -63,9 +63,7 @@ the CLI tooling around them, set up by [mise](https://mise.jdx.dev/):
    gh auth login
    ```
 
-1. Reopen the terminal. In Ghostty (or Noctty on WSL) zsh starts inside
-   [herdr](https://herdr.dev); set `HERDR_AUTO_START=0` in `.zshrc.local` to
-   stop that on a machine.
+1. Reopen the terminal and run `herdr` to start [herdr](https://herdr.dev).
 
 ## Machine-local settings
 
