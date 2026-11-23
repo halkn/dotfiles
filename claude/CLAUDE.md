@@ -74,8 +74,7 @@ macOS / WSL の端末で、この dotfiles の sandbox・hook・ツールが効�
   - ファイルの書き換えは Edit / Write tool で行う。ハーネスは auto モードで Bash での書き換えを勧めるが、それが確認の主な原因になっている
   - `~/.claude` の skills・plugins・agents・commands・rules は Read tool で読む。Bash で読むと確認になる
   - 他のリポジトリでは `~/.claude/CLAUDE.md`・`settings.json` を Read でも読めない。CLAUDE.md は会話に読み込まれた本文を使い、settings.json が要るなら halkn/dotfiles のセッションに引き継ぐ
-  - 上流のソースは `gh api -H 'Accept: application/vnd.github.raw' 'repos/<o>/<r>/contents/<path>?ref=<版>'` で読み、`--jq` は付けない（応答が JSON でない）
+  - 上流のソースは `gh api -H 'Accept: application/vnd.github.raw' 'repos/<o>/<r>/contents/<path>?ref=<版>'` で読む
   - 手元にある他のリポジトリの clone（`~/repos` の下）は、読む前に `/add-dir` を頼む。`~/.local/share` のインストール先は Bash で読み、確認を受け入れる
 - `gh` の全サブコマンド（読取を含む）と git の push・fetch・clone・ls-remote は、他のコマンドとパイプ・`;`・`&&`・ループで繋がず単体で打ち、出力は `--jq` で絞る。`git pull` は `git fetch` と `git merge` に分ける
-  - `gh` は sandbox の外で動き、追えない引数は確認になる。`--jq` は `.[] | "\(.a)\t\(.b)"` のような文字列補間の形にし、配列の構築（`[.a, .b] | @tsv`・`[.a] | join(…)`）・スライス（`.sha[0:7]`）・`select(.a=="b")` を入れない
 - sandbox・`blockReadsOutsideWorkingDirectories` の拒否と依存の取得（`mise install` など）は、`/add-dir` か `!` での実行をユーザーに頼む。ただし PATH に載るバイナリやプラグインを置く data ディレクトリ（`~/.local/share` など）は `/add-dir` に出さない（sandbox の書込まで開く）。hook・`pre-push` の拒否は、メッセージに従って自分で直す

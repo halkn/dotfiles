@@ -37,10 +37,65 @@ temp_path="(^|[[:space:]=:'\"<>])(/private)?/tmp/claude[-/]"
 # gh reads an absolute --body-file / -F path outside the sandbox without the prompt. $TMPDIR is
 # refused for gh too, since it expands to another directory outside the sandbox.
 bare_gh="^${s}*gh${s}"
+# gh runs outside the sandbox, where the safety check prompts on a --jq that builds an array
+# (`[.a, .b]`, `[.x[] | ...]`) but not on indexing (`.x[0]`, `.[]`, `.["k"]`). A `[` right after a
+# name, `.`, `]` or `)` indexes; anywhere else it opens an array. Text inside jq strings
+# (`"\(.title) [draft]"`) is not code, so jq_code blanks it out before the match.
+jq_flag="${s}(--jq|-q)(=|${s})"
+jq_arg="${s}(--jq|-q)(=|${s}+)('[^']*'|\"([^\"\\\\]|\\\\.)*\"|[^[:space:]'\"]+)"
+jq_array="(^|[[:space:](|,+:])\\["
+# A raw response is the file itself, so --jq fails on anything but a JSON file and costs a retry.
+raw_accept='vnd\.github\.raw'
+json_path="\\.json([?'\"[:space:]]|$)"
 
 refuse() {
   printf '%s\n' "$1" >&2
   exit 2
+}
+
+# Print the jq program with string text replaced by `x`, keeping the code of `\(...)`. Each stack
+# entry is `s` (inside a string) or the paren depth of a code level. Written for bash 3.2.
+jq_code() {
+  local q=$1 out='' ch top i=0 n=${#1}
+  local -a stack=(0)
+  while ((i < n)); do
+    ch=${q:i:1}
+    top=${stack[${#stack[@]}-1]}
+    if [[ "${top}" == s ]]; then
+      if [[ "${ch}" == '\' && "${q:i+1:1}" == '(' ]]; then
+        stack+=(1)
+        out+='('
+        i=$((i + 1))
+      elif [[ "${ch}" == '\' ]]; then
+        out+='xx'
+        i=$((i + 1))
+      elif [[ "${ch}" == '"' ]]; then
+        unset "stack[${#stack[@]} - 1]"
+        out+='"'
+      else
+        out+='x'
+      fi
+    else
+      case "${ch}" in
+        '"')
+          stack+=(s)
+          ;;
+        '(')
+          stack[${#stack[@]} - 1]=$((top + 1))
+          ;;
+        ')')
+          if ((top == 1 && ${#stack[@]} > 1)); then
+            unset "stack[${#stack[@]} - 1]"
+          elif ((top > 0)); then
+            stack[${#stack[@]} - 1]=$((top - 1))
+          fi
+          ;;
+      esac
+      out+="${ch}"
+    fi
+    i=$((i + 1))
+  done
+  printf '%s' "${out}"
 }
 
 if [[ "${unquoted}" =~ ${in_place} ]]; then
@@ -62,6 +117,29 @@ if [[ "${unquoted_single}" =~ ${temp_var} ]] ||
   { [[ "${raw}" =~ ${temp_path} ]] && ! [[ "${unquoted}" =~ ${bare_gh} ]]; }; then
   refuse 'scratchpad・`$TMPDIR` は作業ディレクトリの外にあり、Bash のコマンドに書くと確認になるため止めました。
 scratchpad のファイルは Read / Write / Edit tool で扱い、Bash の出力はファイルに書かずパイプで絞ってください。Bash で読み書きするファイルが要るなら、作業ディレクトリの `.scratch/<テーマ>/` に置いて相対パスで渡してください。`gh` の `--body-file` / `-F` には scratchpad の絶対パスを渡せます（`$TMPDIR` は `gh` の動く sandbox の外では別の場所を指すので使えません）。'
+fi
+
+if [[ "${unquoted}" =~ ${bare_gh} ]] && [[ "${unquoted}" =~ ${jq_flag} ]]; then
+  if [[ "${raw}" =~ ${raw_accept} ]] && ! [[ "${raw}" =~ ${json_path} ]]; then
+    refuse '`Accept: application/vnd.github.raw` の応答はファイルそのもので、JSON ファイル以外に `--jq` を付けると失敗するため止めました。
+`--jq` を外して本文をそのまま受け取ってください。'
+  fi
+  if [[ "${raw}" =~ ${jq_arg} ]]; then
+    jq_prog=${BASH_REMATCH[3]}
+    case "${jq_prog}" in
+      \'*)
+        jq_prog=${jq_prog:1:${#jq_prog}-2}
+        ;;
+      \"*)
+        jq_prog=${jq_prog:1:${#jq_prog}-2}
+        jq_prog=${jq_prog//\\\"/\"}
+        ;;
+    esac
+  fi
+  if [[ -n "${jq_prog-}" ]] && [[ "$(jq_code "${jq_prog}")" =~ ${jq_array} ]]; then
+    refuse 'gh の `--jq` で配列を組む形（`[.a, .b]`・`[.x[] | …]`）は shell parser が追えず確認になるため止めました。
+複数の値は文字列補間（`.[] | "\(.a)\t\(.b)"`）で並べ、配列の要素をまとめるときは `.x | map(.name) | join(",")` を使ってください。添字（`.x[0]`・`.[]`・`.sha[0:7]`）はそのまま使えます。'
+  fi
 fi
 
 exit 0
