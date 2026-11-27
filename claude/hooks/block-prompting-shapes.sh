@@ -88,7 +88,7 @@ refuse() {
 
 if [[ "${unquoted}" =~ ${in_place} ]]; then
   refuse '`sed -i` / `perl -i` での書き換えは、作業ディレクトリの中でも確認になることが多いため止めました。
-1 箇所の書き換えは Edit tool、複数箇所の同じ形の書き換えは `ast-grep run -p <pattern> -r <rewrite> -l <lang>` で行ってください。'
+書き換えは Edit / Write tool で行ってください。'
 fi
 
 if [[ "${raw}" =~ ${address} ]]; then
