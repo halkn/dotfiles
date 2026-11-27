@@ -138,17 +138,8 @@
   "enabledPlugins": {
     "skill-creator@claude-plugins-official": true,
     "claude-md-management@claude-plugins-official": true,
-    "ast-grep@ast-grep-marketplace": true,
     "cc-plugin-agents-md@builtin": true,
     "cc-plugin-telemetry@builtin": false
-  },
-  "extraKnownMarketplaces": {
-    "ast-grep-marketplace": {
-      "source": {
-        "source": "github",
-        "repo": "ast-grep/agent-skill"
-      }
-    }
   },
   "outputStyle": "Concise",
   "language": "japanese",

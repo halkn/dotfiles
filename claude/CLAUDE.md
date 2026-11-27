@@ -66,8 +66,7 @@
 
 macOS / WSL の端末で、この dotfiles の sandbox・hook・ツールが効くセッションだけに適用する。クラウドのセッションには適用しない。
 
-- 検索は `rg`、構文を条件にする検索・変換は `ast-grep`。値の確認は `jq` / `yq`、YAML 構文は `ryl`
-  - 呼出しの引数・形を複数箇所で変える書き換えは、Edit の繰り返しや `sed` ではなく `ast-grep run -p '<pattern>' -r '<rewrite>' -l <lang>` で行う。`-U` の前に一度 `-U` 無しで一致を確かめる。テキスト置換は改行や入れ子の呼出しで漏れる
+- 検索は `rg`。値の確認は `jq` / `yq`、YAML 構文は `ryl`
 - `allowedDomains` にある docs は `curl` で取得して `rg` で原文を確かめる。それ以外は WebFetch
   - Bash に `allowed_domains` を付けない（`strictAllowlist` で拒否される）。allowlist に無いホストへの通信が要るコマンドは、`!` での実行を頼む
 - Bash は作業ディレクトリの中で動かす。作業ディレクトリの外のパスを書いた Bash と、sandbox の外で動くコマンドの追えない展開は、auto モードでも `blockReadsOutsideWorkingDirectories` の確認になる
