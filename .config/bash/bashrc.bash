@@ -12,6 +12,12 @@ HISTSIZE=10000
 HISTCONTROL=ignoreboth
 shopt -s histappend
 
+set -o ignoreeof
+# autocd needs bash 4+; macOS /bin/bash, still reachable as `bash`, lacks it.
+shopt -s autocd 2>/dev/null
+# Frees Ctrl-S from freezing the terminal; stty needs one to act on.
+[[ -t 0 ]] && stty -ixon
+
 alias du='du -h'
 alias df='df -h'
 alias ..='cd ..'
@@ -20,7 +26,18 @@ alias :q='exit'
 # Ahead of the tools below, whose checks find mise-installed ones through it.
 command -v mise >/dev/null && eval "$(mise activate bash)"
 
-command -v fzf >/dev/null && eval "$(fzf --bash)"
+if command -v fzf >/dev/null; then
+  export FZF_DEFAULT_OPTS="
+    --height 60%
+    --layout=reverse
+    --border
+    --info=inline
+    --preview-window=right:60%:wrap
+    --bind ctrl-u:preview-half-page-up,ctrl-d:preview-half-page-down
+    --bind ctrl-/:toggle-preview
+  "
+  eval "$(fzf --bash)"
+fi
 
 if command -v eza >/dev/null; then
   alias ls='eza --icons --group-directories-first'
