@@ -62,27 +62,17 @@ if command -v starship >/dev/null; then
   eval "$(starship init bash)"
 fi
 
-# flyline replaces readline, so it comes after every tool that sets up the prompt.
-# macOS /bin/bash 3.2 cannot load it, and a shell without a terminal or without line editing
-# (`--noediting`) has nothing to draw on; flyline refuses the latter and dumps its log.
-# Already loaded is checked with `type -t`, not `enable flyline`: on bash 5.2+ a bare
-# `enable flyline` loads a `flyline` file found on BASH_LOADABLES_PATH, whose default
-# includes `.`, so a new shell would run one sitting in its start directory.
+# `type -t`, not `enable flyline`: a bare enable also loads a `flyline` file from `.`.
 if ((BASH_VERSINFO[0] * 100 + BASH_VERSINFO[1] >= 404)) && [[ -t 0 && -t 1 ]] &&
   [[ -o emacs || -o vi ]] && [[ $(type -t flyline) != builtin ]]; then
-  # The archive holds one versioned file: libflyline.dylib.<ver> or libflyline.so.<ver>.
-  # Offline, because for a tool not yet installed mise asks GitHub for its versions. From
-  # $HOME, because an untrusted mise config in the start directory makes `mise where` fail.
+  # Offline: an uninstalled tool makes mise query GitHub. $HOME: an untrusted config fails.
   _flyline=("$(MISE_OFFLINE=1 mise -C "$HOME" where github:HalFrgrd/flyline 2>/dev/null)"/libflyline.*)
   if [[ -f ${_flyline[0]} ]] && enable -f "${_flyline[0]}" flyline; then
-    # flyline's default path comes from the OS data dir (~/Library on macOS); history
-    # sits beside HISTFILE in the XDG state dir instead.
+    # The default path is under ~/Library on macOS.
     flyline history --backend flyline \
       --jsonl-path "${XDG_STATE_HOME:-$HOME/.local/state}/flyline/history.jsonl"
-    # readline's emacs keys that flyline leaves unbound or binds differently (Alt+b/f/d
-    # already follow Alt+Left/Right/Delete). Remaps make the keys follow Up/Down/Right in
-    # every context (history, menus, multi-line). Ctrl+b is a bind, not a remap: Left at
-    # the start of the line enters prompt directory selection, which readline never does.
+    # readline's emacs keys. Ctrl+b is not remapped to Left, which at the start of the
+    # line enters prompt directory selection.
     flyline key remap Ctrl+p Up
     flyline key remap Ctrl+n Down
     flyline key remap Ctrl+f Right
@@ -92,8 +82,7 @@ if ((BASH_VERSINFO[0] * 100 + BASH_VERSINFO[1] >= 404)) && [[ -t 0 && -t 1 ]] &&
   unset _flyline
 fi
 
-# fzf's key bindings and `**<Tab>` work only under readline, so they are set up only
-# where flyline did not load; flyline's history search and completion replace them.
+# fzf's key bindings and `**<Tab>` need readline.
 if [[ $(type -t flyline) != builtin ]] && command -v fzf >/dev/null; then
   eval "$(fzf --bash)"
 fi
