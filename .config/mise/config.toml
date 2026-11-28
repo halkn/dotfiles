@@ -23,6 +23,8 @@ go = "latest"
 # terminal
 starship = "latest"
 herdr = "latest"
+# A bash loadable builtin, not a command: .config/bash/bashrc.bash loads it from `mise where`.
+"github:HalFrgrd/flyline" = "latest"
 
 # cli
 ripgrep = "latest"

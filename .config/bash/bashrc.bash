@@ -36,6 +36,8 @@ if command -v fzf >/dev/null; then
     --bind ctrl-u:preview-half-page-up,ctrl-d:preview-half-page-down
     --bind ctrl-/:toggle-preview
   "
+  # Its Ctrl-R / Ctrl-T / Alt-C are readline bindings, dead once flyline (below) loads;
+  # they stay for shells without flyline rather than being rebound to it.
   eval "$(fzf --bash)"
 fi
 
@@ -61,4 +63,22 @@ if command -v starship >/dev/null; then
   export STARSHIP_CONFIG=${XDG_CONFIG_HOME:-$HOME/.config}/starship/starship.toml
   export STARSHIP_CACHE=${XDG_CACHE_HOME:-$HOME/.cache}/starship/cache
   eval "$(starship init bash)"
+fi
+
+# flyline replaces readline, so it comes after every tool that sets up the prompt.
+# macOS /bin/bash 3.2 cannot load it, and a shell without a terminal has nothing to draw on.
+# `enable flyline` succeeds when it is already loaded, so re-sourcing this file does not
+# run `enable -f` (and flyline's startup) a second time inside a live flyline.
+if ((BASH_VERSINFO[0] * 100 + BASH_VERSINFO[1] >= 404)) && [[ -t 0 && -t 1 ]] &&
+  ! enable flyline 2>/dev/null; then
+  # The archive holds one versioned file: libflyline.dylib.<ver> or libflyline.so.<ver>.
+  # Offline, because for a tool not yet installed mise asks GitHub for its versions.
+  _flyline=("$(MISE_OFFLINE=1 mise where github:HalFrgrd/flyline 2>/dev/null)"/libflyline.*)
+  if [[ -f ${_flyline[0]} ]] && enable -f "${_flyline[0]}" flyline; then
+    # flyline's default path comes from the OS data dir (~/Library on macOS); history
+    # sits beside HISTFILE in the XDG state dir instead.
+    flyline history --backend flyline \
+      --jsonl-path "${XDG_STATE_HOME:-$HOME/.local/state}/flyline/history.jsonl"
+  fi
+  unset _flyline
 fi
