@@ -63,14 +63,17 @@ if command -v starship >/dev/null; then
 fi
 
 # flyline replaces readline, so it comes after every tool that sets up the prompt.
-# macOS /bin/bash 3.2 cannot load it, and a shell without a terminal has nothing to draw on.
-# `enable flyline` succeeds when it is already loaded, so re-sourcing this file does not
-# run `enable -f` (and flyline's startup) a second time inside a live flyline.
+# macOS /bin/bash 3.2 cannot load it, and a shell without a terminal or without line editing
+# (`--noediting`) has nothing to draw on; flyline refuses the latter and dumps its log.
+# Already loaded is checked with `type -t`, not `enable flyline`: on bash 5.2+ a bare
+# `enable flyline` loads a `flyline` file found on BASH_LOADABLES_PATH, whose default
+# includes `.`, so a new shell would run one sitting in its start directory.
 if ((BASH_VERSINFO[0] * 100 + BASH_VERSINFO[1] >= 404)) && [[ -t 0 && -t 1 ]] &&
-  ! enable flyline 2>/dev/null; then
+  [[ -o emacs || -o vi ]] && [[ $(type -t flyline) != builtin ]]; then
   # The archive holds one versioned file: libflyline.dylib.<ver> or libflyline.so.<ver>.
-  # Offline, because for a tool not yet installed mise asks GitHub for its versions.
-  _flyline=("$(MISE_OFFLINE=1 mise where github:HalFrgrd/flyline 2>/dev/null)"/libflyline.*)
+  # Offline, because for a tool not yet installed mise asks GitHub for its versions. From
+  # $HOME, because an untrusted mise config in the start directory makes `mise where` fail.
+  _flyline=("$(MISE_OFFLINE=1 mise -C "$HOME" where github:HalFrgrd/flyline 2>/dev/null)"/libflyline.*)
   if [[ -f ${_flyline[0]} ]] && enable -f "${_flyline[0]}" flyline; then
     # flyline's default path comes from the OS data dir (~/Library on macOS); history
     # sits beside HISTFILE in the XDG state dir instead.
