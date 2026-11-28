@@ -8,7 +8,7 @@ the CLI tooling around them, set up by [mise](https://mise.jdx.dev/):
 
 | Path | Holds | Linked to |
 | --- | --- | --- |
-| `.config/` | Config for zsh, git, Neovim, mise, herdr and other tools | `~/.config/*` |
+| `.config/` | Config for zsh, bash (on trial), git, Neovim, mise, herdr and other tools | `~/.config/*`; bash's two files also at `~/.bash_profile`, `~/.bashrc` |
 | `.zshenv` | Points zsh at `.config/zsh` | `~/.zshenv` |
 | `bin/` | Standalone commands (`repo`, `hw`) | `~/.local/bin/*` |
 | `claude/` | Claude Code user settings, hooks and global instructions | `~/.claude/*` |
@@ -45,8 +45,9 @@ the CLI tooling around them, set up by [mise](https://mise.jdx.dev/):
    mise bootstrap --yes --update
    ```
 
-   If a target like `~/.config/git` already exists as a real directory, move it
-   aside yourself (e.g. `mv ~/.config/git ~/.config/git.bak`) and run it again. Do not
+   If a target like `~/.config/git` or Ubuntu's stock `~/.bashrc` already exists
+   as a real file or directory, move it aside yourself (e.g.
+   `mv ~/.bashrc ~/.bashrc.bak`) and run it again. Do not
    reach for `--force-dotfiles`: it overwrites with no backup.
 
    Until `gh auth login` below, mise calls the GitHub API anonymously, and one

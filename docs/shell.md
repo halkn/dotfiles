@@ -1,10 +1,12 @@
 # shell・コマンド・herdr の設計
 
-対象は zsh の設定（`.zshenv`・`.config/zsh/`）、独立したコマンド（`bin/`）、herdr のキーから実行する script（`.config/herdr/`）、それらのテスト（`test/`）。
+対象は zsh の設定（`.zshenv`・`.config/zsh/`）、bash の設定（`.config/bash/`）、独立したコマンド（`bin/`）、herdr のキーから実行する script（`.config/herdr/`）、それらのテスト（`test/`）。
 
 ## 原則
 
-zsh の設定は、どのツールが欠けたマシンでもエラーなく起動する形に保つ。tool の初期化と plugin の読込は、それぞれの存在を確かめてから行う。herdr は手で起動する。`.zshrc` から自動で起動しない。起動してよい端末の判定（端末の種類・`:terminal`・入れ子）は端末ごとに外れ、外れた端末で挙動が変わるため。
+shell（zsh・bash）の設定は、どのツールが欠けたマシンでもエラーなく起動する形に保つ。tool の初期化と plugin の読込は、それぞれの存在を確かめてから行う。herdr は手で起動する。`.zshrc` から自動で起動しない。起動してよい端末の判定（端末の種類・`:terminal`・入れ子）は端末ごとに外れ、外れた端末で挙動が変わるため。
+
+bash は zsh から移すかを試している段階にある。bash の設定は、bash の既定と各ツールの標準の初期化だけで組み、zsh の補完・履歴・widget を再現しない。zsh と同じ使い心地より、設定の単純さを優先する。試用中は環境変数を `.config/bash/bash_profile.bash` に複製し、`.config/zsh/.zshenv` と同時に直す。追跡外の `.zshenv.local` / `.zshrc.local` に当たるものは bash に置かず、試用中はマシン固有の値が bash に届かない。両方の shell から読む共通のファイルは作らない。最後にどちらかを消す前提で、共通化の手間がそれまでしか役に立たないため。
 
 独自の機能はコマンドのサブコマンドとして作り、shell が要らないものは shell の外に置く。
 
@@ -18,6 +20,8 @@ tool の cache・state・data は XDG の各ディレクトリに置く。消え
 | --- | --- | --- |
 | `.config/zsh/.zshenv` | 非対話のプロセス（`bin/`・herdr の script・agent の Bash）も読む環境変数と `path` | interactive でしか使わない設定 |
 | `.config/zsh/.zshrc` | interactive zsh の基盤（history・options・completion・keybind・alias）と、tool の初期化。fzf 節の `hw` の補完 | 独自の関数 |
+| `.config/bash/bash_profile.bash`（`~/.bash_profile`） | login bash の環境変数と PATH（`.config/zsh/.zshenv` と同じ値）。最後に `bashrc.bash` を読む | interactive でしか使わない設定 |
+| `.config/bash/bashrc.bash`（`~/.bashrc`） | interactive bash の history の置き場所と、tool の標準の初期化・alias | 独自の関数・補完・keybind |
 | `bin/repo` | clone の置き場所、list / get、create / setup（GitHub 側の設定） | herdr の知識 |
 | `bin/hw` | herdr の操作の全て（workspace を開く・移動する・閉じる、worktree の作成・削除）と、picker・補完に渡す行データ。herdr を呼ぶのはこのコマンドだけ | picker・確認プロンプト |
 | `.config/herdr/herdr-*.zsh` | herdr のショートカット 1 つにつき 1 本。focused な checkout に入る、`hw` から行を受け取る、fzf を開く、選んだ行のキーを `hw` に渡す、失敗したら止めて見せる、確認を 1 回出す | 分岐する判断、行の組み立て、`herdr` の呼び出し |
@@ -48,6 +52,7 @@ tool の cache・state・data は XDG の各ディレクトリに置く。消え
 
 - `set -e` は使わず、`set -uo pipefail` で書く。失敗するコマンドは、その場で扱い方を決める（`|| exit 1`・`|| _ui_die`・`|| rc=1`）
 - 中身が zsh の script の拡張子は `.zsh` にする。`.sh` は bash / sh の script に使う
+- shell のファイルは、shuck が拡張子か shebang から方言を判定できる形にする。判定できないファイルは `mise run lint` の検査から黙って外れ、方言の組込み変数も未使用と誤検知される。bash が決まった名前で読む設定は、`.bash` の本体を置き、その名前からリンクする
 
 ## worktree
 
@@ -64,7 +69,7 @@ worktree は git で作り、`herdr worktree open --cwd <メイン checkout> --p
 
 `$WT_ROOT` の場所を変えるときは、次の 3 箇所を揃える。
 
-- `.config/zsh/.zshenv` の `$WT_ROOT`
+- `.config/zsh/.zshenv` と `.config/bash/bash_profile.bash` の `$WT_ROOT`
 - `.config/herdr/config.toml` の `[worktrees] directory`
 - `bin/hw` の既定値（`$WT_ROOT` が未設定のときに使われる）
 
@@ -79,6 +84,7 @@ worktree は git で作り、`herdr worktree open --cwd <メイン checkout> --p
 - fzf の widget と補完
 - herdr の keybinding と `herdr-*.zsh`
 - 追跡外の `.zshenv.local` / `.zshrc.local`
+- bash の環境変数。zsh から起動した bash は zsh の環境を引き継いで漏れを隠すので、`env -i HOME="$HOME" TERM="$TERM" <bash> -l` で確かめる
 
 ## 決定と理由
 

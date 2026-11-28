@@ -10,6 +10,9 @@
 [dotfiles]
 "~/.config/*" = { source = ".config/*" }
 "~/.zshenv" = { source = ".zshenv" }
+# bash has no ZDOTDIR, so the two names it reads point straight into .config/bash.
+"~/.bash_profile" = { source = ".config/bash/bash_profile.bash" }
+"~/.bashrc" = { source = ".config/bash/bashrc.bash" }
 "~/.claude/*" = { source = "claude/*" }
 # Per entry, because ~/.local/bin (already on PATH via .config/zsh/.zshenv) holds other tools too.
 "~/.local/bin/*" = { source = "bin/*" }
@@ -17,7 +20,8 @@
 # git and curl are already installed by the manual steps in README before the clone, but stay
 # declared here because it is idempotent.
 # macOS needs none of the rest: zsh and unzip ship with the OS, and the Claude Code sandbox uses
-# Seatbelt rather than bubblewrap and socat.
+# Seatbelt rather than bubblewrap and socat. Its /bin/bash is too old for current
+# bash scripts, hence bash from Homebrew.
 # The casks stay off Linux: under WSL the terminal and its font belong to the Windows host.
 [bootstrap.packages]
 "apt:git" = { os = "linux" }
@@ -26,6 +30,7 @@
 "apt:unzip" = { os = "linux" }
 "apt:bubblewrap" = { os = "linux" }
 "apt:socat" = { os = "linux" }
+"brew:bash" = { os = "macos" }
 "brew-cask:ghostty" = { os = "macos" }
 "brew-cask:font-udev-gothic-nf" = { os = "macos" }
 

@@ -1,6 +1,7 @@
 # ---------------------------------------------------------------------------
 # environment variables
 # ---------------------------------------------------------------------------
+# Mirrored in .config/bash/bash_profile.bash while bash is on trial: change the two together.
 export LANG=C.UTF-8
 export EDITOR=nvim
 export PAGER=less

@@ -9,7 +9,7 @@
 | 触る対象 | doc |
 | --- | --- |
 | `mise.toml`・`mise-tasks/`・`.config/mise/`、ツールの追加 | `docs/mise.md` |
-| `.zshenv`・`.config/zsh/`・`bin/`・`.config/herdr/`・`test/` | `docs/shell.md` |
+| `.zshenv`・`.config/zsh/`・`.config/bash/`・`bin/`・`.config/herdr/`・`test/` | `docs/shell.md` |
 | `.config/nvim/` | `docs/neovim.md` |
 | `claude/`・`.claude/` | `docs/claude-code.md` |
 | 上記以外（`.config/git/`・その他の `.config/*`・`.github/`） | 専用の doc は無い。ファイルにコメントがあればそれに従う。git の `pre-push` hook と `.config/git` は `docs/claude-code.md` の「git / gh の基準」と「sandbox の基準」も読む |
