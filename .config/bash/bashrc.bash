@@ -79,16 +79,15 @@ if ((BASH_VERSINFO[0] * 100 + BASH_VERSINFO[1] >= 404)) && [[ -t 0 && -t 1 ]] &&
     # sits beside HISTFILE in the XDG state dir instead.
     flyline history --backend flyline \
       --jsonl-path "${XDG_STATE_HOME:-$HOME/.local/state}/flyline/history.jsonl"
-    # readline's emacs keys that flyline leaves unbound or binds differently. Remaps make
-    # the keys follow Up/Down/Left/Right in every context (history, menus, multi-line).
+    # readline's emacs keys that flyline leaves unbound or binds differently (Alt+b/f/d
+    # already follow Alt+Left/Right/Delete). Remaps make the keys follow Up/Down/Right in
+    # every context (history, menus, multi-line). Ctrl+b is a bind, not a remap: Left at
+    # the start of the line enters prompt directory selection, which readline never does.
     flyline key remap Ctrl+p Up
     flyline key remap Ctrl+n Down
-    flyline key remap Ctrl+b Left
     flyline key remap Ctrl+f Right
+    flyline key bind Ctrl+b always=moveLeft
     flyline key bind Ctrl+h always=deleteLeft
-    flyline key bind Alt+b always=moveLeftOneWordPart
-    flyline key bind Alt+f always=moveRightOneWordPart
-    flyline key bind Alt+d always=deleteRightOneWordPart
   fi
   unset _flyline
 fi
