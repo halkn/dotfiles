@@ -6,7 +6,7 @@
 
 shell（zsh・bash）の設定は、どのツールが欠けたマシンでもエラーなく起動する形に保つ。tool の初期化と plugin の読込は、それぞれの存在を確かめてから行う。herdr は手で起動する。`.zshrc` から自動で起動しない。起動してよい端末の判定（端末の種類・`:terminal`・入れ子）は端末ごとに外れ、外れた端末で挙動が変わるため。
 
-bash は zsh から移すかを試している段階にある。bash の設定は、bash の既定と各ツールの標準の初期化だけで組み、zsh の補完・履歴・widget を再現しない。zsh と同じ使い心地より、設定の単純さを優先する。試用中は環境変数を `.config/bash/bash_profile.bash` に複製し、`.config/zsh/.zshenv` と同時に直す。追跡外の `.zshenv.local` / `.zshrc.local` に当たるものは bash に置かず、試用中はマシン固有の値が bash に届かない。両方の shell から読む共通のファイルは作らない。最後にどちらかを消す前提で、共通化の手間がそれまでしか役に立たないため。
+bash は zsh から移すかを試している段階にある。bash の設定は、bash の既定と各ツールの標準の初期化だけで組み、zsh の補完・履歴・widget を再現しない。例外は、flyline のキーを readline の emacs の既定に揃える設定だけにする（「決定と理由」）。zsh と同じ使い心地より、設定の単純さを優先する。試用中は環境変数を `.config/bash/bash_profile.bash` に複製し、`.config/zsh/.zshenv` と同時に直す。追跡外の `.zshenv.local` / `.zshrc.local` に当たるものは bash に置かず、試用中はマシン固有の値が bash に届かない。両方の shell から読む共通のファイルは作らない。最後にどちらかを消す前提で、共通化の手間がそれまでしか役に立たないため。
 
 独自の機能はコマンドのサブコマンドとして作り、shell が要らないものは shell の外に置く。
 
@@ -21,7 +21,7 @@ tool の cache・state・data は XDG の各ディレクトリに置く。消え
 | `.config/zsh/.zshenv` | 非対話のプロセス（`bin/`・herdr の script・agent の Bash）も読む環境変数と `path` | interactive でしか使わない設定 |
 | `.config/zsh/.zshrc` | interactive zsh の基盤（history・options・completion・keybind・alias）と、tool の初期化。fzf 節の `hw` の補完 | 独自の関数 |
 | `.config/bash/bash_profile.bash`（`~/.bash_profile`） | login bash の環境変数と PATH（`.config/zsh/.zshenv` と同じ値）。最後に `bashrc.bash` を読む | interactive でしか使わない設定 |
-| `.config/bash/bashrc.bash`（`~/.bashrc`） | interactive bash の history の置き場所と、tool の標準の初期化・alias | 独自の関数・補完・keybind |
+| `.config/bash/bashrc.bash`（`~/.bashrc`） | interactive bash の history の置き場所と、tool の標準の初期化・alias | 独自の関数・補完・keybind（readline の emacs の既定に揃える flyline のものを除く） |
 | `bin/repo` | clone の置き場所、list / get、create / setup（GitHub 側の設定） | herdr の知識 |
 | `bin/hw` | herdr の操作の全て（workspace を開く・移動する・閉じる、worktree の作成・削除）と、picker・補完に渡す行データ。herdr を呼ぶのはこのコマンドだけ | picker・確認プロンプト |
 | `.config/herdr/herdr-*.zsh` | herdr のショートカット 1 つにつき 1 本。focused な checkout に入る、`hw` から行を受け取る、fzf を開く、選んだ行のキーを `hw` に渡す、失敗したら止めて見せる、確認を 1 回出す | 分岐する判断、行の組み立て、`herdr` の呼び出し |
@@ -91,5 +91,5 @@ worktree は git で作り、`herdr worktree open --cwd <メイン checkout> --p
 
 - `hw rm` は、ブランチがマージ済みかを自分で判定する（「原則」の例外）。origin の既定ブランチがブランチを含むか、既定ブランチへマージしても tree が変わらない（squash merge の後）ときに、`git branch -D` で消す。git の `branch -d` と `--merged` は squash merge を未マージとみなし、upstream の `[gone]` は閉じた未マージの pull request でも立つので、どちらも判定に使えない。`git pm`（`.config/git/config`）は `--merged` だけを見るので、squash merge したブランチは残る
 - `hw` は mise の trust を扱わない。mise を使うリポジトリは少なく、使うリポジトリではメイン checkout で trust した設定ファイルが、worktree の同じパスでも trust される（`mise trust --help`）。trust は中身に結び付かないので、fork の pull request がその設定ファイルに足した設定も trust され、これはメイン checkout で `gh pr checkout` したときと変わらない。止めるときは、その worktree で `mise trust --ignore` を実行する
-- bash では flyline で readline を置き換え、履歴は flyline の JSONL（XDG の state ディレクトリ）に置く。fzf の init（Ctrl-R・Ctrl-T・Alt-C と `**<Tab>`）は readline の下でしか動かないので、flyline を読み込めなかった bash でだけ行う。flyline には付け替えない。付け替えは `bashrc.bash` に keybind と独自の関数を持ち込むので、flyline の履歴検索と Tab の補完で代える。flyline のキーは、readline の emacs の既定と同じ操作にする `key bind` / `key remap` だけを `bashrc.bash` に置く（層の表の keybind の例外）。readline の既定は `bind -p` で確かめ、flyline に対応する action が無い操作は割り当てない
+- bash では flyline で readline を置き換え、履歴は flyline の JSONL に置く。fzf の init は flyline を読み込めなかった bash でだけ行い、fzf のキーと補完は flyline に付け替えない。付け替えは `bashrc.bash` に keybind と独自の関数を持ち込むので、flyline の履歴検索と Tab の補完で代える。flyline のキーは、readline の emacs の既定と同じ操作にする `key bind` / `key remap` だけを `bashrc.bash` に置く。readline の既定は `bind -p` で確かめ、flyline に対応する action が無い操作は割り当てない
 - herdr の Claude Code integration（`herdr integration install claude`）は入れない。書込先の `~/.claude/` の下は `claude/` へのリンクなので、追跡している設定を herdr が書き換え、追跡しない script がリポジトリに置かれる
