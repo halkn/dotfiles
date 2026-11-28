@@ -23,6 +23,8 @@ go = "latest"
 # terminal
 starship = "latest"
 herdr = "latest"
+# .config/bash/bashrc.bash looks up this id with `mise where`; rename both together.
+"github:HalFrgrd/flyline" = "latest"
 
 # cli
 ripgrep = "latest"

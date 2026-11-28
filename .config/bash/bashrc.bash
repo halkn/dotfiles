@@ -36,7 +36,6 @@ if command -v fzf >/dev/null; then
     --bind ctrl-u:preview-half-page-up,ctrl-d:preview-half-page-down
     --bind ctrl-/:toggle-preview
   "
-  eval "$(fzf --bash)"
 fi
 
 if command -v eza >/dev/null; then
@@ -61,4 +60,29 @@ if command -v starship >/dev/null; then
   export STARSHIP_CONFIG=${XDG_CONFIG_HOME:-$HOME/.config}/starship/starship.toml
   export STARSHIP_CACHE=${XDG_CACHE_HOME:-$HOME/.cache}/starship/cache
   eval "$(starship init bash)"
+fi
+
+# `type -t`, not `enable flyline`: a bare enable also loads a `flyline` file from `.`.
+if ((BASH_VERSINFO[0] * 100 + BASH_VERSINFO[1] >= 404)) && [[ -t 0 && -t 1 ]] &&
+  [[ -o emacs || -o vi ]] && [[ $(type -t flyline) != builtin ]]; then
+  # Offline: an uninstalled tool makes mise query GitHub. $HOME: an untrusted config fails.
+  _flyline=("$(MISE_OFFLINE=1 mise -C "$HOME" where github:HalFrgrd/flyline 2>/dev/null)"/libflyline.*)
+  if [[ -f ${_flyline[0]} ]] && enable -f "${_flyline[0]}" flyline; then
+    # The default path is under ~/Library on macOS.
+    flyline history --backend flyline \
+      --jsonl-path "${XDG_STATE_HOME:-$HOME/.local/state}/flyline/history.jsonl"
+    # readline's emacs keys. Ctrl+b is not remapped to Left, which at the start of the
+    # line enters prompt directory selection.
+    flyline key remap Ctrl+p Up
+    flyline key remap Ctrl+n Down
+    flyline key remap Ctrl+f Right
+    flyline key bind Ctrl+b always=moveLeft
+    flyline key bind Ctrl+h always=deleteLeft
+  fi
+  unset _flyline
+fi
+
+# fzf's key bindings and `**<Tab>` need readline.
+if [[ $(type -t flyline) != builtin ]] && command -v fzf >/dev/null; then
+  eval "$(fzf --bash)"
 fi
