@@ -36,9 +36,6 @@ if command -v fzf >/dev/null; then
     --bind ctrl-u:preview-half-page-up,ctrl-d:preview-half-page-down
     --bind ctrl-/:toggle-preview
   "
-  # Its Ctrl-R / Ctrl-T / Alt-C are readline bindings, dead once flyline (below) loads;
-  # they stay for shells without flyline rather than being rebound to it.
-  eval "$(fzf --bash)"
 fi
 
 if command -v eza >/dev/null; then
@@ -81,4 +78,10 @@ if ((BASH_VERSINFO[0] * 100 + BASH_VERSINFO[1] >= 404)) && [[ -t 0 && -t 1 ]] &&
       --jsonl-path "${XDG_STATE_HOME:-$HOME/.local/state}/flyline/history.jsonl"
   fi
   unset _flyline
+fi
+
+# fzf's key bindings and `**<Tab>` work only under readline, so they are set up only
+# where flyline did not load; flyline's history search and completion replace them.
+if [[ $(type -t flyline) != builtin ]] && command -v fzf >/dev/null; then
+  eval "$(fzf --bash)"
 fi
