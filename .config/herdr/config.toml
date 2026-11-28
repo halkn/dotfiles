@@ -34,7 +34,7 @@ delay_seconds = 3
 # ── Worktrees ────────────────────────────────────────
 # Moved out of the default ~/.herdr/worktrees to follow XDG. A worktree can hold uncommitted
 # work, so it belongs under data rather than cache or state, and it outlives herdr, so it is
-# not under a herdr-owned directory. `$WT_ROOT` (.config/zsh/.zshenv) holds the same path:
+# not under a herdr-owned directory. `$WT_ROOT` (.config/zsh/.zshenv, .config/bash/bash_profile.bash) holds the same path:
 # herdr and `hw` place worktrees in one tree, so the two move together.
 [worktrees]
 directory = "~/.local/share/worktrees"
