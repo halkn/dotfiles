@@ -12,6 +12,11 @@ HISTSIZE=10000
 HISTCONTROL=ignoreboth
 shopt -s histappend
 
+alias du='du -h'
+alias df='df -h'
+alias ..='cd ..'
+alias :q='exit'
+
 # Ahead of the tools below, whose checks find mise-installed ones through it.
 command -v mise >/dev/null && eval "$(mise activate bash)"
 
@@ -21,6 +26,9 @@ if command -v eza >/dev/null; then
   alias ls='eza --icons --group-directories-first'
   alias ll='eza -l --icons --git --no-user --time-style=iso --group-directories-first'
   alias la='ll -a'
+  alias ltr='ll --sort=modified'
+  alias lst='ltr --reverse'
+  alias tree='eza --tree --icons -I ".git" --group-directories-first'
 fi
 
 if command -v nvim >/dev/null; then
@@ -29,6 +37,7 @@ if command -v nvim >/dev/null; then
   export MANPAGER='sh -c "if [ -t 1 ]; then exec nvim +Man!; else exec cat; fi"'
   alias v='nvim'
   alias vim=nvim
+  alias vimdiff='nvim -d'
 fi
 
 if command -v starship >/dev/null; then
